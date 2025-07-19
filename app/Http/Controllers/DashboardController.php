@@ -4,112 +4,286 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\Student;
-use App\Models\Program;
-use App\Models\Subject;
-use App\Models\Group;
-use App\Models\Enrollment;
-use App\Models\Period;
-use App\Models\StudyPlan;
-use App\Models\AcademicHistory;
+use App\Models\Resident;
+use App\Models\Apartment;
+use App\Models\ConjuntoConfig;
+use App\Models\ApartmentType;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // KPIs Principales - Demo Data
-        $totalStudents = 1247;
-        $totalPrograms = 8;
-        $totalSubjects = 156;
-        $totalEnrollments = 2891;
+        // Obtener datos reales
+        $totalResidents = Resident::count();
+        $totalApartments = Apartment::count();
+        $totalConjuntos = ConjuntoConfig::count();
         
-        // Estudiantes por programa - Demo Data
-        $studentsByProgram = collect([
-            ['name' => 'Ingeniería de Sistemas', 'students' => 387, 'color' => '#3b82f6'],
-            ['name' => 'Administración de Empresas', 'students' => 298, 'color' => '#ef4444'],
-            ['name' => 'Psicología', 'students' => 234, 'color' => '#10b981'],
-            ['name' => 'Derecho', 'students' => 156, 'color' => '#f59e0b'],
-            ['name' => 'Contaduría Pública', 'students' => 98, 'color' => '#8b5cf6'],
-            ['name' => 'Medicina', 'students' => 74, 'color' => '#06b6d4'],
+        // Calcular crecimiento de residentes (mock data si no hay suficientes datos)
+        $currentMonthResidents = Resident::whereMonth('created_at', now()->month)->count();
+        $lastMonthResidents = Resident::whereMonth('created_at', now()->subMonth()->month)->count();
+        $residentGrowth = $this->calculateGrowthPercentage($currentMonthResidents, $lastMonthResidents) ?: 15.2;
+        
+        // KPIs - Combinando datos reales con mockeados
+        $kpis = [
+            'totalResidents' => max($totalResidents, 347), // Mínimo de demo
+            'totalApartments' => max($totalApartments, 182), // Mínimo de demo
+            'pendingPayments' => 23, // Mock data - implementar después
+            'monthlyVisitors' => 1247, // Mock data - implementar después
+            'residentGrowth' => $residentGrowth,
+            'visitorGrowth' => 8.3, // Mock data
+        ];
+
+        // Residentes por Torre - Combinando datos reales con mock
+        $residentsByTower = $this->getResidentsByTower();
+        
+        // Estados de pago - Mock data 
+        $paymentsByStatus = collect([
+            ['status' => 'Al día', 'count' => 156, 'color' => '#10b981'],
+            ['status' => 'Vencido 1-30 días', 'count' => 23, 'color' => '#f59e0b'],
+            ['status' => 'Vencido 31-60 días', 'count' => 8, 'color' => '#ef4444'],
+            ['status' => 'Vencido +60 días', 'count' => 3, 'color' => '#7f1d1d'],
         ]);
 
-        // Matriculas por estado - Demo Data
-        $enrollmentsByStatus = collect([
-            ['status' => 'Matriculados', 'count' => 2156, 'color' => '#3b82f6'],
-            ['status' => 'Completados', 'count' => 523, 'color' => '#10b981'],
-            ['status' => 'Retirados', 'count' => 156, 'color' => '#6b7280'],
-            ['status' => 'Reprobados', 'count' => 56, 'color' => '#ef4444'],
+        // Estado de ocupación - Combinando datos reales con mock
+        $occupancyStatus = $this->getOccupancyStatus();
+
+        // Gastos mensuales - Mock data
+        $monthlyExpenses = collect([
+            ['category' => 'Servicios Públicos', 'amount' => 2450000, 'percentage' => 35, 'color' => '#3b82f6'],
+            ['category' => 'Mantenimiento', 'amount' => 1890000, 'percentage' => 27, 'color' => '#ef4444'],
+            ['category' => 'Seguridad', 'amount' => 1200000, 'percentage' => 17, 'color' => '#10b981'],
+            ['category' => 'Aseo', 'amount' => 780000, 'percentage' => 11, 'color' => '#f59e0b'],
+            ['category' => 'Administración', 'amount' => 450000, 'percentage' => 6, 'color' => '#8b5cf6'],
+            ['category' => 'Jardinería', 'amount' => 280000, 'percentage' => 4, 'color' => '#06b6d4'],
         ]);
 
-        // Progreso académico general - Demo Data
-        $academicProgress = collect([
-            ['range' => '0-25%', 'count' => 89, 'color' => '#ef4444'],
-            ['range' => '26-50%', 'count' => 234, 'color' => '#f59e0b'],
-            ['range' => '51-75%', 'count' => 456, 'color' => '#3b82f6'],
-            ['range' => '76-100%', 'count' => 468, 'color' => '#10b981'],
+        // Tendencia de recaudo - Mock data
+        $paymentTrend = collect([
+            ['month' => '2024-02', 'amount' => 15420000, 'label' => 'Feb 2024'],
+            ['month' => '2024-03', 'amount' => 16890000, 'label' => 'Mar 2024'],
+            ['month' => '2024-04', 'amount' => 15680000, 'label' => 'Abr 2024'],
+            ['month' => '2024-05', 'amount' => 17230000, 'label' => 'May 2024'],
+            ['month' => '2024-06', 'amount' => 16950000, 'label' => 'Jun 2024'],
+            ['month' => '2024-07', 'amount' => 18120000, 'label' => 'Jul 2024'],
         ]);
 
-        // Capacidad de grupos - Demo Data
-        $groupsCapacity = collect([
-            ['name' => 'Algoritmos y Programación - Grupo A', 'usage' => 95.5, 'enrolled' => 42, 'capacity' => 44, 'color' => '#ef4444'],
-            ['name' => 'Bases de Datos - Grupo B', 'usage' => 88.9, 'enrolled' => 32, 'capacity' => 36, 'color' => '#f59e0b'],
-            ['name' => 'Cálculo Diferencial - Grupo C', 'usage' => 82.5, 'enrolled' => 33, 'capacity' => 40, 'color' => '#f59e0b'],
-            ['name' => 'Física I - Grupo A', 'usage' => 75.0, 'enrolled' => 30, 'capacity' => 40, 'color' => '#f59e0b'],
-            ['name' => 'Inglés Técnico - Grupo D', 'usage' => 68.8, 'enrolled' => 22, 'capacity' => 32, 'color' => '#10b981'],
-            ['name' => 'Química General - Grupo B', 'usage' => 62.5, 'enrolled' => 25, 'capacity' => 40, 'color' => '#10b981'],
-            ['name' => 'Estadística - Grupo A', 'usage' => 55.6, 'enrolled' => 20, 'capacity' => 36, 'color' => '#10b981'],
-            ['name' => 'Redes de Computadores - Grupo C', 'usage' => 45.8, 'enrolled' => 11, 'capacity' => 24, 'color' => '#10b981'],
-        ]);
-
-        // Periodos activos - Demo Data
-        $activePeriods = collect([
-            (object)[
+        // Notificaciones pendientes - Mock data
+        $pendingNotifications = collect([
+            [
                 'id' => 1,
-                'name' => 'Semestre 2024-2',
-                'start_date' => '2024-08-01',
-                'end_date' => '2024-12-15',
-                'subjects_count' => 89,
-                'enrollments_count' => 1456
+                'title' => 'Corte de agua programado',
+                'recipients_count' => 45,
+                'type' => 'Comunicado',
+                'created_at' => now()->subDays(2),
             ],
-            (object)[
+            [
                 'id' => 2,
-                'name' => 'Intersemestral 2024',
-                'start_date' => '2024-12-16',
-                'end_date' => '2025-01-31',
-                'subjects_count' => 23,
-                'enrollments_count' => 234
-            ]
-        ]);
-
-        // Tendencia de matrículas por mes - Demo Data
-        $enrollmentTrend = collect([
-            ['month' => '2024-02', 'count' => 342, 'label' => 'Feb 2024'],
-            ['month' => '2024-03', 'count' => 389, 'label' => 'Mar 2024'],
-            ['month' => '2024-04', 'count' => 298, 'label' => 'Abr 2024'],
-            ['month' => '2024-05', 'count' => 445, 'label' => 'May 2024'],
-            ['month' => '2024-06', 'count' => 512, 'label' => 'Jun 2024'],
-            ['month' => '2024-07', 'count' => 678, 'label' => 'Jul 2024'],
+                'title' => 'Recordatorio pago administración',
+                'recipients_count' => 23,
+                'type' => 'Recordatorio',
+                'created_at' => now()->subDays(1),
+            ],
+            [
+                'id' => 3,
+                'title' => 'Mantenimiento ascensores',
+                'recipients_count' => 182,
+                'type' => 'Aviso',
+                'created_at' => now()->subHours(3),
+            ],
         ]);
 
         return Inertia::render('Dashboard', [
-            'kpis' => [
-                'totalStudents' => $totalStudents,
-                'totalPrograms' => $totalPrograms,
-                'totalSubjects' => $totalSubjects,
-                'totalEnrollments' => $totalEnrollments,
-                'studentGrowth' => 12.5, // Demo: 12.5% growth
-                'enrollmentGrowth' => 8.7, // Demo: 8.7% growth
-            ],
+            'kpis' => $kpis,
             'charts' => [
-                'studentsByProgram' => $studentsByProgram,
-                'enrollmentsByStatus' => $enrollmentsByStatus,
-                'academicProgress' => $academicProgress,
-                'groupsCapacity' => $groupsCapacity->take(10), // Top 10 grupos
-                'enrollmentTrend' => $enrollmentTrend,
+                'residentsByTower' => $residentsByTower,
+                'paymentsByStatus' => $paymentsByStatus,
+                'occupancyStatus' => $occupancyStatus,
+                'monthlyExpenses' => $monthlyExpenses,
+                'paymentTrend' => $paymentTrend,
             ],
-            'activePeriods' => $activePeriods,
-            'recentActivity' => $this->getDemoRecentActivity(),
+            'pendingNotifications' => $pendingNotifications,
+            'recentActivity' => $this->getRecentActivity(),
+        ]);
+    }
+
+    private function calculateGrowthPercentage($current, $previous)
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+        return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    private function getResidentsByTower()
+    {
+        // Intentar obtener datos reales primero
+        $realData = DB::table('apartments')
+            ->join('residents', 'apartments.id', '=', 'residents.apartment_id')
+            ->join('conjunto_configs', 'apartments.conjunto_config_id', '=', 'conjunto_configs.id')
+            ->select('apartments.tower', 'conjunto_configs.name as conjunto_name', DB::raw('count(residents.id) as residents'))
+            ->where('residents.status', 'Active')
+            ->groupBy('apartments.tower', 'conjunto_configs.name')
+            ->get();
+
+        if ($realData->count() > 0) {
+            return $realData->map(function ($item, $index) {
+                return [
+                    'name' => "Torre {$item->tower} - {$item->conjunto_name}",
+                    'residents' => $item->residents,
+                    'color' => $this->generateColor($index)
+                ];
+            })->values();
+        }
+
+        // Fallback a datos mock si no hay datos reales
+        return collect([
+            ['name' => 'Torre 1 - Vista Hermosa', 'residents' => 89, 'color' => '#3b82f6'],
+            ['name' => 'Torre 2 - Vista Hermosa', 'residents' => 76, 'color' => '#ef4444'],
+            ['name' => 'Torre 3 - Vista Hermosa', 'residents' => 65, 'color' => '#10b981'],
+            ['name' => 'Torre 1 - Parque Real', 'residents' => 54, 'color' => '#f59e0b'],
+            ['name' => 'Torre 2 - Parque Real', 'residents' => 63, 'color' => '#8b5cf6'],
+        ]);
+    }
+
+    private function getOccupancyStatus()
+    {
+        // Intentar obtener datos reales primero
+        $realData = DB::table('apartments')
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get();
+
+        if ($realData->count() > 0) {
+            $statusColors = [
+                'Occupied' => '#10b981',
+                'Available' => '#3b82f6', 
+                'Maintenance' => '#f59e0b',
+                'Reserved' => '#8b5cf6'
+            ];
+
+            $statusLabels = [
+                'Occupied' => 'Ocupados',
+                'Available' => 'Disponibles',
+                'Maintenance' => 'Mantenimiento',
+                'Reserved' => 'Reservados'
+            ];
+
+            return $realData->map(function ($item) use ($statusColors, $statusLabels) {
+                return [
+                    'status' => $statusLabels[$item->status] ?? $item->status,
+                    'count' => $item->count,
+                    'color' => $statusColors[$item->status] ?? '#6b7280'
+                ];
+            })->values();
+        }
+
+        // Fallback a datos mock
+        return collect([
+            ['status' => 'Ocupados', 'count' => 145, 'color' => '#10b981'],
+            ['status' => 'Disponibles', 'count' => 28, 'color' => '#3b82f6'],
+            ['status' => 'Mantenimiento', 'count' => 9, 'color' => '#f59e0b'],
+        ]);
+    }
+
+    private function getRecentActivity()
+    {
+        // Intentar obtener actividad real primero
+        $recentResidents = Resident::with('apartment')
+            ->orderBy('created_at', 'desc')
+            ->take(4)
+            ->get()
+            ->map(function ($resident) {
+                return [
+                    'type' => 'resident',
+                    'message' => "Nuevo residente: {$resident->first_name} {$resident->last_name} en Apto {$resident->apartment->number ?? 'N/A'}",
+                    'time' => $resident->created_at->diffForHumans(),
+                    'icon' => 'user-plus'
+                ];
+            });
+
+        if ($recentResidents->count() > 0) {
+            // Combinar con algunos datos mock adicionales
+            $mockActivity = collect([
+                [
+                    'type' => 'payment',
+                    'message' => 'Pago recibido: Apto 301 - Administración Julio',
+                    'time' => 'hace 15 minutos',
+                    'icon' => 'dollar-sign'
+                ],
+                [
+                    'type' => 'visitor',
+                    'message' => 'Visita registrada: María González en Torre 2',
+                    'time' => 'hace 1 hora',
+                    'icon' => 'user-check'
+                ],
+                [
+                    'type' => 'maintenance',
+                    'message' => 'Solicitud de mantenimiento: Ascensor Torre 1',
+                    'time' => 'hace 2 horas',
+                    'icon' => 'wrench'
+                ],
+                [
+                    'type' => 'communication',
+                    'message' => 'Comunicado enviado: Corte de agua programado',
+                    'time' => 'hace 3 horas',
+                    'icon' => 'bell'
+                ]
+            ]);
+
+            return $recentResidents->concat($mockActivity)->take(8)->values();
+        }
+
+        // Fallback completo a datos mock
+        return collect([
+            [
+                'type' => 'resident',
+                'message' => 'Nuevo residente: Ana García en Apto 405',
+                'time' => 'hace 5 minutos',
+                'icon' => 'user-plus'
+            ],
+            [
+                'type' => 'payment',
+                'message' => 'Pago recibido: Apto 301 - Administración Julio',
+                'time' => 'hace 15 minutos',
+                'icon' => 'dollar-sign'
+            ],
+            [
+                'type' => 'visitor',
+                'message' => 'Visita registrada: Carlos Rodríguez en Torre 2',
+                'time' => 'hace 45 minutos',
+                'icon' => 'user-check'
+            ],
+            [
+                'type' => 'maintenance',
+                'message' => 'Solicitud de mantenimiento: Ascensor Torre 1',
+                'time' => 'hace 1 hora',
+                'icon' => 'wrench'
+            ],
+            [
+                'type' => 'communication',
+                'message' => 'Comunicado enviado: Asamblea general',
+                'time' => 'hace 2 horas',
+                'icon' => 'bell'
+            ],
+            [
+                'type' => 'resident',
+                'message' => 'Nuevo residente: Pedro Martínez en Apto 102',
+                'time' => 'hace 3 horas',
+                'icon' => 'user-plus'
+            ],
+            [
+                'type' => 'payment',
+                'message' => 'Pago recibido: Apto 205 - Administración Julio',
+                'time' => 'hace 4 horas',
+                'icon' => 'dollar-sign'
+            ],
+            [
+                'type' => 'visitor',
+                'message' => 'Visita registrada: Laura Fernández en Torre 3',
+                'time' => 'hace 5 horas',
+                'icon' => 'user-check'
+            ]
         ]);
     }
 
@@ -117,171 +291,5 @@ class DashboardController extends Controller
     {
         $colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
         return $colors[$id % count($colors)];
-    }
-
-    private function getStatusLabel($status)
-    {
-        $labels = [
-            'enrolled' => 'Matriculados',
-            'completed' => 'Completados',
-            'dropped' => 'Retirados',
-            'failed' => 'Reprobados'
-        ];
-        return $labels[$status] ?? $status;
-    }
-
-    private function getStatusColor($status)
-    {
-        $colors = [
-            'enrolled' => '#3b82f6',
-            'completed' => '#10b981',
-            'dropped' => '#6b7280',
-            'failed' => '#ef4444'
-        ];
-        return $colors[$status] ?? '#6b7280';
-    }
-
-    private function getAcademicProgress()
-    {
-        $students = Student::all();
-        $progressRanges = [
-            '0-25%' => 0,
-            '26-50%' => 0,
-            '51-75%' => 0,
-            '76-100%' => 0,
-        ];
-
-        foreach ($students as $student) {
-            $progress = $student->total_credits > 0 ? ($student->credits_completed / $student->total_credits) * 100 : 0;
-            
-            if ($progress <= 25) $progressRanges['0-25%']++;
-            elseif ($progress <= 50) $progressRanges['26-50%']++;
-            elseif ($progress <= 75) $progressRanges['51-75%']++;
-            else $progressRanges['76-100%']++;
-        }
-
-        return collect($progressRanges)->map(function ($count, $range) {
-            return [
-                'range' => $range,
-                'count' => $count,
-                'color' => $this->getProgressColor($range)
-            ];
-        })->values();
-    }
-
-    private function getProgressColor($range)
-    {
-        $colors = [
-            '0-25%' => '#ef4444',
-            '26-50%' => '#f59e0b',
-            '51-75%' => '#3b82f6',
-            '76-100%' => '#10b981',
-        ];
-        return $colors[$range];
-    }
-
-    private function getStudentGrowthPercentage()
-    {
-        $currentMonth = Student::whereMonth('created_at', now()->month)->count();
-        $lastMonth = Student::whereMonth('created_at', now()->subMonth()->month)->count();
-        
-        if ($lastMonth == 0) return $currentMonth > 0 ? 100 : 0;
-        return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
-    }
-
-    private function getEnrollmentGrowthPercentage()
-    {
-        $currentMonth = Enrollment::whereMonth('enrollment_date', now()->month)->count();
-        $lastMonth = Enrollment::whereMonth('enrollment_date', now()->subMonth()->month)->count();
-        
-        if ($lastMonth == 0) return $currentMonth > 0 ? 100 : 0;
-        return round((($currentMonth - $lastMonth) / $lastMonth) * 100, 1);
-    }
-
-    private function getRecentActivity()
-    {
-        $recentEnrollments = Enrollment::with(['student', 'group.subject'])
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get()
-            ->map(function ($enrollment) {
-                return [
-                    'type' => 'enrollment',
-                    'message' => $enrollment->student->first_name . ' ' . $enrollment->student->last_name . ' se matriculó en ' . $enrollment->group->subject->name,
-                    'time' => $enrollment->created_at->diffForHumans(),
-                    'icon' => 'user-plus'
-                ];
-            });
-
-        $recentStudents = Student::orderBy('created_at', 'desc')
-            ->take(3)
-            ->get()
-            ->map(function ($student) {
-                return [
-                    'type' => 'student',
-                    'message' => 'Nuevo estudiante registrado: ' . $student->first_name . ' ' . $student->last_name,
-                    'time' => $student->created_at->diffForHumans(),
-                    'icon' => 'user'
-                ];
-            });
-
-        return $recentEnrollments->concat($recentStudents)
-            ->sortByDesc('time')
-            ->take(8)
-            ->values();
-    }
-
-    private function getDemoRecentActivity()
-    {
-        return collect([
-            [
-                'type' => 'enrollment',
-                'message' => 'María García se matriculó en Algoritmos y Programación',
-                'time' => 'hace 2 minutos',
-                'icon' => 'user-plus'
-            ],
-            [
-                'type' => 'student',
-                'message' => 'Nuevo estudiante registrado: Carlos Rodríguez',
-                'time' => 'hace 15 minutos',
-                'icon' => 'user'
-            ],
-            [
-                'type' => 'enrollment',
-                'message' => 'Ana López se matriculó en Bases de Datos',
-                'time' => 'hace 23 minutos',
-                'icon' => 'user-plus'
-            ],
-            [
-                'type' => 'grade',
-                'message' => 'Calificaciones actualizadas para Cálculo Diferencial',
-                'time' => 'hace 1 hora',
-                'icon' => 'book-open'
-            ],
-            [
-                'type' => 'enrollment',
-                'message' => 'Pedro Martínez se matriculó en Física I',
-                'time' => 'hace 2 horas',
-                'icon' => 'user-plus'
-            ],
-            [
-                'type' => 'student',
-                'message' => 'Nuevo estudiante registrado: Laura Fernández',
-                'time' => 'hace 3 horas',
-                'icon' => 'user'
-            ],
-            [
-                'type' => 'group',
-                'message' => 'Nuevo grupo creado para Inglés Técnico',
-                'time' => 'hace 4 horas',
-                'icon' => 'users'
-            ],
-            [
-                'type' => 'enrollment',
-                'message' => 'José Silva se matriculó en Estadística',
-                'time' => 'hace 5 horas',
-                'icon' => 'user-plus'
-            ]
-        ]);
     }
 }

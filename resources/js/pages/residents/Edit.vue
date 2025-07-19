@@ -45,6 +45,7 @@ import {
     Clock,
     CreditCard
 } from 'lucide-vue-next';
+import ValidationErrors from '@/components/ValidationErrors.vue';
 
 interface FormData {
     document_type: string;
@@ -415,6 +416,9 @@ const statusOptions = [
                     </AlertDialog>
                 </div>
             </div>
+
+            <!-- Validation Errors -->
+            <ValidationErrors :errors="form.errors" />
 
             <!-- Progress Overview -->
             <Card class="mb-8">

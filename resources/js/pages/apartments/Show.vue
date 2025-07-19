@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-    ArrowLeft, 
-    Edit, 
-    Home, 
-    Building, 
-    Users, 
-    DollarSign, 
-    Calendar, 
-    FileText, 
+import {
+    ArrowLeft,
+    Edit,
+    Home,
+    Building,
+    Users,
+    DollarSign,
+    Calendar,
+    FileText,
     Settings,
     MapPin,
     UserPlus,
@@ -152,8 +152,8 @@ const getResidentTypeColor = (type: string) => {
     return colors[type] || 'bg-gray-100 text-gray-800';
 };
 
-const getInitials = (name: string) => {
-    return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
+const getInitials = (first_name: string, last_name: string) => {
+    return `${first_name.charAt(0)}${last_name.charAt(0)}`.toUpperCase();
 };
 
 // Breadcrumbs
@@ -389,7 +389,7 @@ const breadcrumbs = [
                             >
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                                        <span class="text-sm font-medium text-primary">{{ getInitials(resident.full_name) }}</span>
+                                        <span class="text-sm font-medium text-primary">{{ getInitials(resident.first_name, resident.last_name) }}</span>
                                     </div>
                                     <div>
                                         <h4 class="font-medium">{{ resident.full_name }}</h4>
@@ -414,7 +414,7 @@ const breadcrumbs = [
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div v-else class="text-center py-12">
                             <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Users class="w-8 h-8 text-muted-foreground" />
