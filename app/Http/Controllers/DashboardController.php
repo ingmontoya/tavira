@@ -18,12 +18,12 @@ class DashboardController extends Controller
         $totalResidents = Resident::count();
         $totalApartments = Apartment::count();
         $totalConjuntos = ConjuntoConfig::count();
-        
+
         // Calcular crecimiento de residentes (mock data si no hay suficientes datos)
         $currentMonthResidents = Resident::whereMonth('created_at', now()->month)->count();
         $lastMonthResidents = Resident::whereMonth('created_at', now()->subMonth()->month)->count();
         $residentGrowth = $this->calculateGrowthPercentage($currentMonthResidents, $lastMonthResidents) ?: 15.2;
-        
+
         // KPIs - Combinando datos reales con mockeados
         $kpis = [
             'totalResidents' => max($totalResidents, 347), // Mínimo de demo
@@ -36,8 +36,8 @@ class DashboardController extends Controller
 
         // Residentes por Torre - Combinando datos reales con mock
         $residentsByTower = $this->getResidentsByTower();
-        
-        // Estados de pago - Mock data 
+
+        // Estados de pago - Mock data
         $paymentsByStatus = collect([
             ['status' => 'Al día', 'count' => 156, 'color' => '#10b981'],
             ['status' => 'Vencido 1-30 días', 'count' => 23, 'color' => '#f59e0b'],
@@ -157,7 +157,7 @@ class DashboardController extends Controller
         if ($realData->count() > 0) {
             $statusColors = [
                 'Occupied' => '#10b981',
-                'Available' => '#3b82f6', 
+                'Available' => '#3b82f6',
                 'Maintenance' => '#f59e0b',
                 'Reserved' => '#8b5cf6'
             ];
@@ -196,7 +196,7 @@ class DashboardController extends Controller
             ->map(function ($resident) {
                 return [
                     'type' => 'resident',
-                    'message' => "Nuevo residente: {$resident->first_name} {$resident->last_name} en Apto {$resident->apartment->number ?? 'N/A'}",
+                    'message' => "Nuevo residente: {$resident->first_name} {$resident->last_name} en Apto " . (isset($resident->apartment->number) ? $resident->apartment->number : 'N/A'),
                     'time' => $resident->created_at->diffForHumans(),
                     'icon' => 'user-plus'
                 ];
