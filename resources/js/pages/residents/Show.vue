@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-    ArrowLeft, 
-    Edit, 
-    User, 
-    Mail, 
-    Phone, 
-    Calendar, 
-    Home, 
-    Building, 
-    FileText, 
-    Download, 
+import {
+    ArrowLeft,
+    Edit,
+    User,
+    Mail,
+    Phone,
+    Calendar,
+    Home,
+    Building,
+    FileText,
+    Download,
     Eye,
     UserCheck,
     IdCard
@@ -109,8 +109,8 @@ const getResidentTypeColor = (type: string) => {
 };
 
 const getStatusColor = (status: string) => {
-    return status === 'Active' 
-        ? 'bg-green-100 text-green-800' 
+    return status === 'Active'
+        ? 'bg-green-100 text-green-800'
         : 'bg-red-100 text-red-800';
 };
 
@@ -323,10 +323,10 @@ const breadcrumbs = [
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="resident.documents && resident.documents.length > 0" 
+                    <div v-if="resident.documents && resident.documents.length > 0"
                          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div v-for="document in resident.documents" 
-                             :key="document.id" 
+                        <div v-for="document in resident.documents"
+                             :key="document.id"
                              class="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">

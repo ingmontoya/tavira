@@ -250,7 +250,7 @@ const columns = [
             }
             return h('div', { class: 'space-y-1' }, [
                 h('div', { class: 'font-medium' }, `Torre ${resident.apartment.tower} - Apt ${resident.apartment.number}`),
-                h('div', { class: 'text-xs text-muted-foreground' }, `Piso ${resident.apartment.floor} - ${resident.apartment.apartment_type.name}`)
+                h('div', { class: 'text-xs text-muted-foreground' }, `Piso ${resident.apartment.floor} - ${resident.apartment.apartment_type}`)
             ])
         },
     }),

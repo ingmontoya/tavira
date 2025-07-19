@@ -17,13 +17,9 @@ class ResidentController extends Controller
     {
         $user = Auth::user();
         $query = Resident::with('apartment');
-        
-        // Filter by user's conjunto if they have one
-        if ($user->conjunto_config_id) {
-            $query->byConjunto($user->conjunto_config_id);
-        }
 
         if ($request->filled('search')) {
+            dd('sup');
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -48,9 +44,11 @@ class ResidentController extends Controller
             $query->byTower($request->get('tower'));
         }
 
+
         $residents = $query->orderBy('last_name')
                           ->paginate(15)
                           ->withQueryString();
+
 
         // Get towers for the current conjunto
         $towers = collect();
@@ -73,7 +71,7 @@ class ResidentController extends Controller
     public function create(): Response
     {
         $user = Auth::user();
-        
+
         // Get available apartments for current conjunto
         $apartments = collect();
         if ($user->conjunto_config_id) {
@@ -84,7 +82,7 @@ class ResidentController extends Controller
                                   ->orderBy('number')
                                   ->get();
         }
-        
+
         return Inertia::render('residents/Create', [
             'apartments' => $apartments
         ]);
@@ -93,7 +91,7 @@ class ResidentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
-        
+
         $validated = $request->validate([
             'document_type' => ['required', 'string', 'max:20'],
             'document_number' => ['required', 'string', 'max:50', 'unique:residents'],
@@ -115,7 +113,7 @@ class ResidentController extends Controller
             'whatsapp_notifications' => ['boolean'],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
         ]);
-        
+
         // Verify apartment belongs to user's conjunto
         if ($user->conjunto_config_id) {
             $apartment = Apartment::find($validated['apartment_id']);
@@ -132,14 +130,14 @@ class ResidentController extends Controller
     public function show(Resident $resident): Response
     {
         return Inertia::render('residents/Show', [
-            'resident' => $resident,
+            'resident' => $resident->load('apartment.apartmentType'),
         ]);
     }
 
     public function edit(Resident $resident): Response
     {
         $user = Auth::user();
-        
+
         // Get available apartments for current conjunto
         $apartments = collect();
         if ($user->conjunto_config_id) {
@@ -150,9 +148,9 @@ class ResidentController extends Controller
                                   ->orderBy('number')
                                   ->get();
         }
-        
+
         return Inertia::render('residents/Edit', [
-            'resident' => $resident->load('apartment'),
+            'resident' => $resident->with('apartment', 'apartment.apartmentType')->first(),
             'apartments' => $apartments
         ]);
     }
@@ -160,7 +158,7 @@ class ResidentController extends Controller
     public function update(Request $request, Resident $resident): RedirectResponse
     {
         $user = Auth::user();
-        
+
         $validated = $request->validate([
             'document_type' => ['required', 'string', 'max:20'],
             'document_number' => ['required', 'string', 'max:50', Rule::unique('residents')->ignore($resident->id)],
@@ -182,7 +180,7 @@ class ResidentController extends Controller
             'whatsapp_notifications' => ['boolean'],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
         ]);
-        
+
         // Verify apartment belongs to user's conjunto
         if ($user->conjunto_config_id) {
             $apartment = Apartment::find($validated['apartment_id']);

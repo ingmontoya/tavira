@@ -54,8 +54,8 @@ class ConjuntoConfig extends Model
             for ($floor = 1; $floor <= $this->floors_per_tower; $floor++) {
                 for ($position = 1; $position <= $this->apartments_per_floor; $position++) {
                     // Generate apartment number: [tower][floor][position]
-                    // Example: Tower 1, Floor 11, Position 1 = 1101
-                    $apartmentNumber = $towerNumber . str_pad($floor, 2, '0', STR_PAD_LEFT) . str_pad($position, 2, '0', STR_PAD_LEFT);
+                    // Example: Tower 4, Floor 1, Position 1 = 4101
+                    $apartmentNumber = $towerNumber . str_pad($floor, 1, '0', STR_PAD_LEFT) . str_pad($position, 2, '0', STR_PAD_LEFT);
                     
                     // Get apartment type based on position (cycling through available types)
                     $apartmentTypes = $this->apartmentTypes;

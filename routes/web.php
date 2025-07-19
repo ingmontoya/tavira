@@ -12,6 +12,7 @@ use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\ConjuntoConfigController;
+use App\Http\Controllers\ApartmentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -50,9 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('conjuntos.index')->middleware('rate.limit:default');
     
     // Apartments Management
-    Route::get('apartments', function () {
-        return Inertia::render('Apartments/Index');
-    })->name('apartments.index')->middleware('rate.limit:default');
+    Route::resource('apartments', ApartmentController::class);
+    Route::get('api/apartments/by-conjunto/{conjuntoConfig}', [ApartmentController::class, 'getByConjunto'])
+        ->name('apartments.by-conjunto');
     
     // Finance Management
     Route::get('finances', function () {

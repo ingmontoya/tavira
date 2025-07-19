@@ -136,3 +136,4 @@ A continuación, se detallan los requerimientos funcionales y no funcionales por
 - Laravel 12 
 - Vue Js composition API
 - Intertia
+- Shadcn Vue

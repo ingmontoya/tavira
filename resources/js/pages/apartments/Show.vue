@@ -1,0 +1,487 @@
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { 
+    ArrowLeft, 
+    Edit, 
+    Home, 
+    Building, 
+    Users, 
+    DollarSign, 
+    Calendar, 
+    FileText, 
+    Settings,
+    MapPin,
+    UserPlus,
+    Eye,
+    User
+} from 'lucide-vue-next';
+
+interface ApartmentType {
+    id: number;
+    name: string;
+    area_sqm: number;
+    bedrooms: number;
+    bathrooms: number;
+    has_balcony: boolean;
+    has_laundry_room: boolean;
+    has_maid_room: boolean;
+    coefficient: number;
+    administration_fee: number;
+}
+
+interface ConjuntoConfig {
+    id: number;
+    name: string;
+}
+
+interface Resident {
+    id: number;
+    first_name: string;
+    last_name: string;
+    document_type: string;
+    document_number: string;
+    email: string;
+    phone?: string;
+    mobile_phone?: string;
+    resident_type: 'Owner' | 'Tenant' | 'Family';
+    status: 'Active' | 'Inactive';
+    start_date: string;
+    end_date?: string;
+    full_name: string;
+}
+
+interface Apartment {
+    id: number;
+    number: string;
+    tower: string;
+    floor: number;
+    position_on_floor: number;
+    status: 'Available' | 'Occupied' | 'Maintenance' | 'Reserved';
+    monthly_fee: number;
+    utilities?: Record<string, boolean>;
+    features?: Record<string, boolean>;
+    notes?: string;
+    apartment_type: ApartmentType;
+    conjunto_config: ConjuntoConfig;
+    residents: Resident[];
+    full_address: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface Statistics {
+    total_residents: number;
+    active_residents: number;
+    owners: number;
+    tenants: number;
+}
+
+const props = defineProps<{
+    apartment: Apartment;
+    statistics: Statistics;
+}>();
+
+const formatDate = (date: string | null) => {
+    if (!date) return null;
+    return new Date(date).toLocaleDateString('es-CO', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+};
+
+const formatDateTime = (dateTime: string | null) => {
+    if (!dateTime) return null;
+    return new Date(dateTime).toLocaleString('es-CO', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0
+    }).format(value);
+};
+
+const getStatusLabel = (status: string) => {
+    const labels = {
+        'Available': 'Disponible',
+        'Occupied': 'Ocupado',
+        'Maintenance': 'Mantenimiento',
+        'Reserved': 'Reservado'
+    };
+    return labels[status] || status;
+};
+
+const getStatusColor = (status: string) => {
+    const colors = {
+        'Available': 'bg-green-100 text-green-800',
+        'Occupied': 'bg-blue-100 text-blue-800',
+        'Maintenance': 'bg-yellow-100 text-yellow-800',
+        'Reserved': 'bg-purple-100 text-purple-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+};
+
+const getResidentTypeLabel = (type: string) => {
+    const labels = {
+        'Owner': 'Propietario',
+        'Tenant': 'Arrendatario',
+        'Family': 'Familiar'
+    };
+    return labels[type] || type;
+};
+
+const getResidentTypeColor = (type: string) => {
+    const colors = {
+        'Owner': 'bg-green-100 text-green-800',
+        'Tenant': 'bg-blue-100 text-blue-800',
+        'Family': 'bg-yellow-100 text-yellow-800'
+    };
+    return colors[type] || 'bg-gray-100 text-gray-800';
+};
+
+const getInitials = (name: string) => {
+    return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
+};
+
+// Breadcrumbs
+const breadcrumbs = [
+    { title: 'Escritorio', href: '/dashboard' },
+    { title: 'Apartamentos', href: '/apartments' },
+    { title: props.apartment.full_address, href: `/apartments/${props.apartment.id}` },
+];
+</script>
+
+<template>
+    <Head :title="apartment.full_address" />
+
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="space-y-1">
+                    <h1 class="text-3xl font-bold tracking-tight">
+                        {{ apartment.full_address }}
+                    </h1>
+                    <div class="flex items-center gap-3">
+                        <Badge :class="getStatusColor(apartment.status)">
+                            {{ getStatusLabel(apartment.status) }}
+                        </Badge>
+                        <Badge variant="outline">
+                            {{ apartment.apartment_type.name }}
+                        </Badge>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <Link href="/apartments">
+                        <Button variant="outline" class="gap-2">
+                            <ArrowLeft class="h-4 w-4" />
+                            Volver
+                        </Button>
+                    </Link>
+                    <Link :href="`/apartments/${apartment.id}/edit`">
+                        <Button class="gap-2">
+                            <Edit class="h-4 w-4" />
+                            Editar
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Información del Apartamento -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <Home class="h-5 w-5" />
+                            Información del Apartamento
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="space-y-6">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="flex items-center gap-3">
+                                <Building class="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p class="text-sm font-medium text-muted-foreground">Conjunto</p>
+                                    <p class="text-base">{{ apartment.conjunto_config.name }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <MapPin class="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p class="text-sm font-medium text-muted-foreground">Ubicación</p>
+                                    <p class="text-base">Torre {{ apartment.tower }} - Piso {{ apartment.floor }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <Home class="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p class="text-sm font-medium text-muted-foreground">Número</p>
+                                    <p class="text-base font-medium">{{ apartment.number }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <Settings class="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p class="text-sm font-medium text-muted-foreground">Posición en piso</p>
+                                    <p class="text-base">{{ apartment.position_on_floor }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <DollarSign class="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p class="text-sm font-medium text-muted-foreground">Cuota mensual</p>
+                                    <p class="text-base font-medium">{{ formatCurrency(apartment.monthly_fee) }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="apartment.notes">
+                            <Separator class="my-4" />
+                            <div class="flex items-start gap-3">
+                                <FileText class="h-5 w-5 text-muted-foreground mt-1" />
+                                <div>
+                                    <p class="text-sm font-medium text-muted-foreground">Notas</p>
+                                    <p class="text-base whitespace-pre-line">{{ apartment.notes }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Características del Tipo -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <Building class="h-5 w-5" />
+                            Características del Tipo
+                        </CardTitle>
+                        <CardDescription>
+                            {{ apartment.apartment_type.name }}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                                <p class="text-2xl font-bold text-primary">{{ apartment.apartment_type.area_sqm }}</p>
+                                <p class="text-sm text-muted-foreground">m² área</p>
+                            </div>
+                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                                <p class="text-2xl font-bold text-primary">{{ apartment.apartment_type.bedrooms }}</p>
+                                <p class="text-sm text-muted-foreground">habitaciones</p>
+                            </div>
+                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                                <p class="text-2xl font-bold text-primary">{{ apartment.apartment_type.bathrooms }}</p>
+                                <p class="text-sm text-muted-foreground">baños</p>
+                            </div>
+                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                                <p class="text-2xl font-bold text-primary">{{ (apartment.apartment_type.coefficient * 100).toFixed(2) }}%</p>
+                                <p class="text-sm text-muted-foreground">coeficiente</p>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground mb-3">Características</p>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.apartment_type.has_balcony ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Balcón</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.apartment_type.has_laundry_room ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Zona de lavado</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.apartment_type.has_maid_room ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Cuarto de servicio</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="apartment.utilities">
+                                <p class="text-sm font-medium text-muted-foreground mb-3">Servicios Públicos</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.water ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Agua</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.electricity ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Electricidad</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.gas ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Gas</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.internet ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Internet</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="apartment.features">
+                                <p class="text-sm font-medium text-muted-foreground mb-3">Características Adicionales</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.parking ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Parqueadero</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.storage ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Depósito</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.pets_allowed ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Mascotas permitidas</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.furnished ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <span class="text-sm">Amoblado</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Residentes -->
+                <Card class="lg:col-span-2">
+                    <CardHeader>
+                        <div class="flex items-center justify-between">
+                            <CardTitle class="flex items-center gap-2">
+                                <Users class="h-5 w-5" />
+                                Residentes
+                            </CardTitle>
+                            <Link :href="`/residents/create?apartment_id=${apartment.id}`">
+                                <Button variant="outline" size="sm" class="gap-2">
+                                    <UserPlus class="h-4 w-4" />
+                                    Agregar Residente
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div v-if="apartment.residents && apartment.residents.length > 0" class="space-y-4">
+                            <div
+                                v-for="resident in apartment.residents"
+                                :key="resident.id"
+                                class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                            >
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-medium text-primary">{{ getInitials(resident.full_name) }}</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium">{{ resident.full_name }}</h4>
+                                        <p class="text-sm text-muted-foreground">{{ resident.email }}</p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <Badge :class="getResidentTypeColor(resident.resident_type)" class="text-xs">
+                                                {{ getResidentTypeLabel(resident.resident_type) }}
+                                            </Badge>
+                                            <Badge :class="resident.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="text-xs">
+                                                {{ resident.status === 'Active' ? 'Activo' : 'Inactivo' }}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <Link :href="`/residents/${resident.id}`">
+                                        <Button variant="outline" size="sm" class="gap-2">
+                                            <Eye class="h-4 w-4" />
+                                            Ver
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div v-else class="text-center py-12">
+                            <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Users class="w-8 h-8 text-muted-foreground" />
+                            </div>
+                            <h3 class="text-lg font-medium mb-2">No hay residentes</h3>
+                            <p class="text-muted-foreground mb-4">Este apartamento no tiene residentes asignados</p>
+                            <Link :href="`/residents/create?apartment_id=${apartment.id}`">
+                                <Button class="gap-2">
+                                    <UserPlus class="h-4 w-4" />
+                                    Agregar Primer Residente
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Estadísticas -->
+                <Card class="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle class="flex items-center gap-2">
+                            <FileText class="h-5 w-5" />
+                            Estadísticas y Detalles
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                                <p class="text-2xl font-bold text-blue-600">{{ statistics.total_residents }}</p>
+                                <p class="text-sm text-muted-foreground">Total Residentes</p>
+                            </div>
+                            <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <p class="text-2xl font-bold text-green-600">{{ statistics.active_residents }}</p>
+                                <p class="text-sm text-muted-foreground">Activos</p>
+                            </div>
+                            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                <p class="text-2xl font-bold text-purple-600">{{ statistics.owners }}</p>
+                                <p class="text-sm text-muted-foreground">Propietarios</p>
+                            </div>
+                            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                                <p class="text-2xl font-bold text-orange-600">{{ statistics.tenants }}</p>
+                                <p class="text-sm text-muted-foreground">Arrendatarios</p>
+                            </div>
+                        </div>
+
+                        <Separator class="my-4" />
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Fecha de creación:</span>
+                                <span>{{ formatDateTime(apartment.created_at) }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Última actualización:</span>
+                                <span>{{ formatDateTime(apartment.updated_at) }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">Tarifa de administración:</span>
+                                <span class="font-medium">{{ formatCurrency(apartment.apartment_type.administration_fee) }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-muted-foreground">ID del apartamento:</span>
+                                <span class="font-mono">{{ apartment.id }}</span>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    </AppLayout>
+</template>

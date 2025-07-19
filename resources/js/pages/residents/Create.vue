@@ -163,6 +163,7 @@ const formProgress = computed(() => {
             const value = form[field];
             if (typeof value === 'boolean') return true;
             if (Array.isArray(value)) return value.length > 0;
+            if (typeof value === 'number') return value > 0;
             return value && value.toString().trim() !== '';
         }).length;
     }, 0);
@@ -200,10 +201,23 @@ const availableFloors = computed(() => {
 });
 
 // Methods for apartment selection
+const getDisplayNumber = (apartment) => {
+    // For format like 4101, 4102, 1201, 1202, return the number as-is
+    // since it's already in the correct format (tower + floor + position)
+    return apartment.number.toString();
+};
+
 const findApartmentByNumber = () => {
     if (!directApartmentNumber.value || !props.apartments) return;
     
-    const apartment = props.apartments.find(apt => apt.number === directApartmentNumber.value);
+    const searchNumber = directApartmentNumber.value.trim();
+    
+    // Find apartment by exact number match or by display number
+    const apartment = props.apartments.find(apt => 
+        apt.number === searchNumber || 
+        getDisplayNumber(apt) === searchNumber
+    );
+    
     if (apartment) {
         form.apartment_id = apartment.id;
         selectedTower.value = apartment.tower;
@@ -222,7 +236,7 @@ const filterApartments = () => {
     }
     
     if (selectedFloor.value) {
-        filtered = filtered.filter(apt => apt.floor === selectedFloor.value);
+        filtered = filtered.filter(apt => apt.floor == selectedFloor.value);
     }
     
     filteredApartments.value = filtered.sort((a, b) => a.number.localeCompare(b.number));
@@ -235,6 +249,11 @@ const filterApartments = () => {
         }
     }
 };
+
+// Initialize filtered apartments on component mount
+if (props.apartments) {
+    filterApartments();
+}
 
 // Watch for changes in apartment selection
 watch(() => form.apartment_id, (newId) => {
@@ -255,6 +274,7 @@ const validateStep = (stepIndex: number): boolean => {
         const value = form[field];
         if (typeof value === 'boolean') return true;
         if (Array.isArray(value)) return value.length > 0;
+        if (typeof value === 'number') return value > 0;
         return value && value.toString().trim() !== '';
     });
 };
@@ -780,9 +800,9 @@ const statusOptions = [
                                                             :value="apartment.id"
                                                         >
                                                             <div class="flex flex-col">
-                                                                <span>{{ apartment.number }}</span>
+                                                                <span>{{ getDisplayNumber(apartment) }}</span>
                                                                 <span class="text-xs text-muted-foreground">
-                                                                    {{ apartment.apartment_type?.display_name }}
+                                                                    {{ apartment.apartment_type?.name }}
                                                                 </span>
                                                             </div>
                                                         </SelectItem>
