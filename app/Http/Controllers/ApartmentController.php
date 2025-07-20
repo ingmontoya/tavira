@@ -44,6 +44,33 @@ class ApartmentController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        // Append payment status badge to each apartment
+        $apartments->getCollection()->transform(function ($apartment) {
+            $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+            return $apartment;
+        });
+
+        // Payment statistics
+        $totalApartments = Apartment::count();
+        $currentPayments = Apartment::where('payment_status', 'current')->count();
+        $overdue30 = Apartment::where('payment_status', 'overdue_30')->count();
+        $overdue60 = Apartment::where('payment_status', 'overdue_60')->count();
+        $overdue90 = Apartment::where('payment_status', 'overdue_90')->count();
+        $overdue90Plus = Apartment::where('payment_status', 'overdue_90_plus')->count();
+        $totalDelinquent = $overdue30 + $overdue60 + $overdue90 + $overdue90Plus;
+
+        $paymentStats = [
+            'total' => $totalApartments,
+            'current' => $currentPayments,
+            'overdue_30' => $overdue30,
+            'overdue_60' => $overdue60,
+            'overdue_90' => $overdue90,
+            'overdue_90_plus' => $overdue90Plus,
+            'total_delinquent' => $totalDelinquent,
+            'current_percentage' => $totalApartments > 0 ? round(($currentPayments / $totalApartments) * 100, 1) : 0,
+            'delinquent_percentage' => $totalApartments > 0 ? round(($totalDelinquent / $totalApartments) * 100, 1) : 0,
+        ];
+
         // Get filter options
         $conjunto = ConjuntoConfig::first();
         $apartmentTypes = ApartmentType::all();
@@ -59,6 +86,7 @@ class ApartmentController extends Controller
             'towers' => $towers,
             'floors' => $floors,
             'statuses' => $statuses,
+            'paymentStats' => $paymentStats,
         ]);
     }
 
@@ -200,5 +228,38 @@ class ApartmentController extends Controller
 
         return redirect()->route('apartments.index')
             ->with('success', 'Apartamento eliminado exitosamente');
+    }
+
+    /**
+     * Display delinquent apartments grouped by tower
+     */
+    public function delinquent()
+    {
+        $delinquentApartments = Apartment::with(['apartmentType', 'residents'])
+            ->delinquent()
+            ->orderBy('tower')
+            ->orderBy('payment_status')
+            ->orderBy('floor')
+            ->orderBy('position_on_floor')
+            ->get()
+            ->map(function ($apartment) {
+                $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+                return $apartment;
+            })
+            ->groupBy('tower');
+
+        $stats = [
+            'total_delinquent' => Apartment::delinquent()->count(),
+            'overdue_30' => Apartment::byPaymentStatus('overdue_30')->count(),
+            'overdue_60' => Apartment::byPaymentStatus('overdue_60')->count(),
+            'overdue_90' => Apartment::byPaymentStatus('overdue_90')->count(),
+            'overdue_90_plus' => Apartment::byPaymentStatus('overdue_90_plus')->count(),
+        ];
+
+        return Inertia::render('apartments/Delinquent', [
+            'delinquentApartments' => $delinquentApartments,
+            'stats' => $stats,
+            'cutoffDate' => now()->subMonth()->endOfMonth()->format('Y-m-d'),
+        ]);
     }
 }

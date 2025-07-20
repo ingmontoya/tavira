@@ -58,6 +58,13 @@ export interface Apartment {
     position_on_floor: number
     status: 'Available' | 'Occupied' | 'Maintenance' | 'Reserved'
     monthly_fee: number
+    payment_status: 'current' | 'overdue_30' | 'overdue_60' | 'overdue_90' | 'overdue_90_plus'
+    payment_status_badge: {
+        text: string
+        class: string
+    }
+    outstanding_balance: number
+    last_payment_date: string | null
     apartment_type: {
         id: number
         name: string
@@ -110,6 +117,17 @@ const props = defineProps<{
         floor?: string
         status?: string
         apartment_type_id?: string
+    }
+    paymentStats: {
+        total: number
+        current: number
+        overdue_30: number
+        overdue_60: number
+        overdue_90: number
+        overdue_90_plus: number
+        total_delinquent: number
+        current_percentage: number
+        delinquent_percentage: number
     }
 }>()
 
@@ -298,6 +316,17 @@ const columns = [
             return h('span', {
                 class: `inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(status)}`
             }, getStatusLabel(status))
+        },
+    }),
+    columnHelper.display({
+        id: 'payment_status',
+        header: 'Estado de Pago',
+        cell: ({ row }) => {
+            const apartment = row.original
+            const badge = apartment.payment_status_badge
+            return h('span', {
+                class: `inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${badge.class}`
+            }, badge.text)
         },
     }),
     columnHelper.accessor('monthly_fee', {
@@ -531,6 +560,45 @@ const breadcrumbs = [
                 </div>
             </Card>
 
+            <!-- Payment Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                <Card class="p-4">
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium text-muted-foreground">Total Apartamentos</div>
+                        <div class="text-2xl font-bold">{{ paymentStats.total }}</div>
+                    </div>
+                </Card>
+                
+                <Card class="p-4">
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium text-muted-foreground">Al Día</div>
+                        <div class="text-2xl font-bold text-green-600">{{ paymentStats.current }}</div>
+                        <div class="text-xs text-muted-foreground">{{ paymentStats.current_percentage }}%</div>
+                    </div>
+                </Card>
+                
+                <Card class="p-4">
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium text-muted-foreground">30 días</div>
+                        <div class="text-2xl font-bold text-yellow-600">{{ paymentStats.overdue_30 }}</div>
+                    </div>
+                </Card>
+                
+                <Card class="p-4">
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium text-muted-foreground">60-90 días</div>
+                        <div class="text-2xl font-bold text-orange-600">{{ paymentStats.overdue_60 + paymentStats.overdue_90 }}</div>
+                    </div>
+                </Card>
+                
+                <Card class="p-4">
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium text-muted-foreground">+90 días</div>
+                        <div class="text-2xl font-bold text-red-600">{{ paymentStats.overdue_90_plus }}</div>
+                    </div>
+                </Card>
+            </div>
+
             <div class="flex gap-2 items-center py-4">
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
@@ -551,6 +619,11 @@ const breadcrumbs = [
                     </DropdownMenuContent>
                 </DropdownMenu>
 
+                <Button @click="router.visit('/apartments-delinquent')" variant="outline">
+                    <Building class="mr-2 h-4 w-4" />
+                    Listado de Morosos
+                </Button>
+                
                 <Button @click="router.visit('/apartments/create')">
                     <Plus class="mr-2 h-4 w-4" />
                     Nuevo Apartamento

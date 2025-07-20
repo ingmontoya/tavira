@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Apartments Management
     Route::resource('apartments', ApartmentController::class);
+    Route::get('apartments-delinquent', [ApartmentController::class, 'delinquent'])->name('apartments.delinquent');
 
     // Finance Management
     Route::get('finances', function () {
