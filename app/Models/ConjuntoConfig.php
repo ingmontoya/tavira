@@ -44,7 +44,7 @@ class ConjuntoConfig extends Model
         if ($this->tower_names && is_array($this->tower_names)) {
             return $this->tower_names;
         }
-        
+
         // Generate default tower names (1, 2, 3, ...)
         return range(1, $this->number_of_towers);
     }
@@ -56,7 +56,7 @@ class ConjuntoConfig extends Model
 
     public function generateApartments(): void
     {
-        if (!$this->canGenerateApartments()) {
+        if (! $this->canGenerateApartments()) {
             throw new \Exception('No se pueden generar apartamentos sin tipos de apartamento definidos.');
         }
 
@@ -65,21 +65,21 @@ class ConjuntoConfig extends Model
 
         for ($towerIndex = 0; $towerIndex < $this->number_of_towers; $towerIndex++) {
             $towerName = $towerNames[$towerIndex] ?? ($towerIndex + 1);
-            
+
             for ($floor = 1; $floor <= $this->floors_per_tower; $floor++) {
                 for ($position = 1; $position <= $this->apartments_per_floor; $position++) {
-                    $apartmentNumber = $towerName . $floor . sprintf('%02d', $position);
-                    
+                    $apartmentNumber = $towerName.$floor.sprintf('%02d', $position);
+
                     // Select apartment type based on position or random
                     $apartmentType = $apartmentTypes->random();
-                    
+
                     // Check if apartment already exists
                     $existingApartment = $this->apartments()
                         ->where('number', $apartmentNumber)
                         ->where('tower', $towerName)
                         ->first();
-                    
-                    if (!$existingApartment) {
+
+                    if (! $existingApartment) {
                         $this->apartments()->create([
                             'apartment_type_id' => $apartmentType->id,
                             'number' => $apartmentNumber,

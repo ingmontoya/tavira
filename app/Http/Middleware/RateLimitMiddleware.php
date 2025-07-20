@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class RateLimitMiddleware
@@ -19,22 +18,22 @@ class RateLimitMiddleware
     {
         $limitType = $args[0] ?? 'default';
         $key = $this->resolveRequestSignature($request, $limitType);
-        
+
         $limits = $this->getLimits($limitType);
-        
+
         foreach ($limits as $limit) {
             if (RateLimiter::tooManyAttempts($key, $limit['attempts'])) {
                 return $this->buildResponse($key, $limit['attempts']);
             }
         }
-        
+
         RateLimiter::hit($key, $limits[0]['decay']);
-        
+
         $response = $next($request);
-        
+
         return $this->addHeaders($response, $key, $limits[0]['attempts']);
     }
-    
+
     /**
      * Resolve the request signature.
      */
@@ -42,7 +41,7 @@ class RateLimitMiddleware
     {
         $ip = $request->ip();
         $route = $request->route()?->getName() ?? $request->path();
-        
+
         return match ($limitType) {
             'api' => "api:{$ip}:{$route}",
             'auth' => "auth:{$ip}",
@@ -52,7 +51,7 @@ class RateLimitMiddleware
             default => "general:{$ip}:{$route}",
         };
     }
-    
+
     /**
      * Get rate limits for the given type.
      */
@@ -79,14 +78,14 @@ class RateLimitMiddleware
             ],
         };
     }
-    
+
     /**
      * Create a 'too many attempts' response.
      */
     protected function buildResponse(string $key, int $maxAttempts): Response
     {
         $retryAfter = RateLimiter::availableIn($key);
-        
+
         return response()->json([
             'message' => 'Too many attempts. Please try again later.',
             'retry_after' => $retryAfter,
@@ -96,7 +95,7 @@ class RateLimitMiddleware
             'Retry-After' => $retryAfter,
         ]);
     }
-    
+
     /**
      * Add rate limit headers to the response.
      */
@@ -106,7 +105,7 @@ class RateLimitMiddleware
             'X-RateLimit-Limit' => $maxAttempts,
             'X-RateLimit-Remaining' => RateLimiter::remaining($key, $maxAttempts),
         ]);
-        
+
         return $response;
     }
 }

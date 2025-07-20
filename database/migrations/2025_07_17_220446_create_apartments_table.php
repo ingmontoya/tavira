@@ -25,7 +25,7 @@ return new class extends Migration
             $table->json('features')->nullable(); // Specific features for this apartment
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->unique(['conjunto_config_id', 'tower', 'number']);
             $table->index(['conjunto_config_id', 'tower', 'floor']);
             $table->index(['apartment_type_id', 'status']);

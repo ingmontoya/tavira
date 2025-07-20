@@ -29,7 +29,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->json('documents')->nullable();
             $table->timestamps();
-            
+
             $table->index(['apartment_number', 'tower']);
             $table->index(['status', 'resident_type']);
         });

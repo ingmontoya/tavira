@@ -1,25 +1,16 @@
 <?php
 
-use App\Http\Controllers\Student;
-use App\Http\Controllers\Program;
-use App\Http\Controllers\Semester;
-use App\Http\Controllers\StudyPlanController;
-use App\Http\Controllers\PeriodController;
-use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\GroupController;
-use App\Http\Controllers\EnrollmentController;
-use App\Http\Controllers\ReportsController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\ApartmentController;
 use App\Http\Controllers\ConjuntoConfigController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\ResidentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
-
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -50,6 +41,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Apartments Management
     Route::resource('apartments', ApartmentController::class);
     Route::get('apartments-delinquent', [ApartmentController::class, 'delinquent'])->name('apartments.delinquent');
+    Route::get('apartments-delinquent/export-excel', [ApartmentController::class, 'exportDelinquentExcel'])->name('apartments.delinquent.export.excel');
+    Route::get('apartments-delinquent/export-pdf', [ApartmentController::class, 'exportDelinquentPdf'])->name('apartments.delinquent.export.pdf');
 
     // Finance Management
     Route::get('finances', function () {

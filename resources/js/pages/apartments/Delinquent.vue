@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
-import { computed } from 'vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { router } from '@inertiajs/vue3'
-import { ArrowLeft, Building2, Users, Calendar } from 'lucide-vue-next'
+import { ArrowLeft, Building2, Users, FileSpreadsheet, FileText } from 'lucide-vue-next'
 
 interface Apartment {
     id: number
@@ -39,7 +38,7 @@ interface Apartment {
     full_address: string
 }
 
-const props = defineProps<{
+defineProps<{
     delinquentApartments: Record<string, Apartment[]>
     stats: {
         total_delinquent: number
@@ -78,6 +77,14 @@ const breadcrumbs = [
         href: '/apartments-delinquent',
     },
 ]
+
+const exportToExcel = () => {
+    window.open('/apartments-delinquent/export-excel', '_blank')
+}
+
+const exportToPdf = () => {
+    window.open('/apartments-delinquent/export-pdf', '_blank')
+}
 </script>
 
 <template>
@@ -98,6 +105,18 @@ const breadcrumbs = [
                     <p class="text-muted-foreground">
                         Apartamentos con pagos pendientes (corte {{ formatDate(cutoffDate) }})
                     </p>
+                </div>
+                
+                <!-- Export Actions -->
+                <div class="flex items-center gap-2">
+                    <Button @click="exportToExcel" variant="outline" size="sm">
+                        <FileSpreadsheet class="h-4 w-4 mr-2" />
+                        Exportar Excel
+                    </Button>
+                    <Button @click="exportToPdf" variant="outline" size="sm">
+                        <FileText class="h-4 w-4 mr-2" />
+                        Exportar PDF
+                    </Button>
                 </div>
             </div>
 

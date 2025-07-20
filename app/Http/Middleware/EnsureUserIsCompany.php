@@ -16,13 +16,13 @@ class EnsureUserIsCompany
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
-        
-        if (!$user->isCompany()) {
+
+        if (! $user->isCompany()) {
             abort(403, 'Solo usuarios empresa pueden realizar esta acción.');
         }
 

@@ -33,7 +33,6 @@ class Apartment extends Model
         'outstanding_balance' => 'decimal:2',
     ];
 
-
     public function conjuntoConfig(): BelongsTo
     {
         return $this->belongsTo(ConjuntoConfig::class);
@@ -87,12 +86,12 @@ class Apartment extends Model
     public function updatePaymentStatus(): void
     {
         $lastMonth = now()->subMonth()->endOfMonth();
-        
-        if (!$this->last_payment_date || $this->last_payment_date->lt($lastMonth)) {
-            $daysSinceLastPayment = $this->last_payment_date 
+
+        if (! $this->last_payment_date || $this->last_payment_date->lt($lastMonth)) {
+            $daysSinceLastPayment = $this->last_payment_date
                 ? $this->last_payment_date->diffInDays($lastMonth)
                 : 999;
-            
+
             if ($daysSinceLastPayment >= 90) {
                 $this->payment_status = 'overdue_90_plus';
             } elseif ($daysSinceLastPayment >= 60) {
@@ -105,25 +104,26 @@ class Apartment extends Model
         } else {
             $this->payment_status = 'current';
         }
-        
+
         $this->save();
     }
 
     public function getDaysOverdueAttribute(): int
     {
-        if (!$this->last_payment_date) {
+        if (! $this->last_payment_date) {
             return 999;
         }
-        
+
         $lastMonth = now()->subMonth()->endOfMonth();
-        return $this->last_payment_date->lt($lastMonth) 
+
+        return $this->last_payment_date->lt($lastMonth)
             ? $this->last_payment_date->diffInDays($lastMonth)
             : 0;
     }
 
     public function getPaymentStatusBadgeAttribute(): array
     {
-        return match($this->payment_status) {
+        return match ($this->payment_status) {
             'current' => ['text' => 'Al día', 'class' => 'bg-green-100 text-green-800'],
             'overdue_30' => ['text' => '30 días', 'class' => 'bg-yellow-100 text-yellow-800'],
             'overdue_60' => ['text' => '60 días', 'class' => 'bg-orange-100 text-orange-800'],

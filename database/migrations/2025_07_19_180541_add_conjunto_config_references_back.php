@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -24,7 +24,7 @@ return new class extends Migration
             'configuration_metadata' => json_encode([
                 'address' => 'Carrera 15 #85-23, Bogotá',
                 'phone' => '601-234-5678',
-                'email' => 'administracion@vistahermosa.com'
+                'email' => 'administracion@vistahermosa.com',
             ]),
             'created_at' => now(),
             'updated_at' => now(),

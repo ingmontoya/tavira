@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Apartment;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PaymentStatusSeeder extends Seeder
@@ -14,10 +13,10 @@ class PaymentStatusSeeder extends Seeder
     public function run(): void
     {
         $apartments = Apartment::all();
-        
+
         foreach ($apartments as $apartment) {
             $rand = rand(1, 100);
-            
+
             if ($rand <= 70) {
                 // 70% current payments
                 $apartment->update([

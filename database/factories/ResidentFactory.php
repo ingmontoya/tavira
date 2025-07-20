@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Resident;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ResidentFactory extends Factory
 {
@@ -33,7 +33,7 @@ class ResidentFactory extends Factory
                 'id_copy.pdf',
                 'contract.pdf',
                 'authorization.pdf',
-                'proof_of_income.pdf'
+                'proof_of_income.pdf',
             ], $this->faker->numberBetween(0, 3)),
         ];
     }

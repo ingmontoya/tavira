@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -34,20 +33,20 @@ class RolePermissionSeeder extends Seeder
             'create_groups',
             'edit_groups',
             'delete_groups',
-            
+
             // Enrollment Management
             'view_enrollments',
             'create_enrollments',
             'edit_enrollments',
             'delete_enrollments',
             'view_academic_history',
-            
+
             // Student Management
             'view_students',
             'create_students',
             'edit_students',
             'delete_students',
-            
+
             // User Management
             'view_users',
             'create_users',
@@ -69,7 +68,7 @@ class RolePermissionSeeder extends Seeder
 
         // Assign permissions to roles
         $superadmin->givePermissionTo(Permission::all());
-        
+
         $academic_director->givePermissionTo([
             'view_programs', 'create_programs', 'edit_programs',
             'view_study_plans', 'create_study_plans', 'edit_study_plans',
@@ -80,14 +79,14 @@ class RolePermissionSeeder extends Seeder
             'view_students', 'create_students', 'edit_students',
             'view_academic_history',
         ]);
-        
+
         $teacher->givePermissionTo([
             'view_groups',
             'view_enrollments',
             'view_students',
             'view_academic_history',
         ]);
-        
+
         $student->givePermissionTo([
             'view_academic_history',
         ]);

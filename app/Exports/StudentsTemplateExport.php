@@ -3,12 +3,12 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StudentsTemplateExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths
+class StudentsTemplateExport implements FromArray, WithColumnWidths, WithHeadings, WithStyles
 {
     public function array(): array
     {
@@ -33,7 +33,7 @@ class StudentsTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
                 'Medellín',              // city
                 'Calle 123 # 45-67',     // address
                 'active',                // initial_status (active/inactive/graduated/suspended)
-                'Colombia'               // country
+                'Colombia',               // country
             ],
             [
                 '202012346',
@@ -55,8 +55,8 @@ class StudentsTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
                 'Bogotá',
                 'Carrera 15 # 85-20',
                 'active',
-                'Colombia'
-            ]
+                'Colombia',
+            ],
         ];
     }
 
@@ -82,7 +82,7 @@ class StudentsTemplateExport implements FromArray, WithHeadings, WithStyles, Wit
             'city',                // Ciudad
             'address',             // Dirección
             'initial_status',      // Estado inicial (active/inactive/graduated/suspended)
-            'country'              // País
+            'country',              // País
         ];
     }
 

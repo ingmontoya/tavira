@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Resident;
 use App\Models\Apartment;
+use App\Models\Resident;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
 
 class ResidentController extends Controller
 {
@@ -23,12 +23,12 @@ class ResidentController extends Controller
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('document_number', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhereHas('apartment', function ($apartmentQuery) use ($search) {
-                      $apartmentQuery->where('number', 'like', "%{$search}%");
-                  });
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('document_number', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('apartment', function ($apartmentQuery) use ($search) {
+                        $apartmentQuery->where('number', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -44,18 +44,16 @@ class ResidentController extends Controller
             $query->byTower($request->get('tower'));
         }
 
-
         $residents = $query->orderBy('last_name')
-                          ->paginate(15)
-                          ->withQueryString();
-
+            ->paginate(15)
+            ->withQueryString();
 
         // Get towers for the single conjunto configuration
         $towers = Apartment::distinct()
-                          ->pluck('tower')
-                          ->filter()
-                          ->sort()
-                          ->values();
+            ->pluck('tower')
+            ->filter()
+            ->sort()
+            ->values();
 
         return Inertia::render('residents/Index', [
             'residents' => $residents,
@@ -68,13 +66,13 @@ class ResidentController extends Controller
     {
         // Get available apartments for the single conjunto configuration
         $apartments = Apartment::with('apartmentType')
-                              ->orderBy('tower')
-                              ->orderBy('floor')
-                              ->orderBy('number')
-                              ->get();
+            ->orderBy('tower')
+            ->orderBy('floor')
+            ->orderBy('number')
+            ->get();
 
         return Inertia::render('residents/Create', [
-            'apartments' => $apartments
+            'apartments' => $apartments,
         ]);
     }
 
@@ -106,7 +104,7 @@ class ResidentController extends Controller
 
         // Verify apartment exists (single conjunto application)
         $apartment = Apartment::find($validated['apartment_id']);
-        if (!$apartment) {
+        if (! $apartment) {
             return back()->withErrors(['apartment_id' => 'Apartamento no válido.']);
         }
 
@@ -127,14 +125,14 @@ class ResidentController extends Controller
         // Get available apartments for the single conjunto configuration
         // Since this is a single conjunto application, we get all apartments
         $apartments = Apartment::with('apartmentType')
-                              ->orderBy('tower')
-                              ->orderBy('floor')
-                              ->orderBy('number')
-                              ->get();
+            ->orderBy('tower')
+            ->orderBy('floor')
+            ->orderBy('number')
+            ->get();
 
         return Inertia::render('residents/Edit', [
             'resident' => $resident->load('apartment', 'apartment.apartmentType'),
-            'apartments' => $apartments
+            'apartments' => $apartments,
         ]);
     }
 
@@ -166,7 +164,7 @@ class ResidentController extends Controller
 
         // Verify apartment exists (single conjunto application)
         $apartment = Apartment::find($validated['apartment_id']);
-        if (!$apartment) {
+        if (! $apartment) {
             return back()->withErrors(['apartment_id' => 'Apartamento no válido.']);
         }
 

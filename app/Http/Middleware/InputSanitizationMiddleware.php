@@ -16,22 +16,22 @@ class InputSanitizationMiddleware
     {
         $this->sanitizeInput($request);
         $this->validateInput($request);
-        
+
         return $next($request);
     }
-    
+
     /**
      * Sanitize input data.
      */
     protected function sanitizeInput(Request $request): void
     {
         $input = $request->all();
-        
+
         $sanitized = $this->sanitizeArray($input);
-        
+
         $request->merge($sanitized);
     }
-    
+
     /**
      * Recursively sanitize array data.
      */
@@ -44,10 +44,10 @@ class InputSanitizationMiddleware
                 $data[$key] = $this->sanitizeString($value);
             }
         }
-        
+
         return $data;
     }
-    
+
     /**
      * Sanitize string input.
      */
@@ -55,26 +55,26 @@ class InputSanitizationMiddleware
     {
         // Remove null bytes
         $input = str_replace("\0", '', $input);
-        
+
         // Remove control characters except newlines and tabs
         $input = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $input);
-        
+
         // Trim whitespace
         $input = trim($input);
-        
+
         // Remove dangerous HTML tags but keep basic formatting
         $input = strip_tags($input, '<p><br><strong><em><ul><ol><li>');
-        
+
         return $input;
     }
-    
+
     /**
      * Validate input for potential security threats.
      */
     protected function validateInput(Request $request): void
     {
         $input = $request->all();
-        
+
         foreach ($input as $key => $value) {
             if (is_string($value)) {
                 $this->checkForSqlInjection($key, $value);
@@ -83,7 +83,7 @@ class InputSanitizationMiddleware
             }
         }
     }
-    
+
     /**
      * Check for SQL injection attempts.
      */
@@ -95,7 +95,7 @@ class InputSanitizationMiddleware
             '/;\s*--/i',
             '/\/\*.*?\*\//s',
         ];
-        
+
         foreach ($sqlPatterns as $pattern) {
             if (preg_match($pattern, $value)) {
                 Log::warning('Potential SQL injection attempt detected', [
@@ -108,7 +108,7 @@ class InputSanitizationMiddleware
             }
         }
     }
-    
+
     /**
      * Check for XSS attempts.
      */
@@ -121,7 +121,7 @@ class InputSanitizationMiddleware
             '/<iframe[^>]*>.*?<\/iframe>/is',
             '/expression\s*\(/i',
         ];
-        
+
         foreach ($xssPatterns as $pattern) {
             if (preg_match($pattern, $value)) {
                 Log::warning('Potential XSS attempt detected', [
@@ -134,7 +134,7 @@ class InputSanitizationMiddleware
             }
         }
     }
-    
+
     /**
      * Check for path traversal attempts.
      */
@@ -147,7 +147,7 @@ class InputSanitizationMiddleware
             '/\/proc\//',
             '/\/var\/log\//',
         ];
-        
+
         foreach ($pathPatterns as $pattern) {
             if (preg_match($pattern, $value)) {
                 Log::warning('Potential path traversal attempt detected', [

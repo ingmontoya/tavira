@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
-        
+
         // Register middleware aliases
         $middleware->alias([
             'rate.limit' => RateLimitMiddleware::class,

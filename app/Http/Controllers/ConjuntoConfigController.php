@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConjuntoConfig;
-use App\Models\ApartmentType;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class ConjuntoConfigController extends Controller
 {
@@ -30,8 +29,8 @@ class ConjuntoConfigController extends Controller
     public function edit()
     {
         $conjunto = ConjuntoConfig::with('apartmentTypes')->first();
-        
-        if (!$conjunto) {
+
+        if (! $conjunto) {
             // Create default configuration if none exists
             $conjunto = ConjuntoConfig::create([
                 'name' => 'Conjunto Residencial Vista Hermosa',
@@ -44,13 +43,13 @@ class ConjuntoConfigController extends Controller
                 'configuration_metadata' => [
                     'address' => 'Carrera 15 #85-23, Bogotá',
                     'phone' => '601-234-5678',
-                    'email' => 'administracion@vistahermosa.com'
+                    'email' => 'administracion@vistahermosa.com',
                 ],
             ]);
         }
-        
+
         return Inertia::render('ConjuntoConfig/Edit', [
-            'conjunto' => $conjunto
+            'conjunto' => $conjunto,
         ]);
     }
 
@@ -60,8 +59,8 @@ class ConjuntoConfigController extends Controller
     public function update(Request $request)
     {
         $conjunto = ConjuntoConfig::first();
-        
-        if (!$conjunto) {
+
+        if (! $conjunto) {
             return back()->withErrors(['error' => 'No se encontró la configuración del conjunto.']);
         }
 
@@ -101,7 +100,7 @@ class ConjuntoConfigController extends Controller
             if (isset($validated['apartment_types'])) {
                 // Delete existing apartment types for this conjunto
                 $conjunto->apartmentTypes()->delete();
-                
+
                 // Create new apartment types
                 foreach ($validated['apartment_types'] as $typeData) {
                     $conjunto->apartmentTypes()->create($typeData);
@@ -115,7 +114,8 @@ class ConjuntoConfigController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withErrors(['error' => 'Error al actualizar la configuración: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Error al actualizar la configuración: '.$e->getMessage()]);
         }
     }
 
@@ -125,24 +125,24 @@ class ConjuntoConfigController extends Controller
     public function generateApartments()
     {
         $conjunto = ConjuntoConfig::first();
-        
-        if (!$conjunto) {
+
+        if (! $conjunto) {
             return back()->withErrors(['error' => 'No se encontró la configuración del conjunto.']);
         }
 
         try {
-            if (!$conjunto->canGenerateApartments()) {
+            if (! $conjunto->canGenerateApartments()) {
                 return back()->withErrors(['error' => 'No se pueden generar apartamentos. Asegúrate de tener al menos un tipo de apartamento definido.']);
             }
-            
+
             // Generate apartments
             $conjunto->generateApartments();
-            
+
             $totalGenerated = $conjunto->estimated_apartments_count;
-            
-            return back()->with('success', "Se generaron apartamentos exitosamente según la configuración actual");
+
+            return back()->with('success', 'Se generaron apartamentos exitosamente según la configuración actual');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error al generar apartamentos: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error al generar apartamentos: '.$e->getMessage()]);
         }
     }
 
@@ -152,11 +152,11 @@ class ConjuntoConfigController extends Controller
     public function show()
     {
         $conjunto = ConjuntoConfig::with(['apartmentTypes', 'apartments.apartmentType'])->first();
-        
-        if (!$conjunto) {
+
+        if (! $conjunto) {
             return redirect()->route('conjunto-config.edit');
         }
-        
+
         // Group apartments by tower and floor for better visualization
         $apartmentsByTower = $conjunto->apartments
             ->groupBy('tower')
@@ -176,7 +176,7 @@ class ConjuntoConfigController extends Controller
                     return $type->area_sqm * $type->apartments->count();
                 }),
                 'monthly_fees_total' => $conjunto->apartments->sum('monthly_fee'),
-            ]
+            ],
         ]);
     }
 }

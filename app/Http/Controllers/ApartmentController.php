@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\DelinquentApartmentsExport;
 use App\Models\Apartment;
 use App\Models\ApartmentType;
 use App\Models\ConjuntoConfig;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ApartmentController extends Controller
 {
@@ -19,7 +22,7 @@ class ApartmentController extends Controller
 
         // Apply filters
         if ($request->filled('search')) {
-            $query->where('number', 'like', '%' . $request->search . '%');
+            $query->where('number', 'like', '%'.$request->search.'%');
         }
 
         if ($request->filled('tower')) {
@@ -47,6 +50,7 @@ class ApartmentController extends Controller
         // Append payment status badge to each apartment
         $apartments->getCollection()->transform(function ($apartment) {
             $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+
             return $apartment;
         });
 
@@ -156,7 +160,7 @@ class ApartmentController extends Controller
                 'active_residents' => $apartment->residents->where('status', 'Active')->count(),
                 'owners' => $apartment->residents->where('resident_type', 'Owner')->count(),
                 'tenants' => $apartment->residents->where('resident_type', 'Tenant')->count(),
-            ]
+            ],
         ]);
     }
 
@@ -244,6 +248,7 @@ class ApartmentController extends Controller
             ->get()
             ->map(function ($apartment) {
                 $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+
                 return $apartment;
             })
             ->groupBy('tower');
@@ -261,5 +266,54 @@ class ApartmentController extends Controller
             'stats' => $stats,
             'cutoffDate' => now()->subMonth()->endOfMonth()->format('Y-m-d'),
         ]);
+    }
+
+    /**
+     * Export delinquent apartments to Excel
+     */
+    public function exportDelinquentExcel()
+    {
+        $filename = 'morosos_'.now()->format('Y-m-d_H-i-s').'.xlsx';
+
+        return Excel::download(new DelinquentApartmentsExport, $filename);
+    }
+
+    /**
+     * Export delinquent apartments to PDF
+     */
+    public function exportDelinquentPdf()
+    {
+        $delinquentApartments = Apartment::with(['apartmentType', 'residents'])
+            ->delinquent()
+            ->orderBy('tower')
+            ->orderBy('payment_status')
+            ->orderBy('floor')
+            ->orderBy('position_on_floor')
+            ->get()
+            ->map(function ($apartment) {
+                $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+
+                return $apartment;
+            })
+            ->groupBy('tower');
+
+        $stats = [
+            'total_delinquent' => Apartment::delinquent()->count(),
+            'overdue_30' => Apartment::byPaymentStatus('overdue_30')->count(),
+            'overdue_60' => Apartment::byPaymentStatus('overdue_60')->count(),
+            'overdue_90' => Apartment::byPaymentStatus('overdue_90')->count(),
+            'overdue_90_plus' => Apartment::byPaymentStatus('overdue_90_plus')->count(),
+        ];
+
+        $pdf = Pdf::loadView('exports.delinquent-apartments-pdf', [
+            'delinquentApartments' => $delinquentApartments,
+            'stats' => $stats,
+            'cutoffDate' => now()->subMonth()->endOfMonth()->format('Y-m-d'),
+            'generatedAt' => now()->format('d/m/Y H:i:s'),
+        ]);
+
+        $filename = 'morosos_'.now()->format('Y-m-d_H-i-s').'.pdf';
+
+        return $pdf->download($filename);
     }
 }

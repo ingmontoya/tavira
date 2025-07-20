@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Resident;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Resident;
 
 class ResidentControllerTest extends TestCase
 {
@@ -28,7 +28,7 @@ class ResidentControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(function ($page) {
             $page->component('residents/Index')
-                 ->has('residents.data', 3);
+                ->has('residents.data', 3);
         });
     }
 
@@ -42,7 +42,7 @@ class ResidentControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(function ($page) {
             $page->has('residents.data', 1)
-                 ->where('residents.data.0.first_name', 'Juan');
+                ->where('residents.data.0.first_name', 'Juan');
         });
     }
 
@@ -56,7 +56,7 @@ class ResidentControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(function ($page) {
             $page->has('residents.data', 1)
-                 ->where('residents.data.0.status', 'Active');
+                ->where('residents.data.0.status', 'Active');
         });
     }
 
@@ -166,7 +166,7 @@ class ResidentControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(function ($page) use ($resident) {
             $page->component('residents/Show')
-                 ->where('resident.id', $resident->id);
+                ->where('resident.id', $resident->id);
         });
     }
 
@@ -179,7 +179,7 @@ class ResidentControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(function ($page) use ($resident) {
             $page->component('residents/Edit')
-                 ->where('resident.id', $resident->id);
+                ->where('resident.id', $resident->id);
         });
     }
 

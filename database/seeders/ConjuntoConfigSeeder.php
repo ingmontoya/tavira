@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ConjuntoConfig;
 use App\Models\ApartmentType;
+use App\Models\ConjuntoConfig;
 use Illuminate\Database\Seeder;
 
 class ConjuntoConfigSeeder extends Seeder
@@ -27,8 +27,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'architect' => 'Arquitectos Asociados S.A.',
                 'construction_year' => '2020',
                 'common_areas' => ['Piscina', 'Gimnasio', 'Salón Social', 'Parque Infantil', 'Cancha Múltiple'],
-                'security_features' => ['Portería 24/7', 'Circuito Cerrado', 'Control de Acceso']
-            ]
+                'security_features' => ['Portería 24/7', 'Circuito Cerrado', 'Control de Acceso'],
+            ],
         ]);
 
         // Apartment Type A - 86m²
@@ -49,8 +49,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'Cocina integral',
                 'Pisos en porcelanato',
                 'Ventanas con doble vidrio',
-                'Closets empotrados'
-            ]
+                'Closets empotrados',
+            ],
         ]);
 
         // Apartment Type B - 96m²
@@ -73,8 +73,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'Ventanas con doble vidrio',
                 'Closets empotrados',
                 'Cuarto de servicio con baño',
-                'Balcón amplio'
-            ]
+                'Balcón amplio',
+            ],
         ]);
 
         // Generate apartments for Villa Campestre
@@ -94,8 +94,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'architect' => 'Diseños Modernos Ltda.',
                 'construction_year' => '2018',
                 'common_areas' => ['Piscina', 'Salón Social', 'Parque Infantil'],
-                'security_features' => ['Portería', 'Circuito Cerrado']
-            ]
+                'security_features' => ['Portería', 'Circuito Cerrado'],
+            ],
         ]);
 
         // Apartment Type Único - 72m²
@@ -116,8 +116,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'Cocina integral',
                 'Pisos en cerámica',
                 'Closets empotrados',
-                'Balcón con vista'
-            ]
+                'Balcón con vista',
+            ],
         ]);
 
         // Generate apartments for Los Sauces
@@ -137,8 +137,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'architect' => 'Arquitectura Rural S.A.',
                 'construction_year' => '2019',
                 'common_areas' => ['Casa Club', 'Piscina', 'Cancha de Tenis', 'Senderos Ecológicos'],
-                'security_features' => ['Portería Principal', 'Rondas de Seguridad']
-            ]
+                'security_features' => ['Portería Principal', 'Rondas de Seguridad'],
+            ],
         ]);
 
         // House Type A - 120m²
@@ -161,8 +161,8 @@ class ConjuntoConfigSeeder extends Seeder
                 'Terraza cubierta',
                 'Cocina integral',
                 'Pisos en porcelanato',
-                'Cuarto de servicio'
-            ]
+                'Cuarto de servicio',
+            ],
         ]);
 
         // Generate houses for San Miguel
@@ -170,10 +170,10 @@ class ConjuntoConfigSeeder extends Seeder
 
         $this->command->info('ConjuntoConfigSeeder completed successfully!');
         $this->command->info('Created configurations for:');
-        $this->command->info('- Torres de Villa Campestre: ' . $villaCampestre->total_apartments . ' apartments');
-        $this->command->info('- Conjunto Los Sauces: ' . $losSauces->total_apartments . ' apartments');
-        $this->command->info('- Casas Campestres San Miguel: ' . $sanMiguel->total_apartments . ' houses');
-        $this->command->info('Total apartments/houses generated: ' . 
+        $this->command->info('- Torres de Villa Campestre: '.$villaCampestre->total_apartments.' apartments');
+        $this->command->info('- Conjunto Los Sauces: '.$losSauces->total_apartments.' apartments');
+        $this->command->info('- Casas Campestres San Miguel: '.$sanMiguel->total_apartments.' houses');
+        $this->command->info('Total apartments/houses generated: '.
             ($villaCampestre->total_apartments + $losSauces->total_apartments + $sanMiguel->total_apartments));
     }
 }

@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Settings\SecuritySettings;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Settings\SecuritySettings;
 
 class SecuritySettingsSeeder extends Seeder
 {
@@ -14,7 +13,7 @@ class SecuritySettingsSeeder extends Seeder
      */
     public function run(): void
     {
-        $settings = new SecuritySettings();
+        $settings = new SecuritySettings;
         $group = $settings::group();
         $defaults = $settings->toArray();
 
@@ -24,10 +23,10 @@ class SecuritySettingsSeeder extends Seeder
             DB::table($table)->updateOrInsert(
                 [
                     'group' => $group,
-                    'name'  => $name,
+                    'name' => $name,
                 ],
                 [
-                    'payload'    => json_encode($value),
+                    'payload' => json_encode($value),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]

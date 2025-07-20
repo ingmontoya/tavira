@@ -27,7 +27,7 @@ return new class extends Migration
             $table->json('floor_positions')->nullable(); // [1, 2] positions on each floor
             $table->json('features')->nullable(); // Additional features
             $table->timestamps();
-            
+
             $table->unique(['conjunto_config_id', 'name']);
         });
     }

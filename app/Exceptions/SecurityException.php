@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class SecurityException extends Exception
 {
     protected string $securityLevel;
+
     protected array $context;
 
     public function __construct(
@@ -18,10 +19,10 @@ class SecurityException extends Exception
         ?\Throwable $previous = null
     ) {
         parent::__construct($message, $code, $previous);
-        
+
         $this->securityLevel = $securityLevel;
         $this->context = $context;
-        
+
         $this->logSecurityEvent();
     }
 

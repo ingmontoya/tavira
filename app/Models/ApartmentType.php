@@ -35,7 +35,6 @@ class ApartmentType extends Model
         'features' => 'array',
     ];
 
-
     public function conjuntoConfig(): BelongsTo
     {
         return $this->belongsTo(ConjuntoConfig::class);
@@ -54,27 +53,27 @@ class ApartmentType extends Model
     public function getFeaturesSummaryAttribute(): string
     {
         $features = [];
-        
+
         if ($this->bedrooms) {
             $features[] = "{$this->bedrooms} hab";
         }
-        
+
         if ($this->bathrooms) {
             $features[] = "{$this->bathrooms} baños";
         }
-        
+
         if ($this->has_balcony) {
-            $features[] = "balcón";
+            $features[] = 'balcón';
         }
-        
+
         if ($this->has_laundry_room) {
-            $features[] = "lavandería";
+            $features[] = 'lavandería';
         }
-        
+
         if ($this->has_maid_room) {
-            $features[] = "cuarto servicio";
+            $features[] = 'cuarto servicio';
         }
-        
+
         return implode(', ', $features);
     }
 }

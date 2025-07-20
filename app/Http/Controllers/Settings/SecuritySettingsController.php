@@ -110,7 +110,7 @@ class SecuritySettingsController extends Controller
                     'uploads_scan_for_malware' => false,
                     'audit_log_requests' => false,
                     'sanitization_block_suspicious_input' => false,
-                ]
+                ],
             ],
             'medium' => [
                 'name' => 'Medio',
@@ -125,7 +125,7 @@ class SecuritySettingsController extends Controller
                     'uploads_scan_for_malware' => true,
                     'audit_log_requests' => true,
                     'sanitization_block_suspicious_input' => false,
-                ]
+                ],
             ],
             'high' => [
                 'name' => 'Alto',
@@ -141,7 +141,7 @@ class SecuritySettingsController extends Controller
                     'uploads_scan_for_malware' => true,
                     'audit_log_requests' => true,
                     'sanitization_block_suspicious_input' => true,
-                ]
+                ],
             ],
             'maximum' => [
                 'name' => 'Máximo',
@@ -162,7 +162,7 @@ class SecuritySettingsController extends Controller
                     'audit_log_responses' => true,
                     'sanitization_block_suspicious_input' => true,
                     'session_absolute_timeout' => 240, // 4 hours
-                ]
+                ],
             ],
         ];
     }
@@ -171,7 +171,7 @@ class SecuritySettingsController extends Controller
     {
         $levels = $this->getSecurityLevels();
 
-        if (!isset($levels[$level])) {
+        if (! isset($levels[$level])) {
             throw new \InvalidArgumentException("Invalid security level: {$level}");
         }
 
@@ -185,7 +185,6 @@ class SecuritySettingsController extends Controller
 
         $this->securitySettings->save();
     }
-
 
     private function parseCSPDirective(string $directive): array
     {
@@ -292,7 +291,7 @@ class SecuritySettingsController extends Controller
         ];
     }
 
-       /**
+    /**
      * Fuerza el guardado de todos los valores actuales de SecuritySettings en la base de datos.
      * Útil para inicializar o reparar el registro de settings si faltan propiedades.
      */
@@ -302,6 +301,7 @@ class SecuritySettingsController extends Controller
             $this->securitySettings->$key = $value;
         }
         $this->securitySettings->save();
+
         return back()->with('success', 'Todos los valores de seguridad han sido guardados forzadamente.');
     }
 }

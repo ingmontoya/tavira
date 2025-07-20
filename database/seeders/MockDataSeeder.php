@@ -2,21 +2,21 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
+use App\Models\Apartment;
 use App\Models\ApartmentType;
 use App\Models\ConjuntoConfig;
-use App\Models\Apartment;
 use App\Models\Resident;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class MockDataSeeder extends Seeder
 {
     public function run(): void
     {
         $faker = Faker::create('es_ES');
-        
+
         // Crear usuario administrador de ejemplo si no existe
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@habitta.com'],
@@ -28,7 +28,7 @@ class MockDataSeeder extends Seeder
 
         // Obtener el conjunto único
         $conjunto = ConjuntoConfig::first();
-        if (!$conjunto) {
+        if (! $conjunto) {
             throw new \Exception('No se encontró configuración del conjunto. Ejecute las migraciones primero.');
         }
 
@@ -100,7 +100,7 @@ class MockDataSeeder extends Seeder
             ApartmentType::firstOrCreate(
                 [
                     'name' => $typeData['name'],
-                    'conjunto_config_id' => $typeData['conjunto_config_id']
+                    'conjunto_config_id' => $typeData['conjunto_config_id'],
                 ],
                 $typeData
             );
@@ -116,7 +116,7 @@ class MockDataSeeder extends Seeder
     {
         $apartmentTypes = ApartmentType::where('conjunto_config_id', $conjunto->id)->get();
         $apartmentCount = 0;
-        
+
         // Usar la configuración del conjunto
         $numberOfTowers = $conjunto->number_of_towers;
         $floorsPerTower = $conjunto->floors_per_tower;
@@ -128,7 +128,7 @@ class MockDataSeeder extends Seeder
                 for ($apt = 1; $apt <= $apartmentsPerFloor; $apt++) {
                     $apartmentNumber = sprintf('%d%02d%02d', $tower, $floor, $apt);
                     $apartmentType = $apartmentTypes->random();
-                    
+
                     // Determinar estado del apartamento (80% ocupado, 15% disponible, 5% mantenimiento)
                     $statusRand = $faker->numberBetween(1, 100);
                     if ($statusRand <= 80) {
@@ -184,15 +184,15 @@ class MockDataSeeder extends Seeder
         // Crear 1-3 residentes por apartamento ocupado
         $residentCount = $faker->numberBetween(1, 3);
         $residentTypes = ['Owner', 'Tenant', 'Family'];
-        
+
         for ($i = 0; $i < $residentCount; $i++) {
             $firstName = $faker->firstName;
-            $lastName = $faker->lastName . ' ' . $faker->lastName;
+            $lastName = $faker->lastName.' '.$faker->lastName;
             $documentNumber = $faker->unique()->numerify('##########');
-            
+
             // Primer residente es propietario o arrendatario, el resto familia
             $residentType = $i === 0 ? $faker->randomElement(['Owner', 'Tenant']) : 'Family';
-            
+
             Resident::firstOrCreate(
                 [
                     'document_number' => $documentNumber,
@@ -201,12 +201,12 @@ class MockDataSeeder extends Seeder
                     'document_type' => $faker->randomElement(['CC', 'CE', 'PP']),
                     'first_name' => $firstName,
                     'last_name' => $lastName,
-                    'email' => strtolower($firstName . '.' . str_replace(' ', '', $lastName) . '@email.com'),
+                    'email' => strtolower($firstName.'.'.str_replace(' ', '', $lastName).'@email.com'),
                     'phone' => $faker->regexify('60[1-9][0-9]{7}'),
                     'mobile_phone' => $faker->regexify('3[0-9]{9}'),
                     'birth_date' => $faker->dateTimeBetween('-70 years', '-18 years')->format('Y-m-d'),
                     'gender' => $faker->randomElement(['M', 'F']),
-                    'emergency_contact' => $faker->name . ' - ' . $faker->regexify('3[0-9]{9}'),
+                    'emergency_contact' => $faker->name.' - '.$faker->regexify('3[0-9]{9}'),
                     'apartment_id' => $apartment->id,
                     'resident_type' => $residentType,
                     'status' => $faker->randomElement(['Active', 'Active', 'Active', 'Inactive']), // 75% activos

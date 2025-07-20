@@ -38,7 +38,7 @@ class RegisterRequest extends FormRequest
                 'required',
                 'string',
                 'confirmed',
-                new SecurePasswordRule(),
+                new SecurePasswordRule,
             ],
             'password_confirmation' => ['required', 'string'],
         ];

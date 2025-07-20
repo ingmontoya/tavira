@@ -18,7 +18,7 @@ class ResidentSeeder extends Seeder
             'Torres del Parque',
             'Ciudadela San José',
             'Conjunto Villa María',
-            'Residencial El Bosque'
+            'Residencial El Bosque',
         ];
 
         // Clear existing residents
@@ -28,14 +28,14 @@ class ResidentSeeder extends Seeder
         foreach ($conjuntos as $conjunto) {
             // Generate residents for different towers
             $towers = ['A', 'B', 'C', 'D'];
-            
+
             foreach ($towers as $tower) {
                 // Generate 15-20 residents per tower
                 $residentsCount = rand(15, 20);
-                
+
                 for ($i = 1; $i <= $residentsCount; $i++) {
                     $apartmentNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
-                    
+
                     // Create primary resident (owner)
                     Resident::factory()
                         ->owner()
@@ -44,7 +44,7 @@ class ResidentSeeder extends Seeder
                         ->create([
                             'conjunto' => $conjunto,
                         ]);
-                    
+
                     // 30% chance of having a tenant in the same apartment
                     if (rand(1, 100) <= 30) {
                         Resident::factory()
@@ -55,7 +55,7 @@ class ResidentSeeder extends Seeder
                                 'conjunto' => $conjunto,
                             ]);
                     }
-                    
+
                     // 40% chance of having family members
                     if (rand(1, 100) <= 40) {
                         $familyMembers = rand(1, 3);
@@ -80,8 +80,8 @@ class ResidentSeeder extends Seeder
                 'conjunto' => 'Casas Independientes',
                 'tower' => null,
                 'apartment_number' => function () {
-                    return 'Casa ' . rand(1, 50);
-                }
+                    return 'Casa '.rand(1, 50);
+                },
             ]);
 
         // Create some inactive residents
@@ -91,7 +91,7 @@ class ResidentSeeder extends Seeder
             ->create([
                 'conjunto' => fake()->randomElement($conjuntos),
                 'end_date' => fake()->dateTimeBetween('-1 year', 'now'),
-                'notes' => 'Residente inactivo - contrato terminado'
+                'notes' => 'Residente inactivo - contrato terminado',
             ]);
 
         // Create specific test residents for development
@@ -114,7 +114,7 @@ class ResidentSeeder extends Seeder
                 'status' => 'Active',
                 'start_date' => '2023-01-15',
                 'notes' => 'Residente fundador del conjunto',
-                'documents' => ['id_copy.pdf', 'contract.pdf', 'authorization.pdf']
+                'documents' => ['id_copy.pdf', 'contract.pdf', 'authorization.pdf'],
             ],
             [
                 'document_type' => 'CC',
@@ -135,7 +135,7 @@ class ResidentSeeder extends Seeder
                 'start_date' => '2023-06-01',
                 'end_date' => '2024-06-01',
                 'notes' => 'Contrato de arrendamiento por 1 año',
-                'documents' => ['id_copy.pdf', 'lease_contract.pdf']
+                'documents' => ['id_copy.pdf', 'lease_contract.pdf'],
             ],
             [
                 'document_type' => 'CE',
@@ -155,7 +155,7 @@ class ResidentSeeder extends Seeder
                 'status' => 'Active',
                 'start_date' => '2023-09-15',
                 'notes' => 'Hija del propietario principal',
-                'documents' => ['id_copy.pdf', 'family_authorization.pdf']
+                'documents' => ['id_copy.pdf', 'family_authorization.pdf'],
             ],
             [
                 'document_type' => 'CC',
@@ -176,8 +176,8 @@ class ResidentSeeder extends Seeder
                 'start_date' => '2022-03-01',
                 'end_date' => '2023-12-31',
                 'notes' => 'Vendió la propiedad en diciembre 2023',
-                'documents' => ['id_copy.pdf', 'sale_contract.pdf']
-            ]
+                'documents' => ['id_copy.pdf', 'sale_contract.pdf'],
+            ],
         ];
 
         foreach ($testResidents as $resident) {
@@ -185,7 +185,7 @@ class ResidentSeeder extends Seeder
         }
 
         $this->command->info('ResidentSeeder completed successfully!');
-        $this->command->info('Created residents for ' . count($conjuntos) . ' conjuntos');
-        $this->command->info('Total residents created: ' . Resident::count());
+        $this->command->info('Created residents for '.count($conjuntos).' conjuntos');
+        $this->command->info('Total residents created: '.Resident::count());
     }
 }

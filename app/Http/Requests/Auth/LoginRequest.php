@@ -36,7 +36,7 @@ class LoginRequest extends FormRequest
                 'lowercase',
                 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
             ],
-            'password' => ['required', 'string', new SecurePasswordRule()],
+            'password' => ['required', 'string', new SecurePasswordRule],
             'remember' => ['boolean'],
         ];
     }

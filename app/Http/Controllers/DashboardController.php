@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use App\Models\Resident;
 use App\Models\Apartment;
-use App\Models\ApartmentType;
 use App\Models\ConjuntoConfig;
+use App\Models\Resident;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-
     public function index()
     {
         // Obtener datos reales
@@ -114,6 +111,7 @@ class DashboardController extends Controller
         if ($previous == 0) {
             return $current > 0 ? 100 : 0;
         }
+
         return round((($current - $previous) / $previous) * 100, 1);
     }
 
@@ -133,7 +131,7 @@ class DashboardController extends Controller
                 return [
                     'name' => "Torre {$item->tower} - {$item->conjunto_name}",
                     'residents' => $item->residents,
-                    'color' => $this->generateColor($index)
+                    'color' => $this->generateColor($index),
                 ];
             })->values();
         }
@@ -163,21 +161,21 @@ class DashboardController extends Controller
                 'Occupied' => '#10b981',
                 'Available' => '#3b82f6',
                 'Maintenance' => '#f59e0b',
-                'Reserved' => '#8b5cf6'
+                'Reserved' => '#8b5cf6',
             ];
 
             $statusLabels = [
                 'Occupied' => 'Ocupados',
                 'Available' => 'Disponibles',
                 'Maintenance' => 'Mantenimiento',
-                'Reserved' => 'Reservados'
+                'Reserved' => 'Reservados',
             ];
 
             return $realData->map(function ($item) use ($statusColors, $statusLabels) {
                 return [
                     'status' => $statusLabels[$item->status] ?? $item->status,
                     'count' => $item->count,
-                    'color' => $statusColors[$item->status] ?? '#6b7280'
+                    'color' => $statusColors[$item->status] ?? '#6b7280',
                 ];
             })->values();
         }
@@ -200,9 +198,9 @@ class DashboardController extends Controller
             ->map(function ($resident) {
                 return [
                     'type' => 'resident',
-                    'message' => "Nuevo residente: {$resident->first_name} {$resident->last_name} en Apto " . (isset($resident->apartment->number) ? $resident->apartment->number : 'N/A'),
+                    'message' => "Nuevo residente: {$resident->first_name} {$resident->last_name} en Apto ".(isset($resident->apartment->number) ? $resident->apartment->number : 'N/A'),
                     'time' => $resident->created_at->diffForHumans(),
-                    'icon' => 'user-plus'
+                    'icon' => 'user-plus',
                 ];
             });
 
@@ -213,26 +211,26 @@ class DashboardController extends Controller
                     'type' => 'payment',
                     'message' => 'Pago recibido: Apto 301 - Administración Julio',
                     'time' => 'hace 15 minutos',
-                    'icon' => 'dollar-sign'
+                    'icon' => 'dollar-sign',
                 ],
                 [
                     'type' => 'visitor',
                     'message' => 'Visita registrada: María González en Torre 2',
                     'time' => 'hace 1 hora',
-                    'icon' => 'user-check'
+                    'icon' => 'user-check',
                 ],
                 [
                     'type' => 'maintenance',
                     'message' => 'Solicitud de mantenimiento: Ascensor Torre 1',
                     'time' => 'hace 2 horas',
-                    'icon' => 'wrench'
+                    'icon' => 'wrench',
                 ],
                 [
                     'type' => 'communication',
                     'message' => 'Comunicado enviado: Corte de agua programado',
                     'time' => 'hace 3 horas',
-                    'icon' => 'bell'
-                ]
+                    'icon' => 'bell',
+                ],
             ]);
 
             return $recentResidents->concat($mockActivity)->take(8)->values();
@@ -244,56 +242,57 @@ class DashboardController extends Controller
                 'type' => 'resident',
                 'message' => 'Nuevo residente: Ana García en Apto 405',
                 'time' => 'hace 5 minutos',
-                'icon' => 'user-plus'
+                'icon' => 'user-plus',
             ],
             [
                 'type' => 'payment',
                 'message' => 'Pago recibido: Apto 301 - Administración Julio',
                 'time' => 'hace 15 minutos',
-                'icon' => 'dollar-sign'
+                'icon' => 'dollar-sign',
             ],
             [
                 'type' => 'visitor',
                 'message' => 'Visita registrada: Carlos Rodríguez en Torre 2',
                 'time' => 'hace 45 minutos',
-                'icon' => 'user-check'
+                'icon' => 'user-check',
             ],
             [
                 'type' => 'maintenance',
                 'message' => 'Solicitud de mantenimiento: Ascensor Torre 1',
                 'time' => 'hace 1 hora',
-                'icon' => 'wrench'
+                'icon' => 'wrench',
             ],
             [
                 'type' => 'communication',
                 'message' => 'Comunicado enviado: Asamblea general',
                 'time' => 'hace 2 horas',
-                'icon' => 'bell'
+                'icon' => 'bell',
             ],
             [
                 'type' => 'resident',
                 'message' => 'Nuevo residente: Pedro Martínez en Apto 102',
                 'time' => 'hace 3 horas',
-                'icon' => 'user-plus'
+                'icon' => 'user-plus',
             ],
             [
                 'type' => 'payment',
                 'message' => 'Pago recibido: Apto 205 - Administración Julio',
                 'time' => 'hace 4 horas',
-                'icon' => 'dollar-sign'
+                'icon' => 'dollar-sign',
             ],
             [
                 'type' => 'visitor',
                 'message' => 'Visita registrada: Laura Fernández en Torre 3',
                 'time' => 'hace 5 horas',
-                'icon' => 'user-check'
-            ]
+                'icon' => 'user-check',
+            ],
         ]);
     }
 
     private function generateColor($id)
     {
         $colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
+
         return $colors[$id % count($colors)];
     }
 }
