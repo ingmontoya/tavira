@@ -6,18 +6,20 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Resident;
 use App\Models\Apartment;
-use App\Models\ConjuntoConfig;
 use App\Models\ApartmentType;
+use App\Models\ConjuntoConfig;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+
     public function index()
     {
         // Obtener datos reales
         $totalResidents = Resident::count();
         $totalApartments = Apartment::count();
         $totalConjuntos = ConjuntoConfig::count();
+        $conjunto = ConjuntoConfig::first(); // Obtener el conjunto único
 
         // Calcular crecimiento de residentes (mock data si no hay suficientes datos)
         $currentMonthResidents = Resident::whereMonth('created_at', now()->month)->count();
@@ -137,12 +139,14 @@ class DashboardController extends Controller
         }
 
         // Fallback a datos mock si no hay datos reales
+        $conjunto = ConjuntoConfig::first(); // Obtener el conjunto único
+        $conjuntoName = $conjunto ? $conjunto->name : 'Vista Hermosa';
+        $towerNames = $conjunto && $conjunto->tower_names ? $conjunto->tower_names : ['A', 'B', 'C'];
+
         return collect([
-            ['name' => 'Torre 1 - Vista Hermosa', 'residents' => 89, 'color' => '#3b82f6'],
-            ['name' => 'Torre 2 - Vista Hermosa', 'residents' => 76, 'color' => '#ef4444'],
-            ['name' => 'Torre 3 - Vista Hermosa', 'residents' => 65, 'color' => '#10b981'],
-            ['name' => 'Torre 1 - Parque Real', 'residents' => 54, 'color' => '#f59e0b'],
-            ['name' => 'Torre 2 - Parque Real', 'residents' => 63, 'color' => '#8b5cf6'],
+            ['name' => "Torre {$towerNames[0]} - {$conjuntoName}", 'residents' => 89, 'color' => '#3b82f6'],
+            ['name' => "Torre {$towerNames[1]} - {$conjuntoName}", 'residents' => 76, 'color' => '#ef4444'],
+            ['name' => "Torre {$towerNames[2]} - {$conjuntoName}", 'residents' => 65, 'color' => '#10b981'],
         ]);
     }
 

@@ -12,28 +12,28 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { 
-    AlertDialog, 
-    AlertDialogAction, 
-    AlertDialogCancel, 
-    AlertDialogContent, 
-    AlertDialogDescription, 
-    AlertDialogFooter, 
-    AlertDialogHeader, 
-    AlertDialogTitle, 
-    AlertDialogTrigger 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-    ArrowLeft, 
-    Home, 
-    Building, 
-    Settings, 
-    Save, 
-    X, 
-    DollarSign, 
-    MapPin, 
-    FileText, 
+import {
+    ArrowLeft,
+    Home,
+    Building,
+    Settings,
+    Save,
+    X,
+    DollarSign,
+    MapPin,
+    FileText,
     CheckCircle,
     AlertCircle,
     Clock,
@@ -56,7 +56,7 @@ interface FormData {
 
 const props = defineProps({
     apartment: Object,
-    conjuntoConfigs: Array,
+    conjunto: Object,
     apartmentTypes: Array,
     statuses: Array
 });
@@ -145,7 +145,7 @@ const formProgress = computed(() => {
             return value && value.toString().trim() !== '';
         }).length;
     }, 0);
-    
+
     return Math.round((completedFields / totalFields) * 100);
 });
 
@@ -185,7 +185,7 @@ watch(features, (newFeatures) => {
 const validateStep = (stepIndex: number): boolean => {
     const step = steps[stepIndex];
     const requiredFields = validationRules[`step${stepIndex + 1}` as keyof typeof validationRules] || [];
-    
+
     return requiredFields.every(field => {
         const value = form[field];
         if (typeof value === 'boolean') return true;
@@ -372,21 +372,21 @@ const getStatusLabel = (status: string) => {
                                         </p>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
                                     <Building class="h-4 w-4 text-muted-foreground" />
                                     <p class="text-sm">
-                                        {{ conjuntoConfigs.find(c => c.id === form.conjunto_config_id)?.name || 'Conjunto no seleccionado' }}
+                                        {{ conjunto.name || 'Conjunto no seleccionado' }}
                                     </p>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
                                     <DollarSign class="h-4 w-4 text-muted-foreground" />
                                     <p class="text-sm">
                                         ${{ form.monthly_fee?.toLocaleString() || '0' }}
                                     </p>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
                                     <Settings class="h-4 w-4 text-muted-foreground" />
                                     <Badge :variant="form.status ? 'default' : 'secondary'">
@@ -394,9 +394,9 @@ const getStatusLabel = (status: string) => {
                                     </Badge>
                                 </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div class="space-y-2">
                                 <p class="text-sm font-medium">Estado del formulario</p>
                                 <div class="space-y-1">
@@ -439,24 +439,9 @@ const getStatusLabel = (status: string) => {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Conjunto Config -->
                                     <div class="space-y-2">
-                                        <Label for="conjunto_config_id">Conjunto *</Label>
-                                        <Select v-model="form.conjunto_config_id">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecciona un conjunto" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem 
-                                                    v-for="conjunto in conjuntoConfigs" 
-                                                    :key="conjunto.id" 
-                                                    :value="conjunto.id"
-                                                >
-                                                    {{ conjunto.name }}
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <p v-if="form.errors.conjunto_config_id" class="text-sm text-red-600">
-                                            {{ form.errors.conjunto_config_id }}
-                                        </p>
+                                        <Label for="conjunto_config_id">{{ conjunto.name }}</Label>
+
+
                                     </div>
 
                                     <!-- Apartment Type -->
@@ -467,9 +452,9 @@ const getStatusLabel = (status: string) => {
                                                 <SelectValue placeholder="Selecciona un tipo" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem 
-                                                    v-for="type in apartmentTypes" 
-                                                    :key="type.id" 
+                                                <SelectItem
+                                                    v-for="type in apartmentTypes"
+                                                    :key="type.id"
                                                     :value="type.id"
                                                 >
                                                     {{ type.name }} ({{ type.area_sqm }}m²)
@@ -565,9 +550,9 @@ const getStatusLabel = (status: string) => {
                                                 <SelectValue placeholder="Selecciona un estado" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem 
-                                                    v-for="status in statuses" 
-                                                    :key="status" 
+                                                <SelectItem
+                                                    v-for="status in statuses"
+                                                    :key="status"
                                                     :value="status"
                                                 >
                                                     {{ getStatusLabel(status) }}
@@ -751,7 +736,7 @@ const getStatusLabel = (status: string) => {
                                 <ArrowLeft class="h-4 w-4" />
                                 Anterior
                             </Button>
-                            
+
                             <div class="flex items-center gap-3">
                                 <Button
                                     v-if="!isLastStep"
@@ -763,7 +748,7 @@ const getStatusLabel = (status: string) => {
                                     Siguiente
                                     <ArrowLeft class="h-4 w-4 rotate-180" />
                                 </Button>
-                                
+
                                 <Button
                                     v-if="isLastStep"
                                     type="submit"

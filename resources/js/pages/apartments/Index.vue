@@ -88,10 +88,14 @@ const props = defineProps<{
         prev_page_url?: string
         next_page_url?: string
     }
-    conjuntoConfigs: Array<{
+    conjunto: {
         id: number
         name: string
-    }>
+        number_of_towers: number
+        floors_per_tower: number
+        apartments_per_floor: number
+        tower_names: string[]
+    } | null
     apartmentTypes: Array<{
         id: number
         name: string

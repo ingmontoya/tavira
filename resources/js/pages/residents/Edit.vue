@@ -12,32 +12,32 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { 
-    AlertDialog, 
-    AlertDialogAction, 
-    AlertDialogCancel, 
-    AlertDialogContent, 
-    AlertDialogDescription, 
-    AlertDialogFooter, 
-    AlertDialogHeader, 
-    AlertDialogTitle, 
-    AlertDialogTrigger 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-    ArrowLeft, 
-    User, 
-    Home, 
-    FileText, 
-    Settings, 
-    Save, 
-    X, 
-    Upload, 
-    Phone, 
-    Mail, 
-    Calendar, 
-    MapPin, 
-    Users, 
+import {
+    ArrowLeft,
+    User,
+    Home,
+    FileText,
+    Settings,
+    Save,
+    X,
+    Upload,
+    Phone,
+    Mail,
+    Calendar,
+    MapPin,
+    Users,
     CheckCircle,
     AlertCircle,
     Building,
@@ -70,10 +70,66 @@ interface FormData {
     whatsapp_number: string;
 }
 
-const props = defineProps({
-    resident: Object,
-    apartments: Array
-});
+interface Resident {
+    id: number;
+    document_type: string;
+    document_number: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    mobile_phone: string;
+    birth_date: string;
+    gender: string;
+    emergency_contact: string;
+    apartment_id: number;
+    resident_type: string;
+    status: string;
+    start_date: string;
+    end_date: string;
+    notes: string;
+    email_notifications: boolean;
+    whatsapp_notifications: boolean;
+    whatsapp_number: string;
+    apartment?: {
+        id: number;
+        number: string;
+        tower: string;
+        floor: number;
+        full_address: string;
+        status: string;
+        apartment_type?: {
+            id: number;
+            name: string;
+            display_name: string;
+            administration_fee: number;
+        };
+    };
+    documents?: {
+        id: number;
+        name: string;
+    }[];
+}
+
+interface Apartment {
+    id: number;
+    number: string;
+    tower: string;
+    floor: number;
+    full_address: string;
+    status: string;
+    apartment_type?: {
+        id: number;
+        name: string;
+        display_name: string;
+        administration_fee: number;
+    };
+}
+
+const props = defineProps<{
+    resident: Resident;
+    apartments: Apartment[];
+}>();
 
 // Form state
 const form = useForm<FormData>({
@@ -162,14 +218,14 @@ const formProgress = computed(() => {
     const totalFields = steps.reduce((acc, step) => acc + step.fields.length, 0);
     const completedFields = steps.reduce((acc, step) => {
         return acc + step.fields.filter(field => {
-            const value = form[field];
+            const value = (form as any)[field];
             if (typeof value === 'boolean') return true;
             if (Array.isArray(value)) return value.length > 0;
             if (typeof value === 'number') return value > 0;
             return value && value.toString().trim() !== '';
         }).length;
     }, 0);
-    
+
     return Math.round((completedFields / totalFields) * 100);
 });
 
@@ -186,7 +242,7 @@ const selectedApartment = computed(() => {
 const directApartmentNumber = ref('');
 const selectedTower = ref('');
 const selectedFloor = ref('');
-const filteredApartments = ref([]);
+const filteredApartments = ref<Apartment[]>([]);
 
 // Available options for filters
 const availableTowers = computed(() => {
@@ -203,7 +259,7 @@ const availableFloors = computed(() => {
 });
 
 // Methods for apartment selection
-const getDisplayNumber = (apartment) => {
+const getDisplayNumber = (apartment: Apartment) => {
     // For format like 4101, 4102, 1201, 1202, return the number as-is
     // since it's already in the correct format (tower + floor + position)
     return apartment.number.toString();
@@ -211,20 +267,29 @@ const getDisplayNumber = (apartment) => {
 
 const filterApartments = () => {
     if (!props.apartments) return;
-    
+
     let filtered = props.apartments;
-    
+
     if (selectedTower.value) {
         filtered = filtered.filter(apt => apt.tower === selectedTower.value);
     }
-    
+
     if (selectedFloor.value) {
-        filtered = filtered.filter(apt => apt.floor == selectedFloor.value);
+        filtered = filtered.filter(apt => apt.floor === selectedFloor.value);
     }
-    
+
     filteredApartments.value = filtered.sort((a, b) => a.number.localeCompare(b.number));
-    
-    // Update direct apartment number when selecting via filters
+
+    // Clear apartment selection if current apartment is not in filtered results
+    if (form.apartment_id) {
+        const isCurrentApartmentValid = filteredApartments.value.some(apt => apt.id === form.apartment_id);
+        if (!isCurrentApartmentValid) {
+            form.apartment_id = null;
+            directApartmentNumber.value = '';
+        }
+    }
+
+    // Update direct apartment number when apartment is selected via dropdown
     if (form.apartment_id) {
         const apartment = props.apartments.find(apt => apt.id === form.apartment_id);
         if (apartment) {
@@ -235,28 +300,42 @@ const filterApartments = () => {
 
 const findApartmentByNumber = () => {
     if (!directApartmentNumber.value || !props.apartments) return;
-    
+
     const searchNumber = directApartmentNumber.value.trim();
-    
-    // Find apartment by exact number match or by display number
-    const apartment = props.apartments.find(apt => 
-        apt.number === searchNumber || 
+
+    // First try exact number match
+    let apartment = props.apartments.find(apt =>
+        apt.number === searchNumber ||
         getDisplayNumber(apt) === searchNumber
     );
-    
+
+    // If not found, try parsing the number format (e.g., 1101 = Tower 1, Floor 1, Apt 101)
+    if (!apartment && searchNumber.length === 4) {
+        const tower = searchNumber.charAt(0); // First digit is tower
+        const floor = parseInt(searchNumber.charAt(1)); // Second digit is floor
+
+        // The apartment number should match exactly since now apartments are numbered correctly
+        // 1101 = Tower 1, Floor 1, Apartment 101 -> should find apartment with number "1101"
+        apartment = props.apartments.find(apt => {
+            return apt.tower === tower &&
+                   apt.floor === floor &&
+                   apt.number === searchNumber;
+        });
+    }
+
     if (apartment) {
         form.apartment_id = apartment.id;
         selectedTower.value = apartment.tower;
-        selectedFloor.value = apartment.floor;
+        selectedFloor.value = apartment.floor.toString();
         filterApartments();
     }
 };
 
 // Initialize selection if resident already has an apartment
-if (props.resident.apartment) {
+if (props.resident?.apartment) {
     directApartmentNumber.value = props.resident.apartment.number;
     selectedTower.value = props.resident.apartment.tower;
-    selectedFloor.value = props.resident.apartment.floor;
+    selectedFloor.value = props.resident.apartment.floor.toString();
     // Initialize filtered apartments on component mount
     filterApartments();
 }
@@ -271,13 +350,20 @@ watch(() => form.apartment_id, (newId) => {
     }
 });
 
+// Initialize filtered apartments when apartments data is available
+watch(() => props.apartments, (newApartments) => {
+    if (newApartments && newApartments.length > 0) {
+        filterApartments();
+    }
+}, { immediate: true });
+
 // Methods
 const validateStep = (stepIndex: number): boolean => {
     const step = steps[stepIndex];
     const requiredFields = validationRules[`step${stepIndex + 1}` as keyof typeof validationRules] || [];
-    
+
     return requiredFields.every(field => {
-        const value = form[field];
+        const value = (form as any)[field];
         if (typeof value === 'boolean') return true;
         if (Array.isArray(value)) return value.length > 0;
         if (typeof value === 'number') return value > 0;
@@ -495,19 +581,19 @@ const statusOptions = [
                                         </p>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
                                     <Mail class="h-4 w-4 text-muted-foreground" />
                                     <p class="text-sm">{{ form.email || 'email@ejemplo.com' }}</p>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
                                     <Home class="h-4 w-4 text-muted-foreground" />
                                     <p class="text-sm">
                                         {{ selectedApartment?.full_address || 'Apartamento no seleccionado' }}
                                     </p>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
                                     <UserCheck class="h-4 w-4 text-muted-foreground" />
                                     <Badge :variant="form.resident_type ? 'default' : 'secondary'">
@@ -515,9 +601,9 @@ const statusOptions = [
                                     </Badge>
                                 </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div class="space-y-2">
                                 <p class="text-sm font-medium">Estado del formulario</p>
                                 <div class="space-y-1">
@@ -579,7 +665,7 @@ const statusOptions = [
                                             {{ form.errors.document_type }}
                                         </p>
                                     </div>
-                                    
+
                                     <div class="space-y-2">
                                         <Label for="document_number">Número de Documento *</Label>
                                         <Input
@@ -608,7 +694,7 @@ const statusOptions = [
                                             {{ form.errors.first_name }}
                                         </p>
                                     </div>
-                                    
+
                                     <div class="space-y-2">
                                         <Label for="last_name">Apellidos *</Label>
                                         <Input
@@ -651,7 +737,7 @@ const statusOptions = [
                                             {{ form.errors.phone }}
                                         </p>
                                     </div>
-                                    
+
                                     <div class="space-y-2">
                                         <Label for="mobile_phone">Celular</Label>
                                         <Input
@@ -680,7 +766,7 @@ const statusOptions = [
                                             {{ form.errors.birth_date }}
                                         </p>
                                     </div>
-                                    
+
                                     <div class="space-y-2">
                                         <Label for="gender">Género</Label>
                                         <Select v-model="form.gender">
@@ -735,7 +821,7 @@ const statusOptions = [
                                 <!-- Apartment Selection -->
                                 <div class="space-y-4">
                                     <Label>Selección de Apartamento *</Label>
-                                    
+
                                     <!-- Direct apartment number input -->
                                     <div class="space-y-2">
                                         <Label for="direct_apartment">Número de Apartamento</Label>
@@ -747,10 +833,10 @@ const statusOptions = [
                                             class="font-mono"
                                         />
                                         <p class="text-xs text-muted-foreground">
-                                            Ingresa el número completo del apartamento (1101 = Torre 1, Piso 1, Apto 1)
+                                            Ingresa el número completo del apartamento (1101 = Torre 1, Piso 1, Apto 101)
                                         </p>
                                     </div>
-                                    
+
                                     <!-- Or tower/floor selection -->
                                     <div class="space-y-4">
                                         <div class="flex items-center gap-2">
@@ -758,7 +844,7 @@ const statusOptions = [
                                             <span class="text-sm text-muted-foreground">O selecciona por torre y piso</span>
                                             <div class="flex-1 h-px bg-border"></div>
                                         </div>
-                                        
+
                                         <div class="grid grid-cols-3 gap-4">
                                             <div class="space-y-2">
                                                 <Label for="tower_filter">Torre</Label>
@@ -777,7 +863,7 @@ const statusOptions = [
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            
+
                                             <div class="space-y-2">
                                                 <Label for="floor_filter">Piso</Label>
                                                 <Select v-model="selectedFloor" @update:model-value="filterApartments" :disabled="!selectedTower">
@@ -795,7 +881,7 @@ const statusOptions = [
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            
+
                                             <div class="space-y-2">
                                                 <Label for="apartment_filter">Apartamento</Label>
                                                 <Select v-model="form.apartment_id" :disabled="!selectedFloor">
@@ -808,26 +894,21 @@ const statusOptions = [
                                                             :key="apartment.id"
                                                             :value="apartment.id"
                                                         >
-                                                            <div class="flex flex-col">
-                                                                <span>{{ getDisplayNumber(apartment) }}</span>
-                                                                <span class="text-xs text-muted-foreground">
-                                                                    {{ apartment.apartment_type?.name }}
-                                                                </span>
-                                                            </div>
+                                                            {{ getDisplayNumber(apartment) }}
                                                         </SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Selected apartment info -->
                                     <div v-if="selectedApartment" class="p-4 bg-muted rounded-lg">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="font-medium">{{ selectedApartment.full_address }}</p>
                                                 <p class="text-sm text-muted-foreground">
-                                                    {{ selectedApartment.apartment_type?.display_name }} - 
+                                                    {{ selectedApartment.apartment_type?.display_name }} -
                                                     ${{ selectedApartment.apartment_type?.administration_fee?.toLocaleString() }}/mes
                                                 </p>
                                             </div>
@@ -836,7 +917,7 @@ const statusOptions = [
                                             </Badge>
                                         </div>
                                     </div>
-                                    
+
                                     <p v-if="form.errors.apartment_id" class="text-sm text-red-600">
                                         {{ form.errors.apartment_id }}
                                     </p>
@@ -905,7 +986,7 @@ const statusOptions = [
                                             {{ form.errors.start_date }}
                                         </p>
                                     </div>
-                                    
+
                                     <div class="space-y-2">
                                         <Label for="end_date">Fecha de Fin</Label>
                                         <Input
@@ -961,7 +1042,7 @@ const statusOptions = [
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Existing documents -->
                                     <div v-if="resident.documents && resident.documents.length > 0" class="space-y-2">
                                         <p class="text-sm font-medium">Documentos existentes:</p>
@@ -988,7 +1069,7 @@ const statusOptions = [
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Uploaded files -->
                                     <div v-if="form.documents.length > 0" class="space-y-2">
                                         <p class="text-sm font-medium">Nuevos archivos:</p>
@@ -1018,7 +1099,7 @@ const statusOptions = [
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <p v-if="form.errors.documents" class="text-sm text-red-600">
                                         {{ form.errors.documents }}
                                     </p>
@@ -1087,7 +1168,7 @@ const statusOptions = [
                                             :class="{ 'border-red-500': form.errors.whatsapp_notifications }"
                                         />
                                     </div>
-                                    
+
                                     <div v-if="form.whatsapp_notifications" class="pl-12 space-y-2">
                                         <Label for="whatsapp_number">Número de WhatsApp</Label>
                                         <Input
@@ -1116,7 +1197,7 @@ const statusOptions = [
                                 <ArrowLeft class="h-4 w-4" />
                                 Anterior
                             </Button>
-                            
+
                             <div class="flex items-center gap-3">
                                 <Button
                                     v-if="!isLastStep"
@@ -1128,7 +1209,7 @@ const statusOptions = [
                                     Siguiente
                                     <ArrowLeft class="h-4 w-4 rotate-180" />
                                 </Button>
-                                
+
                                 <Button
                                     v-if="isLastStep"
                                     type="submit"

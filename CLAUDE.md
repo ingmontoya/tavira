@@ -37,12 +37,13 @@ Habitta is a comprehensive property management platform for residential complexe
 ## Architecture Overview
 
 ### Backend Structure
-- **Multitenant Architecture**: Each residential complex (conjunto) is isolated via `conjunto_config_id`
-- **Authentication**: Laravel Breeze with role-based access (company/individual users)
+- **Single Conjunto Architecture**: Application manages one residential complex (configurable)
+- **Authentication**: Laravel Breeze with simplified user management
 - **Security**: Comprehensive middleware for rate limiting, input sanitization, security headers, and audit logging
 - **Key Models**: User, ConjuntoConfig, Apartment, ApartmentType, Resident
 - **Permissions**: Uses Spatie Laravel Permission for role-based access control
 - **Settings**: Spatie Laravel Settings for configurable application settings
+- **Note**: Multitenancy has been removed but ConjuntoConfig remains for single conjunto configuration
 
 ### Frontend Structure
 - **Framework**: Vue 3 with Composition API and TypeScript
@@ -71,8 +72,10 @@ Habitta is a comprehensive property management platform for residential complexe
 
 ### Module Organization
 The application is organized into logical modules:
+- **Conjunto Configuration**: Management of the residential complex settings and configuration
 - **Resident Management**: CRUD operations for residents and apartment assignments
-- **Conjunto Configuration**: Management of residential complex settings and apartment generation
+- **Apartment Management**: Management of apartments and apartment types
+- **Dashboard**: Property management analytics with mock data combined with real data
 - **Finance**: Billing, payments, and financial reporting (planned)
 - **Communication**: Correspondence, announcements, and notifications (planned)
 - **Security**: Access control and visitor management (planned)
@@ -100,9 +103,33 @@ The application is organized into logical modules:
 
 ## Important Notes
 
-- Always respect the multitenant architecture - data should be isolated by `conjunto_config_id`
+- The application manages a single configurable conjunto (currently "Conjunto Residencial Vista Hermosa")
+- `conjunto_config_id` references are maintained but only one conjunto exists in the database
+- All apartments and apartment types must reference the conjunto_config_id
 - Use existing middleware patterns for security and rate limiting
 - Follow the established component patterns when creating new Vue components
 - Maintain type safety with TypeScript definitions
 - Use the existing composables for common functionality
 - Security is a priority - leverage existing security services and patterns
+- When implementing new multitenancy in the future, plan to use the stancl/tenancy package
+
+## Current Data Structure
+
+### Conjunto Configuration (Configurable)
+- **Default Name**: Conjunto Residencial Vista Hermosa
+- **Default Towers**: 3 towers named A, B, C
+- **Default Floors**: 8 floors per tower
+- **Default Apartments**: 4 apartments per floor
+- **Total Units**: Configurable based on conjunto settings
+
+### Apartment Types (Configurable per conjunto)
+- **Tipo A**: 1 bedroom, 1 bathroom, compact units
+- **Tipo B**: 2 bedrooms, 2 bathrooms, family units
+- **Tipo C**: 3 bedrooms, 2 bathrooms, large family units
+- **Penthouse**: 3 bedrooms, 3 bathrooms, luxury units with terraces
+
+### Key Relationships
+- `ConjuntoConfig` hasMany `ApartmentType` and `Apartment`
+- `ApartmentType` belongsTo `ConjuntoConfig` and hasMany `Apartment`
+- `Apartment` belongsTo `ConjuntoConfig` and `ApartmentType`
+- `Resident` belongsTo `Apartment`

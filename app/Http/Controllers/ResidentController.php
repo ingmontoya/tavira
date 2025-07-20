@@ -50,16 +50,12 @@ class ResidentController extends Controller
                           ->withQueryString();
 
 
-        // Get towers for the current conjunto
-        $towers = collect();
-        if ($user->conjunto_config_id) {
-            $towers = Apartment::where('conjunto_config_id', $user->conjunto_config_id)
-                              ->distinct()
-                              ->pluck('tower')
-                              ->filter()
-                              ->sort()
-                              ->values();
-        }
+        // Get towers for the single conjunto configuration
+        $towers = Apartment::distinct()
+                          ->pluck('tower')
+                          ->filter()
+                          ->sort()
+                          ->values();
 
         return Inertia::render('residents/Index', [
             'residents' => $residents,
@@ -70,18 +66,12 @@ class ResidentController extends Controller
 
     public function create(): Response
     {
-        $user = Auth::user();
-
-        // Get available apartments for current conjunto
-        $apartments = collect();
-        if ($user->conjunto_config_id) {
-            $apartments = Apartment::with('apartmentType')
-                                  ->where('conjunto_config_id', $user->conjunto_config_id)
-                                  ->orderBy('tower')
-                                  ->orderBy('floor')
-                                  ->orderBy('number')
-                                  ->get();
-        }
+        // Get available apartments for the single conjunto configuration
+        $apartments = Apartment::with('apartmentType')
+                              ->orderBy('tower')
+                              ->orderBy('floor')
+                              ->orderBy('number')
+                              ->get();
 
         return Inertia::render('residents/Create', [
             'apartments' => $apartments
@@ -114,12 +104,10 @@ class ResidentController extends Controller
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
         ]);
 
-        // Verify apartment belongs to user's conjunto
-        if ($user->conjunto_config_id) {
-            $apartment = Apartment::find($validated['apartment_id']);
-            if (!$apartment || $apartment->conjunto_config_id !== $user->conjunto_config_id) {
-                return back()->withErrors(['apartment_id' => 'Apartamento no válido para tu conjunto.']);
-            }
+        // Verify apartment exists (single conjunto application)
+        $apartment = Apartment::find($validated['apartment_id']);
+        if (!$apartment) {
+            return back()->withErrors(['apartment_id' => 'Apartamento no válido.']);
         }
 
         Resident::create($validated);
@@ -136,21 +124,16 @@ class ResidentController extends Controller
 
     public function edit(Resident $resident): Response
     {
-        $user = Auth::user();
-
-        // Get available apartments for current conjunto
-        $apartments = collect();
-        if ($user->conjunto_config_id) {
-            $apartments = Apartment::with('apartmentType')
-                                  ->where('conjunto_config_id', $user->conjunto_config_id)
-                                  ->orderBy('tower')
-                                  ->orderBy('floor')
-                                  ->orderBy('number')
-                                  ->get();
-        }
+        // Get available apartments for the single conjunto configuration
+        // Since this is a single conjunto application, we get all apartments
+        $apartments = Apartment::with('apartmentType')
+                              ->orderBy('tower')
+                              ->orderBy('floor')
+                              ->orderBy('number')
+                              ->get();
 
         return Inertia::render('residents/Edit', [
-            'resident' => $resident->with('apartment', 'apartment.apartmentType')->first(),
+            'resident' => $resident->load('apartment', 'apartment.apartmentType'),
             'apartments' => $apartments
         ]);
     }
@@ -181,12 +164,10 @@ class ResidentController extends Controller
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
         ]);
 
-        // Verify apartment belongs to user's conjunto
-        if ($user->conjunto_config_id) {
-            $apartment = Apartment::find($validated['apartment_id']);
-            if (!$apartment || $apartment->conjunto_config_id !== $user->conjunto_config_id) {
-                return back()->withErrors(['apartment_id' => 'Apartamento no válido para tu conjunto.']);
-            }
+        // Verify apartment exists (single conjunto application)
+        $apartment = Apartment::find($validated['apartment_id']);
+        if (!$apartment) {
+            return back()->withErrors(['apartment_id' => 'Apartamento no válido.']);
         }
 
         $resident->update($validated);

@@ -54,9 +54,13 @@ interface ConjuntoConfig {
 }
 
 const props = defineProps<{
-    conjuntos: ConjuntoConfig[];
-    canCreateNew: boolean;
+    conjunto: ConjuntoConfig | null;
 }>();
+
+// Convert single conjunto to array for compatibility with original UI
+const conjuntos = computed(() => {
+    return props.conjunto ? [props.conjunto] : [];
+});
 
 // Reactive state
 const searchQuery = ref('');
@@ -66,7 +70,7 @@ const sortOrder = ref('asc');
 
 // Computed properties
 const filteredConjuntos = computed(() => {
-    let filtered = props.conjuntos;
+    let filtered = conjuntos.value;
     
     // Search filter
     if (searchQuery.value) {
@@ -84,31 +88,33 @@ const filteredConjuntos = computed(() => {
     }
     
     // Sort
-    filtered.sort((a, b) => {
-        let aValue = a[sortBy.value];
-        let bValue = b[sortBy.value];
-        
-        if (sortBy.value === 'name') {
-            aValue = aValue.toLowerCase();
-            bValue = bValue.toLowerCase();
-        }
-        
-        if (sortOrder.value === 'asc') {
-            return aValue > bValue ? 1 : -1;
-        } else {
-            return aValue < bValue ? 1 : -1;
-        }
-    });
+    if (filtered.length > 0) {
+        filtered.sort((a, b) => {
+            let aValue = a[sortBy.value];
+            let bValue = b[sortBy.value];
+            
+            if (sortBy.value === 'name') {
+                aValue = aValue.toLowerCase();
+                bValue = bValue.toLowerCase();
+            }
+            
+            if (sortOrder.value === 'asc') {
+                return aValue > bValue ? 1 : -1;
+            } else {
+                return aValue < bValue ? 1 : -1;
+            }
+        });
+    }
     
     return filtered;
 });
 
 const totalStats = computed(() => {
     return {
-        totalConjuntos: props.conjuntos.length,
-        activeConjuntos: props.conjuntos.filter(c => c.is_active).length,
-        totalApartments: props.conjuntos.reduce((sum, c) => sum + c.apartments_count, 0),
-        totalTowers: props.conjuntos.reduce((sum, c) => sum + c.number_of_towers, 0),
+        totalConjuntos: conjuntos.value.length,
+        activeConjuntos: conjuntos.value.filter(c => c.is_active).length,
+        totalApartments: conjuntos.value.reduce((sum, c) => sum + c.apartments_count, 0),
+        totalTowers: conjuntos.value.reduce((sum, c) => sum + c.number_of_towers, 0),
     };
 });
 
@@ -123,12 +129,8 @@ const breadcrumbs = [
     },
 ];
 
-const deleteConjunto = (conjunto: ConjuntoConfig) => {
-    router.delete(`/conjunto-config/${conjunto.id}`);
-};
-
 const generateApartments = (conjunto: ConjuntoConfig) => {
-    router.post(`/conjunto-config/${conjunto.id}/generate-apartments`);
+    router.post('/conjunto-config/generate-apartments');
 };
 
 const formatCurrency = (amount: number) => {
@@ -159,13 +161,13 @@ const formatDate = (dateString: string) => {
                     <div class="space-y-1">
                         <h1 class="text-3xl font-bold tracking-tight">Configuración de Conjuntos</h1>
                         <p class="text-muted-foreground">
-                            Gestiona la configuración de los conjuntos residenciales y genera apartamentos automáticamente
+                            Gestiona la configuración del conjunto residencial y genera apartamentos automáticamente
                         </p>
                     </div>
-                    <Link v-if="canCreateNew" href="/conjunto-config/create">
+                    <Link v-if="!conjunto" href="/conjunto-config/edit">
                         <Button class="gap-2">
                             <Plus class="h-4 w-4" />
-                            Nuevo Conjunto
+                            Crear Conjunto
                         </Button>
                     </Link>
                 </div>
@@ -231,7 +233,7 @@ const formatDate = (dateString: string) => {
             </div>
 
             <!-- Filters and Search -->
-            <Card>
+            <Card v-if="conjunto">
                 <CardHeader>
                     <CardTitle class="text-lg flex items-center gap-2">
                         <Filter class="h-5 w-5" />
@@ -298,7 +300,7 @@ const formatDate = (dateString: string) => {
             </Card>
 
             <!-- Results Summary -->
-            <div class="flex items-center justify-between text-sm text-muted-foreground">
+            <div v-if="conjunto" class="flex items-center justify-between text-sm text-muted-foreground">
                 <span>
                     Mostrando {{ filteredConjuntos.length }} de {{ conjuntos.length }} conjuntos
                 </span>
@@ -391,7 +393,7 @@ const formatDate = (dateString: string) => {
                         <Separator />
 
                         <!-- Apartment Types -->
-                        <div v-if="conjunto.apartment_types.length > 0" class="space-y-2">
+                        <div v-if="conjunto.apartment_types && conjunto.apartment_types.length > 0" class="space-y-2">
                             <p class="text-sm font-medium flex items-center gap-2">
                                 <Home class="h-4 w-4" />
                                 Tipos de Apartamento
@@ -421,13 +423,13 @@ const formatDate = (dateString: string) => {
 
                         <!-- Actions -->
                         <div class="flex gap-2 pt-2">
-                            <Link :href="`/conjunto-config/${conjunto.id}`">
+                            <Link href="/conjunto-config/show">
                                 <Button variant="outline" size="sm" class="flex-1">
                                     <Eye class="mr-2 h-4 w-4" />
                                     Ver
                                 </Button>
                             </Link>
-                            <Link :href="`/conjunto-config/${conjunto.id}/edit`">
+                            <Link href="/conjunto-config/edit">
                                 <Button variant="outline" size="sm" class="flex-1">
                                     <Edit class="mr-2 h-4 w-4" />
                                     Editar
@@ -447,7 +449,7 @@ const formatDate = (dateString: string) => {
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>¿Regenerar apartamentos?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Esta acción eliminará todos los apartamentos existentes para "{{ conjunto.name }}" y creará nuevos apartamentos basados en la configuración actual. Esta acción no se puede deshacer.
+                                            Esta acción generará apartamentos basados en la configuración actual. Si ya existen apartamentos, se mantendrán y solo se crearán los faltantes.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -458,56 +460,24 @@ const formatDate = (dateString: string) => {
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                            
-                            <AlertDialog>
-                                <AlertDialogTrigger as-child>
-                                    <Button variant="destructive" size="sm" class="flex-1">
-                                        <Trash2 class="mr-2 h-4 w-4" />
-                                        Eliminar
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>¿Eliminar conjunto?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Esta acción eliminará permanentemente la configuración de "{{ conjunto.name }}" y todos sus apartamentos asociados. Esta acción no se puede deshacer.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction @click="deleteConjunto(conjunto)" class="bg-destructive text-destructive-foreground">
-                                            Eliminar
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <!-- Empty State -->
-            <div v-if="filteredConjuntos.length === 0 && conjuntos.length > 0" class="text-center py-12">
-                <Search class="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 class="mt-4 text-lg font-semibold">No se encontraron conjuntos</h3>
-                <p class="mt-2 text-sm text-muted-foreground">
-                    Intenta ajustar los filtros o términos de búsqueda
-                </p>
-            </div>
-
-            <!-- Empty State - No conjuntos at all -->
+            <!-- Empty State - No conjunto configured -->
             <div v-if="conjuntos.length === 0" class="text-center py-20">
                 <div class="mx-auto w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
                     <Building class="h-12 w-12 text-muted-foreground" />
                 </div>
-                <h3 class="text-xl font-semibold mb-2">No hay conjuntos configurados</h3>
+                <h3 class="text-xl font-semibold mb-2">No hay conjunto configurado</h3>
                 <p class="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Comienza creando la configuración de tu primer conjunto residencial. Define torres, pisos, tipos de apartamento y genera la estructura automáticamente.
+                    Comienza creando la configuración de tu conjunto residencial. Define torres, pisos, tipos de apartamento y genera la estructura automáticamente.
                 </p>
-                <Link v-if="canCreateNew" href="/conjunto-config/create">
+                <Link href="/conjunto-config/edit">
                     <Button class="gap-2">
                         <Plus class="h-4 w-4" />
-                        Crear Primer Conjunto
+                        Crear Conjunto
                     </Button>
                 </Link>
             </div>

@@ -7,7 +7,6 @@ use App\Models\ApartmentType;
 use App\Models\ConjuntoConfig;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 
 class ApartmentController extends Controller
 {
@@ -16,14 +15,7 @@ class ApartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
-
         $query = Apartment::with(['apartmentType', 'conjuntoConfig', 'residents']);
-
-        // If user is individual, only show apartments from their conjunto
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            $query->where('conjunto_config_id', $user->conjunto_config_id);
-        }
 
         // Apply filters
         if ($request->filled('search')) {
@@ -53,30 +45,16 @@ class ApartmentController extends Controller
             ->withQueryString();
 
         // Get filter options
-        $conjuntoConfigs = ConjuntoConfig::all();
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            $conjuntoConfigs = $conjuntoConfigs->where('id', $user->conjunto_config_id);
-        }
-
+        $conjunto = ConjuntoConfig::first();
         $apartmentTypes = ApartmentType::all();
-
-        // Get towers and floors only from user's conjunto
-        $towerQuery = Apartment::distinct();
-        $floorQuery = Apartment::distinct();
-
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            $towerQuery->where('conjunto_config_id', $user->conjunto_config_id);
-            $floorQuery->where('conjunto_config_id', $user->conjunto_config_id);
-        }
-
-        $towers = $towerQuery->pluck('tower')->sort()->values();
-        $floors = $floorQuery->pluck('floor')->sort()->values();
+        $towers = Apartment::distinct()->pluck('tower')->sort()->values();
+        $floors = Apartment::distinct()->pluck('floor')->sort()->values();
         $statuses = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
 
         return Inertia::render('apartments/Index', [
             'apartments' => $apartments,
             'filters' => $request->only(['search', 'tower', 'status', 'apartment_type_id', 'floor']),
-            'conjuntoConfigs' => $conjuntoConfigs,
+            'conjunto' => $conjunto,
             'apartmentTypes' => $apartmentTypes,
             'towers' => $towers,
             'floors' => $floors,
@@ -89,18 +67,12 @@ class ApartmentController extends Controller
      */
     public function create()
     {
-        $user = Auth::user();
-
-        $conjuntoConfigs = ConjuntoConfig::all();
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            $conjuntoConfigs = $conjuntoConfigs->where('id', $user->conjunto_config_id);
-        }
-
+        $conjunto = ConjuntoConfig::first();
         $apartmentTypes = ApartmentType::all();
         $statuses = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
 
         return Inertia::render('apartments/Create', [
-            'conjuntoConfigs' => $conjuntoConfigs,
+            'conjunto' => $conjunto,
             'apartmentTypes' => $apartmentTypes,
             'statuses' => $statuses,
         ]);
@@ -112,7 +84,6 @@ class ApartmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'conjunto_config_id' => 'required|exists:conjunto_configs,id',
             'apartment_type_id' => 'required|exists:apartment_types,id',
             'number' => 'required|string|max:10',
             'tower' => 'required|string|max:10',
@@ -125,7 +96,10 @@ class ApartmentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Check if apartment number already exists in the same conjunto
+        // Add the conjunto_config_id automatically
+        $validated['conjunto_config_id'] = ConjuntoConfig::first()->id;
+
+        // Check if apartment number already exists in the conjunto
         $existingApartment = Apartment::where('conjunto_config_id', $validated['conjunto_config_id'])
             ->where('number', $validated['number'])
             ->first();
@@ -163,19 +137,13 @@ class ApartmentController extends Controller
      */
     public function edit(Apartment $apartment)
     {
-        $user = Auth::user();
-
-        $conjuntoConfigs = ConjuntoConfig::all();
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            $conjuntoConfigs = $conjuntoConfigs->where('id', $user->conjunto_config_id);
-        }
-
+        $conjunto = ConjuntoConfig::first();
         $apartmentTypes = ApartmentType::all();
         $statuses = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
 
         return Inertia::render('apartments/Edit', [
             'apartment' => $apartment,
-            'conjuntoConfigs' => $conjuntoConfigs,
+            'conjunto' => $conjunto,
             'apartmentTypes' => $apartmentTypes,
             'statuses' => $statuses,
         ]);
@@ -187,7 +155,6 @@ class ApartmentController extends Controller
     public function update(Request $request, Apartment $apartment)
     {
         $validated = $request->validate([
-            'conjunto_config_id' => 'required|exists:conjunto_configs,id',
             'apartment_type_id' => 'required|exists:apartment_types,id',
             'number' => 'required|string|max:10',
             'tower' => 'required|string|max:10',
@@ -200,7 +167,10 @@ class ApartmentController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Check if apartment number already exists in the same conjunto (excluding current apartment)
+        // Add the conjunto_config_id automatically
+        $validated['conjunto_config_id'] = $apartment->conjunto_config_id;
+
+        // Check if apartment number already exists in the conjunto (excluding current apartment)
         $existingApartment = Apartment::where('conjunto_config_id', $validated['conjunto_config_id'])
             ->where('number', $validated['number'])
             ->where('id', '!=', $apartment->id)
@@ -230,20 +200,5 @@ class ApartmentController extends Controller
 
         return redirect()->route('apartments.index')
             ->with('success', 'Apartamento eliminado exitosamente');
-    }
-
-    /**
-     * Get apartments by conjunto for API calls
-     */
-    public function getByConjunto(ConjuntoConfig $conjuntoConfig)
-    {
-        $apartments = $conjuntoConfig->apartments()
-            ->with('apartmentType')
-            ->orderBy('tower')
-            ->orderBy('floor')
-            ->orderBy('position_on_floor')
-            ->get();
-
-        return response()->json($apartments);
     }
 }

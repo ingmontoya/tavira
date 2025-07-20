@@ -35,6 +35,7 @@ class ApartmentType extends Model
         'features' => 'array',
     ];
 
+
     public function conjuntoConfig(): BelongsTo
     {
         return $this->belongsTo(ConjuntoConfig::class);

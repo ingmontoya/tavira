@@ -19,9 +19,9 @@ class ConjuntoConfig extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'tower_names' => 'array',
         'configuration_metadata' => 'array',
-        'is_active' => 'boolean',
     ];
 
     public function apartmentTypes(): HasMany
@@ -34,60 +34,66 @@ class ConjuntoConfig extends Model
         return $this->hasMany(Apartment::class);
     }
 
-    public function getTotalApartmentsAttribute(): int
+    public function getEstimatedApartmentsCountAttribute(): int
     {
         return $this->number_of_towers * $this->floors_per_tower * $this->apartments_per_floor;
     }
 
+    public function getTowerNamesListAttribute(): array
+    {
+        if ($this->tower_names && is_array($this->tower_names)) {
+            return $this->tower_names;
+        }
+        
+        // Generate default tower names (1, 2, 3, ...)
+        return range(1, $this->number_of_towers);
+    }
+
+    public function canGenerateApartments(): bool
+    {
+        return $this->apartmentTypes()->count() > 0;
+    }
+
     public function generateApartments(): void
     {
-        // Clear existing apartments for this conjunto
-        $this->apartments()->delete();
-        
-        // Use numeric tower names (1, 2, 3, etc.) or custom names
-        $towerNames = $this->tower_names ?? range(1, $this->number_of_towers);
-        
-        foreach ($towerNames as $towerIndex => $tower) {
-            // Use tower number for apartment numbering (1-based)
-            $towerNumber = is_numeric($tower) ? $tower : ($towerIndex + 1);
+        if (!$this->canGenerateApartments()) {
+            throw new \Exception('No se pueden generar apartamentos sin tipos de apartamento definidos.');
+        }
+
+        $apartmentTypes = $this->apartmentTypes;
+        $towerNames = $this->tower_names_list;
+
+        for ($towerIndex = 0; $towerIndex < $this->number_of_towers; $towerIndex++) {
+            $towerName = $towerNames[$towerIndex] ?? ($towerIndex + 1);
             
             for ($floor = 1; $floor <= $this->floors_per_tower; $floor++) {
                 for ($position = 1; $position <= $this->apartments_per_floor; $position++) {
-                    // Generate apartment number: [tower][floor][position]
-                    // Example: Tower 4, Floor 1, Position 1 = 4101
-                    $apartmentNumber = $towerNumber . str_pad($floor, 1, '0', STR_PAD_LEFT) . str_pad($position, 2, '0', STR_PAD_LEFT);
+                    $apartmentNumber = $towerName . $floor . sprintf('%02d', $position);
                     
-                    // Get apartment type based on position (cycling through available types)
-                    $apartmentTypes = $this->apartmentTypes;
-                    if ($apartmentTypes->count() > 0) {
-                        $apartmentType = $apartmentTypes[($position - 1) % $apartmentTypes->count()];
-                        
-                        Apartment::create([
-                            'conjunto_config_id' => $this->id,
+                    // Select apartment type based on position or random
+                    $apartmentType = $apartmentTypes->random();
+                    
+                    // Check if apartment already exists
+                    $existingApartment = $this->apartments()
+                        ->where('number', $apartmentNumber)
+                        ->where('tower', $towerName)
+                        ->first();
+                    
+                    if (!$existingApartment) {
+                        $this->apartments()->create([
                             'apartment_type_id' => $apartmentType->id,
                             'number' => $apartmentNumber,
-                            'tower' => (string) $tower,
+                            'tower' => (string) $towerName,
                             'floor' => $floor,
                             'position_on_floor' => $position,
-                            'monthly_fee' => $apartmentType->administration_fee,
                             'status' => 'Available',
+                            'monthly_fee' => $apartmentType->administration_fee,
+                            'utilities' => [],
+                            'features' => [],
                         ]);
                     }
                 }
             }
         }
-    }
-    
-    public function canGenerateApartments(): bool
-    {
-        return $this->apartmentTypes()->count() > 0 && 
-               $this->number_of_towers > 0 && 
-               $this->floors_per_tower > 0 && 
-               $this->apartments_per_floor > 0;
-    }
-    
-    public function getEstimatedApartmentsCountAttribute(): int
-    {
-        return $this->number_of_towers * $this->floors_per_tower * $this->apartments_per_floor;
     }
 }

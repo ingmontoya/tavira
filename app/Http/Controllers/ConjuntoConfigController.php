@@ -4,166 +4,69 @@ namespace App\Http\Controllers;
 
 use App\Models\ConjuntoConfig;
 use App\Models\ApartmentType;
-use App\Models\Apartment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class ConjuntoConfigController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the conjunto configuration.
      */
     public function index()
     {
-        $user = Auth::user();
-        
-        $query = ConjuntoConfig::with(['apartmentTypes', 'apartments'])
-            ->withCount(['apartmentTypes', 'apartments']);
-            
-        // If user is individual, only show their conjunto
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            $query->where('id', $user->conjunto_config_id);
-        }
-        
-        $conjuntos = $query->get();
+        $conjunto = ConjuntoConfig::with(['apartmentTypes', 'apartments'])
+            ->withCount(['apartmentTypes', 'apartments'])
+            ->first();
 
         return Inertia::render('ConjuntoConfig/Index', [
-            'conjuntos' => $conjuntos,
-            'canCreateNew' => $user->canManageMultipleConjuntos() || !$user->conjunto_config_id
+            'conjunto' => $conjunto,
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for editing the conjunto configuration.
      */
-    public function create()
+    public function edit()
     {
-        $user = Auth::user();
+        $conjunto = ConjuntoConfig::with('apartmentTypes')->first();
         
-        // Check if user can create another conjunto
-        if ($user->isIndividual() && $user->conjunto_config_id) {
-            return redirect()->route('conjunto-config.index')
-                ->withErrors(['error' => 'Los usuarios individuales solo pueden manejar un conjunto.']);
+        if (!$conjunto) {
+            // Create default configuration if none exists
+            $conjunto = ConjuntoConfig::create([
+                'name' => 'Conjunto Residencial Vista Hermosa',
+                'description' => 'Moderno conjunto residencial ubicado en el norte de Bogotá.',
+                'number_of_towers' => 3,
+                'floors_per_tower' => 8,
+                'apartments_per_floor' => 4,
+                'is_active' => true,
+                'tower_names' => ['A', 'B', 'C'],
+                'configuration_metadata' => [
+                    'address' => 'Carrera 15 #85-23, Bogotá',
+                    'phone' => '601-234-5678',
+                    'email' => 'administracion@vistahermosa.com'
+                ],
+            ]);
         }
-        
-        return Inertia::render('ConjuntoConfig/Create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:conjunto_configs',
-            'description' => 'nullable|string',
-            'number_of_towers' => 'required|integer|min:1|max:20',
-            'floors_per_tower' => 'required|integer|min:1|max:50',
-            'apartments_per_floor' => 'required|integer|min:1|max:10',
-            'tower_names' => 'nullable|array',
-            'tower_names.*' => 'string|max:10',
-            'apartment_types' => 'required|array|min:1',
-            'apartment_types.*.name' => 'required|string|max:255',
-            'apartment_types.*.description' => 'nullable|string',
-            'apartment_types.*.area_sqm' => 'required|numeric|min:1',
-            'apartment_types.*.bedrooms' => 'required|integer|min:0',
-            'apartment_types.*.bathrooms' => 'required|integer|min:0',
-            'apartment_types.*.has_balcony' => 'boolean',
-            'apartment_types.*.has_laundry_room' => 'boolean',
-            'apartment_types.*.has_maid_room' => 'boolean',
-            'apartment_types.*.coefficient' => 'required|numeric|min:0|max:1',
-            'apartment_types.*.administration_fee' => 'required|numeric|min:0',
-            'apartment_types.*.floor_positions' => 'required|array',
-            'apartment_types.*.floor_positions.*' => 'integer|min:1',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            $user = Auth::user();
-            
-            // Check if user can create another conjunto
-            if ($user->isIndividual() && $user->conjunto_config_id) {
-                throw new \Exception('Los usuarios individuales solo pueden manejar un conjunto.');
-            }
-            
-            $conjuntoConfig = ConjuntoConfig::create($validated);
-
-            // If individual user, assign this conjunto to them
-            if ($user->isIndividual()) {
-                $user->update(['conjunto_config_id' => $conjuntoConfig->id]);
-            }
-
-            // Create apartment types
-            foreach ($validated['apartment_types'] as $typeData) {
-                $conjuntoConfig->apartmentTypes()->create($typeData);
-            }
-
-            // Generate apartments based on configuration
-            $conjuntoConfig->generateApartments();
-
-            DB::commit();
-
-            return redirect()->route('conjunto-config.index')
-                ->with('success', 'Configuración del conjunto creada exitosamente');
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            return back()->withErrors(['error' => 'Error al crear la configuración: ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(ConjuntoConfig $conjuntoConfig)
-    {
-        $conjuntoConfig->load(['apartmentTypes', 'apartments.apartmentType']);
-        
-        // Group apartments by tower and floor for better visualization
-        $apartmentsByTower = $conjuntoConfig->apartments
-            ->groupBy('tower')
-            ->map(function ($apartments) {
-                return $apartments->groupBy('floor');
-            });
-
-        return Inertia::render('ConjuntoConfig/Show', [
-            'conjuntoConfig' => $conjuntoConfig,
-            'apartmentsByTower' => $apartmentsByTower,
-            'statistics' => [
-                'total_apartments' => $conjuntoConfig->apartments->count(),
-                'occupied_apartments' => $conjuntoConfig->apartments->where('status', 'Occupied')->count(),
-                'available_apartments' => $conjuntoConfig->apartments->where('status', 'Available')->count(),
-                'maintenance_apartments' => $conjuntoConfig->apartments->where('status', 'Maintenance')->count(),
-                'total_area' => $conjuntoConfig->apartmentTypes->sum(function ($type) {
-                    return $type->area_sqm * $type->apartments->count();
-                }),
-                'monthly_fees_total' => $conjuntoConfig->apartments->sum('monthly_fee'),
-            ]
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ConjuntoConfig $conjuntoConfig)
-    {
-        $conjuntoConfig->load('apartmentTypes');
         
         return Inertia::render('ConjuntoConfig/Edit', [
-            'conjuntoConfig' => $conjuntoConfig
+            'conjunto' => $conjunto
         ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the conjunto configuration.
      */
-    public function update(Request $request, ConjuntoConfig $conjuntoConfig)
+    public function update(Request $request)
     {
+        $conjunto = ConjuntoConfig::first();
+        
+        if (!$conjunto) {
+            return back()->withErrors(['error' => 'No se encontró la configuración del conjunto.']);
+        }
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:conjunto_configs,name,' . $conjuntoConfig->id,
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'number_of_towers' => 'required|integer|min:1|max:20',
             'floors_per_tower' => 'required|integer|min:1|max:50',
@@ -171,8 +74,8 @@ class ConjuntoConfigController extends Controller
             'is_active' => 'boolean',
             'tower_names' => 'nullable|array',
             'tower_names.*' => 'string|max:10',
-            'apartment_types' => 'required|array|min:1',
-            'apartment_types.*.id' => 'sometimes|exists:apartment_types,id',
+            'configuration_metadata' => 'nullable|array',
+            'apartment_types' => 'nullable|array',
             'apartment_types.*.name' => 'required|string|max:255',
             'apartment_types.*.description' => 'nullable|string',
             'apartment_types.*.area_sqm' => 'required|numeric|min:1',
@@ -183,19 +86,25 @@ class ConjuntoConfigController extends Controller
             'apartment_types.*.has_maid_room' => 'boolean',
             'apartment_types.*.coefficient' => 'required|numeric|min:0|max:1',
             'apartment_types.*.administration_fee' => 'required|numeric|min:0',
+            'apartment_types.*.floor_positions' => 'nullable|array',
+            'apartment_types.*.floor_positions.*' => 'integer|min:1',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $conjuntoConfig->update($validated);
+            // Update conjunto configuration (excluding apartment_types)
+            $configData = collect($validated)->except(['apartment_types'])->toArray();
+            $conjunto->update($configData);
 
-            // Update apartment types
-            foreach ($validated['apartment_types'] as $typeData) {
-                if (isset($typeData['id'])) {
-                    $conjuntoConfig->apartmentTypes()->find($typeData['id'])->update($typeData);
-                } else {
-                    $conjuntoConfig->apartmentTypes()->create($typeData);
+            // Handle apartment types if provided
+            if (isset($validated['apartment_types'])) {
+                // Delete existing apartment types for this conjunto
+                $conjunto->apartmentTypes()->delete();
+                
+                // Create new apartment types
+                foreach ($validated['apartment_types'] as $typeData) {
+                    $conjunto->apartmentTypes()->create($typeData);
                 }
             }
 
@@ -211,38 +120,63 @@ class ConjuntoConfigController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Generate apartments based on current configuration.
      */
-    public function destroy(ConjuntoConfig $conjuntoConfig)
+    public function generateApartments()
     {
-        try {
-            $conjuntoConfig->delete();
-            
-            return redirect()->route('conjunto-config.index')
-                ->with('success', 'Configuración del conjunto eliminada exitosamente');
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error al eliminar la configuración: ' . $e->getMessage()]);
+        $conjunto = ConjuntoConfig::first();
+        
+        if (!$conjunto) {
+            return back()->withErrors(['error' => 'No se encontró la configuración del conjunto.']);
         }
-    }
 
-    /**
-     * Generate apartments for a specific conjunto configuration
-     */
-    public function generateApartments(ConjuntoConfig $conjuntoConfig)
-    {
         try {
-            if (!$conjuntoConfig->canGenerateApartments()) {
+            if (!$conjunto->canGenerateApartments()) {
                 return back()->withErrors(['error' => 'No se pueden generar apartamentos. Asegúrate de tener al menos un tipo de apartamento definido.']);
             }
             
             // Generate apartments
-            $conjuntoConfig->generateApartments();
+            $conjunto->generateApartments();
             
-            $totalGenerated = $conjuntoConfig->estimated_apartments_count;
+            $totalGenerated = $conjunto->estimated_apartments_count;
             
-            return back()->with('success', "Se generaron {$totalGenerated} apartamentos exitosamente");
+            return back()->with('success', "Se generaron apartamentos exitosamente según la configuración actual");
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al generar apartamentos: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Show detailed view of the conjunto configuration.
+     */
+    public function show()
+    {
+        $conjunto = ConjuntoConfig::with(['apartmentTypes', 'apartments.apartmentType'])->first();
+        
+        if (!$conjunto) {
+            return redirect()->route('conjunto-config.edit');
+        }
+        
+        // Group apartments by tower and floor for better visualization
+        $apartmentsByTower = $conjunto->apartments
+            ->groupBy('tower')
+            ->map(function ($apartments) {
+                return $apartments->groupBy('floor');
+            });
+
+        return Inertia::render('ConjuntoConfig/Show', [
+            'conjunto' => $conjunto,
+            'apartmentsByTower' => $apartmentsByTower,
+            'statistics' => [
+                'total_apartments' => $conjunto->apartments->count(),
+                'occupied_apartments' => $conjunto->apartments->where('status', 'Occupied')->count(),
+                'available_apartments' => $conjunto->apartments->where('status', 'Available')->count(),
+                'maintenance_apartments' => $conjunto->apartments->where('status', 'Maintenance')->count(),
+                'total_area' => $conjunto->apartmentTypes->sum(function ($type) {
+                    return $type->area_sqm * $type->apartments->count();
+                }),
+                'monthly_fees_total' => $conjunto->apartments->sum('monthly_fee'),
+            ]
+        ]);
     }
 }

@@ -77,19 +77,19 @@ interface FormData {
 }
 
 const props = defineProps<{
-    conjuntoConfig: ConjuntoConfig;
+    conjunto: ConjuntoConfig;
 }>();
 
 // Form state
 const form = useForm<FormData>({
-    name: props.conjuntoConfig.name,
-    description: props.conjuntoConfig.description,
-    number_of_towers: props.conjuntoConfig.number_of_towers,
-    floors_per_tower: props.conjuntoConfig.floors_per_tower,
-    apartments_per_floor: props.conjuntoConfig.apartments_per_floor,
-    is_active: props.conjuntoConfig.is_active,
-    tower_names: [...props.conjuntoConfig.tower_names],
-    apartment_types: props.conjuntoConfig.apartment_types.map(type => ({
+    name: props.conjunto.name,
+    description: props.conjunto.description,
+    number_of_towers: props.conjunto.number_of_towers,
+    floors_per_tower: props.conjunto.floors_per_tower,
+    apartments_per_floor: props.conjunto.apartments_per_floor,
+    is_active: props.conjunto.is_active,
+    tower_names: [...props.conjunto.tower_names],
+    apartment_types: props.conjunto.apartment_types.map(type => ({
         id: type.id,
         name: type.name,
         description: type.description,
@@ -101,7 +101,9 @@ const form = useForm<FormData>({
         has_maid_room: type.has_maid_room,
         coefficient: type.coefficient,
         administration_fee: type.administration_fee,
-        floor_positions: [...type.floor_positions]
+        floor_positions: Array.isArray(type.floor_positions) 
+            ? type.floor_positions.map(pos => parseInt(String(pos), 10)).filter(pos => !isNaN(pos))
+            : [1]
     }))
 });
 
@@ -250,7 +252,19 @@ const updateFloorPositions = (typeIndex: number, position: number, checked: bool
 
 const submit = () => {
     if (canProceedToNext.value) {
-        form.put(route('conjunto-config.update', props.conjuntoConfig.id), {
+        // Clean the data before submission to ensure floor_positions are integers
+        const cleanedData = {
+            ...form.data(),
+            apartment_types: form.apartment_types.map(type => ({
+                ...type,
+                floor_positions: Array.isArray(type.floor_positions) 
+                    ? type.floor_positions.map(pos => parseInt(String(pos), 10)).filter(pos => !isNaN(pos))
+                    : [1]
+            }))
+        };
+        
+        form.put(route('conjunto-config.update'), {
+            data: cleanedData,
             onSuccess: () => {
                 isUnsavedChanges.value = false;
             }
@@ -273,13 +287,13 @@ watch(form, () => {
 const breadcrumbs = [
     { title: 'Escritorio', href: '/dashboard' },
     { title: 'Configuración de Conjuntos', href: '/conjunto-config' },
-    { title: props.conjuntoConfig.name, href: `/conjunto-config/${props.conjuntoConfig.id}` },
-    { title: 'Editar', href: `/conjunto-config/${props.conjuntoConfig.id}/edit` },
+    { title: props.conjunto.name, href: '/conjunto-config/show' },
+    { title: 'Editar', href: '/conjunto-config/edit' },
 ];
 </script>
 
 <template>
-    <Head :title="`Editar ${conjuntoConfig.name}`" />
+    <Head :title="`Editar ${conjunto.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 py-8 max-w-6xl">
@@ -288,11 +302,11 @@ const breadcrumbs = [
                 <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">Editar Conjunto</h1>
                     <p class="text-muted-foreground">
-                        Modifica la configuración de "{{ conjuntoConfig.name }}"
+                        Modifica la configuración de "{{ conjunto.name }}"
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <Link :href="`/conjunto-config/${conjuntoConfig.id}`">
+                    <Link href="/conjunto-config/show">
                         <Button variant="outline" class="gap-2">
                             <ArrowLeft class="h-4 w-4" />
                             Volver
@@ -663,7 +677,11 @@ const breadcrumbs = [
                                                 <Input
                                                     v-model="type.name"
                                                     placeholder="Ej: Tipo A"
+                                                    :class="{ 'border-red-500': form.errors[`apartment_types.${index}.name`] }"
                                                 />
+                                                <p v-if="form.errors[`apartment_types.${index}.name`]" class="text-sm text-red-600">
+                                                    {{ form.errors[`apartment_types.${index}.name`] }}
+                                                </p>
                                             </div>
                                             
                                             <div class="space-y-2">
@@ -673,7 +691,11 @@ const breadcrumbs = [
                                                     type="number"
                                                     min="1"
                                                     placeholder="86"
+                                                    :class="{ 'border-red-500': form.errors[`apartment_types.${index}.area_sqm`] }"
                                                 />
+                                                <p v-if="form.errors[`apartment_types.${index}.area_sqm`]" class="text-sm text-red-600">
+                                                    {{ form.errors[`apartment_types.${index}.area_sqm`] }}
+                                                </p>
                                             </div>
                                         </div>
 
@@ -760,7 +782,7 @@ const breadcrumbs = [
                                             <Label>Posiciones en el Piso</Label>
                                             <div class="flex flex-wrap gap-2">
                                                 <div
-                                                    v-for="position in form.apartments_per_floor"
+                                                    v-for="position in Array.from({length: form.apartments_per_floor}, (_, i) => i + 1)"
                                                     :key="position"
                                                     class="flex items-center space-x-2"
                                                 >
@@ -779,6 +801,11 @@ const breadcrumbs = [
                                             <p class="text-xs text-muted-foreground">
                                                 Selecciona en qué posiciones del piso se ubica este tipo de apartamento
                                             </p>
+                                            <div v-if="Object.keys(form.errors).some(key => key.startsWith(`apartment_types.${index}.floor_positions`))" class="text-sm text-red-600">
+                                                <p v-for="(error, errorKey) in form.errors" :key="errorKey">
+                                                    <span v-if="errorKey.startsWith(`apartment_types.${index}.floor_positions`)">{{ error }}</span>
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

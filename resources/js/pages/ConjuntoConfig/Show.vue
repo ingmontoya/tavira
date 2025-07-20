@@ -7,11 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-    ArrowLeft, 
-    Building, 
-    Home, 
-    Edit, 
+import {
+    ArrowLeft,
+    Building,
+    Home,
+    Edit,
     BarChart3,
     MapPin,
     Users,
@@ -76,7 +76,7 @@ interface Statistics {
 }
 
 const props = defineProps<{
-    conjuntoConfig: ConjuntoConfig;
+    conjunto: ConjuntoConfig;
     apartmentsByTower: Record<string, Record<number, Apartment[]>>;
     statistics: Statistics;
 }>();
@@ -102,10 +102,10 @@ const formatDate = (dateString: string) => {
 const isGeneratingApartments = ref(false);
 
 const generateApartments = () => {
-    if (confirm(`¿Estás seguro de que deseas generar ${props.conjuntoConfig.number_of_towers * props.conjuntoConfig.floors_per_tower * props.conjuntoConfig.apartments_per_floor} apartamentos? Esta acción eliminará todos los apartamentos existentes.`)) {
+    if (confirm(`¿Estás seguro de que deseas generar ${props.conjunto.number_of_towers * props.conjunto.floors_per_tower * props.conjunto.apartments_per_floor} apartamentos? Esta acción eliminará todos los apartamentos existentes.`)) {
         isGeneratingApartments.value = true;
-        
-        router.post(`/conjunto-config/${props.conjuntoConfig.id}/generate-apartments`, {}, {
+
+        router.post(`/conjunto-config/${props.conjunto.id}/generate-apartments`, {}, {
             onFinish: () => {
                 isGeneratingApartments.value = false;
             }
@@ -114,16 +114,16 @@ const generateApartments = () => {
 };
 
 const canGenerateApartments = computed(() => {
-    return props.conjuntoConfig.apartment_types.length > 0 && 
-           props.conjuntoConfig.number_of_towers > 0 && 
-           props.conjuntoConfig.floors_per_tower > 0 && 
-           props.conjuntoConfig.apartments_per_floor > 0;
+    return props.conjunto.apartment_types.length > 0 &&
+           props.conjunto.number_of_towers > 0 &&
+           props.conjunto.floors_per_tower > 0 &&
+           props.conjunto.apartments_per_floor > 0;
 });
 
 const estimatedApartments = computed(() => {
-    return props.conjuntoConfig.number_of_towers * 
-           props.conjuntoConfig.floors_per_tower * 
-           props.conjuntoConfig.apartments_per_floor;
+    return props.conjunto.number_of_towers *
+           props.conjunto.floors_per_tower *
+           props.conjunto.apartments_per_floor;
 });
 
 const getStatusColor = (status: string) => {
@@ -160,12 +160,12 @@ const averageMonthlyFee = computed(() => {
 const breadcrumbs = [
     { title: 'Escritorio', href: '/dashboard' },
     { title: 'Configuración de Conjuntos', href: '/conjunto-config' },
-    { title: props.conjuntoConfig.name, href: `/conjunto-config/${props.conjuntoConfig.id}` },
+    { title: props.conjunto.name, href: `/conjunto-config/${props.conjunto.id}` },
 ];
 </script>
 
 <template>
-    <Head :title="conjuntoConfig.name" />
+    <Head :title="conjunto.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto px-4 py-8 max-w-7xl">
@@ -173,13 +173,13 @@ const breadcrumbs = [
             <div class="flex items-center justify-between mb-8">
                 <div class="space-y-1">
                     <div class="flex items-center gap-3">
-                        <h1 class="text-3xl font-bold tracking-tight">{{ conjuntoConfig.name }}</h1>
-                        <Badge :variant="conjuntoConfig.is_active ? 'default' : 'secondary'">
-                            {{ conjuntoConfig.is_active ? 'Activo' : 'Inactivo' }}
+                        <h1 class="text-3xl font-bold tracking-tight">{{ conjunto.name }}</h1>
+                        <Badge :variant="conjunto.is_active ? 'default' : 'secondary'">
+                            {{ conjunto.is_active ? 'Activo' : 'Inactivo' }}
                         </Badge>
                     </div>
                     <p class="text-muted-foreground">
-                        {{ conjuntoConfig.description }}
+                        {{ conjunto.description }}
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -189,13 +189,13 @@ const breadcrumbs = [
                             Volver
                         </Button>
                     </Link>
-                    <Link :href="`/conjunto-config/${conjuntoConfig.id}/edit`">
+                    <Link :href="`/conjunto-config/edit`">
                         <Button class="gap-2">
                             <Edit class="h-4 w-4" />
                             Editar
                         </Button>
                     </Link>
-                    <Button 
+                    <Button
                         @click="generateApartments"
                         :disabled="!canGenerateApartments || isGeneratingApartments"
                         variant="outline"
@@ -229,7 +229,7 @@ const breadcrumbs = [
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardContent class="p-6">
                         <div class="flex items-center gap-2">
@@ -243,7 +243,7 @@ const breadcrumbs = [
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardContent class="p-6">
                         <div class="flex items-center gap-2">
@@ -257,7 +257,7 @@ const breadcrumbs = [
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardContent class="p-6">
                         <div class="flex items-center gap-2">
@@ -297,25 +297,25 @@ const breadcrumbs = [
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <p class="text-sm text-muted-foreground">Torres</p>
-                                        <p class="text-lg font-semibold">{{ conjuntoConfig.number_of_towers }}</p>
+                                        <p class="text-lg font-semibold">{{ conjunto.number_of_towers }}</p>
                                     </div>
                                     <div>
                                         <p class="text-sm text-muted-foreground">Pisos por Torre</p>
-                                        <p class="text-lg font-semibold">{{ conjuntoConfig.floors_per_tower }}</p>
+                                        <p class="text-lg font-semibold">{{ conjunto.floors_per_tower }}</p>
                                     </div>
                                     <div>
                                         <p class="text-sm text-muted-foreground">Aptos por Piso</p>
-                                        <p class="text-lg font-semibold">{{ conjuntoConfig.apartments_per_floor }}</p>
+                                        <p class="text-lg font-semibold">{{ conjunto.apartments_per_floor }}</p>
                                     </div>
                                 </div>
-                                
+
                                 <Separator />
-                                
+
                                 <div>
                                     <p class="text-sm text-muted-foreground mb-2">Torres Configuradas</p>
                                     <div class="flex flex-wrap gap-2">
                                         <Badge
-                                            v-for="tower in conjuntoConfig.tower_names"
+                                            v-for="tower in conjunto.tower_names"
                                             :key="tower"
                                             variant="outline"
                                         >
@@ -343,7 +343,7 @@ const breadcrumbs = [
                                         </div>
                                         <span class="font-semibold">{{ statistics.occupied_apartments }}</span>
                                     </div>
-                                    
+
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
                                             <div class="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -351,7 +351,7 @@ const breadcrumbs = [
                                         </div>
                                         <span class="font-semibold">{{ statistics.available_apartments }}</span>
                                     </div>
-                                    
+
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-2">
                                             <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
@@ -360,9 +360,9 @@ const breadcrumbs = [
                                         <span class="font-semibold">{{ statistics.maintenance_apartments }}</span>
                                     </div>
                                 </div>
-                                
+
                                 <Separator />
-                                
+
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <span>Ingresos Mensuales</span>
@@ -392,7 +392,7 @@ const breadcrumbs = [
                                 <div class="space-y-4">
                                     <div v-for="(apartments, floor) in floors" :key="floor" class="space-y-2">
                                         <h4 class="font-medium text-sm text-muted-foreground">Piso {{ floor }}</h4>
-                                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             <div
                                                 v-for="apartment in apartments"
                                                 :key="apartment.id"
@@ -421,7 +421,7 @@ const breadcrumbs = [
                 <!-- Types Tab -->
                 <TabsContent value="types" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Card v-for="type in conjuntoConfig.apartment_types" :key="type.id">
+                        <Card v-for="type in conjunto.apartment_types" :key="type.id">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Home class="h-5 w-5" />
@@ -450,9 +450,9 @@ const breadcrumbs = [
                                         <p class="font-semibold">{{ type.apartments_count || 0 }}</p>
                                     </div>
                                 </div>
-                                
+
                                 <Separator />
-                                
+
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-sm">
                                         <span>Coeficiente</span>
@@ -463,7 +463,7 @@ const breadcrumbs = [
                                         <span class="font-semibold">{{ formatCurrency(type.administration_fee) }}</span>
                                     </div>
                                 </div>
-                                
+
                                 <div class="space-y-2">
                                     <p class="text-sm text-muted-foreground">Características</p>
                                     <div class="flex flex-wrap gap-2">
@@ -472,7 +472,7 @@ const breadcrumbs = [
                                         <Badge v-if="type.has_maid_room" variant="outline">Cuarto Servicio</Badge>
                                     </div>
                                 </div>
-                                
+
                                 <div class="space-y-2">
                                     <p class="text-sm text-muted-foreground">Posiciones en Piso</p>
                                     <div class="flex flex-wrap gap-1">
@@ -506,20 +506,20 @@ const breadcrumbs = [
                                 <div class="space-y-3">
                                     <div class="flex justify-between">
                                         <span class="text-sm text-muted-foreground">ID del Conjunto</span>
-                                        <span class="font-mono text-sm">{{ conjuntoConfig.id }}</span>
+                                        <span class="font-mono text-sm">{{ conjunto.id }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-sm text-muted-foreground">Fecha de Creación</span>
-                                        <span class="text-sm">{{ formatDate(conjuntoConfig.created_at) }}</span>
+                                        <span class="text-sm">{{ formatDate(conjunto.created_at) }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-sm text-muted-foreground">Última Actualización</span>
-                                        <span class="text-sm">{{ formatDate(conjuntoConfig.updated_at) }}</span>
+                                        <span class="text-sm">{{ formatDate(conjunto.updated_at) }}</span>
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-sm text-muted-foreground">Estado</span>
-                                        <Badge :variant="conjuntoConfig.is_active ? 'default' : 'secondary'">
-                                            {{ conjuntoConfig.is_active ? 'Activo' : 'Inactivo' }}
+                                        <Badge :variant="conjunto.is_active ? 'default' : 'secondary'">
+                                            {{ conjunto.is_active ? 'Activo' : 'Inactivo' }}
                                         </Badge>
                                     </div>
                                 </div>
@@ -527,7 +527,7 @@ const breadcrumbs = [
                         </Card>
 
                         <!-- Configuration Metadata -->
-                        <Card v-if="conjuntoConfig.configuration_metadata">
+                        <Card v-if="conjunto.configuration_metadata">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Settings class="h-5 w-5" />
@@ -537,7 +537,7 @@ const breadcrumbs = [
                             <CardContent>
                                 <div class="space-y-2">
                                     <div
-                                        v-for="(value, key) in conjuntoConfig.configuration_metadata"
+                                        v-for="(value, key) in conjunto.configuration_metadata"
                                         :key="key"
                                         class="flex justify-between text-sm"
                                     >

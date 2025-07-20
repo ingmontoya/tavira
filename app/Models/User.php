@@ -22,8 +22,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        'conjunto_config_id',
     ];
 
     /**
@@ -49,35 +47,4 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the conjunto configuration that the user belongs to.
-     */
-    public function conjuntoConfig()
-    {
-        return $this->belongsTo(ConjuntoConfig::class);
-    }
-
-    /**
-     * Check if user is a company
-     */
-    public function isCompany(): bool
-    {
-        return $this->role === 'company';
-    }
-
-    /**
-     * Check if user is an individual
-     */
-    public function isIndividual(): bool
-    {
-        return $this->role === 'individual';
-    }
-
-    /**
-     * Check if user can manage multiple conjuntos
-     */
-    public function canManageMultipleConjuntos(): bool
-    {
-        return $this->isCompany();
-    }
 }
