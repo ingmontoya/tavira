@@ -3,6 +3,8 @@
 use App\Http\Controllers\ApartmentController;
 use App\Http\Controllers\ConjuntoConfigController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentConceptController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ResidentController;
 use Illuminate\Support\Facades\Route;
@@ -53,9 +55,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('Fees/Index');
     })->name('fees.index')->middleware('rate.limit:default');
 
+    // Payments Management
     Route::get('payments', function () {
         return Inertia::render('Payments/Index');
     })->name('payments.index')->middleware('rate.limit:default');
+
+    // Invoices Management
+    Route::resource('invoices', InvoiceController::class);
+    Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
+    Route::post('invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generate-monthly');
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
+    Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByEmail'])->name('invoices.send-email');
+
+    // Payment Concepts Management
+    Route::resource('payment-concepts', PaymentConceptController::class);
+    Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptController::class, 'toggle'])->name('payment-concepts.toggle');
 
     Route::get('providers', function () {
         return Inertia::render('Providers/Index');

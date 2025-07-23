@@ -5,26 +5,28 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { 
-    BookOpen, 
-    LayoutGrid, 
-    Users, 
-    DollarSign, 
-    Package, 
-    UserCheck, 
-    MessageSquare, 
-    FileText, 
-    UserCog, 
-    BarChart3, 
-    Smartphone, 
-    Settings, 
-    Shield, 
-    Building2, 
-    Home, 
-    Mail, 
-    Phone, 
-    Car, 
-    Bell
+import {
+    BookOpen,
+    LayoutGrid,
+    Users,
+    DollarSign,
+    Package,
+    UserCheck,
+    MessageSquare,
+    FileText,
+    UserCog,
+    BarChart3,
+    Smartphone,
+    Settings,
+    Shield,
+    Building2,
+    Home,
+    Mail,
+    Phone,
+    Car,
+    Bell,
+    Receipt,
+    CreditCard
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -60,22 +62,28 @@ const residentsNavItems: NavItem[] = [
 
 const financeNavItems: NavItem[] = [
     {
-        title: 'Finanzas',
-        href: '/finances',
-        icon: DollarSign,
-        tourId: 'nav-finances',
+        title: 'Pagos',
+        href: '/payments',
+        icon: CreditCard,
+        tourId: 'nav-payments',
+    },
+    {
+        title: 'Facturas',
+        href: '/invoices',
+        icon: Receipt,
+        tourId: 'nav-invoices',
+    },
+    {
+        title: 'Conceptos de Pago',
+        href: '/payment-concepts',
+        icon: Settings,
+        tourId: 'nav-payment-concepts',
     },
     {
         title: 'Cuotas',
         href: '/fees',
         icon: FileText,
         tourId: 'nav-fees',
-    },
-    {
-        title: 'Pagos',
-        href: '/payments',
-        icon: DollarSign,
-        tourId: 'nav-payments',
     },
     {
         title: 'Proveedores',
@@ -130,7 +138,7 @@ const systemNavItems: NavItem[] = [
     },
     {
         title: 'Seguridad',
-        href: '/security',
+        href: '/settings/security',
         icon: Shield,
         tourId: 'nav-security',
     },

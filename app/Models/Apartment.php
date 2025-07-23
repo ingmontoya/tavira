@@ -48,6 +48,11 @@ class Apartment extends Model
         return $this->hasMany(Resident::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function getFullAddressAttribute(): string
     {
         return $this->tower ? "Torre {$this->tower} - Apt {$this->number}" : "Apt {$this->number}";

@@ -34,6 +34,16 @@ class ConjuntoConfig extends Model
         return $this->hasMany(Apartment::class);
     }
 
+    public function paymentConcepts(): HasMany
+    {
+        return $this->hasMany(PaymentConcept::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     public function getEstimatedApartmentsCountAttribute(): int
     {
         return $this->number_of_towers * $this->floors_per_tower * $this->apartments_per_floor;
