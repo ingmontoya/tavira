@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { 
-    AlertDialog, 
-    AlertDialogAction, 
-    AlertDialogCancel, 
-    AlertDialogContent, 
-    AlertDialogDescription, 
-    AlertDialogFooter, 
-    AlertDialogHeader, 
-    AlertDialogTitle, 
-    AlertDialogTrigger 
-} from '@/components/ui/alert-dialog';
-import { Plus, Eye, Edit, Trash2, Building, Home, Users, Search, Filter, RefreshCw, Info, Calendar, DollarSign } from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Building, Calendar, Edit, Eye, Filter, Home, Info, Plus, RefreshCw, Search } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface ApartmentType {
     id: number;
@@ -71,33 +71,32 @@ const sortOrder = ref('asc');
 // Computed properties
 const filteredConjuntos = computed(() => {
     let filtered = conjuntos.value;
-    
+
     // Search filter
     if (searchQuery.value) {
-        filtered = filtered.filter(conjunto => 
-            conjunto.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-            conjunto.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+        filtered = filtered.filter(
+            (conjunto) =>
+                conjunto.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                conjunto.description?.toLowerCase().includes(searchQuery.value.toLowerCase()),
         );
     }
-    
+
     // Status filter
     if (statusFilter.value !== 'all') {
-        filtered = filtered.filter(conjunto => 
-            statusFilter.value === 'active' ? conjunto.is_active : !conjunto.is_active
-        );
+        filtered = filtered.filter((conjunto) => (statusFilter.value === 'active' ? conjunto.is_active : !conjunto.is_active));
     }
-    
+
     // Sort
     if (filtered.length > 0) {
         filtered.sort((a, b) => {
             let aValue = a[sortBy.value];
             let bValue = b[sortBy.value];
-            
+
             if (sortBy.value === 'name') {
                 aValue = aValue.toLowerCase();
                 bValue = bValue.toLowerCase();
             }
-            
+
             if (sortOrder.value === 'asc') {
                 return aValue > bValue ? 1 : -1;
             } else {
@@ -105,14 +104,14 @@ const filteredConjuntos = computed(() => {
             }
         });
     }
-    
+
     return filtered;
 });
 
 const totalStats = computed(() => {
     return {
         totalConjuntos: conjuntos.value.length,
-        activeConjuntos: conjuntos.value.filter(c => c.is_active).length,
+        activeConjuntos: conjuntos.value.filter((c) => c.is_active).length,
         totalApartments: conjuntos.value.reduce((sum, c) => sum + c.apartments_count, 0),
         totalTowers: conjuntos.value.reduce((sum, c) => sum + c.number_of_towers, 0),
     };
@@ -137,7 +136,7 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 0,
     }).format(amount);
 };
 
@@ -145,7 +144,7 @@ const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
     });
 };
 </script>
@@ -160,9 +159,7 @@ const formatDate = (dateString: string) => {
                 <div class="flex items-center justify-between">
                     <div class="space-y-1">
                         <h1 class="text-3xl font-bold tracking-tight">Configuración de Conjuntos</h1>
-                        <p class="text-muted-foreground">
-                            Gestiona la configuración del conjunto residencial y genera apartamentos automáticamente
-                        </p>
+                        <p class="text-muted-foreground">Gestiona la configuración del conjunto residencial y genera apartamentos automáticamente</p>
                     </div>
                     <Link v-if="!conjunto" href="/conjunto-config/edit">
                         <Button class="gap-2">
@@ -173,11 +170,11 @@ const formatDate = (dateString: string) => {
                 </div>
 
                 <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card>
                         <CardContent class="p-6">
                             <div class="flex items-center gap-2">
-                                <div class="p-2 bg-primary/10 rounded-full">
+                                <div class="rounded-full bg-primary/10 p-2">
                                     <Building class="h-4 w-4 text-primary" />
                                 </div>
                                 <div>
@@ -187,11 +184,11 @@ const formatDate = (dateString: string) => {
                             </div>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardContent class="p-6">
                             <div class="flex items-center gap-2">
-                                <div class="p-2 bg-green-100 rounded-full">
+                                <div class="rounded-full bg-green-100 p-2">
                                     <Building class="h-4 w-4 text-green-600" />
                                 </div>
                                 <div>
@@ -201,11 +198,11 @@ const formatDate = (dateString: string) => {
                             </div>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardContent class="p-6">
                             <div class="flex items-center gap-2">
-                                <div class="p-2 bg-blue-100 rounded-full">
+                                <div class="rounded-full bg-blue-100 p-2">
                                     <Home class="h-4 w-4 text-blue-600" />
                                 </div>
                                 <div>
@@ -215,11 +212,11 @@ const formatDate = (dateString: string) => {
                             </div>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardContent class="p-6">
                             <div class="flex items-center gap-2">
-                                <div class="p-2 bg-purple-100 rounded-full">
+                                <div class="rounded-full bg-purple-100 p-2">
                                     <Building class="h-4 w-4 text-purple-600" />
                                 </div>
                                 <div>
@@ -235,26 +232,21 @@ const formatDate = (dateString: string) => {
             <!-- Filters and Search -->
             <Card v-if="conjunto">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Filter class="h-5 w-5" />
                         Filtros y Búsqueda
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                         <div class="space-y-2">
                             <Label for="search">Buscar</Label>
                             <div class="relative">
-                                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    id="search"
-                                    v-model="searchQuery"
-                                    placeholder="Nombre o descripción..."
-                                    class="pl-10"
-                                />
+                                <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                                <Input id="search" v-model="searchQuery" placeholder="Nombre o descripción..." class="pl-10" />
                             </div>
                         </div>
-                        
+
                         <div class="space-y-2">
                             <Label for="status">Estado</Label>
                             <Select v-model="statusFilter">
@@ -268,7 +260,7 @@ const formatDate = (dateString: string) => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div class="space-y-2">
                             <Label for="sort">Ordenar por</Label>
                             <Select v-model="sortBy">
@@ -282,7 +274,7 @@ const formatDate = (dateString: string) => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div class="space-y-2">
                             <Label for="order">Orden</Label>
                             <Select v-model="sortOrder">
@@ -301,36 +293,32 @@ const formatDate = (dateString: string) => {
 
             <!-- Results Summary -->
             <div v-if="conjunto" class="flex items-center justify-between text-sm text-muted-foreground">
-                <span>
-                    Mostrando {{ filteredConjuntos.length }} de {{ conjuntos.length }} conjuntos
-                </span>
-                <span>
-                    Última actualización: {{ formatDate(new Date().toISOString()) }}
-                </span>
+                <span> Mostrando {{ filteredConjuntos.length }} de {{ conjuntos.length }} conjuntos </span>
+                <span> Última actualización: {{ formatDate(new Date().toISOString()) }} </span>
             </div>
 
             <!-- Conjuntos Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card 
-                    v-for="conjunto in filteredConjuntos" 
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card
+                    v-for="conjunto in filteredConjuntos"
                     :key="conjunto.id"
-                    class="group relative hover:shadow-lg transition-all duration-200 hover:border-primary/50"
+                    class="group relative transition-all duration-200 hover:border-primary/50 hover:shadow-lg"
                 >
                     <CardHeader class="pb-4">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="p-2 bg-primary/10 rounded-lg">
+                                <div class="rounded-lg bg-primary/10 p-2">
                                     <Building class="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <CardTitle class="text-lg group-hover:text-primary transition-colors">
+                                    <CardTitle class="text-lg transition-colors group-hover:text-primary">
                                         {{ conjunto.name }}
                                     </CardTitle>
-                                    <div class="flex items-center gap-2 mt-1">
+                                    <div class="mt-1 flex items-center gap-2">
                                         <Badge :variant="conjunto.is_active ? 'default' : 'secondary'">
                                             {{ conjunto.is_active ? 'Activo' : 'Inactivo' }}
                                         </Badge>
-                                        <span class="text-xs text-muted-foreground flex items-center gap-1">
+                                        <span class="flex items-center gap-1 text-xs text-muted-foreground">
                                             <Calendar class="h-3 w-3" />
                                             {{ formatDate(conjunto.created_at) }}
                                         </span>
@@ -350,22 +338,22 @@ const formatDate = (dateString: string) => {
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-                        <CardDescription class="text-sm line-clamp-2 mt-2">
+                        <CardDescription class="mt-2 line-clamp-2 text-sm">
                             {{ conjunto.description }}
                         </CardDescription>
                     </CardHeader>
-                    
+
                     <CardContent class="space-y-4">
                         <!-- Key Statistics -->
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                            <div class="flex items-center gap-2 rounded-lg bg-muted/30 p-3">
                                 <Building class="h-4 w-4 text-blue-600" />
                                 <div>
                                     <p class="text-lg font-semibold">{{ conjunto.number_of_towers }}</p>
                                     <p class="text-xs text-muted-foreground">Torres</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
+                            <div class="flex items-center gap-2 rounded-lg bg-muted/30 p-3">
                                 <Home class="h-4 w-4 text-green-600" />
                                 <div>
                                     <p class="text-lg font-semibold">{{ conjunto.apartments_count }}</p>
@@ -394,7 +382,7 @@ const formatDate = (dateString: string) => {
 
                         <!-- Apartment Types -->
                         <div v-if="conjunto.apartment_types && conjunto.apartment_types.length > 0" class="space-y-2">
-                            <p class="text-sm font-medium flex items-center gap-2">
+                            <p class="flex items-center gap-2 text-sm font-medium">
                                 <Home class="h-4 w-4" />
                                 Tipos de Apartamento
                             </p>
@@ -408,7 +396,9 @@ const formatDate = (dateString: string) => {
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <div class="space-y-1">
-                                                <p><strong>{{ type.name }}</strong></p>
+                                                <p>
+                                                    <strong>{{ type.name }}</strong>
+                                                </p>
                                                 <p>Área: {{ type.area_sqm }}m²</p>
                                                 <p>Habitaciones: {{ type.bedrooms }}</p>
                                                 <p>Baños: {{ type.bathrooms }}</p>
@@ -436,7 +426,7 @@ const formatDate = (dateString: string) => {
                                 </Button>
                             </Link>
                         </div>
-                        
+
                         <div class="flex gap-2">
                             <AlertDialog>
                                 <AlertDialogTrigger as-child>
@@ -449,14 +439,13 @@ const formatDate = (dateString: string) => {
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>¿Regenerar apartamentos?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            Esta acción generará apartamentos basados en la configuración actual. Si ya existen apartamentos, se mantendrán y solo se crearán los faltantes.
+                                            Esta acción generará apartamentos basados en la configuración actual. Si ya existen apartamentos, se
+                                            mantendrán y solo se crearán los faltantes.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction @click="generateApartments(conjunto)">
-                                            Regenerar
-                                        </AlertDialogAction>
+                                        <AlertDialogAction @click="generateApartments(conjunto)"> Regenerar </AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
@@ -466,13 +455,14 @@ const formatDate = (dateString: string) => {
             </div>
 
             <!-- Empty State - No conjunto configured -->
-            <div v-if="conjuntos.length === 0" class="text-center py-20">
-                <div class="mx-auto w-24 h-24 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+            <div v-if="conjuntos.length === 0" class="py-20 text-center">
+                <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-muted/50">
                     <Building class="h-12 w-12 text-muted-foreground" />
                 </div>
-                <h3 class="text-xl font-semibold mb-2">No hay conjunto configurado</h3>
-                <p class="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Comienza creando la configuración de tu conjunto residencial. Define torres, pisos, tipos de apartamento y genera la estructura automáticamente.
+                <h3 class="mb-2 text-xl font-semibold">No hay conjunto configurado</h3>
+                <p class="mx-auto mb-6 max-w-md text-muted-foreground">
+                    Comienza creando la configuración de tu conjunto residencial. Define torres, pisos, tipos de apartamento y genera la estructura
+                    automáticamente.
                 </p>
                 <Link href="/conjunto-config/edit">
                     <Button class="gap-2">

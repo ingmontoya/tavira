@@ -7,6 +7,8 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
         <AppLogoIcon type="iso" class="size-9 fill-current text-[var(--foreground)] dark:text-white" />
     </div>
     <div class="ml-1 grid flex-1 text-left text-xl">
-        <span class="mb-0.5 truncate leading-tight bg-gradient-to-r from-[#2563EB] to-[#059669] text-transparent bg-clip-text font-extrabold">Habitta</span>
+        <span class="mb-0.5 truncate bg-gradient-to-r from-[#2563EB] to-[#059669] bg-clip-text leading-tight font-extrabold text-transparent"
+            >Habitta</span
+        >
     </div>
 </template>

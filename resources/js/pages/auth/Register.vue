@@ -30,13 +30,30 @@ const submit = () => {
             <div class="grid gap-6">
                 <div class="grid gap-2">
                     <Label for="name">Nombre</Label>
-                    <Input id="name" type="text" required autofocus :tabindex="1" autocomplete="name" v-model="form.name" placeholder="Nombre completo" />
+                    <Input
+                        id="name"
+                        type="text"
+                        required
+                        autofocus
+                        :tabindex="1"
+                        autocomplete="name"
+                        v-model="form.name"
+                        placeholder="Nombre completo"
+                    />
                     <InputError :message="form.errors.name" />
                 </div>
 
                 <div class="grid gap-2">
                     <Label for="email">Correo electrónico</Label>
-                    <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="correo@ejemplo.com" />
+                    <Input
+                        id="email"
+                        type="email"
+                        required
+                        :tabindex="2"
+                        autocomplete="email"
+                        v-model="form.email"
+                        placeholder="correo@ejemplo.com"
+                    />
                     <InputError :message="form.errors.email" />
                 </div>
 
@@ -68,7 +85,12 @@ const submit = () => {
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
 
-                <Button type="submit" class="mt-2 w-full bg-gradient-to-r from-[#3887FE]  to-[#8338EA] font-extrabold" tabindex="5" :disabled="form.processing">
+                <Button
+                    type="submit"
+                    class="mt-2 w-full bg-gradient-to-r from-[#3887FE] to-[#8338EA] font-extrabold"
+                    tabindex="5"
+                    :disabled="form.processing"
+                >
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Crear cuenta
                 </Button>

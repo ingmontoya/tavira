@@ -1,17 +1,4 @@
 <script setup lang="ts">
-import { useForm, Head, Link } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,24 +8,22 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger
+    AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    ArrowLeft,
-    Home,
-    Building,
-    Settings,
-    Save,
-    X,
-    DollarSign,
-    MapPin,
-    FileText,
-    CheckCircle,
-    AlertCircle,
-    Clock,
-    CreditCard
-} from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Building, CheckCircle, DollarSign, FileText, Home, Save, Settings, X } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 interface FormData {
     conjunto_config_id: number;
@@ -58,7 +43,7 @@ const props = defineProps({
     apartment: Object,
     conjunto: Object,
     apartmentTypes: Array,
-    statuses: Array
+    statuses: Array,
 });
 
 // Form state
@@ -73,7 +58,7 @@ const form = useForm<FormData>({
     monthly_fee: props.apartment.monthly_fee,
     utilities: props.apartment.utilities || {},
     features: props.apartment.features || {},
-    notes: props.apartment.notes || ''
+    notes: props.apartment.notes || '',
 });
 
 // UI state
@@ -85,7 +70,7 @@ const validationRules = {
     step1: ['conjunto_config_id', 'apartment_type_id', 'number', 'tower', 'floor', 'position_on_floor'],
     step2: ['status', 'monthly_fee'],
     step3: [],
-    step4: []
+    step4: [],
 };
 
 const steps = [
@@ -94,29 +79,29 @@ const steps = [
         title: 'Información Básica',
         description: 'Ubicación y tipo de apartamento',
         icon: Home,
-        fields: ['conjunto_config_id', 'apartment_type_id', 'number', 'tower', 'floor', 'position_on_floor']
+        fields: ['conjunto_config_id', 'apartment_type_id', 'number', 'tower', 'floor', 'position_on_floor'],
     },
     {
         id: 1,
         title: 'Estado y Cuota',
         description: 'Estado del apartamento y cuota mensual',
         icon: DollarSign,
-        fields: ['status', 'monthly_fee']
+        fields: ['status', 'monthly_fee'],
     },
     {
         id: 2,
         title: 'Características',
         description: 'Servicios y características adicionales',
         icon: Settings,
-        fields: ['utilities', 'features']
+        fields: ['utilities', 'features'],
     },
     {
         id: 3,
         title: 'Notas',
         description: 'Información adicional',
         icon: FileText,
-        fields: ['notes']
-    }
+        fields: ['notes'],
+    },
 ];
 
 // Computed properties
@@ -138,12 +123,15 @@ const progressPercentage = computed(() => {
 const formProgress = computed(() => {
     const totalFields = steps.reduce((acc, step) => acc + step.fields.length, 0);
     const completedFields = steps.reduce((acc, step) => {
-        return acc + step.fields.filter(field => {
-            const value = form[field];
-            if (typeof value === 'boolean') return true;
-            if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
-            return value && value.toString().trim() !== '';
-        }).length;
+        return (
+            acc +
+            step.fields.filter((field) => {
+                const value = form[field];
+                if (typeof value === 'boolean') return true;
+                if (typeof value === 'object' && value !== null) return Object.keys(value).length > 0;
+                return value && value.toString().trim() !== '';
+            }).length
+        );
     }, 0);
 
     return Math.round((completedFields / totalFields) * 100);
@@ -173,20 +161,28 @@ const features = ref({
 });
 
 // Watch for changes in utilities and features and update form
-watch(utilities, (newUtilities) => {
-    form.utilities = { ...newUtilities };
-}, { deep: true });
+watch(
+    utilities,
+    (newUtilities) => {
+        form.utilities = { ...newUtilities };
+    },
+    { deep: true },
+);
 
-watch(features, (newFeatures) => {
-    form.features = { ...newFeatures };
-}, { deep: true });
+watch(
+    features,
+    (newFeatures) => {
+        form.features = { ...newFeatures };
+    },
+    { deep: true },
+);
 
 // Methods
 const validateStep = (stepIndex: number): boolean => {
     const step = steps[stepIndex];
     const requiredFields = validationRules[`step${stepIndex + 1}` as keyof typeof validationRules] || [];
 
-    return requiredFields.every(field => {
+    return requiredFields.every((field) => {
         const value = form[field];
         if (typeof value === 'boolean') return true;
         if (typeof value === 'object' && value !== null) return Object.keys(value).length >= 0;
@@ -217,7 +213,7 @@ const submit = () => {
         form.put(route('apartments.update', props.apartment.id), {
             onSuccess: () => {
                 isUnsavedChanges.value = false;
-            }
+            },
         });
     }
 };
@@ -229,9 +225,13 @@ const resetForm = () => {
 };
 
 // Watch for form changes
-watch(form, () => {
-    isUnsavedChanges.value = true;
-}, { deep: true });
+watch(
+    form,
+    () => {
+        isUnsavedChanges.value = true;
+    },
+    { deep: true },
+);
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -243,10 +243,10 @@ const breadcrumbs = [
 
 const getStatusLabel = (status: string) => {
     const labels = {
-        'Available': 'Disponible',
-        'Occupied': 'Ocupado',
-        'Maintenance': 'Mantenimiento',
-        'Reserved': 'Reservado',
+        Available: 'Disponible',
+        Occupied: 'Ocupado',
+        Maintenance: 'Mantenimiento',
+        Reserved: 'Reservado',
     };
     return labels[status] || status;
 };
@@ -256,9 +256,9 @@ const getStatusLabel = (status: string) => {
     <Head :title="`Editar ${apartment.full_address}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">Editar Apartamento</h1>
                     <p class="text-muted-foreground">
@@ -282,15 +282,11 @@ const getStatusLabel = (status: string) => {
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?
-                                </AlertDialogDescription>
+                                <AlertDialogDescription> Tienes cambios sin guardar. ¿Estás seguro de que deseas salir? </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Continuar editando</AlertDialogCancel>
-                                <AlertDialogAction @click="resetForm">
-                                    Descartar cambios
-                                </AlertDialogAction>
+                                <AlertDialogAction @click="resetForm"> Descartar cambios </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -303,9 +299,7 @@ const getStatusLabel = (status: string) => {
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle class="text-lg">Progreso del Formulario</CardTitle>
-                            <CardDescription>
-                                Completa todos los campos para actualizar el apartamento
-                            </CardDescription>
+                            <CardDescription> Completa todos los campos para actualizar el apartamento </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-muted-foreground">{{ formProgress }}% completado</span>
@@ -316,43 +310,45 @@ const getStatusLabel = (status: string) => {
             </Card>
 
             <!-- Step Navigation -->
-            <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="mb-8 grid grid-cols-4 gap-4">
                 <div
                     v-for="(step, index) in steps"
                     :key="step.id"
                     @click="goToStep(index)"
                     :class="[
-                        'relative p-4 rounded-lg border cursor-pointer transition-all duration-200',
+                        'relative cursor-pointer rounded-lg border p-4 transition-all duration-200',
                         {
-                            'bg-primary text-primary-foreground border-primary': currentStep === index,
-                            'bg-green-50 border-green-200 text-green-800': index < currentStep && validateStep(index),
-                            'bg-muted/50 border-muted text-muted-foreground': index > currentStep,
-                            'hover:bg-muted/80': index <= currentStep
-                        }
+                            'border-primary bg-primary text-primary-foreground': currentStep === index,
+                            'border-green-200 bg-green-50 text-green-800': index < currentStep && validateStep(index),
+                            'border-muted bg-muted/50 text-muted-foreground': index > currentStep,
+                            'hover:bg-muted/80': index <= currentStep,
+                        },
                     ]"
                 >
                     <div class="flex items-center gap-3">
-                        <div :class="[
-                            'flex items-center justify-center w-8 h-8 rounded-full',
-                            {
-                                'bg-primary-foreground text-primary': currentStep === index,
-                                'bg-green-500 text-white': index < currentStep && validateStep(index),
-                                'bg-muted text-muted-foreground': index > currentStep
-                            }
-                        ]">
+                        <div
+                            :class="[
+                                'flex h-8 w-8 items-center justify-center rounded-full',
+                                {
+                                    'bg-primary-foreground text-primary': currentStep === index,
+                                    'bg-green-500 text-white': index < currentStep && validateStep(index),
+                                    'bg-muted text-muted-foreground': index > currentStep,
+                                },
+                            ]"
+                        >
                             <CheckCircle v-if="index < currentStep && validateStep(index)" class="h-4 w-4" />
                             <component v-else :is="step.icon" class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="font-medium truncate">{{ step.title }}</p>
-                            <p class="text-xs opacity-75 truncate">{{ step.description }}</p>
+                            <p class="truncate font-medium">{{ step.title }}</p>
+                            <p class="truncate text-xs opacity-75">{{ step.description }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Form Content -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-4">
                 <!-- Sidebar with summary -->
                 <div class="lg:col-span-1">
                     <Card class="sticky top-4">
@@ -367,9 +363,7 @@ const getStatusLabel = (status: string) => {
                                         <p class="text-sm font-medium">
                                             {{ form.number || 'Número' }}
                                         </p>
-                                        <p class="text-xs text-muted-foreground">
-                                            Torre {{ form.tower || 'N/A' }} - Piso {{ form.floor || 'N/A' }}
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Torre {{ form.tower || 'N/A' }} - Piso {{ form.floor || 'N/A' }}</p>
                                     </div>
                                 </div>
 
@@ -382,9 +376,7 @@ const getStatusLabel = (status: string) => {
 
                                 <div class="flex items-center gap-2">
                                     <DollarSign class="h-4 w-4 text-muted-foreground" />
-                                    <p class="text-sm">
-                                        ${{ form.monthly_fee?.toLocaleString() || '0' }}
-                                    </p>
+                                    <p class="text-sm">${{ form.monthly_fee?.toLocaleString() || '0' }}</p>
                                 </div>
 
                                 <div class="flex items-center gap-2">
@@ -400,19 +392,17 @@ const getStatusLabel = (status: string) => {
                             <div class="space-y-2">
                                 <p class="text-sm font-medium">Estado del formulario</p>
                                 <div class="space-y-1">
-                                    <div
-                                        v-for="(step, index) in steps"
-                                        :key="step.id"
-                                        class="flex items-center gap-2"
-                                    >
-                                        <div :class="[
-                                            'w-2 h-2 rounded-full',
-                                            {
-                                                'bg-green-500': index < currentStep && validateStep(index),
-                                                'bg-primary': currentStep === index,
-                                                'bg-muted': index > currentStep
-                                            }
-                                        ]" />
+                                    <div v-for="(step, index) in steps" :key="step.id" class="flex items-center gap-2">
+                                        <div
+                                            :class="[
+                                                'h-2 w-2 rounded-full',
+                                                {
+                                                    'bg-green-500': index < currentStep && validateStep(index),
+                                                    'bg-primary': currentStep === index,
+                                                    'bg-muted': index > currentStep,
+                                                },
+                                            ]"
+                                        />
                                         <span class="text-xs">{{ step.title }}</span>
                                     </div>
                                 </div>
@@ -431,17 +421,13 @@ const getStatusLabel = (status: string) => {
                                     <Home class="h-5 w-5" />
                                     Información Básica
                                 </CardTitle>
-                                <CardDescription>
-                                    Información de ubicación y tipo del apartamento
-                                </CardDescription>
+                                <CardDescription> Información de ubicación y tipo del apartamento </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <!-- Conjunto Config -->
                                     <div class="space-y-2">
                                         <Label for="conjunto_config_id">{{ conjunto.name }}</Label>
-
-
                                     </div>
 
                                     <!-- Apartment Type -->
@@ -452,11 +438,7 @@ const getStatusLabel = (status: string) => {
                                                 <SelectValue placeholder="Selecciona un tipo" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem
-                                                    v-for="type in apartmentTypes"
-                                                    :key="type.id"
-                                                    :value="type.id"
-                                                >
+                                                <SelectItem v-for="type in apartmentTypes" :key="type.id" :value="type.id">
                                                     {{ type.name }} ({{ type.area_sqm }}m²)
                                                 </SelectItem>
                                             </SelectContent>
@@ -536,12 +518,10 @@ const getStatusLabel = (status: string) => {
                                     <DollarSign class="h-5 w-5" />
                                     Estado y Cuota
                                 </CardTitle>
-                                <CardDescription>
-                                    Estado del apartamento y cuota mensual
-                                </CardDescription>
+                                <CardDescription> Estado del apartamento y cuota mensual </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <!-- Status -->
                                     <div class="space-y-2">
                                         <Label for="status">Estado *</Label>
@@ -550,11 +530,7 @@ const getStatusLabel = (status: string) => {
                                                 <SelectValue placeholder="Selecciona un estado" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem
-                                                    v-for="status in statuses"
-                                                    :key="status"
-                                                    :value="status"
-                                                >
+                                                <SelectItem v-for="status in statuses" :key="status" :value="status">
                                                     {{ getStatusLabel(status) }}
                                                 </SelectItem>
                                             </SelectContent>
@@ -591,55 +567,35 @@ const getStatusLabel = (status: string) => {
                                     <Settings class="h-5 w-5" />
                                     Características
                                 </CardTitle>
-                                <CardDescription>
-                                    Servicios públicos y características adicionales
-                                </CardDescription>
+                                <CardDescription> Servicios públicos y características adicionales </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <!-- Utilities -->
                                 <div>
                                     <Label class="text-base font-medium">Servicios Públicos</Label>
-                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                                    <div class="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="water"
-                                                v-model:checked="utilities.water"
-                                            />
+                                            <Switch id="water" v-model:checked="utilities.water" />
                                             <Label for="water" class="text-sm">Agua</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="electricity"
-                                                v-model:checked="utilities.electricity"
-                                            />
+                                            <Switch id="electricity" v-model:checked="utilities.electricity" />
                                             <Label for="electricity" class="text-sm">Electricidad</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="gas"
-                                                v-model:checked="utilities.gas"
-                                            />
+                                            <Switch id="gas" v-model:checked="utilities.gas" />
                                             <Label for="gas" class="text-sm">Gas</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="internet"
-                                                v-model:checked="utilities.internet"
-                                            />
+                                            <Switch id="internet" v-model:checked="utilities.internet" />
                                             <Label for="internet" class="text-sm">Internet</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="tv"
-                                                v-model:checked="utilities.tv"
-                                            />
+                                            <Switch id="tv" v-model:checked="utilities.tv" />
                                             <Label for="tv" class="text-sm">TV</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="phone"
-                                                v-model:checked="utilities.phone"
-                                            />
+                                            <Switch id="phone" v-model:checked="utilities.phone" />
                                             <Label for="phone" class="text-sm">Teléfono</Label>
                                         </div>
                                     </div>
@@ -648,47 +604,29 @@ const getStatusLabel = (status: string) => {
                                 <!-- Features -->
                                 <div>
                                     <Label class="text-base font-medium">Características</Label>
-                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                                    <div class="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="parking"
-                                                v-model:checked="features.parking"
-                                            />
+                                            <Switch id="parking" v-model:checked="features.parking" />
                                             <Label for="parking" class="text-sm">Parqueadero</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="storage"
-                                                v-model:checked="features.storage"
-                                            />
+                                            <Switch id="storage" v-model:checked="features.storage" />
                                             <Label for="storage" class="text-sm">Depósito</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="balcony"
-                                                v-model:checked="features.balcony"
-                                            />
+                                            <Switch id="balcony" v-model:checked="features.balcony" />
                                             <Label for="balcony" class="text-sm">Balcón</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="terrace"
-                                                v-model:checked="features.terrace"
-                                            />
+                                            <Switch id="terrace" v-model:checked="features.terrace" />
                                             <Label for="terrace" class="text-sm">Terraza</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="pets_allowed"
-                                                v-model:checked="features.pets_allowed"
-                                            />
+                                            <Switch id="pets_allowed" v-model:checked="features.pets_allowed" />
                                             <Label for="pets_allowed" class="text-sm">Mascotas permitidas</Label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Switch
-                                                id="furnished"
-                                                v-model:checked="features.furnished"
-                                            />
+                                            <Switch id="furnished" v-model:checked="features.furnished" />
                                             <Label for="furnished" class="text-sm">Amoblado</Label>
                                         </div>
                                     </div>
@@ -703,9 +641,7 @@ const getStatusLabel = (status: string) => {
                                     <FileText class="h-5 w-5" />
                                     Notas
                                 </CardTitle>
-                                <CardDescription>
-                                    Información adicional sobre el apartamento
-                                </CardDescription>
+                                <CardDescription> Información adicional sobre el apartamento </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <div class="space-y-2">
@@ -726,35 +662,18 @@ const getStatusLabel = (status: string) => {
 
                         <!-- Navigation buttons -->
                         <div class="flex items-center justify-between pt-6">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                :disabled="isFirstStep"
-                                @click="prevStep"
-                                class="gap-2"
-                            >
+                            <Button type="button" variant="outline" :disabled="isFirstStep" @click="prevStep" class="gap-2">
                                 <ArrowLeft class="h-4 w-4" />
                                 Anterior
                             </Button>
 
                             <div class="flex items-center gap-3">
-                                <Button
-                                    v-if="!isLastStep"
-                                    type="button"
-                                    :disabled="!canProceedToNext"
-                                    @click="nextStep"
-                                    class="gap-2"
-                                >
+                                <Button v-if="!isLastStep" type="button" :disabled="!canProceedToNext" @click="nextStep" class="gap-2">
                                     Siguiente
                                     <ArrowLeft class="h-4 w-4 rotate-180" />
                                 </Button>
 
-                                <Button
-                                    v-if="isLastStep"
-                                    type="submit"
-                                    :disabled="form.processing || !canProceedToNext"
-                                    class="gap-2"
-                                >
+                                <Button v-if="isLastStep" type="submit" :disabled="form.processing || !canProceedToNext" class="gap-2">
                                     <Save class="h-4 w-4" />
                                     {{ form.processing ? 'Guardando...' : 'Actualizar Apartamento' }}
                                 </Button>

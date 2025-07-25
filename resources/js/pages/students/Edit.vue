@@ -1,21 +1,13 @@
 <script setup lang="ts">
-import { Head, useForm, router } from '@inertiajs/vue3';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 interface Student {
@@ -111,9 +103,9 @@ const submit = () => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto w-full max-w-4xl">
+        <div class="flex h-full w-full max-w-4xl flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <Head title="Editar estudiante" />
-            <HeadingSmall 
+            <HeadingSmall
                 title="Editar estudiante"
                 :description="`Modifica la información de ${props.student.first_name} ${props.student.last_name}`"
             />
@@ -124,48 +116,28 @@ const submit = () => {
                     <CardHeader>
                         <CardTitle>Información Personal</CardTitle>
                     </CardHeader>
-                    <CardContent class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CardContent class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="student_code">Código de Estudiante</Label>
-                            <Input 
-                                id="student_code" 
-                                v-model="form.student_code" 
-                                placeholder="Ej: 202012345"
-                                required 
-                            />
+                            <Input id="student_code" v-model="form.student_code" placeholder="Ej: 202012345" required />
                             <InputError :message="form.errors.student_code" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="document_id">Documento de Identidad</Label>
-                            <Input 
-                                id="document_id" 
-                                v-model="form.document_id" 
-                                placeholder="Ej: 1234567890"
-                                required 
-                            />
+                            <Input id="document_id" v-model="form.document_id" placeholder="Ej: 1234567890" required />
                             <InputError :message="form.errors.document_id" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="first_name">Nombres</Label>
-                            <Input 
-                                id="first_name" 
-                                v-model="form.first_name" 
-                                placeholder="Ej: Juan Carlos"
-                                required 
-                            />
+                            <Input id="first_name" v-model="form.first_name" placeholder="Ej: Juan Carlos" required />
                             <InputError :message="form.errors.first_name" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="last_name">Apellidos</Label>
-                            <Input 
-                                id="last_name" 
-                                v-model="form.last_name" 
-                                placeholder="Ej: Pérez González"
-                                required 
-                            />
+                            <Input id="last_name" v-model="form.last_name" placeholder="Ej: Pérez González" required />
                             <InputError :message="form.errors.last_name" />
                         </div>
 
@@ -189,12 +161,7 @@ const submit = () => {
 
                         <div class="grid gap-2">
                             <Label for="birth_date">Fecha de Nacimiento</Label>
-                            <Input 
-                                id="birth_date" 
-                                type="date" 
-                                v-model="form.birth_date" 
-                                required 
-                            />
+                            <Input id="birth_date" type="date" v-model="form.birth_date" required />
                             <InputError :message="form.errors.birth_date" />
                         </div>
                     </CardContent>
@@ -205,83 +172,52 @@ const submit = () => {
                     <CardHeader>
                         <CardTitle>Información de Contacto</CardTitle>
                     </CardHeader>
-                    <CardContent class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CardContent class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="personal_email">Email Personal</Label>
-                            <Input 
-                                id="personal_email" 
-                                type="email" 
-                                v-model="form.personal_email" 
-                                placeholder="ejemplo@correo.com"
-                                required 
-                            />
+                            <Input id="personal_email" type="email" v-model="form.personal_email" placeholder="ejemplo@correo.com" required />
                             <InputError :message="form.errors.personal_email" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="institutional_email">Email Institucional</Label>
-                            <Input 
-                                id="institutional_email" 
-                                type="email" 
-                                v-model="form.institutional_email" 
+                            <Input
+                                id="institutional_email"
+                                type="email"
+                                v-model="form.institutional_email"
                                 placeholder="ejemplo@universidad.edu"
-                                required 
+                                required
                             />
                             <InputError :message="form.errors.institutional_email" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="phone">Teléfono</Label>
-                            <Input 
-                                id="phone" 
-                                v-model="form.phone" 
-                                placeholder="Ej: +57 300 123 4567"
-                                required 
-                            />
+                            <Input id="phone" v-model="form.phone" placeholder="Ej: +57 300 123 4567" required />
                             <InputError :message="form.errors.phone" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="country">País</Label>
-                            <Input 
-                                id="country" 
-                                v-model="form.country" 
-                                placeholder="Ej: Colombia"
-                                required 
-                            />
+                            <Input id="country" v-model="form.country" placeholder="Ej: Colombia" required />
                             <InputError :message="form.errors.country" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="dpto">Departamento</Label>
-                            <Input 
-                                id="dpto" 
-                                v-model="form.dpto" 
-                                placeholder="Ej: Antioquia"
-                                required 
-                            />
+                            <Input id="dpto" v-model="form.dpto" placeholder="Ej: Antioquia" required />
                             <InputError :message="form.errors.dpto" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="city">Ciudad</Label>
-                            <Input 
-                                id="city" 
-                                v-model="form.city" 
-                                placeholder="Ej: Medellín"
-                                required 
-                            />
+                            <Input id="city" v-model="form.city" placeholder="Ej: Medellín" required />
                             <InputError :message="form.errors.city" />
                         </div>
 
                         <div class="grid gap-2 md:col-span-2">
                             <Label for="address">Dirección</Label>
-                            <Input 
-                                id="address" 
-                                v-model="form.address" 
-                                placeholder="Ej: Calle 123 # 45-67"
-                                required 
-                            />
+                            <Input id="address" v-model="form.address" placeholder="Ej: Calle 123 # 45-67" required />
                             <InputError :message="form.errors.address" />
                         </div>
                     </CardContent>
@@ -292,7 +228,7 @@ const submit = () => {
                     <CardHeader>
                         <CardTitle>Información Académica</CardTitle>
                     </CardHeader>
-                    <CardContent class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CardContent class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="program_id">Programa</Label>
                             <Select v-model="form.program_id">
@@ -302,11 +238,7 @@ const submit = () => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Programas</SelectLabel>
-                                        <SelectItem 
-                                            v-for="program in programs" 
-                                            :key="program.id" 
-                                            :value="program.id.toString()"
-                                        >
+                                        <SelectItem v-for="program in programs" :key="program.id" :value="program.id.toString()">
                                             {{ program.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -324,11 +256,7 @@ const submit = () => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Semestres</SelectLabel>
-                                        <SelectItem 
-                                            v-for="semester in semesters" 
-                                            :key="semester.id" 
-                                            :value="semester.id.toString()"
-                                        >
+                                        <SelectItem v-for="semester in semesters" :key="semester.id" :value="semester.id.toString()">
                                             {{ semester.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -339,12 +267,7 @@ const submit = () => {
 
                         <div class="grid gap-2">
                             <Label for="group">Grupo</Label>
-                            <Input 
-                                id="group" 
-                                v-model="form.group" 
-                                placeholder="Ej: A1"
-                                required 
-                            />
+                            <Input id="group" v-model="form.group" placeholder="Ej: A1" required />
                             <InputError :message="form.errors.group" />
                         </div>
 
@@ -369,39 +292,19 @@ const submit = () => {
 
                         <div class="grid gap-2">
                             <Label for="credits_completed">Créditos Completados</Label>
-                            <Input 
-                                id="credits_completed" 
-                                type="number" 
-                                v-model="form.credits_completed" 
-                                placeholder="0"
-                                min="0"
-                            />
+                            <Input id="credits_completed" type="number" v-model="form.credits_completed" placeholder="0" min="0" />
                             <InputError :message="form.errors.credits_completed" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="total_credits">Total de Créditos</Label>
-                            <Input 
-                                id="total_credits" 
-                                type="number" 
-                                v-model="form.total_credits" 
-                                placeholder="0"
-                                min="0"
-                            />
+                            <Input id="total_credits" type="number" v-model="form.total_credits" placeholder="0" min="0" />
                             <InputError :message="form.errors.total_credits" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="progress_rate">Tasa de Progreso (%)</Label>
-                            <Input 
-                                id="progress_rate" 
-                                type="number" 
-                                v-model="form.progress_rate" 
-                                placeholder="0"
-                                min="0"
-                                max="100"
-                                step="0.1"
-                            />
+                            <Input id="progress_rate" type="number" v-model="form.progress_rate" placeholder="0" min="0" max="100" step="0.1" />
                             <InputError :message="form.errors.progress_rate" />
                         </div>
                     </CardContent>
@@ -409,13 +312,9 @@ const submit = () => {
 
                 <!-- Botones de Acción -->
                 <div class="flex items-center gap-4">
-                    <Button type="submit" :disabled="form.processing">
-                        Actualizar Estudiante
-                    </Button>
-                    
-                    <Button type="button" variant="outline" @click="router.visit('/students')">
-                        Cancelar
-                    </Button>
+                    <Button type="submit" :disabled="form.processing"> Actualizar Estudiante </Button>
+
+                    <Button type="button" variant="outline" @click="router.visit('/students')"> Cancelar </Button>
 
                     <Transition
                         enter-active-class="transition ease-in-out"
@@ -423,9 +322,7 @@ const submit = () => {
                         leave-active-class="transition ease-in-out"
                         leave-to-class="opacity-0"
                     >
-                        <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">
-                            Actualizado exitosamente.
-                        </p>
+                        <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Actualizado exitosamente.</p>
                     </Transition>
                 </div>
             </form>

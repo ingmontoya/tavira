@@ -1,25 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-    ArrowLeft,
-    Edit,
-    Home,
-    Building,
-    Users,
-    DollarSign,
-    Calendar,
-    FileText,
-    Settings,
-    MapPin,
-    UserPlus,
-    Eye,
-    User
-} from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ArrowLeft, Building, DollarSign, Edit, Eye, FileText, Home, MapPin, Settings, UserPlus, Users } from 'lucide-vue-next';
 
 interface ApartmentType {
     id: number;
@@ -91,7 +77,7 @@ const formatDate = (date: string | null) => {
     return new Date(date).toLocaleDateString('es-CO', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
     });
 };
 
@@ -102,7 +88,7 @@ const formatDateTime = (dateTime: string | null) => {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -110,44 +96,44 @@ const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 0,
     }).format(value);
 };
 
 const getStatusLabel = (status: string) => {
     const labels = {
-        'Available': 'Disponible',
-        'Occupied': 'Ocupado',
-        'Maintenance': 'Mantenimiento',
-        'Reserved': 'Reservado'
+        Available: 'Disponible',
+        Occupied: 'Ocupado',
+        Maintenance: 'Mantenimiento',
+        Reserved: 'Reservado',
     };
     return labels[status] || status;
 };
 
 const getStatusColor = (status: string) => {
     const colors = {
-        'Available': 'bg-green-100 text-green-800',
-        'Occupied': 'bg-blue-100 text-blue-800',
-        'Maintenance': 'bg-yellow-100 text-yellow-800',
-        'Reserved': 'bg-purple-100 text-purple-800'
+        Available: 'bg-green-100 text-green-800',
+        Occupied: 'bg-blue-100 text-blue-800',
+        Maintenance: 'bg-yellow-100 text-yellow-800',
+        Reserved: 'bg-purple-100 text-purple-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
 };
 
 const getResidentTypeLabel = (type: string) => {
     const labels = {
-        'Owner': 'Propietario',
-        'Tenant': 'Arrendatario',
-        'Family': 'Familiar'
+        Owner: 'Propietario',
+        Tenant: 'Arrendatario',
+        Family: 'Familiar',
     };
     return labels[type] || type;
 };
 
 const getResidentTypeColor = (type: string) => {
     const colors = {
-        'Owner': 'bg-green-100 text-green-800',
-        'Tenant': 'bg-blue-100 text-blue-800',
-        'Family': 'bg-yellow-100 text-yellow-800'
+        Owner: 'bg-green-100 text-green-800',
+        Tenant: 'bg-blue-100 text-blue-800',
+        Family: 'bg-yellow-100 text-yellow-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
 };
@@ -168,9 +154,9 @@ const breadcrumbs = [
     <Head :title="apartment.full_address" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">
                         {{ apartment.full_address }}
@@ -200,7 +186,7 @@ const breadcrumbs = [
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 <!-- Información del Apartamento -->
                 <Card>
                     <CardHeader>
@@ -255,7 +241,7 @@ const breadcrumbs = [
                         <div v-if="apartment.notes">
                             <Separator class="my-4" />
                             <div class="flex items-start gap-3">
-                                <FileText class="h-5 w-5 text-muted-foreground mt-1" />
+                                <FileText class="mt-1 h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p class="text-sm font-medium text-muted-foreground">Notas</p>
                                     <p class="text-base whitespace-pre-line">{{ apartment.notes }}</p>
@@ -278,19 +264,19 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                            <div class="rounded-lg bg-muted/50 p-4 text-center">
                                 <p class="text-2xl font-bold text-primary">{{ apartment.apartment_type.area_sqm }}</p>
                                 <p class="text-sm text-muted-foreground">m² área</p>
                             </div>
-                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                            <div class="rounded-lg bg-muted/50 p-4 text-center">
                                 <p class="text-2xl font-bold text-primary">{{ apartment.apartment_type.bedrooms }}</p>
                                 <p class="text-sm text-muted-foreground">habitaciones</p>
                             </div>
-                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                            <div class="rounded-lg bg-muted/50 p-4 text-center">
                                 <p class="text-2xl font-bold text-primary">{{ apartment.apartment_type.bathrooms }}</p>
                                 <p class="text-sm text-muted-foreground">baños</p>
                             </div>
-                            <div class="text-center p-4 bg-muted/50 rounded-lg">
+                            <div class="rounded-lg bg-muted/50 p-4 text-center">
                                 <p class="text-2xl font-bold text-primary">{{ (apartment.apartment_type.coefficient * 100).toFixed(2) }}%</p>
                                 <p class="text-sm text-muted-foreground">coeficiente</p>
                             </div>
@@ -300,62 +286,83 @@ const breadcrumbs = [
 
                         <div class="space-y-4">
                             <div>
-                                <p class="text-sm font-medium text-muted-foreground mb-3">Características</p>
+                                <p class="mb-3 text-sm font-medium text-muted-foreground">Características</p>
                                 <div class="grid grid-cols-1 gap-2">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.apartment_type.has_balcony ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.apartment_type.has_balcony ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Balcón</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.apartment_type.has_laundry_room ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.apartment_type.has_laundry_room ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Zona de lavado</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.apartment_type.has_maid_room ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.apartment_type.has_maid_room ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Cuarto de servicio</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div v-if="apartment.utilities">
-                                <p class="text-sm font-medium text-muted-foreground mb-3">Servicios Públicos</p>
+                                <p class="mb-3 text-sm font-medium text-muted-foreground">Servicios Públicos</p>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.water ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div class="h-2 w-2 rounded-full" :class="apartment.utilities.water ? 'bg-green-500' : 'bg-gray-300'"></div>
                                         <span class="text-sm">Agua</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.electricity ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.utilities.electricity ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Electricidad</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.gas ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div class="h-2 w-2 rounded-full" :class="apartment.utilities.gas ? 'bg-green-500' : 'bg-gray-300'"></div>
                                         <span class="text-sm">Gas</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.utilities.internet ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.utilities.internet ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Internet</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div v-if="apartment.features">
-                                <p class="text-sm font-medium text-muted-foreground mb-3">Características Adicionales</p>
+                                <p class="mb-3 text-sm font-medium text-muted-foreground">Características Adicionales</p>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.parking ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div class="h-2 w-2 rounded-full" :class="apartment.features.parking ? 'bg-green-500' : 'bg-gray-300'"></div>
                                         <span class="text-sm">Parqueadero</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.storage ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div class="h-2 w-2 rounded-full" :class="apartment.features.storage ? 'bg-green-500' : 'bg-gray-300'"></div>
                                         <span class="text-sm">Depósito</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.pets_allowed ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.features.pets_allowed ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Mascotas permitidas</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full" :class="apartment.features.furnished ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                        <div
+                                            class="h-2 w-2 rounded-full"
+                                            :class="apartment.features.furnished ? 'bg-green-500' : 'bg-gray-300'"
+                                        ></div>
                                         <span class="text-sm">Amoblado</span>
                                     </div>
                                 </div>
@@ -385,20 +392,25 @@ const breadcrumbs = [
                             <div
                                 v-for="resident in apartment.residents"
                                 :key="resident.id"
-                                class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                                class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                             >
                                 <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                                        <span class="text-sm font-medium text-primary">{{ getInitials(resident.first_name, resident.last_name) }}</span>
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                                        <span class="text-sm font-medium text-primary">{{
+                                            getInitials(resident.first_name, resident.last_name)
+                                        }}</span>
                                     </div>
                                     <div>
                                         <h4 class="font-medium">{{ resident.full_name }}</h4>
                                         <p class="text-sm text-muted-foreground">{{ resident.email }}</p>
-                                        <div class="flex items-center gap-2 mt-1">
+                                        <div class="mt-1 flex items-center gap-2">
                                             <Badge :class="getResidentTypeColor(resident.resident_type)" class="text-xs">
                                                 {{ getResidentTypeLabel(resident.resident_type) }}
                                             </Badge>
-                                            <Badge :class="resident.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="text-xs">
+                                            <Badge
+                                                :class="resident.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                                class="text-xs"
+                                            >
                                                 {{ resident.status === 'Active' ? 'Activo' : 'Inactivo' }}
                                             </Badge>
                                         </div>
@@ -415,12 +427,12 @@ const breadcrumbs = [
                             </div>
                         </div>
 
-                        <div v-else class="text-center py-12">
-                            <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Users class="w-8 h-8 text-muted-foreground" />
+                        <div v-else class="py-12 text-center">
+                            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+                                <Users class="h-8 w-8 text-muted-foreground" />
                             </div>
-                            <h3 class="text-lg font-medium mb-2">No hay residentes</h3>
-                            <p class="text-muted-foreground mb-4">Este apartamento no tiene residentes asignados</p>
+                            <h3 class="mb-2 text-lg font-medium">No hay residentes</h3>
+                            <p class="mb-4 text-muted-foreground">Este apartamento no tiene residentes asignados</p>
                             <Link :href="`/residents/create?apartment_id=${apartment.id}`">
                                 <Button class="gap-2">
                                     <UserPlus class="h-4 w-4" />
@@ -440,20 +452,20 @@ const breadcrumbs = [
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+                            <div class="rounded-lg bg-blue-50 p-4 text-center">
                                 <p class="text-2xl font-bold text-blue-600">{{ statistics.total_residents }}</p>
                                 <p class="text-sm text-muted-foreground">Total Residentes</p>
                             </div>
-                            <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="rounded-lg bg-green-50 p-4 text-center">
                                 <p class="text-2xl font-bold text-green-600">{{ statistics.active_residents }}</p>
                                 <p class="text-sm text-muted-foreground">Activos</p>
                             </div>
-                            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                            <div class="rounded-lg bg-purple-50 p-4 text-center">
                                 <p class="text-2xl font-bold text-purple-600">{{ statistics.owners }}</p>
                                 <p class="text-sm text-muted-foreground">Propietarios</p>
                             </div>
-                            <div class="text-center p-4 bg-orange-50 rounded-lg">
+                            <div class="rounded-lg bg-orange-50 p-4 text-center">
                                 <p class="text-2xl font-bold text-orange-600">{{ statistics.tenants }}</p>
                                 <p class="text-sm text-muted-foreground">Arrendatarios</p>
                             </div>
@@ -461,7 +473,7 @@ const breadcrumbs = [
 
                         <Separator class="my-4" />
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                             <div class="flex justify-between">
                                 <span class="text-muted-foreground">Fecha de creación:</span>
                                 <span>{{ formatDateTime(apartment.created_at) }}</span>

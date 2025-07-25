@@ -38,7 +38,7 @@ const submit = () => {
                 </div>
 
                 <div class="my-6 flex items-center justify-start">
-                    <Button class="w-full bg-gradient-to-r from-[#3887FE]  to-[#8338EA] font-extrabold" :disabled="form.processing">
+                    <Button class="w-full bg-gradient-to-r from-[#3887FE] to-[#8338EA] font-extrabold" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                         Enviar enlace de restablecimiento
                     </Button>

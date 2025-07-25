@@ -1,84 +1,84 @@
-import { ref, reactive } from 'vue'
-import type { ToastMessage } from '@/components/ToastNotification.vue'
+import type { ToastMessage } from '@/components/ToastNotification.vue';
+import { ref } from 'vue';
 
 // Global toast state
-const toasts = ref<ToastMessage[]>([])
+const toasts = ref<ToastMessage[]>([]);
 
 // Generate unique IDs for toasts
-let toastId = 0
-const generateId = () => `toast-${++toastId}`
+let toastId = 0;
+const generateId = () => `toast-${++toastId}`;
 
 export function useToast() {
-  const addToast = (message: Omit<ToastMessage, 'id'>) => {
-    const toast: ToastMessage = {
-      id: generateId(),
-      ...message
-    }
-    
-    toasts.value.push(toast)
-    return toast.id
-  }
+    const addToast = (message: Omit<ToastMessage, 'id'>) => {
+        const toast: ToastMessage = {
+            id: generateId(),
+            ...message,
+        };
 
-  const removeToast = (id: string) => {
-    const index = toasts.value.findIndex(toast => toast.id === id)
-    if (index > -1) {
-      toasts.value.splice(index, 1)
-    }
-  }
+        toasts.value.push(toast);
+        return toast.id;
+    };
 
-  const clearAllToasts = () => {
-    toasts.value = []
-  }
+    const removeToast = (id: string) => {
+        const index = toasts.value.findIndex((toast) => toast.id === id);
+        if (index > -1) {
+            toasts.value.splice(index, 1);
+        }
+    };
 
-  // Convenience methods
-  const success = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-    return addToast({
-      type: 'success',
-      title,
-      message,
-      ...options
-    })
-  }
+    const clearAllToasts = () => {
+        toasts.value = [];
+    };
 
-  const error = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-    return addToast({
-      type: 'error',
-      title,
-      message,
-      duration: 7000, // Errors show longer by default
-      ...options
-    })
-  }
+    // Convenience methods
+    const success = (message: string, title?: string, options?: Partial<ToastMessage>) => {
+        return addToast({
+            type: 'success',
+            title,
+            message,
+            ...options,
+        });
+    };
 
-  const warning = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-    return addToast({
-      type: 'warning',
-      title,
-      message,
-      ...options
-    })
-  }
+    const error = (message: string, title?: string, options?: Partial<ToastMessage>) => {
+        return addToast({
+            type: 'error',
+            title,
+            message,
+            duration: 7000, // Errors show longer by default
+            ...options,
+        });
+    };
 
-  const info = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-    return addToast({
-      type: 'info',
-      title,
-      message,
-      ...options
-    })
-  }
+    const warning = (message: string, title?: string, options?: Partial<ToastMessage>) => {
+        return addToast({
+            type: 'warning',
+            title,
+            message,
+            ...options,
+        });
+    };
 
-  return {
-    toasts,
-    addToast,
-    removeToast,
-    clearAllToasts,
-    success,
-    error,
-    warning,
-    info
-  }
+    const info = (message: string, title?: string, options?: Partial<ToastMessage>) => {
+        return addToast({
+            type: 'info',
+            title,
+            message,
+            ...options,
+        });
+    };
+
+    return {
+        toasts,
+        addToast,
+        removeToast,
+        clearAllToasts,
+        success,
+        error,
+        warning,
+        info,
+    };
 }
 
 // Export a global instance for use across the app
-export const globalToast = useToast()
+export const globalToast = useToast();

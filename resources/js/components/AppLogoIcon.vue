@@ -7,14 +7,12 @@ defineOptions({
 
 interface Props {
     className?: HTMLAttributes['class'];
-    type?: string
+    type?: string;
 }
 
 defineProps<Props>();
 </script>
 
 <template>
-<img :src="type === 'iso' ? '/img/iso_modulyx.png' : '/img/modulyx.png'"
-     alt="Logo"
-     :class="$attrs.className" />
+    <img :src="type === 'iso' ? '/img/iso_modulyx.png' : '/img/modulyx.png'" alt="Logo" :class="$attrs.className" />
 </template>

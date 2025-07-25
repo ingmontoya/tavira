@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, X } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import { AlertCircle, X } from 'lucide-vue-next';
+import { computed, nextTick, ref, watch } from 'vue';
 
 interface Props {
     errors: Record<string, string | string[]>;
@@ -10,26 +10,26 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    show: true
+    show: true,
 });
 
 const emit = defineEmits<{
-    dismiss: []
+    dismiss: [];
 }>();
 
 const errorList = computed(() => {
     const errors: { field: string; message: string }[] = [];
-    
+
     Object.entries(props.errors).forEach(([field, messages]) => {
         if (Array.isArray(messages)) {
-            messages.forEach(message => {
+            messages.forEach((message) => {
                 errors.push({ field, message });
             });
         } else if (messages) {
             errors.push({ field, message: messages });
         }
     });
-    
+
     return errors;
 });
 
@@ -41,39 +41,39 @@ const alertRef = ref<HTMLElement>();
 
 const getFieldLabel = (field: string): string => {
     const fieldLabels: Record<string, string> = {
-        'document_type': 'Tipo de Documento',
-        'document_number': 'Número de Documento',
-        'first_name': 'Nombres',
-        'last_name': 'Apellidos',
-        'email': 'Correo Electrónico',
-        'phone': 'Teléfono',
-        'mobile_phone': 'Celular',
-        'birth_date': 'Fecha de Nacimiento',
-        'gender': 'Género',
-        'emergency_contact': 'Contacto de Emergencia',
-        'apartment_id': 'Apartamento',
-        'resident_type': 'Tipo de Residente',
-        'status': 'Estado',
-        'start_date': 'Fecha de Inicio',
-        'end_date': 'Fecha de Fin',
-        'notes': 'Notas',
-        'documents': 'Documentos',
-        'email_notifications': 'Notificaciones por Email',
-        'whatsapp_notifications': 'Notificaciones por WhatsApp',
-        'whatsapp_number': 'Número de WhatsApp',
+        document_type: 'Tipo de Documento',
+        document_number: 'Número de Documento',
+        first_name: 'Nombres',
+        last_name: 'Apellidos',
+        email: 'Correo Electrónico',
+        phone: 'Teléfono',
+        mobile_phone: 'Celular',
+        birth_date: 'Fecha de Nacimiento',
+        gender: 'Género',
+        emergency_contact: 'Contacto de Emergencia',
+        apartment_id: 'Apartamento',
+        resident_type: 'Tipo de Residente',
+        status: 'Estado',
+        start_date: 'Fecha de Inicio',
+        end_date: 'Fecha de Fin',
+        notes: 'Notas',
+        documents: 'Documentos',
+        email_notifications: 'Notificaciones por Email',
+        whatsapp_notifications: 'Notificaciones por WhatsApp',
+        whatsapp_number: 'Número de WhatsApp',
         // Invoice fields
-        'type': 'Tipo de Factura',
-        'billing_date': 'Fecha de Facturación',
-        'due_date': 'Fecha de Vencimiento',
-        'billing_period_year': 'Año del Período',
-        'billing_period_month': 'Mes del Período',
-        'billing_period': 'Período de Facturación',
-        'items': 'Artículos de Factura',
-        'year': 'Año',
-        'month': 'Mes',
-        'error': 'Error'
+        type: 'Tipo de Factura',
+        billing_date: 'Fecha de Facturación',
+        due_date: 'Fecha de Vencimiento',
+        billing_period_year: 'Año del Período',
+        billing_period_month: 'Mes del Período',
+        billing_period: 'Período de Facturación',
+        items: 'Artículos de Factura',
+        year: 'Año',
+        month: 'Mes',
+        error: 'Error',
     };
-    
+
     return fieldLabels[field] || field;
 };
 
@@ -81,9 +81,9 @@ const getFieldLabel = (field: string): string => {
 watch(hasErrors, (newValue) => {
     if (newValue && alertRef.value) {
         nextTick(() => {
-            alertRef.value?.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
+            alertRef.value?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
             });
         });
     }
@@ -93,13 +93,13 @@ watch(hasErrors, (newValue) => {
 <template>
     <Alert v-if="hasErrors && show" ref="alertRef" variant="destructive" class="mb-6">
         <AlertCircle class="h-4 w-4" />
-        <div class="flex items-start justify-between w-full">
+        <div class="flex w-full items-start justify-between">
             <div class="flex-1">
-                <h4 class="font-medium mb-2">
+                <h4 class="mb-2 font-medium">
                     {{ errorList.length === 1 ? 'Error de validación' : 'Errores de validación' }}
                 </h4>
                 <AlertDescription>
-                    <ul class="list-disc list-inside space-y-1">
+                    <ul class="list-inside list-disc space-y-1">
                         <li v-for="error in errorList" :key="`${error.field}-${error.message}`" class="text-sm">
                             <span class="font-medium">{{ getFieldLabel(error.field) }}:</span>
                             {{ error.message }}
@@ -107,12 +107,7 @@ watch(hasErrors, (newValue) => {
                     </ul>
                 </AlertDescription>
             </div>
-            <Button
-                variant="ghost"
-                size="sm"
-                @click="emit('dismiss')"
-                class="text-red-800 hover:text-red-900 ml-2"
-            >
+            <Button variant="ghost" size="sm" @click="emit('dismiss')" class="ml-2 text-red-800 hover:text-red-900">
                 <X class="h-4 w-4" />
             </Button>
         </div>

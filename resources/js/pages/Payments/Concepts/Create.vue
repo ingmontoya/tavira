@@ -1,33 +1,27 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { ArrowLeft, Save, Settings } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Save } from 'lucide-vue-next';
 
 defineOptions({
     layout: AppLayout,
-})
+});
 
 interface ApartmentType {
-    id: number
-    name: string
+    id: number;
+    name: string;
 }
 
 const props = defineProps<{
-    apartmentTypes: ApartmentType[]
-}>()
+    apartmentTypes: ApartmentType[];
+}>();
 
 const form = useForm({
     name: '',
@@ -37,51 +31,51 @@ const form = useForm({
     is_recurring: false,
     is_active: true,
     billing_cycle: 'monthly',
-    applicable_apartment_types: [] as number[]
-})
+    applicable_apartment_types: [] as number[],
+});
 
 const submit = () => {
     form.post('/payment-concepts', {
         onSuccess: () => {
             // Redirect handled by controller
-        }
-    })
-}
+        },
+    });
+};
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
-        minimumFractionDigits: 0
-    }).format(amount)
-}
+        minimumFractionDigits: 0,
+    }).format(amount);
+};
 
 const toggleApartmentType = (typeId: number, checked: boolean) => {
     if (checked) {
-        form.applicable_apartment_types.push(typeId)
+        form.applicable_apartment_types.push(typeId);
     } else {
-        const index = form.applicable_apartment_types.indexOf(typeId)
+        const index = form.applicable_apartment_types.indexOf(typeId);
         if (index > -1) {
-            form.applicable_apartment_types.splice(index, 1)
+            form.applicable_apartment_types.splice(index, 1);
         }
     }
-}
+};
 
 const typeDescriptions = {
-    'common_expense': 'Gastos comunes del conjunto (administración, vigilancia, etc.)',
-    'sanction': 'Multas por incumplimiento de normas',
-    'parking': 'Cuotas de parqueadero adicional',
-    'special': 'Conceptos especiales o extraordinarios',
-    'late_fee': 'Intereses por mora en pagos',
-    'other': 'Otros conceptos de facturación'
-}
+    common_expense: 'Gastos comunes del conjunto (administración, vigilancia, etc.)',
+    sanction: 'Multas por incumplimiento de normas',
+    parking: 'Cuotas de parqueadero adicional',
+    special: 'Conceptos especiales o extraordinarios',
+    late_fee: 'Intereses por mora en pagos',
+    other: 'Otros conceptos de facturación',
+};
 
 const billingCycleDescriptions = {
-    'monthly': 'Se factura cada mes',
-    'quarterly': 'Se factura cada tres meses',
-    'annually': 'Se factura una vez al año',
-    'one_time': 'Se factura una sola vez'
-}
+    monthly: 'Se factura cada mes',
+    quarterly: 'Se factura cada tres meses',
+    annually: 'Se factura una vez al año',
+    one_time: 'Se factura una sola vez',
+};
 </script>
 
 <template>
@@ -99,9 +93,7 @@ const billingCycleDescriptions = {
                 </Button>
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Nuevo Concepto de Pago</h1>
-                    <p class="text-muted-foreground">
-                        Crea un nuevo concepto que se puede facturar
-                    </p>
+                    <p class="text-muted-foreground">Crea un nuevo concepto que se puede facturar</p>
                 </div>
             </div>
         </div>
@@ -109,26 +101,19 @@ const billingCycleDescriptions = {
         <form @submit.prevent="submit" class="space-y-6">
             <div class="grid gap-6 lg:grid-cols-3">
                 <!-- Form Fields -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Basic Information -->
                     <Card>
                         <CardHeader>
                             <CardTitle>Información Básica</CardTitle>
-                            <CardDescription>
-                                Información general del concepto de pago
-                            </CardDescription>
+                            <CardDescription> Información general del concepto de pago </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <!-- Name -->
                             <div>
                                 <Label for="name">Nombre del Concepto *</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    placeholder="Ej: Administración, Vigilancia, Sanción por ruido"
-                                    required
-                                />
-                                <div v-if="form.errors.name" class="text-sm text-red-600 mt-1">
+                                <Input id="name" v-model="form.name" placeholder="Ej: Administración, Vigilancia, Sanción por ruido" required />
+                                <div v-if="form.errors.name" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.name }}
                                 </div>
                             </div>
@@ -136,12 +121,8 @@ const billingCycleDescriptions = {
                             <!-- Description -->
                             <div>
                                 <Label for="description">Descripción (Opcional)</Label>
-                                <Textarea
-                                    id="description"
-                                    v-model="form.description"
-                                    placeholder="Descripción detallada del concepto de pago"
-                                />
-                                <div v-if="form.errors.description" class="text-sm text-red-600 mt-1">
+                                <Textarea id="description" v-model="form.description" placeholder="Descripción detallada del concepto de pago" />
+                                <div v-if="form.errors.description" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.description }}
                                 </div>
                             </div>
@@ -162,10 +143,10 @@ const billingCycleDescriptions = {
                                         <SelectItem value="other">Otro</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p class="text-sm text-muted-foreground mt-1">
+                                <p class="mt-1 text-sm text-muted-foreground">
                                     {{ typeDescriptions[form.type as keyof typeof typeDescriptions] }}
                                 </p>
-                                <div v-if="form.errors.type" class="text-sm text-red-600 mt-1">
+                                <div v-if="form.errors.type" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.type }}
                                 </div>
                             </div>
@@ -173,18 +154,9 @@ const billingCycleDescriptions = {
                             <!-- Default Amount -->
                             <div>
                                 <Label for="default_amount">Monto por Defecto *</Label>
-                                <Input
-                                    id="default_amount"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    v-model.number="form.default_amount"
-                                    required
-                                />
-                                <p class="text-sm text-muted-foreground mt-1">
-                                    Monto que se usará por defecto al facturar este concepto
-                                </p>
-                                <div v-if="form.errors.default_amount" class="text-sm text-red-600 mt-1">
+                                <Input id="default_amount" type="number" min="0" step="0.01" v-model.number="form.default_amount" required />
+                                <p class="mt-1 text-sm text-muted-foreground">Monto que se usará por defecto al facturar este concepto</p>
+                                <div v-if="form.errors.default_amount" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.default_amount }}
                                 </div>
                             </div>
@@ -195,9 +167,7 @@ const billingCycleDescriptions = {
                     <Card>
                         <CardHeader>
                             <CardTitle>Configuración de Facturación</CardTitle>
-                            <CardDescription>
-                                Configuración sobre cómo y cuándo se factura este concepto
-                            </CardDescription>
+                            <CardDescription> Configuración sobre cómo y cuándo se factura este concepto </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <!-- Billing Cycle -->
@@ -214,10 +184,10 @@ const billingCycleDescriptions = {
                                         <SelectItem value="one_time">Una vez</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p class="text-sm text-muted-foreground mt-1">
+                                <p class="mt-1 text-sm text-muted-foreground">
                                     {{ billingCycleDescriptions[form.billing_cycle as keyof typeof billingCycleDescriptions] }}
                                 </p>
-                                <div v-if="form.errors.billing_cycle" class="text-sm text-red-600 mt-1">
+                                <div v-if="form.errors.billing_cycle" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.billing_cycle }}
                                 </div>
                             </div>
@@ -225,30 +195,26 @@ const billingCycleDescriptions = {
                             <!-- Checkboxes -->
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id="is_recurring" 
-                                        v-model:checked="form.is_recurring"
-                                    />
-                                    <Label for="is_recurring" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    <Checkbox id="is_recurring" v-model:checked="form.is_recurring" />
+                                    <Label
+                                        for="is_recurring"
+                                        class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
                                         Es recurrente
                                     </Label>
                                 </div>
-                                <p class="text-sm text-muted-foreground ml-6">
-                                    Se incluirá automáticamente en la facturación masiva mensual
-                                </p>
+                                <p class="ml-6 text-sm text-muted-foreground">Se incluirá automáticamente en la facturación masiva mensual</p>
 
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id="is_active" 
-                                        v-model:checked="form.is_active"
-                                    />
-                                    <Label for="is_active" class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    <Checkbox id="is_active" v-model:checked="form.is_active" />
+                                    <Label
+                                        for="is_active"
+                                        class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
                                         Activo
                                     </Label>
                                 </div>
-                                <p class="text-sm text-muted-foreground ml-6">
-                                    Estará disponible para facturar
-                                </p>
+                                <p class="ml-6 text-sm text-muted-foreground">Estará disponible para facturar</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -263,23 +229,23 @@ const billingCycleDescriptions = {
                         </CardHeader>
                         <CardContent class="space-y-3">
                             <div v-for="apartmentType in apartmentTypes" :key="apartmentType.id" class="flex items-center space-x-2">
-                                <Checkbox 
+                                <Checkbox
                                     :id="`apartment-type-${apartmentType.id}`"
                                     :checked="form.applicable_apartment_types.includes(apartmentType.id)"
                                     @update:checked="(checked) => toggleApartmentType(apartmentType.id, checked)"
                                 />
-                                <Label 
-                                    :for="`apartment-type-${apartmentType.id}`" 
-                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                <Label
+                                    :for="`apartment-type-${apartmentType.id}`"
+                                    class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                 >
                                     {{ apartmentType.name }}
                                 </Label>
                             </div>
-                            
+
                             <div v-if="form.applicable_apartment_types.length === 0" class="text-sm text-muted-foreground">
                                 Este concepto aplicará a todos los tipos de apartamento
                             </div>
-                            
+
                             <div v-if="form.errors.applicable_apartment_types" class="text-sm text-red-600">
                                 {{ form.errors.applicable_apartment_types }}
                             </div>
@@ -299,17 +265,17 @@ const billingCycleDescriptions = {
                                 <Label class="text-sm font-medium text-muted-foreground">Nombre</Label>
                                 <p class="font-medium">{{ form.name }}</p>
                             </div>
-                            
+
                             <div v-if="form.description">
                                 <Label class="text-sm font-medium text-muted-foreground">Descripción</Label>
                                 <p class="text-sm">{{ form.description }}</p>
                             </div>
-                            
+
                             <div>
                                 <Label class="text-sm font-medium text-muted-foreground">Monto por Defecto</Label>
-                                <p class="font-medium text-lg">{{ formatCurrency(form.default_amount) }}</p>
+                                <p class="text-lg font-medium">{{ formatCurrency(form.default_amount) }}</p>
                             </div>
-                            
+
                             <div>
                                 <Label class="text-sm font-medium text-muted-foreground">Características</Label>
                                 <div class="space-y-1 text-sm">
@@ -319,11 +285,16 @@ const billingCycleDescriptions = {
                                     <p>• Estado: {{ form.is_active ? 'Activo' : 'Inactivo' }}</p>
                                 </div>
                             </div>
-                            
+
                             <div v-if="form.applicable_apartment_types.length > 0">
                                 <Label class="text-sm font-medium text-muted-foreground">Aplica a</Label>
                                 <div class="text-sm">
-                                    {{ apartmentTypes.filter(type => form.applicable_apartment_types.includes(type.id)).map(type => type.name).join(', ') }}
+                                    {{
+                                        apartmentTypes
+                                            .filter((type) => form.applicable_apartment_types.includes(type.id))
+                                            .map((type) => type.name)
+                                            .join(', ')
+                                    }}
                                 </div>
                             </div>
                         </CardContent>
@@ -332,11 +303,7 @@ const billingCycleDescriptions = {
                     <!-- Submit -->
                     <Card>
                         <CardContent class="pt-6">
-                            <Button 
-                                type="submit" 
-                                class="w-full" 
-                                :disabled="form.processing || !form.name || form.default_amount < 0"
-                            >
+                            <Button type="submit" class="w-full" :disabled="form.processing || !form.name || form.default_amount < 0">
                                 <Save class="mr-2 h-4 w-4" />
                                 {{ form.processing ? 'Creando...' : 'Crear Concepto' }}
                             </Button>

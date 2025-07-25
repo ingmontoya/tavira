@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import type {
-    ColumnFiltersState,
-    SortingState,
-    VisibilityState,
-} from '@tanstack/vue-table'
+import DropdownAction from '@/components/DataTableDropDown.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import {
     createColumnHelper,
     FlexRender,
@@ -12,181 +20,177 @@ import {
     getPaginationRowModel,
     getSortedRowModel,
     useVueTable,
-} from '@tanstack/vue-table'
-import { ChevronDown, ChevronsUpDown } from 'lucide-vue-next'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, Link, router } from '@inertiajs/vue3'
-import { h, ref, computed, watch } from 'vue'
-import { cn, valueUpdater } from '../../../utils'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
-import DropdownAction from '@/components/DataTableDropDown.vue'
-import { Plus, X, Search, Settings, Eye, Edit, Trash2, ToggleLeft, ToggleRight, Filter } from 'lucide-vue-next'
-import { Badge } from '@/components/ui/badge'
+} from '@tanstack/vue-table';
+import { ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Plus, Search, Settings, ToggleLeft, ToggleRight, Trash2, X } from 'lucide-vue-next';
+import { computed, h, ref, watch } from 'vue';
+import { valueUpdater } from '../../../utils';
 
 interface PaymentConcept {
-    id: number
-    name: string
-    description?: string
-    type: string
-    type_label: string
-    default_amount: number
-    is_recurring: boolean
-    is_active: boolean
-    billing_cycle: string
-    billing_cycle_label: string
-    applicable_apartment_types?: number[]
+    id: number;
+    name: string;
+    description?: string;
+    type: string;
+    type_label: string;
+    default_amount: number;
+    is_recurring: boolean;
+    is_active: boolean;
+    billing_cycle: string;
+    billing_cycle_label: string;
+    applicable_apartment_types?: number[];
 }
 
 const props = defineProps<{
     concepts: {
-        data: PaymentConcept[]
-        current_page: number
-        last_page: number
-        per_page: number
-        total: number
-        from: number
-        to: number
-    }
+        data: PaymentConcept[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
+    };
     filters?: {
-        search?: string
-        type?: string
-        is_active?: boolean
-    }
-}>()
+        search?: string;
+        type?: string;
+        is_active?: boolean;
+    };
+}>();
 
-const data = computed(() => props.concepts.data)
+const data = computed(() => props.concepts.data);
 
 // Custom filters state
 const customFilters = ref({
     search: props.filters?.search || '',
     type: props.filters?.type || 'all',
-    is_active: props.filters?.is_active?.toString() || 'all'
-})
+    is_active: props.filters?.is_active?.toString() || 'all',
+});
 
 // Table state
-const sorting = ref<SortingState>([])
-const columnFilters = ref<ColumnFiltersState>([])
-const columnVisibility = ref<VisibilityState>({})
-const rowSelection = ref({})
+const sorting = ref<SortingState>([]);
+const columnFilters = ref<ColumnFiltersState>([]);
+const columnVisibility = ref<VisibilityState>({});
+const rowSelection = ref({});
 
 // Column helper
-const columnHelper = createColumnHelper<PaymentConcept>()
+const columnHelper = createColumnHelper<PaymentConcept>();
 
 const columns = [
     columnHelper.display({
         id: 'select',
-        header: ({ table }) => h(Checkbox, {
-            checked: table.getIsAllPageRowsSelected(),
-            indeterminate: table.getIsSomePageRowsSelected(),
-            'onUpdate:checked': value => table.toggleAllPageRowsSelected(!!value),
-            ariaLabel: 'Select all',
-        }),
-        cell: ({ row }) => h(Checkbox, {
-            checked: row.getIsSelected(),
-            'onUpdate:checked': value => row.toggleSelected(!!value),
-            ariaLabel: 'Select row',
-        }),
+        header: ({ table }) =>
+            h(Checkbox, {
+                checked: table.getIsAllPageRowsSelected(),
+                indeterminate: table.getIsSomePageRowsSelected(),
+                'onUpdate:checked': (value) => table.toggleAllPageRowsSelected(!!value),
+                ariaLabel: 'Select all',
+            }),
+        cell: ({ row }) =>
+            h(Checkbox, {
+                checked: row.getIsSelected(),
+                'onUpdate:checked': (value) => row.toggleSelected(!!value),
+                ariaLabel: 'Select row',
+            }),
         enableSorting: false,
         enableHiding: false,
     }),
     columnHelper.accessor('name', {
         header: ({ column }) => {
-            return h(Button, {
-                variant: 'ghost',
-                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-            }, () => ['Nombre', h(ChevronsUpDown, { class: 'ml-2 h-4 w-4' })])
+            return h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                },
+                () => ['Nombre', h(ChevronsUpDown, { class: 'ml-2 h-4 w-4' })],
+            );
         },
         cell: ({ row }) => {
-            const concept = row.original
+            const concept = row.original;
             return h('div', { class: 'flex flex-col' }, [
                 h('span', { class: 'font-medium' }, concept.name),
-                concept.description && h('span', { class: 'text-sm text-muted-foreground' }, concept.description.substring(0, 60) + (concept.description.length > 60 ? '...' : ''))
-            ])
+                concept.description &&
+                    h(
+                        'span',
+                        { class: 'text-sm text-muted-foreground' },
+                        concept.description.substring(0, 60) + (concept.description.length > 60 ? '...' : ''),
+                    ),
+            ]);
         },
     }),
     columnHelper.accessor('type_label', {
         header: 'Tipo',
         cell: ({ row }) => {
-            const concept = row.original
+            const concept = row.original;
             const typeColors = {
-                'common_expense': 'bg-blue-100 text-blue-800',
-                'sanction': 'bg-red-100 text-red-800',
-                'parking': 'bg-green-100 text-green-800',
-                'special': 'bg-purple-100 text-purple-800',
-                'late_fee': 'bg-orange-100 text-orange-800',
-                'other': 'bg-gray-100 text-gray-800'
-            }
-            return h(Badge, {
-                class: typeColors[concept.type as keyof typeof typeColors] || 'bg-gray-100 text-gray-800'
-            }, () => concept.type_label)
+                common_expense: 'bg-blue-100 text-blue-800',
+                sanction: 'bg-red-100 text-red-800',
+                parking: 'bg-green-100 text-green-800',
+                special: 'bg-purple-100 text-purple-800',
+                late_fee: 'bg-orange-100 text-orange-800',
+                other: 'bg-gray-100 text-gray-800',
+            };
+            return h(
+                Badge,
+                {
+                    class: typeColors[concept.type as keyof typeof typeColors] || 'bg-gray-100 text-gray-800',
+                },
+                () => concept.type_label,
+            );
         },
     }),
     columnHelper.accessor('default_amount', {
         header: ({ column }) => {
-            return h(Button, {
-                variant: 'ghost',
-                onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
-            }, () => ['Monto', h(ChevronsUpDown, { class: 'ml-2 h-4 w-4' })])
+            return h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                },
+                () => ['Monto', h(ChevronsUpDown, { class: 'ml-2 h-4 w-4' })],
+            );
         },
         cell: ({ row }) => {
-            const amount = row.original.default_amount
-            return h('div', { class: 'font-medium' }, `$${amount.toLocaleString()}`)
+            const amount = row.original.default_amount;
+            return h('div', { class: 'font-medium' }, `$${amount.toLocaleString()}`);
         },
     }),
     columnHelper.accessor('billing_cycle_label', {
         header: 'Ciclo',
         cell: ({ row }) => {
-            return h('span', { class: 'text-sm' }, row.original.billing_cycle_label)
+            return h('span', { class: 'text-sm' }, row.original.billing_cycle_label);
         },
     }),
     columnHelper.accessor('is_recurring', {
         header: 'Recurrente',
         cell: ({ row }) => {
-            const isRecurring = row.original.is_recurring
-            return h(Badge, {
-                variant: isRecurring ? 'default' : 'secondary'
-            }, () => isRecurring ? 'Sí' : 'No')
+            const isRecurring = row.original.is_recurring;
+            return h(
+                Badge,
+                {
+                    variant: isRecurring ? 'default' : 'secondary',
+                },
+                () => (isRecurring ? 'Sí' : 'No'),
+            );
         },
     }),
     columnHelper.accessor('is_active', {
         header: 'Estado',
         cell: ({ row }) => {
-            const concept = row.original
-            return h(Badge, {
-                class: concept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-            }, () => concept.is_active ? 'Activo' : 'Inactivo')
+            const concept = row.original;
+            return h(
+                Badge,
+                {
+                    class: concept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800',
+                },
+                () => (concept.is_active ? 'Activo' : 'Inactivo'),
+            );
         },
     }),
     columnHelper.display({
         id: 'actions',
         header: 'Acciones',
         cell: ({ row }) => {
-            const concept = row.original
+            const concept = row.original;
             const actions = [
                 {
                     label: 'Ver Detalle',
@@ -207,13 +211,13 @@ const columns = [
                     label: 'Eliminar',
                     icon: Trash2,
                     action: () => deleteConcept(concept.id),
-                    destructive: true
-                }
-            ]
-            return h(DropdownAction, { actions })
+                    destructive: true,
+                },
+            ];
+            return h(DropdownAction, { actions });
         },
     }),
-]
+];
 
 const table = useVueTable({
     data: data.value,
@@ -222,61 +226,69 @@ const table = useVueTable({
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: updaterOrValue => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: updaterOrValue => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: updaterOrValue => valueUpdater(updaterOrValue, columnVisibility),
-    onRowSelectionChange: updaterOrValue => valueUpdater(updaterOrValue, rowSelection),
+    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
+    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
+    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
+    onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
     state: {
         sorting: sorting.value,
         columnFilters: columnFilters.value,
         columnVisibility: columnVisibility.value,
         rowSelection: rowSelection.value,
     },
-})
+});
 
 // Apply filters
 const applyFilters = () => {
-    const params: Record<string, string> = {}
+    const params: Record<string, string> = {};
 
-    if (customFilters.value.search) params.search = customFilters.value.search
-    if (customFilters.value.type !== 'all') params.type = customFilters.value.type
-    if (customFilters.value.is_active !== 'all') params.is_active = customFilters.value.is_active
+    if (customFilters.value.search) params.search = customFilters.value.search;
+    if (customFilters.value.type !== 'all') params.type = customFilters.value.type;
+    if (customFilters.value.is_active !== 'all') params.is_active = customFilters.value.is_active;
 
     router.get('/payment-concepts', params, {
         preserveState: true,
         preserveScroll: true,
-    })
-}
+    });
+};
 
 // Clear filters
 const clearFilters = () => {
     customFilters.value = {
         search: '',
         type: 'all',
-        is_active: 'all'
-    }
-    applyFilters()
-}
+        is_active: 'all',
+    };
+    applyFilters();
+};
 
 // Toggle concept status
 const toggleConcept = (id: number) => {
-    router.post(`/payment-concepts/${id}/toggle`, {}, {
-        preserveState: true,
-        preserveScroll: true,
-    })
-}
+    router.post(
+        `/payment-concepts/${id}/toggle`,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
 
 // Delete concept
 const deleteConcept = (id: number) => {
     if (confirm('¿Estás seguro de que deseas eliminar este concepto de pago?')) {
-        router.delete(`/payment-concepts/${id}`)
+        router.delete(`/payment-concepts/${id}`);
     }
-}
+};
 
 // Watch for filter changes
-watch(customFilters, () => {
-    applyFilters()
-}, { deep: true })
+watch(
+    customFilters,
+    () => {
+        applyFilters();
+    },
+    { deep: true },
+);
 
 // Type options
 const typeOptions = [
@@ -286,15 +298,15 @@ const typeOptions = [
     { value: 'parking', label: 'Parqueadero' },
     { value: 'special', label: 'Especial' },
     { value: 'late_fee', label: 'Interés de mora' },
-    { value: 'other', label: 'Otro' }
-]
+    { value: 'other', label: 'Otro' },
+];
 
 // Status options
 const statusOptions = [
     { value: 'all', label: 'Todos los estados' },
     { value: 'true', label: 'Activos' },
-    { value: 'false', label: 'Inactivos' }
-]
+    { value: 'false', label: 'Inactivos' },
+];
 const breadcrumbs = [
     {
         title: 'Escritorio',
@@ -304,20 +316,18 @@ const breadcrumbs = [
         title: 'Conceptos de Pago',
         href: '/payment-concepts',
     },
-]
+];
 </script>
 
 <template>
     <Head title="Conceptos de Pago" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Conceptos de Pago</h1>
-                    <p class="text-muted-foreground">
-                        Configura los conceptos que se pueden facturar en el conjunto
-                    </p>
+                    <p class="text-muted-foreground">Configura los conceptos que se pueden facturar en el conjunto</p>
                 </div>
                 <div class="flex space-x-2">
                     <Button asChild variant="outline">
@@ -348,13 +358,8 @@ const breadcrumbs = [
                         <div class="space-y-2">
                             <Label for="search">Buscar</Label>
                             <div class="relative">
-                                <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    id="search"
-                                    placeholder="Nombre o descripción..."
-                                    v-model="customFilters.search"
-                                    class="pl-8"
-                                />
+                                <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
+                                <Input id="search" placeholder="Nombre o descripción..." v-model="customFilters.search" class="pl-8" />
                             </div>
                         </div>
 
@@ -366,11 +371,7 @@ const breadcrumbs = [
                                     <SelectValue placeholder="Seleccionar tipo" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem
-                                        v-for="type in typeOptions"
-                                        :key="type.value"
-                                        :value="type.value"
-                                    >
+                                    <SelectItem v-for="type in typeOptions" :key="type.value" :value="type.value">
                                         {{ type.label }}
                                     </SelectItem>
                                 </SelectContent>
@@ -385,11 +386,7 @@ const breadcrumbs = [
                                     <SelectValue placeholder="Seleccionar estado" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem
-                                        v-for="status in statusOptions"
-                                        :key="status.value"
-                                        :value="status.value"
-                                    >
+                                    <SelectItem v-for="status in statusOptions" :key="status.value" :value="status.value">
                                         {{ status.label }}
                                     </SelectItem>
                                 </SelectContent>
@@ -414,8 +411,7 @@ const breadcrumbs = [
                     <div class="flex items-center justify-between pb-4">
                         <div class="flex items-center space-x-2">
                             <p class="text-sm text-muted-foreground">
-                                Mostrando {{ props.concepts.from || 0 }} a {{ props.concepts.to || 0 }}
-                                de {{ props.concepts.total }} conceptos
+                                Mostrando {{ props.concepts.from || 0 }} a {{ props.concepts.to || 0 }} de {{ props.concepts.total }} conceptos
                             </p>
                         </div>
 
@@ -428,7 +424,7 @@ const breadcrumbs = [
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuCheckboxItem
-                                    v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
+                                    v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
                                     :key="column.id"
                                     :checked="column.getIsVisible()"
                                     @update:checked="column.toggleVisibility"
@@ -461,10 +457,7 @@ const breadcrumbs = [
                                         :data-state="row.getIsSelected() ? 'selected' : undefined"
                                     >
                                         <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                                            <FlexRender
-                                                :render="cell.column.columnDef.cell"
-                                                :props="cell.getContext()"
-                                            />
+                                            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                         </TableCell>
                                     </TableRow>
                                 </template>
@@ -483,28 +476,16 @@ const breadcrumbs = [
                     <div class="flex items-center justify-between pt-4">
                         <div class="flex items-center space-x-2">
                             <p class="text-sm text-muted-foreground">
-                                {{ table.getFilteredSelectedRowModel().rows.length }} de{' '}
-                                {{ table.getFilteredRowModel().rows.length }} fila(s) seleccionadas.
+                                {{ table.getFilteredSelectedRowModel().rows.length }} de{' '} {{ table.getFilteredRowModel().rows.length }} fila(s)
+                                seleccionadas.
                             </p>
                         </div>
 
                         <div class="flex items-center space-x-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                :disabled="!table.getCanPreviousPage()"
-                                @click="table.previousPage()"
-                            >
+                            <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
                                 Anterior
                             </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                :disabled="!table.getCanNextPage()"
-                                @click="table.nextPage()"
-                            >
-                                Siguiente
-                            </Button>
+                            <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Siguiente </Button>
                         </div>
                     </div>
                 </div>

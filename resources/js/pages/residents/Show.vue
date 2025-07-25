@@ -1,25 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-    ArrowLeft,
-    Edit,
-    User,
-    Mail,
-    Phone,
-    Calendar,
-    Home,
-    Building,
-    FileText,
-    Download,
-    Eye,
-    UserCheck,
-    IdCard
-} from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ArrowLeft, Building, Calendar, Download, Edit, Eye, FileText, Home, IdCard, Mail, Phone, User, UserCheck } from 'lucide-vue-next';
 
 interface Apartment {
     id: number;
@@ -66,7 +52,7 @@ const formatDate = (date: string | null) => {
     return new Date(date).toLocaleDateString('es-CO', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
     });
 };
 
@@ -77,41 +63,39 @@ const formatDateTime = (dateTime: string | null) => {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
 const getGenderLabel = (gender: string) => {
     const labels = {
-        'M': 'Masculino',
-        'F': 'Femenino',
-        'Other': 'Otro'
+        M: 'Masculino',
+        F: 'Femenino',
+        Other: 'Otro',
     };
     return labels[gender] || gender;
 };
 
 const getResidentTypeLabel = (type: string) => {
     const labels = {
-        'Owner': 'Propietario',
-        'Tenant': 'Arrendatario',
-        'Family': 'Familiar'
+        Owner: 'Propietario',
+        Tenant: 'Arrendatario',
+        Family: 'Familiar',
     };
     return labels[type] || type;
 };
 
 const getResidentTypeColor = (type: string) => {
     const colors = {
-        'Owner': 'bg-green-100 text-green-800',
-        'Tenant': 'bg-blue-100 text-blue-800',
-        'Family': 'bg-yellow-100 text-yellow-800'
+        Owner: 'bg-green-100 text-green-800',
+        Tenant: 'bg-blue-100 text-blue-800',
+        Family: 'bg-yellow-100 text-yellow-800',
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
 };
 
 const getStatusColor = (status: string) => {
-    return status === 'Active'
-        ? 'bg-green-100 text-green-800'
-        : 'bg-red-100 text-red-800';
+    return status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
 };
 
 // Breadcrumbs
@@ -126,13 +110,11 @@ const breadcrumbs = [
     <Head :title="`${resident.first_name} ${resident.last_name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
-                    <h1 class="text-3xl font-bold tracking-tight">
-                        {{ resident.first_name }} {{ resident.last_name }}
-                    </h1>
+                    <h1 class="text-3xl font-bold tracking-tight">{{ resident.first_name }} {{ resident.last_name }}</h1>
                     <div class="flex items-center gap-3">
                         <Badge :class="getStatusColor(resident.status)">
                             {{ resident.status === 'Active' ? 'Activo' : 'Inactivo' }}
@@ -158,7 +140,7 @@ const breadcrumbs = [
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 <!-- Información Personal -->
                 <Card>
                     <CardHeader>
@@ -221,7 +203,7 @@ const breadcrumbs = [
                         <div v-if="resident.emergency_contact">
                             <Separator class="my-4" />
                             <div class="flex items-start gap-3">
-                                <UserCheck class="h-5 w-5 text-muted-foreground mt-1" />
+                                <UserCheck class="mt-1 h-5 w-5 text-muted-foreground" />
                                 <div>
                                     <p class="text-sm font-medium text-muted-foreground">Contacto de Emergencia</p>
                                     <p class="text-base whitespace-pre-line">{{ resident.emergency_contact }}</p>
@@ -254,7 +236,7 @@ const breadcrumbs = [
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                            <div class="grid grid-cols-2 gap-4 rounded-lg bg-muted/30 p-4">
                                 <div>
                                     <p class="text-sm font-medium text-muted-foreground">Área</p>
                                     <p class="text-base">{{ resident.apartment.apartment_type.area_sqm }}m²</p>
@@ -273,8 +255,8 @@ const breadcrumbs = [
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="text-center py-8">
-                            <Home class="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                        <div v-else class="py-8 text-center">
+                            <Home class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                             <p class="text-muted-foreground">Sin apartamento asignado</p>
                         </div>
 
@@ -299,7 +281,7 @@ const breadcrumbs = [
 
                             <div v-if="resident.notes">
                                 <div class="flex items-start gap-3">
-                                    <FileText class="h-5 w-5 text-muted-foreground mt-1" />
+                                    <FileText class="mt-1 h-5 w-5 text-muted-foreground" />
                                     <div>
                                         <p class="text-sm font-medium text-muted-foreground">Notas</p>
                                         <p class="text-base whitespace-pre-line">{{ resident.notes }}</p>
@@ -318,16 +300,15 @@ const breadcrumbs = [
                         <FileText class="h-5 w-5" />
                         Documentos Adjuntos
                     </CardTitle>
-                    <CardDescription>
-                        Archivos y documentos relacionados con el residente
-                    </CardDescription>
+                    <CardDescription> Archivos y documentos relacionados con el residente </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="resident.documents && resident.documents.length > 0"
-                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div v-for="document in resident.documents"
-                             :key="document.id"
-                             class="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                    <div v-if="resident.documents && resident.documents.length > 0" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div
+                            v-for="document in resident.documents"
+                            :key="document.id"
+                            class="rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                        >
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
                                     <FileText class="h-8 w-8 text-blue-500" />
@@ -349,12 +330,10 @@ const breadcrumbs = [
                             </div>
                         </div>
                     </div>
-                    <div v-else class="text-center py-12">
-                        <FileText class="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 class="text-lg font-medium mb-2">No hay documentos</h3>
-                        <p class="text-muted-foreground">
-                            No se han adjuntado documentos para este residente
-                        </p>
+                    <div v-else class="py-12 text-center">
+                        <FileText class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                        <h3 class="mb-2 text-lg font-medium">No hay documentos</h3>
+                        <p class="text-muted-foreground">No se han adjuntado documentos para este residente</p>
                     </div>
                 </CardContent>
             </Card>
@@ -365,7 +344,7 @@ const breadcrumbs = [
                     <CardTitle class="text-lg">Información del Sistema</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
                             <p class="text-sm font-medium text-muted-foreground">Fecha de Creación</p>
                             <p class="text-base">{{ formatDateTime(resident.created_at) }}</p>

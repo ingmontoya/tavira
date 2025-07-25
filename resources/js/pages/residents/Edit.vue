@@ -1,17 +1,4 @@
 <script setup lang="ts">
-import { useForm, Head, Link } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,31 +8,23 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger
+    AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    ArrowLeft,
-    User,
-    Home,
-    FileText,
-    Settings,
-    Save,
-    X,
-    Upload,
-    Phone,
-    Mail,
-    Calendar,
-    MapPin,
-    Users,
-    CheckCircle,
-    AlertCircle,
-    Building,
-    UserCheck,
-    Clock,
-    CreditCard
-} from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import ValidationErrors from '@/components/ValidationErrors.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, CheckCircle, FileText, Home, Mail, Phone, Save, Settings, Upload, User, UserCheck, X } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 interface FormData {
     document_type: string;
@@ -152,7 +131,7 @@ const form = useForm<FormData>({
     documents: [],
     email_notifications: props.resident.email_notifications ?? true,
     whatsapp_notifications: props.resident.whatsapp_notifications ?? false,
-    whatsapp_number: props.resident.whatsapp_number || ''
+    whatsapp_number: props.resident.whatsapp_number || '',
 });
 
 // UI state
@@ -164,7 +143,7 @@ const validationRules = {
     step1: ['document_type', 'document_number', 'first_name', 'last_name', 'email'],
     step2: ['apartment_id', 'resident_type', 'start_date'],
     step3: [],
-    step4: []
+    step4: [],
 };
 
 const steps = [
@@ -173,29 +152,40 @@ const steps = [
         title: 'Información Personal',
         description: 'Datos básicos del residente',
         icon: User,
-        fields: ['document_type', 'document_number', 'first_name', 'last_name', 'email', 'phone', 'mobile_phone', 'birth_date', 'gender', 'emergency_contact']
+        fields: [
+            'document_type',
+            'document_number',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'mobile_phone',
+            'birth_date',
+            'gender',
+            'emergency_contact',
+        ],
     },
     {
         id: 1,
         title: 'Información de Residencia',
         description: 'Ubicación y tipo de residencia',
         icon: Home,
-        fields: ['apartment_id', 'resident_type', 'status', 'start_date', 'end_date']
+        fields: ['apartment_id', 'resident_type', 'status', 'start_date', 'end_date'],
     },
     {
         id: 2,
         title: 'Documentos',
         description: 'Archivos y documentos adicionales',
         icon: FileText,
-        fields: ['documents', 'notes']
+        fields: ['documents', 'notes'],
     },
     {
         id: 3,
         title: 'Configuración',
         description: 'Notificaciones y preferencias',
         icon: Settings,
-        fields: ['email_notifications', 'whatsapp_notifications', 'whatsapp_number']
-    }
+        fields: ['email_notifications', 'whatsapp_notifications', 'whatsapp_number'],
+    },
 ];
 
 // Computed properties
@@ -217,13 +207,16 @@ const progressPercentage = computed(() => {
 const formProgress = computed(() => {
     const totalFields = steps.reduce((acc, step) => acc + step.fields.length, 0);
     const completedFields = steps.reduce((acc, step) => {
-        return acc + step.fields.filter(field => {
-            const value = (form as any)[field];
-            if (typeof value === 'boolean') return true;
-            if (Array.isArray(value)) return value.length > 0;
-            if (typeof value === 'number') return value > 0;
-            return value && value.toString().trim() !== '';
-        }).length;
+        return (
+            acc +
+            step.fields.filter((field) => {
+                const value = (form as any)[field];
+                if (typeof value === 'boolean') return true;
+                if (Array.isArray(value)) return value.length > 0;
+                if (typeof value === 'number') return value > 0;
+                return value && value.toString().trim() !== '';
+            }).length
+        );
     }, 0);
 
     return Math.round((completedFields / totalFields) * 100);
@@ -235,7 +228,7 @@ const canProceedToNext = computed(() => {
 
 const selectedApartment = computed(() => {
     if (!form.apartment_id || !props.apartments) return null;
-    return props.apartments.find(apt => apt.id === form.apartment_id);
+    return props.apartments.find((apt) => apt.id === form.apartment_id);
 });
 
 // Apartment selection state
@@ -247,15 +240,12 @@ const filteredApartments = ref<Apartment[]>([]);
 // Available options for filters
 const availableTowers = computed(() => {
     if (!props.apartments) return [];
-    return [...new Set(props.apartments.map(apt => apt.tower))].sort();
+    return [...new Set(props.apartments.map((apt) => apt.tower))].sort();
 });
 
 const availableFloors = computed(() => {
     if (!props.apartments || !selectedTower.value) return [];
-    return [...new Set(props.apartments
-        .filter(apt => apt.tower === selectedTower.value)
-        .map(apt => apt.floor))]
-        .sort((a, b) => a - b);
+    return [...new Set(props.apartments.filter((apt) => apt.tower === selectedTower.value).map((apt) => apt.floor))].sort((a, b) => a - b);
 });
 
 // Methods for apartment selection
@@ -271,18 +261,18 @@ const filterApartments = () => {
     let filtered = props.apartments;
 
     if (selectedTower.value) {
-        filtered = filtered.filter(apt => apt.tower === selectedTower.value);
+        filtered = filtered.filter((apt) => apt.tower === selectedTower.value);
     }
 
     if (selectedFloor.value) {
-        filtered = filtered.filter(apt => apt.floor === selectedFloor.value);
+        filtered = filtered.filter((apt) => apt.floor === selectedFloor.value);
     }
 
     filteredApartments.value = filtered.sort((a, b) => a.number.localeCompare(b.number));
 
     // Clear apartment selection if current apartment is not in filtered results
     if (form.apartment_id) {
-        const isCurrentApartmentValid = filteredApartments.value.some(apt => apt.id === form.apartment_id);
+        const isCurrentApartmentValid = filteredApartments.value.some((apt) => apt.id === form.apartment_id);
         if (!isCurrentApartmentValid) {
             form.apartment_id = null;
             directApartmentNumber.value = '';
@@ -291,7 +281,7 @@ const filterApartments = () => {
 
     // Update direct apartment number when apartment is selected via dropdown
     if (form.apartment_id) {
-        const apartment = props.apartments.find(apt => apt.id === form.apartment_id);
+        const apartment = props.apartments.find((apt) => apt.id === form.apartment_id);
         if (apartment) {
             directApartmentNumber.value = apartment.number;
         }
@@ -304,10 +294,7 @@ const findApartmentByNumber = () => {
     const searchNumber = directApartmentNumber.value.trim();
 
     // First try exact number match
-    let apartment = props.apartments.find(apt =>
-        apt.number === searchNumber ||
-        getDisplayNumber(apt) === searchNumber
-    );
+    let apartment = props.apartments.find((apt) => apt.number === searchNumber || getDisplayNumber(apt) === searchNumber);
 
     // If not found, try parsing the number format (e.g., 1101 = Tower 1, Floor 1, Apt 101)
     if (!apartment && searchNumber.length === 4) {
@@ -316,10 +303,8 @@ const findApartmentByNumber = () => {
 
         // The apartment number should match exactly since now apartments are numbered correctly
         // 1101 = Tower 1, Floor 1, Apartment 101 -> should find apartment with number "1101"
-        apartment = props.apartments.find(apt => {
-            return apt.tower === tower &&
-                   apt.floor === floor &&
-                   apt.number === searchNumber;
+        apartment = props.apartments.find((apt) => {
+            return apt.tower === tower && apt.floor === floor && apt.number === searchNumber;
         });
     }
 
@@ -341,28 +326,35 @@ if (props.resident?.apartment) {
 }
 
 // Watch for changes in apartment selection
-watch(() => form.apartment_id, (newId) => {
-    if (newId && props.apartments) {
-        const apartment = props.apartments.find(apt => apt.id === newId);
-        if (apartment) {
-            directApartmentNumber.value = apartment.number;
+watch(
+    () => form.apartment_id,
+    (newId) => {
+        if (newId && props.apartments) {
+            const apartment = props.apartments.find((apt) => apt.id === newId);
+            if (apartment) {
+                directApartmentNumber.value = apartment.number;
+            }
         }
-    }
-});
+    },
+);
 
 // Initialize filtered apartments when apartments data is available
-watch(() => props.apartments, (newApartments) => {
-    if (newApartments && newApartments.length > 0) {
-        filterApartments();
-    }
-}, { immediate: true });
+watch(
+    () => props.apartments,
+    (newApartments) => {
+        if (newApartments && newApartments.length > 0) {
+            filterApartments();
+        }
+    },
+    { immediate: true },
+);
 
 // Methods
 const validateStep = (stepIndex: number): boolean => {
     const step = steps[stepIndex];
     const requiredFields = validationRules[`step${stepIndex + 1}` as keyof typeof validationRules] || [];
 
-    return requiredFields.every(field => {
+    return requiredFields.every((field) => {
         const value = (form as any)[field];
         if (typeof value === 'boolean') return true;
         if (Array.isArray(value)) return value.length > 0;
@@ -406,7 +398,7 @@ const submit = () => {
         form.put(route('residents.update', props.resident.id), {
             onSuccess: () => {
                 isUnsavedChanges.value = false;
-            }
+            },
         });
     }
 };
@@ -418,9 +410,13 @@ const resetForm = () => {
 };
 
 // Watch for form changes
-watch(form, () => {
-    isUnsavedChanges.value = true;
-}, { deep: true });
+watch(
+    form,
+    () => {
+        isUnsavedChanges.value = true;
+    },
+    { deep: true },
+);
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -434,27 +430,27 @@ const documentTypes = [
     { value: 'CC', label: 'Cédula de Ciudadanía' },
     { value: 'CE', label: 'Cédula de Extranjería' },
     { value: 'TI', label: 'Tarjeta de Identidad' },
-    { value: 'PP', label: 'Pasaporte' }
+    { value: 'PP', label: 'Pasaporte' },
 ];
 
 // Gender options
 const genderOptions = [
     { value: 'M', label: 'Masculino' },
     { value: 'F', label: 'Femenino' },
-    { value: 'Other', label: 'Otro' }
+    { value: 'Other', label: 'Otro' },
 ];
 
 // Resident types
 const residentTypes = [
     { value: 'Owner', label: 'Propietario', description: 'Propietario del inmueble' },
     { value: 'Tenant', label: 'Arrendatario', description: 'Inquilino o arrendatario' },
-    { value: 'Family', label: 'Familiar', description: 'Familiar del propietario' }
+    { value: 'Family', label: 'Familiar', description: 'Familiar del propietario' },
 ];
 
 // Status options
 const statusOptions = [
     { value: 'Active', label: 'Activo', color: 'bg-green-100 text-green-800' },
-    { value: 'Inactive', label: 'Inactivo', color: 'bg-red-100 text-red-800' }
+    { value: 'Inactive', label: 'Inactivo', color: 'bg-red-100 text-red-800' },
 ];
 </script>
 
@@ -462,14 +458,12 @@ const statusOptions = [
     <Head title="Editar Residente" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-8">
+            <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">Editar Residente</h1>
-                    <p class="text-muted-foreground">
-                        Actualiza la información del residente
-                    </p>
+                    <p class="text-muted-foreground">Actualiza la información del residente</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <Link href="/residents">
@@ -488,15 +482,11 @@ const statusOptions = [
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?
-                                </AlertDialogDescription>
+                                <AlertDialogDescription> Tienes cambios sin guardar. ¿Estás seguro de que deseas salir? </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Continuar editando</AlertDialogCancel>
-                                <AlertDialogAction @click="resetForm">
-                                    Descartar cambios
-                                </AlertDialogAction>
+                                <AlertDialogAction @click="resetForm"> Descartar cambios </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -512,9 +502,7 @@ const statusOptions = [
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle class="text-lg">Progreso del Formulario</CardTitle>
-                            <CardDescription>
-                                Completa todos los campos requeridos para actualizar el residente
-                            </CardDescription>
+                            <CardDescription> Completa todos los campos requeridos para actualizar el residente </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-muted-foreground">{{ formProgress }}% completado</span>
@@ -525,43 +513,45 @@ const statusOptions = [
             </Card>
 
             <!-- Step Navigation -->
-            <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="mb-8 grid grid-cols-4 gap-4">
                 <div
                     v-for="(step, index) in steps"
                     :key="step.id"
                     @click="goToStep(index)"
                     :class="[
-                        'relative p-4 rounded-lg border cursor-pointer transition-all duration-200',
+                        'relative cursor-pointer rounded-lg border p-4 transition-all duration-200',
                         {
-                            'bg-primary text-primary-foreground border-primary': currentStep === index,
-                            'bg-green-50 border-green-200 text-green-800': index < currentStep && validateStep(index),
-                            'bg-muted/50 border-muted text-muted-foreground': index > currentStep,
-                            'hover:bg-muted/80': index <= currentStep
-                        }
+                            'border-primary bg-primary text-primary-foreground': currentStep === index,
+                            'border-green-200 bg-green-50 text-green-800': index < currentStep && validateStep(index),
+                            'border-muted bg-muted/50 text-muted-foreground': index > currentStep,
+                            'hover:bg-muted/80': index <= currentStep,
+                        },
                     ]"
                 >
                     <div class="flex items-center gap-3">
-                        <div :class="[
-                            'flex items-center justify-center w-8 h-8 rounded-full',
-                            {
-                                'bg-primary-foreground text-primary': currentStep === index,
-                                'bg-green-500 text-white': index < currentStep && validateStep(index),
-                                'bg-muted text-muted-foreground': index > currentStep
-                            }
-                        ]">
+                        <div
+                            :class="[
+                                'flex h-8 w-8 items-center justify-center rounded-full',
+                                {
+                                    'bg-primary-foreground text-primary': currentStep === index,
+                                    'bg-green-500 text-white': index < currentStep && validateStep(index),
+                                    'bg-muted text-muted-foreground': index > currentStep,
+                                },
+                            ]"
+                        >
                             <CheckCircle v-if="index < currentStep && validateStep(index)" class="h-4 w-4" />
                             <component v-else :is="step.icon" class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="font-medium truncate">{{ step.title }}</p>
-                            <p class="text-xs opacity-75 truncate">{{ step.description }}</p>
+                            <p class="truncate font-medium">{{ step.title }}</p>
+                            <p class="truncate text-xs opacity-75">{{ step.description }}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Form Content -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-4">
                 <!-- Sidebar with summary -->
                 <div class="lg:col-span-1">
                     <Card class="sticky top-4">
@@ -573,12 +563,8 @@ const statusOptions = [
                                 <div class="flex items-center gap-2">
                                     <User class="h-4 w-4 text-muted-foreground" />
                                     <div>
-                                        <p class="text-sm font-medium">
-                                            {{ form.first_name || 'Nombre' }} {{ form.last_name || 'Apellido' }}
-                                        </p>
-                                        <p class="text-xs text-muted-foreground">
-                                            {{ form.document_type }} {{ form.document_number || 'N/A' }}
-                                        </p>
+                                        <p class="text-sm font-medium">{{ form.first_name || 'Nombre' }} {{ form.last_name || 'Apellido' }}</p>
+                                        <p class="text-xs text-muted-foreground">{{ form.document_type }} {{ form.document_number || 'N/A' }}</p>
                                     </div>
                                 </div>
 
@@ -597,7 +583,7 @@ const statusOptions = [
                                 <div class="flex items-center gap-2">
                                     <UserCheck class="h-4 w-4 text-muted-foreground" />
                                     <Badge :variant="form.resident_type ? 'default' : 'secondary'">
-                                        {{ residentTypes.find(t => t.value === form.resident_type)?.label || 'Tipo' }}
+                                        {{ residentTypes.find((t) => t.value === form.resident_type)?.label || 'Tipo' }}
                                     </Badge>
                                 </div>
                             </div>
@@ -607,19 +593,17 @@ const statusOptions = [
                             <div class="space-y-2">
                                 <p class="text-sm font-medium">Estado del formulario</p>
                                 <div class="space-y-1">
-                                    <div
-                                        v-for="(step, index) in steps"
-                                        :key="step.id"
-                                        class="flex items-center gap-2"
-                                    >
-                                        <div :class="[
-                                            'w-2 h-2 rounded-full',
-                                            {
-                                                'bg-green-500': index < currentStep && validateStep(index),
-                                                'bg-primary': currentStep === index,
-                                                'bg-muted': index > currentStep
-                                            }
-                                        ]" />
+                                    <div v-for="(step, index) in steps" :key="step.id" class="flex items-center gap-2">
+                                        <div
+                                            :class="[
+                                                'h-2 w-2 rounded-full',
+                                                {
+                                                    'bg-green-500': index < currentStep && validateStep(index),
+                                                    'bg-primary': currentStep === index,
+                                                    'bg-muted': index > currentStep,
+                                                },
+                                            ]"
+                                        />
                                         <span class="text-xs">{{ step.title }}</span>
                                     </div>
                                 </div>
@@ -638,13 +622,11 @@ const statusOptions = [
                                     <User class="h-5 w-5" />
                                     Información Personal
                                 </CardTitle>
-                                <CardDescription>
-                                    Ingresa los datos básicos del residente
-                                </CardDescription>
+                                <CardDescription> Ingresa los datos básicos del residente </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <!-- Document -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="document_type">Tipo de Documento *</Label>
                                         <Select v-model="form.document_type">
@@ -652,11 +634,7 @@ const statusOptions = [
                                                 <SelectValue placeholder="Selecciona el tipo" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem
-                                                    v-for="type in documentTypes"
-                                                    :key="type.value"
-                                                    :value="type.value"
-                                                >
+                                                <SelectItem v-for="type in documentTypes" :key="type.value" :value="type.value">
                                                     {{ type.label }}
                                                 </SelectItem>
                                             </SelectContent>
@@ -681,7 +659,7 @@ const statusOptions = [
                                 </div>
 
                                 <!-- Name -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="first_name">Nombres *</Label>
                                         <Input
@@ -724,7 +702,7 @@ const statusOptions = [
                                     </p>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="phone">Teléfono</Label>
                                         <Input
@@ -753,7 +731,7 @@ const statusOptions = [
                                 </div>
 
                                 <!-- Personal details -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="birth_date">Fecha de Nacimiento</Label>
                                         <Input
@@ -774,11 +752,7 @@ const statusOptions = [
                                                 <SelectValue placeholder="Selecciona el género" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem
-                                                    v-for="gender in genderOptions"
-                                                    :key="gender.value"
-                                                    :value="gender.value"
-                                                >
+                                                <SelectItem v-for="gender in genderOptions" :key="gender.value" :value="gender.value">
                                                     {{ gender.label }}
                                                 </SelectItem>
                                             </SelectContent>
@@ -813,9 +787,7 @@ const statusOptions = [
                                     <Home class="h-5 w-5" />
                                     Información de Residencia
                                 </CardTitle>
-                                <CardDescription>
-                                    Detalles sobre la ubicación y tipo de residencia
-                                </CardDescription>
+                                <CardDescription> Detalles sobre la ubicación y tipo de residencia </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <!-- Apartment Selection -->
@@ -840,9 +812,9 @@ const statusOptions = [
                                     <!-- Or tower/floor selection -->
                                     <div class="space-y-4">
                                         <div class="flex items-center gap-2">
-                                            <div class="flex-1 h-px bg-border"></div>
+                                            <div class="h-px flex-1 bg-border"></div>
                                             <span class="text-sm text-muted-foreground">O selecciona por torre y piso</span>
-                                            <div class="flex-1 h-px bg-border"></div>
+                                            <div class="h-px flex-1 bg-border"></div>
                                         </div>
 
                                         <div class="grid grid-cols-3 gap-4">
@@ -853,11 +825,7 @@ const statusOptions = [
                                                         <SelectValue placeholder="Torre" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem
-                                                            v-for="tower in availableTowers"
-                                                            :key="tower"
-                                                            :value="tower"
-                                                        >
+                                                        <SelectItem v-for="tower in availableTowers" :key="tower" :value="tower">
                                                             Torre {{ tower }}
                                                         </SelectItem>
                                                     </SelectContent>
@@ -871,11 +839,7 @@ const statusOptions = [
                                                         <SelectValue placeholder="Piso" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem
-                                                            v-for="floor in availableFloors"
-                                                            :key="floor"
-                                                            :value="floor"
-                                                        >
+                                                        <SelectItem v-for="floor in availableFloors" :key="floor" :value="floor">
                                                             Piso {{ floor }}
                                                         </SelectItem>
                                                     </SelectContent>
@@ -889,11 +853,7 @@ const statusOptions = [
                                                         <SelectValue placeholder="Apto" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem
-                                                            v-for="apartment in filteredApartments"
-                                                            :key="apartment.id"
-                                                            :value="apartment.id"
-                                                        >
+                                                        <SelectItem v-for="apartment in filteredApartments" :key="apartment.id" :value="apartment.id">
                                                             {{ getDisplayNumber(apartment) }}
                                                         </SelectItem>
                                                     </SelectContent>
@@ -903,13 +863,14 @@ const statusOptions = [
                                     </div>
 
                                     <!-- Selected apartment info -->
-                                    <div v-if="selectedApartment" class="p-4 bg-muted rounded-lg">
+                                    <div v-if="selectedApartment" class="rounded-lg bg-muted p-4">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <p class="font-medium">{{ selectedApartment.full_address }}</p>
                                                 <p class="text-sm text-muted-foreground">
-                                                    {{ selectedApartment.apartment_type?.display_name }} -
-                                                    ${{ selectedApartment.apartment_type?.administration_fee?.toLocaleString() }}/mes
+                                                    {{ selectedApartment.apartment_type?.display_name }} - ${{
+                                                        selectedApartment.apartment_type?.administration_fee?.toLocaleString()
+                                                    }}/mes
                                                 </p>
                                             </div>
                                             <Badge :variant="selectedApartment.status === 'Available' ? 'secondary' : 'default'">
@@ -931,11 +892,7 @@ const statusOptions = [
                                             <SelectValue placeholder="Selecciona el tipo" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem
-                                                v-for="type in residentTypes"
-                                                :key="type.value"
-                                                :value="type.value"
-                                            >
+                                            <SelectItem v-for="type in residentTypes" :key="type.value" :value="type.value">
                                                 <div class="flex flex-col">
                                                     <span>{{ type.label }} - {{ type.description }}</span>
                                                 </div>
@@ -955,13 +912,9 @@ const statusOptions = [
                                             <SelectValue placeholder="Selecciona el estado" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem
-                                                v-for="status in statusOptions"
-                                                :key="status.value"
-                                                :value="status.value"
-                                            >
+                                            <SelectItem v-for="status in statusOptions" :key="status.value" :value="status.value">
                                                 <div class="flex items-center gap-2">
-                                                    <div :class="['w-2 h-2 rounded-full', status.color]" />
+                                                    <div :class="['h-2 w-2 rounded-full', status.color]" />
                                                     {{ status.label }}
                                                 </div>
                                             </SelectItem>
@@ -973,7 +926,7 @@ const statusOptions = [
                                 </div>
 
                                 <!-- Dates -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="start_date">Fecha de Inicio *</Label>
                                         <Input
@@ -995,9 +948,7 @@ const statusOptions = [
                                             type="date"
                                             :class="{ 'border-red-500': form.errors.end_date }"
                                         />
-                                        <p class="text-xs text-muted-foreground">
-                                            Deja en blanco si no hay fecha de fin
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Deja en blanco si no hay fecha de fin</p>
                                         <p v-if="form.errors.end_date" class="text-sm text-red-600">
                                             {{ form.errors.end_date }}
                                         </p>
@@ -1013,21 +964,17 @@ const statusOptions = [
                                     <FileText class="h-5 w-5" />
                                     Documentos y Notas
                                 </CardTitle>
-                                <CardDescription>
-                                    Sube documentos relevantes y agrega notas adicionales
-                                </CardDescription>
+                                <CardDescription> Sube documentos relevantes y agrega notas adicionales </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <!-- File upload -->
                                 <div class="space-y-2">
                                     <Label for="documents">Documentos</Label>
-                                    <div class="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
-                                        <Upload class="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                                    <div class="rounded-lg border-2 border-dashed p-8 text-center transition-colors hover:border-primary/50">
+                                        <Upload class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                                         <div class="space-y-2">
                                             <Label for="documents" class="cursor-pointer">
-                                                <span class="font-medium text-primary hover:text-primary/80">
-                                                    Haz clic para subir archivos
-                                                </span>
+                                                <span class="font-medium text-primary hover:text-primary/80"> Haz clic para subir archivos </span>
                                                 <input
                                                     id="documents"
                                                     type="file"
@@ -1037,9 +984,7 @@ const statusOptions = [
                                                     @change="handleFileUpload"
                                                 />
                                             </Label>
-                                            <p class="text-sm text-muted-foreground">
-                                                PDF, DOC, DOCX, JPG, PNG hasta 10MB cada uno
-                                            </p>
+                                            <p class="text-sm text-muted-foreground">PDF, DOC, DOCX, JPG, PNG hasta 10MB cada uno</p>
                                         </div>
                                     </div>
 
@@ -1050,7 +995,7 @@ const statusOptions = [
                                             <div
                                                 v-for="document in resident.documents"
                                                 :key="document.id"
-                                                class="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
+                                                class="flex items-center justify-between rounded-lg bg-blue-50 p-3"
                                             >
                                                 <div class="flex items-center gap-3">
                                                     <FileText class="h-5 w-5 text-blue-500" />
@@ -1059,9 +1004,7 @@ const statusOptions = [
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center gap-2">
-                                                    <Button variant="ghost" size="sm">
-                                                        Descargar
-                                                    </Button>
+                                                    <Button variant="ghost" size="sm"> Descargar </Button>
                                                     <Button variant="ghost" size="sm" class="text-red-500">
                                                         <X class="h-4 w-4" />
                                                     </Button>
@@ -1077,23 +1020,16 @@ const statusOptions = [
                                             <div
                                                 v-for="(file, index) in form.documents"
                                                 :key="index"
-                                                class="flex items-center justify-between p-3 bg-muted rounded-lg"
+                                                class="flex items-center justify-between rounded-lg bg-muted p-3"
                                             >
                                                 <div class="flex items-center gap-3">
                                                     <FileText class="h-5 w-5 text-muted-foreground" />
                                                     <div>
                                                         <p class="text-sm font-medium">{{ file.name }}</p>
-                                                        <p class="text-xs text-muted-foreground">
-                                                            {{ (file.size / 1024 / 1024).toFixed(2) }} MB
-                                                        </p>
+                                                        <p class="text-xs text-muted-foreground">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</p>
                                                     </div>
                                                 </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    @click="removeFile(index)"
-                                                >
+                                                <Button type="button" variant="ghost" size="sm" @click="removeFile(index)">
                                                     <X class="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -1129,20 +1065,16 @@ const statusOptions = [
                                     <Settings class="h-5 w-5" />
                                     Configuración de Notificaciones
                                 </CardTitle>
-                                <CardDescription>
-                                    Configura las preferencias de notificaciones del residente
-                                </CardDescription>
+                                <CardDescription> Configura las preferencias de notificaciones del residente </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <!-- Email notifications -->
-                                <div class="flex items-center justify-between p-4 border rounded-lg">
+                                <div class="flex items-center justify-between rounded-lg border p-4">
                                     <div class="flex items-center gap-3">
                                         <Mail class="h-5 w-5 text-muted-foreground" />
                                         <div>
                                             <p class="font-medium">Notificaciones por Email</p>
-                                            <p class="text-sm text-muted-foreground">
-                                                Recibir notificaciones importantes por correo electrónico
-                                            </p>
+                                            <p class="text-sm text-muted-foreground">Recibir notificaciones importantes por correo electrónico</p>
                                         </div>
                                     </div>
                                     <Switch
@@ -1153,14 +1085,12 @@ const statusOptions = [
 
                                 <!-- WhatsApp notifications -->
                                 <div class="space-y-4">
-                                    <div class="flex items-center justify-between p-4 border rounded-lg">
+                                    <div class="flex items-center justify-between rounded-lg border p-4">
                                         <div class="flex items-center gap-3">
                                             <Phone class="h-5 w-5 text-muted-foreground" />
                                             <div>
                                                 <p class="font-medium">Notificaciones por WhatsApp</p>
-                                                <p class="text-sm text-muted-foreground">
-                                                    Recibir notificaciones y recordatorios por WhatsApp
-                                                </p>
+                                                <p class="text-sm text-muted-foreground">Recibir notificaciones y recordatorios por WhatsApp</p>
                                             </div>
                                         </div>
                                         <Switch
@@ -1169,7 +1099,7 @@ const statusOptions = [
                                         />
                                     </div>
 
-                                    <div v-if="form.whatsapp_notifications" class="pl-12 space-y-2">
+                                    <div v-if="form.whatsapp_notifications" class="space-y-2 pl-12">
                                         <Label for="whatsapp_number">Número de WhatsApp</Label>
                                         <Input
                                             id="whatsapp_number"
@@ -1187,35 +1117,18 @@ const statusOptions = [
 
                         <!-- Navigation buttons -->
                         <div class="flex items-center justify-between pt-6">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                :disabled="isFirstStep"
-                                @click="prevStep"
-                                class="gap-2"
-                            >
+                            <Button type="button" variant="outline" :disabled="isFirstStep" @click="prevStep" class="gap-2">
                                 <ArrowLeft class="h-4 w-4" />
                                 Anterior
                             </Button>
 
                             <div class="flex items-center gap-3">
-                                <Button
-                                    v-if="!isLastStep"
-                                    type="button"
-                                    :disabled="!canProceedToNext"
-                                    @click="nextStep"
-                                    class="gap-2"
-                                >
+                                <Button v-if="!isLastStep" type="button" :disabled="!canProceedToNext" @click="nextStep" class="gap-2">
                                     Siguiente
                                     <ArrowLeft class="h-4 w-4 rotate-180" />
                                 </Button>
 
-                                <Button
-                                    v-if="isLastStep"
-                                    type="submit"
-                                    :disabled="form.processing || !canProceedToNext"
-                                    class="gap-2"
-                                >
+                                <Button v-if="isLastStep" type="submit" :disabled="form.processing || !canProceedToNext" class="gap-2">
                                     <Save class="h-4 w-4" />
                                     {{ form.processing ? 'Guardando...' : 'Actualizar Residente' }}
                                 </Button>

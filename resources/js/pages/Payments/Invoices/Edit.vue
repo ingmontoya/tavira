@@ -1,21 +1,15 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { ArrowLeft, Plus, Trash2, Save } from 'lucide-vue-next'
-import { ref, computed } from 'vue'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Plus, Save, Trash2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -31,64 +25,64 @@ const breadcrumbs = [
         title: 'Editar Factura',
         href: '',
     },
-]
+];
 
 interface Apartment {
-    id: number
-    number: string
-    tower: string
-    full_address: string
+    id: number;
+    number: string;
+    tower: string;
+    full_address: string;
     apartment_type: {
-        id: number
-        name: string
-    }
+        id: number;
+        name: string;
+    };
 }
 
 interface PaymentConcept {
-    id: number
-    name: string
-    description?: string
-    type: string
-    type_label: string
-    default_amount: number
-    billing_cycle: string
+    id: number;
+    name: string;
+    description?: string;
+    type: string;
+    type_label: string;
+    default_amount: number;
+    billing_cycle: string;
 }
 
 interface InvoiceItem {
-    payment_concept_id: number
-    description: string
-    quantity: number
-    unit_price: number
-    notes: string
+    payment_concept_id: number;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    notes: string;
 }
 
 interface Invoice {
-    id: number
-    invoice_number: string
-    apartment_id: number
-    type: string
-    billing_date: string
-    due_date: string
-    billing_period_year: number
-    billing_period_month: number
-    notes?: string
-    status: string
+    id: number;
+    invoice_number: string;
+    apartment_id: number;
+    type: string;
+    billing_date: string;
+    due_date: string;
+    billing_period_year: number;
+    billing_period_month: number;
+    notes?: string;
+    status: string;
     items: Array<{
-        id: number
-        payment_concept_id: number
-        description: string
-        quantity: number
-        unit_price: number
-        notes?: string
-        payment_concept: PaymentConcept
-    }>
+        id: number;
+        payment_concept_id: number;
+        description: string;
+        quantity: number;
+        unit_price: number;
+        notes?: string;
+        payment_concept: PaymentConcept;
+    }>;
 }
 
 const props = defineProps<{
-    invoice: Invoice
-    apartments: Apartment[]
-    paymentConcepts: PaymentConcept[]
-}>()
+    invoice: Invoice;
+    apartments: Apartment[];
+    paymentConcepts: PaymentConcept[];
+}>();
 
 const form = useForm({
     apartment_id: props.invoice.apartment_id.toString(),
@@ -98,14 +92,14 @@ const form = useForm({
     billing_period_year: props.invoice.billing_period_year,
     billing_period_month: props.invoice.billing_period_month,
     notes: props.invoice.notes || '',
-    items: props.invoice.items.map(item => ({
+    items: props.invoice.items.map((item) => ({
         payment_concept_id: item.payment_concept_id.toString(),
         description: item.description,
         quantity: item.quantity,
         unit_price: item.unit_price,
-        notes: item.notes || ''
-    })) as InvoiceItem[]
-})
+        notes: item.notes || '',
+    })) as InvoiceItem[],
+});
 
 const addItem = () => {
     form.items.push({
@@ -113,62 +107,62 @@ const addItem = () => {
         description: '',
         quantity: 1,
         unit_price: 0,
-        notes: ''
-    })
-}
+        notes: '',
+    });
+};
 
 const removeItem = (index: number) => {
     if (form.items.length > 1) {
-        form.items.splice(index, 1)
+        form.items.splice(index, 1);
     }
-}
+};
 
 const updateItemFromConcept = (index: number, conceptId: string) => {
-    const concept = props.paymentConcepts.find(c => c.id.toString() === conceptId)
+    const concept = props.paymentConcepts.find((c) => c.id.toString() === conceptId);
     if (concept) {
-        form.items[index].description = concept.name
-        form.items[index].unit_price = concept.default_amount
+        form.items[index].description = concept.name;
+        form.items[index].unit_price = concept.default_amount;
     }
-}
+};
 
 const calculateItemTotal = (item: InvoiceItem) => {
-    return item.quantity * item.unit_price
-}
+    return item.quantity * item.unit_price;
+};
 
 const subtotal = computed(() => {
-    return form.items.reduce((sum, item) => sum + calculateItemTotal(item), 0)
-})
+    return form.items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+});
 
 const selectedApartment = computed(() => {
-    return props.apartments.find(apt => apt.id.toString() === form.apartment_id)
-})
+    return props.apartments.find((apt) => apt.id.toString() === form.apartment_id);
+});
 
 const submit = () => {
     form.put(`/invoices/${props.invoice.id}`, {
         onSuccess: () => {
             // Redirect handled by controller
-        }
-    })
-}
+        },
+    });
+};
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
-        minimumFractionDigits: 0
-    }).format(amount)
-}
+        minimumFractionDigits: 0,
+    }).format(amount);
+};
 
-const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
+const canEdit = !['paid', 'cancelled'].includes(props.invoice.status);
 </script>
 
 <template>
     <Head :title="`Editar Factura ${invoice.invoice_number}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Warning if can't edit -->
-            <div v-if="!canEdit" class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+            <div v-if="!canEdit" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <div class="flex items-center space-x-2">
                     <div class="text-amber-800">
                         <h3 class="font-medium">Factura no editable</h3>
@@ -180,14 +174,12 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
             <form v-if="canEdit" @submit.prevent="submit" class="space-y-6">
                 <div class="grid gap-6 lg:grid-cols-3">
                     <!-- Form Fields -->
-                    <div class="lg:col-span-2 space-y-6">
+                    <div class="space-y-6 lg:col-span-2">
                         <!-- Basic Information -->
                         <Card>
                             <CardHeader>
                                 <CardTitle>Información Básica</CardTitle>
-                                <CardDescription>
-                                    Información general de la factura
-                                </CardDescription>
+                                <CardDescription> Información general de la factura </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <!-- Invoice Number (read-only) -->
@@ -204,16 +196,12 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                             <SelectValue placeholder="Selecciona un apartamento" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem
-                                                v-for="apartment in apartments"
-                                                :key="apartment.id"
-                                                :value="apartment.id.toString()"
-                                            >
+                                            <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id.toString()">
                                                 {{ apartment.full_address }} - {{ apartment.apartment_type.name }}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <div v-if="form.errors.apartment_id" class="text-sm text-red-600 mt-1">
+                                    <div v-if="form.errors.apartment_id" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.apartment_id }}
                                     </div>
                                 </div>
@@ -231,7 +219,7 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                             <SelectItem value="late_fee">Intereses de Mora</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <div v-if="form.errors.type" class="text-sm text-red-600 mt-1">
+                                    <div v-if="form.errors.type" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.type }}
                                     </div>
                                 </div>
@@ -240,26 +228,16 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                 <div class="grid gap-4 md:grid-cols-2">
                                     <div>
                                         <Label for="billing_date">Fecha de Facturación *</Label>
-                                        <Input
-                                            id="billing_date"
-                                            type="date"
-                                            v-model="form.billing_date"
-                                            required
-                                        />
-                                        <div v-if="form.errors.billing_date" class="text-sm text-red-600 mt-1">
+                                        <Input id="billing_date" type="date" v-model="form.billing_date" required />
+                                        <div v-if="form.errors.billing_date" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.billing_date }}
                                         </div>
                                     </div>
 
                                     <div>
                                         <Label for="due_date">Fecha de Vencimiento *</Label>
-                                        <Input
-                                            id="due_date"
-                                            type="date"
-                                            v-model="form.due_date"
-                                            required
-                                        />
-                                        <div v-if="form.errors.due_date" class="text-sm text-red-600 mt-1">
+                                        <Input id="due_date" type="date" v-model="form.due_date" required />
+                                        <div v-if="form.errors.due_date" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.due_date }}
                                         </div>
                                     </div>
@@ -276,7 +254,7 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                             max="2030"
                                             v-model.number="form.billing_period_year"
                                         />
-                                        <div v-if="form.errors.billing_period_year" class="text-sm text-red-600 mt-1">
+                                        <div v-if="form.errors.billing_period_year" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.billing_period_year }}
                                         </div>
                                     </div>
@@ -293,7 +271,7 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <div v-if="form.errors.billing_period_month" class="text-sm text-red-600 mt-1">
+                                        <div v-if="form.errors.billing_period_month" class="mt-1 text-sm text-red-600">
                                             {{ form.errors.billing_period_month }}
                                         </div>
                                     </div>
@@ -302,12 +280,8 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                 <!-- Notes -->
                                 <div>
                                     <Label for="notes">Notas (Opcional)</Label>
-                                    <Textarea
-                                        id="notes"
-                                        placeholder="Notas adicionales sobre la factura"
-                                        v-model="form.notes"
-                                    />
-                                    <div v-if="form.errors.notes" class="text-sm text-red-600 mt-1">
+                                    <Textarea id="notes" placeholder="Notas adicionales sobre la factura" v-model="form.notes" />
+                                    <div v-if="form.errors.notes" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.notes }}
                                     </div>
                                 </div>
@@ -320,9 +294,7 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <CardTitle>Conceptos a Facturar</CardTitle>
-                                        <CardDescription>
-                                            Modifica los conceptos incluidos en esta factura
-                                        </CardDescription>
+                                        <CardDescription> Modifica los conceptos incluidos en esta factura </CardDescription>
                                     </div>
                                     <Button type="button" @click="addItem" variant="outline" size="sm">
                                         <Plus class="mr-2 h-4 w-4" />
@@ -331,20 +303,10 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                 </div>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <div
-                                    v-for="(item, index) in form.items"
-                                    :key="index"
-                                    class="border rounded-lg p-4 space-y-4"
-                                >
+                                <div v-for="(item, index) in form.items" :key="index" class="space-y-4 rounded-lg border p-4">
                                     <div class="flex items-center justify-between">
                                         <h4 class="font-medium">Concepto {{ index + 1 }}</h4>
-                                        <Button
-                                            v-if="form.items.length > 1"
-                                            type="button"
-                                            @click="removeItem(index)"
-                                            variant="ghost"
-                                            size="sm"
-                                        >
+                                        <Button v-if="form.items.length > 1" type="button" @click="removeItem(index)" variant="ghost" size="sm">
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -353,24 +315,17 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                         <!-- Payment Concept -->
                                         <div>
                                             <Label>Concepto de Pago</Label>
-                                            <Select
-                                                v-model="item.payment_concept_id"
-                                                @update:modelValue="updateItemFromConcept(index, $event)"
-                                            >
+                                            <Select v-model="item.payment_concept_id" @update:modelValue="updateItemFromConcept(index, $event)">
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Selecciona un concepto" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem
-                                                        v-for="concept in paymentConcepts"
-                                                        :key="concept.id"
-                                                        :value="concept.id.toString()"
-                                                    >
+                                                    <SelectItem v-for="concept in paymentConcepts" :key="concept.id" :value="concept.id.toString()">
                                                         {{ concept.name }} - {{ concept.type_label }}
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <div v-if="form.errors[`items.${index}.payment_concept_id`]" class="text-sm text-red-600 mt-1">
+                                            <div v-if="form.errors[`items.${index}.payment_concept_id`]" class="mt-1 text-sm text-red-600">
                                                 {{ form.errors[`items.${index}.payment_concept_id`] }}
                                             </div>
                                         </div>
@@ -378,12 +333,8 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                         <!-- Description -->
                                         <div>
                                             <Label>Descripción *</Label>
-                                            <Input
-                                                v-model="item.description"
-                                                placeholder="Descripción del concepto"
-                                                required
-                                            />
-                                            <div v-if="form.errors[`items.${index}.description`]" class="text-sm text-red-600 mt-1">
+                                            <Input v-model="item.description" placeholder="Descripción del concepto" required />
+                                            <div v-if="form.errors[`items.${index}.description`]" class="mt-1 text-sm text-red-600">
                                                 {{ form.errors[`items.${index}.description`] }}
                                             </div>
                                         </div>
@@ -391,13 +342,8 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                         <!-- Quantity -->
                                         <div>
                                             <Label>Cantidad *</Label>
-                                            <Input
-                                                type="number"
-                                                min="1"
-                                                v-model.number="item.quantity"
-                                                required
-                                            />
-                                            <div v-if="form.errors[`items.${index}.quantity`]" class="text-sm text-red-600 mt-1">
+                                            <Input type="number" min="1" v-model.number="item.quantity" required />
+                                            <div v-if="form.errors[`items.${index}.quantity`]" class="mt-1 text-sm text-red-600">
                                                 {{ form.errors[`items.${index}.quantity`] }}
                                             </div>
                                         </div>
@@ -405,14 +351,8 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                         <!-- Unit Price -->
                                         <div>
                                             <Label>Precio Unitario *</Label>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                v-model.number="item.unit_price"
-                                                required
-                                            />
-                                            <div v-if="form.errors[`items.${index}.unit_price`]" class="text-sm text-red-600 mt-1">
+                                            <Input type="number" min="0" step="0.01" v-model.number="item.unit_price" required />
+                                            <div v-if="form.errors[`items.${index}.unit_price`]" class="mt-1 text-sm text-red-600">
                                                 {{ form.errors[`items.${index}.unit_price`] }}
                                             </div>
                                         </div>
@@ -421,10 +361,7 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
                                     <!-- Notes -->
                                     <div>
                                         <Label>Notas del Concepto (Opcional)</Label>
-                                        <Textarea
-                                            v-model="item.notes"
-                                            placeholder="Notas específicas de este concepto"
-                                        />
+                                        <Textarea v-model="item.notes" placeholder="Notas específicas de este concepto" />
                                     </div>
 
                                     <!-- Item Total -->
@@ -476,17 +413,13 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
 
                                     <Separator />
 
-                                    <div class="flex justify-between font-medium text-lg">
+                                    <div class="flex justify-between text-lg font-medium">
                                         <span>Total:</span>
                                         <span>{{ formatCurrency(subtotal) }}</span>
                                     </div>
                                 </div>
 
-                                <Button
-                                    type="submit"
-                                    class="w-full"
-                                    :disabled="form.processing || !form.apartment_id || form.items.length === 0"
-                                >
+                                <Button type="submit" class="w-full" :disabled="form.processing || !form.apartment_id || form.items.length === 0">
                                     <Save class="mr-2 h-4 w-4" />
                                     {{ form.processing ? 'Guardando...' : 'Guardar Cambios' }}
                                 </Button>
@@ -497,12 +430,10 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status)
             </form>
 
             <!-- Read-only view for non-editable invoices -->
-            <div v-else class="text-center py-12">
+            <div v-else class="py-12 text-center">
                 <p class="text-muted-foreground">Esta factura no se puede editar.</p>
                 <Button asChild class="mt-4">
-                    <Link :href="`/invoices/${invoice.id}`">
-                        Ver Detalles de la Factura
-                    </Link>
+                    <Link :href="`/invoices/${invoice.id}`"> Ver Detalles de la Factura </Link>
                 </Button>
             </div>
         </div>

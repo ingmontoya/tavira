@@ -6,27 +6,22 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import {
-    BookOpen,
-    LayoutGrid,
-    Users,
-    DollarSign,
-    Package,
-    UserCheck,
-    MessageSquare,
-    FileText,
-    UserCog,
     BarChart3,
-    Smartphone,
+    BookOpen,
+    Building2,
+    CreditCard,
+    FileText,
+    Home,
+    LayoutGrid,
+    Mail,
+    MessageSquare,
+    Phone,
+    Receipt,
     Settings,
     Shield,
-    Building2,
-    Home,
-    Mail,
-    Phone,
-    Car,
-    Bell,
-    Receipt,
-    CreditCard
+    UserCheck,
+    UserCog,
+    Users,
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -78,6 +73,12 @@ const financeNavItems: NavItem[] = [
         href: '/payment-concepts',
         icon: Settings,
         tourId: 'nav-payment-concepts',
+    },
+    {
+        title: 'Acuerdos de Pago',
+        href: '/payment-agreements',
+        icon: FileText,
+        tourId: 'nav-payment-agreements',
     },
     {
         title: 'Cuotas',
