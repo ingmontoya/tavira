@@ -18,7 +18,9 @@ class ApartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Apartment::with(['apartmentType', 'conjuntoConfig', 'residents']);
+        $query = Apartment::with(['apartmentType', 'conjuntoConfig', 'residents', 'paymentAgreements' => function ($query) {
+            $query->whereIn('status', ['active', 'approved', 'pending_approval']);
+        }]);
 
         // Apply filters
         if ($request->filled('search')) {
@@ -47,9 +49,24 @@ class ApartmentController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Append payment status badge to each apartment
+        // Append payment status badge and agreement info to each apartment
         $apartments->getCollection()->transform(function ($apartment) {
             $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+            
+            // Get active payment agreement info
+            $activeAgreement = $apartment->paymentAgreements
+                ->whereIn('status', ['active', 'approved', 'pending_approval'])
+                ->first();
+            
+            if ($activeAgreement) {
+                $apartment->has_payment_agreement = true;
+                $apartment->payment_agreement_status = $activeAgreement->status;
+                $apartment->payment_agreement_badge = $activeAgreement->status_badge;
+            } else {
+                $apartment->has_payment_agreement = false;
+                $apartment->payment_agreement_status = null;
+                $apartment->payment_agreement_badge = null;
+            }
 
             return $apartment;
         });
@@ -62,6 +79,11 @@ class ApartmentController extends Controller
         $overdue90 = Apartment::where('payment_status', 'overdue_90')->count();
         $overdue90Plus = Apartment::where('payment_status', 'overdue_90_plus')->count();
         $totalDelinquent = $overdue30 + $overdue60 + $overdue90 + $overdue90Plus;
+        
+        // Payment agreement statistics
+        $apartmentsWithAgreements = Apartment::whereHas('paymentAgreements', function($query) {
+            $query->whereIn('status', ['active', 'approved', 'pending_approval']);
+        })->count();
 
         $paymentStats = [
             'total' => $totalApartments,
@@ -71,8 +93,10 @@ class ApartmentController extends Controller
             'overdue_90' => $overdue90,
             'overdue_90_plus' => $overdue90Plus,
             'total_delinquent' => $totalDelinquent,
+            'with_agreements' => $apartmentsWithAgreements,
             'current_percentage' => $totalApartments > 0 ? round(($currentPayments / $totalApartments) * 100, 1) : 0,
             'delinquent_percentage' => $totalApartments > 0 ? round(($totalDelinquent / $totalApartments) * 100, 1) : 0,
+            'agreements_percentage' => $totalApartments > 0 ? round(($apartmentsWithAgreements / $totalApartments) * 100, 1) : 0,
         ];
 
         // Get filter options
@@ -151,7 +175,7 @@ class ApartmentController extends Controller
      */
     public function show(Apartment $apartment)
     {
-        $apartment->load(['apartmentType', 'conjuntoConfig', 'residents']);
+        $apartment->load(['apartmentType', 'conjuntoConfig', 'residents', 'paymentAgreements']);
 
         return Inertia::render('apartments/Show', [
             'apartment' => $apartment,
@@ -161,6 +185,7 @@ class ApartmentController extends Controller
                 'owners' => $apartment->residents->where('resident_type', 'Owner')->count(),
                 'tenants' => $apartment->residents->where('resident_type', 'Tenant')->count(),
             ],
+            'paymentAgreements' => $apartment->paymentAgreements,
         ]);
     }
 

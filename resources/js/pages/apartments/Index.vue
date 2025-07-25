@@ -39,6 +39,12 @@ export interface Apartment {
     };
     outstanding_balance: number;
     last_payment_date: string | null;
+    has_payment_agreement: boolean;
+    payment_agreement_status: string | null;
+    payment_agreement_badge: {
+        text: string;
+        class: string;
+    } | null;
     apartment_type: {
         id: number;
         name: string;
@@ -100,8 +106,10 @@ const props = defineProps<{
         overdue_90: number;
         overdue_90_plus: number;
         total_delinquent: number;
+        with_agreements: number;
         current_percentage: number;
         delinquent_percentage: number;
+        agreements_percentage: number;
     };
 }>();
 
@@ -315,6 +323,29 @@ const columns = [
                     class: `inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${badge.class}`,
                 },
                 badge.text,
+            );
+        },
+    }),
+    columnHelper.display({
+        id: 'payment_agreement',
+        header: 'Acuerdo de Pago',
+        cell: ({ row }) => {
+            const apartment = row.original;
+            if (apartment.has_payment_agreement && apartment.payment_agreement_badge) {
+                return h(
+                    'span',
+                    {
+                        class: `inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${apartment.payment_agreement_badge.class}`,
+                    },
+                    apartment.payment_agreement_badge.text,
+                );
+            }
+            return h(
+                'span',
+                {
+                    class: 'inline-flex rounded-full px-2 text-xs font-semibold leading-5 bg-gray-100 text-gray-800',
+                },
+                'Sin acuerdo',
             );
         },
     }),
@@ -544,7 +575,7 @@ const breadcrumbs = [
             </Card>
 
             <!-- Payment Statistics Cards -->
-            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
                 <Card class="p-4">
                     <div class="space-y-2">
                         <div class="text-sm font-medium text-muted-foreground">Total Apartamentos</div>
@@ -578,6 +609,14 @@ const breadcrumbs = [
                     <div class="space-y-2">
                         <div class="text-sm font-medium text-muted-foreground">+90 días</div>
                         <div class="text-2xl font-bold text-red-600">{{ paymentStats.overdue_90_plus }}</div>
+                    </div>
+                </Card>
+
+                <Card class="p-4">
+                    <div class="space-y-2">
+                        <div class="text-sm font-medium text-muted-foreground">Con Acuerdos</div>
+                        <div class="text-2xl font-bold text-blue-600">{{ paymentStats.with_agreements }}</div>
+                        <div class="text-xs text-muted-foreground">{{ paymentStats.agreements_percentage }}%</div>
                     </div>
                 </Card>
             </div>
