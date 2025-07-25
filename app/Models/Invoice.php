@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Carbon\Carbon;
 
 class Invoice extends Model
 {
@@ -46,7 +45,7 @@ class Invoice extends Model
         'status_label',
         'type_label',
         'billing_period_label',
-        'days_overdue'
+        'days_overdue',
     ];
 
     public function conjuntoConfig(): BelongsTo
@@ -67,7 +66,7 @@ class Invoice extends Model
     public function scopeForPeriod($query, int $year, int $month)
     {
         return $query->where('billing_period_year', $year)
-                    ->where('billing_period_month', $month);
+            ->where('billing_period_month', $month);
     }
 
     public function scopeByStatus($query, string $status)
@@ -78,10 +77,10 @@ class Invoice extends Model
     public function scopeOverdue($query)
     {
         return $query->where('status', 'overdue')
-                    ->orWhere(function ($q) {
-                        $q->where('status', 'pending')
-                          ->where('due_date', '<', now());
-                    });
+            ->orWhere(function ($q) {
+                $q->where('status', 'pending')
+                    ->where('due_date', '<', now());
+            });
     }
 
     public function scopeByType($query, string $type)
@@ -97,11 +96,11 @@ class Invoice extends Model
         $this->save();
     }
 
-    public function markAsPaid(float $amount, string $method = null, string $reference = null): void
+    public function markAsPaid(float $amount, ?string $method = null, ?string $reference = null): void
     {
         $this->paid_amount += $amount;
         $this->balance_due = $this->total_amount - $this->paid_amount;
-        
+
         if ($this->balance_due <= 0) {
             $this->status = 'paid';
             $this->paid_date = now();
@@ -112,7 +111,7 @@ class Invoice extends Model
         if ($method) {
             $this->payment_method = $method;
         }
-        
+
         if ($reference) {
             $this->payment_reference = $reference;
         }
@@ -122,13 +121,13 @@ class Invoice extends Model
 
     public function isOverdue(): bool
     {
-        return $this->status === 'overdue' || 
+        return $this->status === 'overdue' ||
                ($this->status === 'pending' && $this->due_date->isPast());
     }
 
     public function getDaysOverdueAttribute(): int
     {
-        if (!$this->isOverdue()) {
+        if (! $this->isOverdue()) {
             return 0;
         }
 
@@ -174,10 +173,10 @@ class Invoice extends Model
         $monthNames = [
             1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
             5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
         ];
 
-        return $monthNames[$this->billing_period_month] . ' ' . $this->billing_period_year;
+        return $monthNames[$this->billing_period_month].' '.$this->billing_period_year;
     }
 
     protected static function boot()
@@ -196,9 +195,9 @@ class Invoice extends Model
         $year = now()->year;
         $month = now()->format('m');
         $lastInvoice = self::whereYear('created_at', $year)
-                          ->whereMonth('created_at', now()->month)
-                          ->orderBy('id', 'desc')
-                          ->first();
+            ->whereMonth('created_at', now()->month)
+            ->orderBy('id', 'desc')
+            ->first();
 
         $sequence = $lastInvoice ? ((int) substr($lastInvoice->invoice_number, -4)) + 1 : 1;
 

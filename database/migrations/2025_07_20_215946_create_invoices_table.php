@@ -32,7 +32,7 @@ return new class extends Migration
             $table->text('payment_reference')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['apartment_id', 'billing_period_year', 'billing_period_month']);
             $table->index(['status', 'due_date']);
             $table->index(['conjunto_config_id', 'type']);

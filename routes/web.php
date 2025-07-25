@@ -5,6 +5,7 @@ use App\Http\Controllers\ConjuntoConfigController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentConceptController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\ResidentController;
 use Illuminate\Support\Facades\Route;
@@ -56,9 +57,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('fees.index')->middleware('rate.limit:default');
 
     // Payments Management
-    Route::get('payments', function () {
-        return Inertia::render('Payments/Index');
-    })->name('payments.index')->middleware('rate.limit:default');
+    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index')->middleware('rate.limit:default');
 
     // Invoices Management
     Route::resource('invoices', InvoiceController::class);

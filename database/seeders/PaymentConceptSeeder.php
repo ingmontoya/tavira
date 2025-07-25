@@ -12,8 +12,9 @@ class PaymentConceptSeeder extends Seeder
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             $this->command->warn('No active conjunto configuration found. Skipping payment concepts seeding.');
+
             return;
         }
 

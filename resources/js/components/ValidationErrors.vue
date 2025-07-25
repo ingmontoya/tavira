@@ -60,7 +60,18 @@ const getFieldLabel = (field: string): string => {
         'documents': 'Documentos',
         'email_notifications': 'Notificaciones por Email',
         'whatsapp_notifications': 'Notificaciones por WhatsApp',
-        'whatsapp_number': 'Número de WhatsApp'
+        'whatsapp_number': 'Número de WhatsApp',
+        // Invoice fields
+        'type': 'Tipo de Factura',
+        'billing_date': 'Fecha de Facturación',
+        'due_date': 'Fecha de Vencimiento',
+        'billing_period_year': 'Año del Período',
+        'billing_period_month': 'Mes del Período',
+        'billing_period': 'Período de Facturación',
+        'items': 'Artículos de Factura',
+        'year': 'Año',
+        'month': 'Mes',
+        'error': 'Error'
     };
     
     return fieldLabels[field] || field;

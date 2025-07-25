@@ -1,9 +1,52 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { ref, computed, watch } from 'vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { CreditCard, Receipt, Settings, TrendingUp, Users, AlertTriangle } from 'lucide-vue-next'
+import ValidationErrors from '@/components/ValidationErrors.vue'
+import ToastContainer from '@/components/ToastContainer.vue'
+import { useToast } from '@/composables/useToast'
+import { CreditCard, Receipt, Settings, TrendingUp, AlertTriangle, CheckCircle, XCircle } from 'lucide-vue-next'
+
+interface Stats {
+    pending_invoices: number
+    monthly_collection: number
+    delinquent_apartments: number
+    active_concepts: number
+}
+
+interface Props {
+    stats: Stats
+}
+
+const props = defineProps<Props>()
+
+// Get page data for errors and flash messages
+const page = usePage()
+const errors = computed(() => page.props.errors || {})
+const flashSuccess = computed(() => page.props.flash?.success)
+const flashError = computed(() => page.props.flash?.error)
+
+// Toast notifications
+const { success, error } = useToast()
+
+// Watch for flash messages and convert to toasts
+watch(flashSuccess, (message) => {
+  if (message) {
+    success(message, 'Éxito')
+  }
+})
+
+watch(flashError, (message) => {
+  if (message) {
+    error(message, 'Error')
+  }
+})
 
 const breadcrumbs = [
     {
@@ -15,12 +58,91 @@ const breadcrumbs = [
         href: '/payments',
     },
 ]
+
+// Modal state
+const isModalOpen = ref(false)
+const selectedYear = ref<string>(new Date().getFullYear().toString())
+const selectedMonth = ref<string>((new Date().getMonth() + 1).toString())
+const isGenerating = ref(false)
+
+// Computed properties
+const canGenerateInvoices = computed(() => {
+    return props.stats.active_concepts > 0
+})
+
+const yearOptions = computed(() => {
+    const currentYear = new Date().getFullYear()
+    return Array.from({ length: 3 }, (_, i) => (currentYear - 1 + i).toString())
+})
+
+const monthOptions = [
+    { value: '1', label: 'Enero' },
+    { value: '2', label: 'Febrero' },
+    { value: '3', label: 'Marzo' },
+    { value: '4', label: 'Abril' },
+    { value: '5', label: 'Mayo' },
+    { value: '6', label: 'Junio' },
+    { value: '7', label: 'Julio' },
+    { value: '8', label: 'Agosto' },
+    { value: '9', label: 'Septiembre' },
+    { value: '10', label: 'Octubre' },
+    { value: '11', label: 'Noviembre' },
+    { value: '12', label: 'Diciembre' },
+]
+
+const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+    }).format(amount)
+}
+
+const generateMonthlyInvoices = async () => {
+    if (!canGenerateInvoices.value) return
+    
+    isGenerating.value = true
+    
+    try {
+        await router.post('/invoices/generate-monthly', {
+            year: parseInt(selectedYear.value),
+            month: parseInt(selectedMonth.value)
+        }, {
+            onSuccess: () => {
+                isModalOpen.value = false
+            },
+            onError: (errors) => {
+                // Errors will be handled by the watch functions above
+                console.error('Error generating invoices:', errors)
+            }
+        })
+    } catch (err) {
+        console.error('Unexpected error:', err)
+        error('Error inesperado al generar las facturas', 'Error')
+    } finally {
+        isGenerating.value = false
+    }
+}
 </script>
 
 <template>
     <Head title="Gestión de Pagos" />
     <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+        <!-- Flash Messages -->
+        <Alert v-if="flashSuccess" class="mb-4">
+            <CheckCircle class="h-4 w-4" />
+            <AlertDescription>{{ flashSuccess }}</AlertDescription>
+        </Alert>
+        
+        <Alert v-if="flashError" variant="destructive" class="mb-4">
+            <XCircle class="h-4 w-4" />
+            <AlertDescription>{{ flashError }}</AlertDescription>
+        </Alert>
+        
+        <!-- Validation Errors -->
+        <ValidationErrors :errors="errors" />
+        
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
@@ -39,7 +161,7 @@ const breadcrumbs = [
                     <Receipt class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold text-orange-600">--</div>
+                    <div class="text-2xl font-bold text-orange-600">{{ props.stats.pending_invoices }}</div>
                     <p class="text-xs text-muted-foreground">
                         Facturas por cobrar
                     </p>
@@ -52,7 +174,7 @@ const breadcrumbs = [
                     <TrendingUp class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold text-green-600">--</div>
+                    <div class="text-2xl font-bold text-green-600">{{ formatCurrency(props.stats.monthly_collection) }}</div>
                     <p class="text-xs text-muted-foreground">
                         Ingresos del mes actual
                     </p>
@@ -65,7 +187,7 @@ const breadcrumbs = [
                     <AlertTriangle class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold text-red-600">--</div>
+                    <div class="text-2xl font-bold text-red-600">{{ props.stats.delinquent_apartments }}</div>
                     <p class="text-xs text-muted-foreground">
                         Con pagos vencidos
                     </p>
@@ -78,7 +200,7 @@ const breadcrumbs = [
                     <Settings class="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div class="text-2xl font-bold">--</div>
+                    <div class="text-2xl font-bold">{{ props.stats.active_concepts }}</div>
                     <p class="text-xs text-muted-foreground">
                         Conceptos de pago configurados
                     </p>
@@ -157,13 +279,83 @@ const breadcrumbs = [
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-3">
-                        <Button class="w-full" variant="default" disabled>
-                            Generar Facturas Mensual
-                        </Button>
+                        <Dialog v-model:open="isModalOpen">
+                            <DialogTrigger as-child>
+                                <Button 
+                                    class="w-full" 
+                                    variant="default" 
+                                    :disabled="!canGenerateInvoices"
+                                >
+                                    Generar Facturas Mensual
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent class="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Generar Facturas Mensuales</DialogTitle>
+                                    <DialogDescription>
+                                        Selecciona el año y mes para generar las facturas automáticamente.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div class="grid gap-4 py-4">
+                                    <div class="grid gap-2">
+                                        <Label for="year">Año</Label>
+                                        <Select v-model="selectedYear">
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecciona el año" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem 
+                                                    v-for="year in yearOptions" 
+                                                    :key="year" 
+                                                    :value="year"
+                                                >
+                                                    {{ year }}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div class="grid gap-2">
+                                        <Label for="month">Mes</Label>
+                                        <Select v-model="selectedMonth">
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecciona el mes" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem 
+                                                    v-for="month in monthOptions" 
+                                                    :key="month.value" 
+                                                    :value="month.value"
+                                                >
+                                                    {{ month.label }}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        @click="isModalOpen = false"
+                                        :disabled="isGenerating"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                    <Button 
+                                        type="button" 
+                                        @click="generateMonthlyInvoices"
+                                        :disabled="isGenerating"
+                                    >
+                                        {{ isGenerating ? 'Generando...' : 'Generar Facturas' }}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                         <div class="text-xs text-muted-foreground">
                             <p>• Facturas basadas en conceptos recurrentes</p>
                             <p>• Solo apartamentos ocupados</p>
                             <p>• Verificación de duplicados</p>
+                            <p v-if="!canGenerateInvoices" class="text-red-500 font-medium">• Requiere conceptos de pago activos</p>
                         </div>
                     </div>
                 </CardContent>
@@ -187,5 +379,8 @@ const breadcrumbs = [
             </CardContent>
         </Card>
     </div>
+    
+    <!-- Toast Notifications -->
+    <ToastContainer />
     </AppLayout>
 </template>

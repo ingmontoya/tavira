@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PaymentConcept;
-use App\Models\ConjuntoConfig;
 use App\Models\ApartmentType;
+use App\Models\ConjuntoConfig;
+use App\Models\PaymentConcept;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class PaymentConceptController extends Controller
 {
     public function index(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $query = PaymentConcept::where('conjunto_config_id', $conjunto->id);
 
         if ($request->filled('type')) {
@@ -29,7 +29,7 @@ class PaymentConceptController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -44,7 +44,7 @@ class PaymentConceptController extends Controller
     public function create()
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $apartmentTypes = ApartmentType::where('conjunto_config_id', $conjunto->id)->get();
 
         return Inertia::render('Payments/Concepts/Create', [
@@ -96,7 +96,7 @@ class PaymentConceptController extends Controller
     public function edit(PaymentConcept $paymentConcept)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $apartmentTypes = ApartmentType::where('conjunto_config_id', $conjunto->id)->get();
 
         return Inertia::render('Payments/Concepts/Edit', [
@@ -149,7 +149,7 @@ class PaymentConceptController extends Controller
     public function toggle(PaymentConcept $paymentConcept)
     {
         $paymentConcept->update([
-            'is_active' => !$paymentConcept->is_active,
+            'is_active' => ! $paymentConcept->is_active,
         ]);
 
         $status = $paymentConcept->is_active ? 'activado' : 'desactivado';

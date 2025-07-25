@@ -15,7 +15,7 @@ import {
 } from '@tanstack/vue-table'
 import { ChevronDown, ChevronsUpDown } from 'lucide-vue-next'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { h, ref, computed, watch } from 'vue'
 import { cn, valueUpdater } from '../../../utils'
 import { Button } from '@/components/ui/button'
@@ -45,7 +45,9 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import DropdownAction from '@/components/DataTableDropDown.vue'
-import { Plus, X, Search, Receipt, Eye, Edit, Trash2, Calendar, Filter } from 'lucide-vue-next'
+import ValidationErrors from '@/components/ValidationErrors.vue'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Plus, X, Search, Receipt, Eye, Edit, Trash2, Calendar, Filter, CheckCircle, XCircle } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 
 // Breadcrumbs
@@ -119,6 +121,12 @@ const props = defineProps<{
         period?: string
     }
 }>()
+
+// Get page data for errors and flash messages
+const page = usePage()
+const errors = computed(() => page.props.errors || {})
+const flashSuccess = computed(() => page.props.flash?.success)
+const flashError = computed(() => page.props.flash?.error)
 
 const data = computed(() => props.invoices.data)
 
@@ -368,6 +376,20 @@ const typeOptions = [
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+            <!-- Flash Messages -->
+            <Alert v-if="flashSuccess" class="mb-4">
+                <CheckCircle class="h-4 w-4" />
+                <AlertDescription>{{ flashSuccess }}</AlertDescription>
+            </Alert>
+            
+            <Alert v-if="flashError" variant="destructive" class="mb-4">
+                <XCircle class="h-4 w-4" />
+                <AlertDescription>{{ flashError }}</AlertDescription>
+            </Alert>
+            
+            <!-- Validation Errors -->
+            <ValidationErrors :errors="errors" />
+            
             <!-- Filters -->
             <Card class="p-6">
             <div class="space-y-4">
@@ -555,8 +577,7 @@ const typeOptions = [
                 <div class="flex items-center justify-between pt-4">
                     <div class="flex items-center space-x-2">
                         <p class="text-sm text-muted-foreground">
-                            {{ table.getFilteredSelectedRowModel().rows.length }} de{' '}
-                            {{ table.getFilteredRowModel().rows.length }} fila(s) seleccionadas.
+                            {{ table.getFilteredSelectedRowModel().rows.length }} de {{ props.invoices.data.length }} fila(s) seleccionadas.
                         </p>
                     </div>
                     

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('period_end')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['invoice_id']);
             $table->index(['payment_concept_id']);
         });

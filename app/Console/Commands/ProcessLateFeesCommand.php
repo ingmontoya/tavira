@@ -2,13 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\PaymentConcept;
 use Illuminate\Console\Command;
-use Carbon\Carbon;
 
 class ProcessLateFeesCommand extends Command
 {
@@ -33,8 +30,9 @@ class ProcessLateFeesCommand extends Command
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             $this->error('No active conjunto configuration found.');
+
             return Command::FAILURE;
         }
 
@@ -43,10 +41,10 @@ class ProcessLateFeesCommand extends Command
             ->where('is_active', true)
             ->first();
 
-        if (!$lateFeesConcept) {
+        if (! $lateFeesConcept) {
             $this->warn('No active late fees payment concept found. Creating one...');
-            
-            if (!$dryRun) {
+
+            if (! $dryRun) {
                 $lateFeesConcept = PaymentConcept::create([
                     'conjunto_config_id' => $conjunto->id,
                     'name' => 'Interés de mora',
@@ -57,13 +55,13 @@ class ProcessLateFeesCommand extends Command
                     'is_active' => true,
                     'billing_cycle' => 'one_time',
                 ]);
-                
+
                 $this->info('Late fees concept created successfully.');
             }
         }
 
         $cutoffDate = now()->subDays($graceDays);
-        
+
         $overdueInvoices = Invoice::with(['apartment'])
             ->where('conjunto_config_id', $conjunto->id)
             ->where('status', 'pending')
@@ -72,6 +70,7 @@ class ProcessLateFeesCommand extends Command
 
         if ($overdueInvoices->isEmpty()) {
             $this->info('No overdue invoices found.');
+
             return Command::SUCCESS;
         }
 
@@ -86,14 +85,14 @@ class ProcessLateFeesCommand extends Command
         foreach ($overdueInvoices as $invoice) {
             $daysOverdue = $invoice->due_date->diffInDays(now());
             $monthsOverdue = max(1, ceil($daysOverdue / 30));
-            
+
             $lateFeeAmount = $invoice->subtotal * ($lateRate / 100) * $monthsOverdue;
             $lateFeeAmount = round($lateFeeAmount, 2);
 
             if ($lateFeeAmount > 0) {
                 $this->line("\nApartment {$invoice->apartment->full_address}: ${$lateFeeAmount} ({$daysOverdue} days overdue)");
 
-                if (!$dryRun) {
+                if (! $dryRun) {
                     $invoice->update([
                         'late_fees' => $lateFeeAmount,
                         'status' => 'overdue',

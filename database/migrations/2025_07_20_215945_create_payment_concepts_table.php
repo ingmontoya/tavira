@@ -23,7 +23,7 @@ return new class extends Migration
             $table->enum('billing_cycle', ['monthly', 'quarterly', 'annually', 'one_time'])->default('monthly');
             $table->json('applicable_apartment_types')->nullable(); // null = all types
             $table->timestamps();
-            
+
             $table->index(['conjunto_config_id', 'type']);
         });
     }
