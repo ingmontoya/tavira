@@ -7,9 +7,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeft, Edit, Settings, ToggleLeft, ToggleRight, Trash2 } from 'lucide-vue-next';
 
-defineOptions({
-    layout: AppLayout,
-});
+// Using AppLayout directly in template
 
 interface PaymentConcept {
     id: number;
@@ -96,54 +94,61 @@ const getTypeDescription = (type: string) => {
     };
     return descriptions[type as keyof typeof descriptions] || 'Concepto de facturación';
 };
+
+const breadcrumbs = [
+    { title: 'Escritorio', href: '/dashboard' },
+    { title: 'Gestión de Pagos', href: '/payments' },
+    { title: 'Conceptos de Pago', href: '/payment-concepts' },
+    { title: props.concept.name },
+];
 </script>
 
 <template>
     <Head :title="`Concepto: ${concept.name}`" />
 
-    <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <Button asChild variant="ghost" size="sm">
-                    <Link href="/payment-concepts">
-                        <ArrowLeft class="mr-2 h-4 w-4" />
-                        Volver a Conceptos
-                    </Link>
-                </Button>
-                <div>
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
+            <!-- Header -->
+            <div class="mb-8 flex items-center justify-between">
+                <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">{{ concept.name }}</h1>
                     <p class="text-muted-foreground">
                         {{ concept.type_label }}
                     </p>
                 </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Status Badge -->
+                    <Badge :class="concept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                        {{ concept.is_active ? 'Activo' : 'Inactivo' }}
+                    </Badge>
+
+                    <!-- Actions -->
+                    <Button asChild variant="outline" size="sm">
+                        <Link href="/payment-concepts">
+                            <ArrowLeft class="mr-2 h-4 w-4" />
+                            Volver a Conceptos
+                        </Link>
+                    </Button>
+                    
+                    <Button @click="toggleStatus" variant="outline" size="sm">
+                        <component :is="concept.is_active ? ToggleLeft : ToggleRight" class="mr-2 h-4 w-4" />
+                        {{ concept.is_active ? 'Desactivar' : 'Activar' }}
+                    </Button>
+
+                    <Button asChild variant="outline" size="sm">
+                        <Link :href="`/payment-concepts/${concept.id}/edit`">
+                            <Edit class="mr-2 h-4 w-4" />
+                            Editar
+                        </Link>
+                    </Button>
+
+                    <Button @click="deleteConcept" variant="destructive" size="sm">
+                        <Trash2 class="mr-2 h-4 w-4" />
+                        Eliminar
+                    </Button>
+                </div>
             </div>
-
-            <div class="flex items-center space-x-2">
-                <!-- Status Badge -->
-                <Badge :class="concept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                    {{ concept.is_active ? 'Activo' : 'Inactivo' }}
-                </Badge>
-
-                <!-- Actions -->
-                <Button @click="toggleStatus" variant="outline" size="sm">
-                    <component :is="concept.is_active ? ToggleLeft : ToggleRight" class="mr-2 h-4 w-4" />
-                    {{ concept.is_active ? 'Desactivar' : 'Activar' }}
-                </Button>
-
-                <Button asChild variant="outline" size="sm">
-                    <Link :href="`/payment-concepts/${concept.id}/edit`">
-                        <Edit class="mr-2 h-4 w-4" />
-                        Editar
-                    </Link>
-                </Button>
-
-                <Button @click="deleteConcept" variant="outline" size="sm">
-                    <Trash2 class="mr-2 h-4 w-4" />
-                    Eliminar
-                </Button>
-            </div>
-        </div>
 
         <div class="grid gap-6 lg:grid-cols-3">
             <!-- Main Information -->
@@ -309,5 +314,6 @@ const getTypeDescription = (type: string) => {
                 </Card>
             </div>
         </div>
-    </div>
+        </div>
+    </AppLayout>
 </template>

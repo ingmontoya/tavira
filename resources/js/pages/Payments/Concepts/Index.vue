@@ -238,28 +238,49 @@ const table = useVueTable({
     },
 });
 
-// Apply filters
+// Apply filters function for server-side filtering
 const applyFilters = () => {
-    const params: Record<string, string> = {};
+    const filterData: Record<string, string> = {};
 
-    if (customFilters.value.search) params.search = customFilters.value.search;
-    if (customFilters.value.type !== 'all') params.type = customFilters.value.type;
-    if (customFilters.value.is_active !== 'all') params.is_active = customFilters.value.is_active;
+    // Add filters to data object
+    if (customFilters.value.search && customFilters.value.search.trim()) {
+        filterData.search = customFilters.value.search.trim();
+    }
+    if (customFilters.value.type && customFilters.value.type !== 'all') {
+        filterData.type = customFilters.value.type;
+    }
+    if (customFilters.value.is_active && customFilters.value.is_active !== 'all') {
+        filterData.is_active = customFilters.value.is_active;
+    }
 
-    router.get('/payment-concepts', params, {
+    // Always reset to page 1 when filtering
+    filterData.page = '1';
+
+    router.visit('/payment-concepts', {
+        data: filterData,
         preserveState: true,
         preserveScroll: true,
     });
 };
 
-// Clear filters
-const clearFilters = () => {
+// Check if custom filters are active
+const hasActiveCustomFilters = computed(() => {
+    return Object.values(customFilters.value).some((value) => value !== '' && value !== 'all');
+});
+
+// Clear custom filters
+const clearCustomFilters = () => {
     customFilters.value = {
         search: '',
         type: 'all',
         is_active: 'all',
     };
-    applyFilters();
+
+    router.visit('/payment-concepts', {
+        preserveState: true,
+        preserveScroll: true,
+        only: ['concepts', 'filters'],
+    });
 };
 
 // Toggle concept status
@@ -281,14 +302,42 @@ const deleteConcept = (id: number) => {
     }
 };
 
-// Watch for filter changes
-watch(
-    customFilters,
-    () => {
-        applyFilters();
-    },
-    { deep: true },
-);
+// Manual filter application instead of watchers
+
+// Pagination functions
+const nextPage = () => {
+    const currentPage = props.concepts.current_page;
+    if (currentPage < props.concepts.last_page) {
+        const filterData = { ...customFilters.value, page: (currentPage + 1).toString() };
+        // Clean up 'all' values
+        Object.keys(filterData).forEach(key => {
+            if (filterData[key] === 'all' || filterData[key] === '') {
+                delete filterData[key];
+            }
+        });
+        router.get('/payment-concepts', filterData, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+};
+
+const previousPage = () => {
+    const currentPage = props.concepts.current_page;
+    if (currentPage > 1) {
+        const filterData = { ...customFilters.value, page: (currentPage - 1).toString() };
+        // Clean up 'all' values
+        Object.keys(filterData).forEach(key => {
+            if (filterData[key] === 'all' || filterData[key] === '') {
+                delete filterData[key];
+            }
+        });
+        router.get('/payment-concepts', filterData, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+};
 
 // Type options
 const typeOptions = [
@@ -394,12 +443,22 @@ const breadcrumbs = [
                         </div>
                     </div>
 
-                    <!-- Filter Actions -->
-                    <div class="flex items-center space-x-2">
-                        <Button @click="clearFilters" variant="outline" size="sm">
-                            <X class="mr-2 h-4 w-4" />
-                            Limpiar Filtros
-                        </Button>
+                    <!-- Botones de acción -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex gap-2">
+                            <Button @click="applyFilters" class="gap-2">
+                                <Search class="h-4 w-4" />
+                                Aplicar Filtros
+                            </Button>
+                            <Button variant="outline" @click="clearCustomFilters" v-if="hasActiveCustomFilters">
+                                <X class="mr-2 h-4 w-4" />
+                                Limpiar filtros
+                            </Button>
+                        </div>
+                        <div class="text-sm text-muted-foreground">
+                            Mostrando {{ props.concepts.from || 0 }} - {{ props.concepts.to || 0 }} de
+                            {{ props.concepts.total || 0 }} conceptos
+                        </div>
                     </div>
                 </div>
             </Card>
@@ -408,16 +467,10 @@ const breadcrumbs = [
             <Card>
                 <div class="p-6">
                     <!-- Table controls -->
-                    <div class="flex items-center justify-between pb-4">
-                        <div class="flex items-center space-x-2">
-                            <p class="text-sm text-muted-foreground">
-                                Mostrando {{ props.concepts.from || 0 }} a {{ props.concepts.to || 0 }} de {{ props.concepts.total }} conceptos
-                            </p>
-                        </div>
-
+                    <div class="flex items-center gap-2 pb-4">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline">
+                                <Button variant="outline" class="ml-auto">
                                     Columnas
                                     <ChevronDown class="ml-2 h-4 w-4" />
                                 </Button>
@@ -426,8 +479,9 @@ const breadcrumbs = [
                                 <DropdownMenuCheckboxItem
                                     v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
                                     :key="column.id"
-                                    :checked="column.getIsVisible()"
-                                    @update:checked="column.toggleVisibility"
+                                    class="capitalize"
+                                    :model-value="column.getIsVisible()"
+                                    @update:model-value="(value) => { column.toggleVisibility(!!value); }"
                                 >
                                     {{ column.id }}
                                 </DropdownMenuCheckboxItem>
@@ -455,8 +509,15 @@ const breadcrumbs = [
                                         v-for="row in table.getRowModel().rows"
                                         :key="row.id"
                                         :data-state="row.getIsSelected() ? 'selected' : undefined"
+                                        class="cursor-pointer transition-colors hover:bg-muted/50"
+                                        @click="router.visit(`/payment-concepts/${row.original.id}`)"
                                     >
-                                        <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                                        <TableCell 
+                                            v-for="cell in row.getVisibleCells()" 
+                                            :key="cell.id"
+                                            :class="cell.column.id === 'select' || cell.column.id === 'actions' ? 'cursor-default' : ''"
+                                            @click="cell.column.id === 'select' || cell.column.id === 'actions' ? $event.stopPropagation() : null"
+                                        >
                                             <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                         </TableCell>
                                     </TableRow>
@@ -473,19 +534,26 @@ const breadcrumbs = [
                     </div>
 
                     <!-- Pagination -->
-                    <div class="flex items-center justify-between pt-4">
-                        <div class="flex items-center space-x-2">
-                            <p class="text-sm text-muted-foreground">
-                                {{ table.getFilteredSelectedRowModel().rows.length }} de{' '} {{ table.getFilteredRowModel().rows.length }} fila(s)
-                                seleccionadas.
-                            </p>
+                    <div class="flex items-center justify-between space-x-2 pt-4">
+                        <div class="flex-1 text-sm text-muted-foreground">
+                            {{ table.getFilteredSelectedRowModel().rows.length }} de {{ props.concepts.total }} fila(s) seleccionadas.
                         </div>
-
-                        <div class="flex items-center space-x-2">
-                            <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">
-                                Anterior
-                            </Button>
-                            <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Siguiente </Button>
+                        <div class="flex items-center space-x-6 lg:space-x-8">
+                            <div class="flex items-center space-x-2">
+                                <p class="text-sm font-medium">Página</p>
+                                <div class="flex items-center space-x-1">
+                                    <span class="text-sm font-medium">{{ props.concepts.current_page }}</span>
+                                    <span class="text-sm text-muted-foreground">de {{ props.concepts.last_page }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <Button variant="outline" size="sm" :disabled="props.concepts.current_page <= 1" @click="previousPage">
+                                    Anterior
+                                </Button>
+                                <Button variant="outline" size="sm" :disabled="props.concepts.current_page >= props.concepts.last_page" @click="nextPage">
+                                    Siguiente
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -192,29 +192,43 @@ const billingCycleDescriptions = {
                                 </div>
                             </div>
 
-                            <!-- Checkboxes -->
-                            <div class="space-y-3">
+                            <!-- Boolean Controls -->
+                            <div class="space-y-4">
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox id="is_recurring" v-model:checked="form.is_recurring" />
-                                    <Label
-                                        for="is_recurring"
-                                        class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        Es recurrente
-                                    </Label>
+                                    <Checkbox 
+                                        id="is_recurring"
+                                        v-model="form.is_recurring"
+                                    />
+                                    <div class="grid gap-1.5 leading-none">
+                                        <Label 
+                                            for="is_recurring"
+                                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            Es recurrente
+                                        </Label>
+                                        <p class="text-xs text-muted-foreground">
+                                            Se incluirá automáticamente en la facturación masiva mensual
+                                        </p>
+                                    </div>
                                 </div>
-                                <p class="ml-6 text-sm text-muted-foreground">Se incluirá automáticamente en la facturación masiva mensual</p>
 
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox id="is_active" v-model:checked="form.is_active" />
-                                    <Label
-                                        for="is_active"
-                                        class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        Activo
-                                    </Label>
+                                    <Checkbox 
+                                        id="is_active"
+                                        v-model="form.is_active"
+                                    />
+                                    <div class="grid gap-1.5 leading-none">
+                                        <Label 
+                                            for="is_active"
+                                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            Activo
+                                        </Label>
+                                        <p class="text-xs text-muted-foreground">
+                                            Estará disponible para facturar
+                                        </p>
+                                    </div>
                                 </div>
-                                <p class="ml-6 text-sm text-muted-foreground">Estará disponible para facturar</p>
                             </div>
                         </CardContent>
                     </Card>

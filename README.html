@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>README</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<h1
+id="habitta---sistema-integral-de-gestión-para-propiedad-horizontal">🏠
+Habitta - Sistema Integral de Gestión para Propiedad Horizontal</h1>
+<p><strong>Habitta</strong> es una plataforma digital todo-en-uno
+diseñada para la gestión moderna de conjuntos residenciales y edificios
+bajo el régimen de propiedad horizontal. El sistema está optimizado para
+la gestión eficiente de un conjunto residencial, facilitando a
+administradores, consejos y residentes la operación transparente y
+automatizada de la comunidad.</p>
+<p>La plataforma incluye herramientas para la administración de
+residentes, finanzas completas con facturación automática, seguimiento
+de pagos, acuerdos de pago, gestión de apartamentos y mucho más. Está
+diseñada para ser usada tanto desde un panel web como desde dispositivos
+móviles.</p>
+<p>A continuación, se detallan las funcionalidades implementadas y por
+implementar:</p>
+<hr />
+<h2 id="gestión-de-conjuntos-configuración-única">🏢 Gestión de
+Conjuntos (Configuración Única)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Configuración de
+conjunto único</strong> - Sistema optimizado para un conjunto
+residencial</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Personalización
+completa</strong> - Logo, colores y datos institucionales
+configurables</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Soporte para
+múltiples torres/edificios</strong> - Gestión de torres A, B, C con
+pisos y apartamentos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Configuración
+flexible de apartamentos</strong> - Tipos de apartamento configurables
+(Tipo A, B, C, Penthouse)</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Dashboard
+integral</strong> - Estadísticas completas con datos reales y mock
+data</label></li>
+<li><label><input type="checkbox" />Dominio personalizado por
+conjunto</label></li>
+<li><label><input type="checkbox" />Control central para múltiples
+conjuntos (multitenant futuro)</label></li>
+</ul>
+<hr />
+<h2 id="administración-de-residentes">🧑‍💼 Administración de
+Residentes</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Registro completo
+de residentes</strong> - Propietarios y arrendatarios con datos
+personales</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Asignación por
+apartamento</strong> - Vinculación directa con torre, piso y
+apartamento</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Gestión de tipos
+de residente</strong> - Propietario, arrendatario, familiar,
+etc.</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Estado
+activo/inactivo</strong> - Control de residentes activos en el
+conjunto</label></li>
+<li><label><input type="checkbox" checked="" /><strong>CRUD
+completo</strong> - Crear, ver, editar y eliminar
+residentes</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Validaciones de
+seguridad</strong> - Formularios con validación y
+sanitización</label></li>
+<li><label><input type="checkbox" />Historial de ocupantes por
+unidad</label></li>
+<li><label><input type="checkbox" />Adjuntar documentos por unidad o
+residente</label></li>
+<li><label><input type="checkbox" />Notificaciones automáticas (correo,
+WhatsApp opcional)</label></li>
+</ul>
+<hr />
+<h2 id="finanzas-y-cuotas">💳 Finanzas y Cuotas</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Sistema completo
+de facturación</strong> - Creación, edición y gestión de facturas
+mensuales</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Generación
+automática de facturas</strong> - Comando programado para generar
+facturas mensuales</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Conceptos de pago
+configurables</strong> - Administración, mantenimiento, servicios
+públicos, etc.</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Aplicación de
+descuento por pronto pago</strong> - Configuración de días y porcentajes
+de descuento</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Cálculo
+automático de intereses por mora</strong> - Procesamiento automático de
+recargos por retraso</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Configuración de
+parámetros de pago</strong> - Días de gracia, porcentajes de mora,
+descuentos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Sistema de
+acuerdos de pago</strong> - Creación y seguimiento de planes de pago
+especiales</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Seguimiento de
+pagos por apartamento</strong> - Estado de pagos, saldos pendientes,
+historial</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Reportes de
+cartera vencida</strong> - Apartamentos morosos con exportación a
+Excel/PDF</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Estados de
+apartamentos</strong> - Al día, en mora, con acuerdo de pago,
+etc.</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Notificaciones
+por email</strong> - Envío automático de facturas por correo
+electrónico</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Vistas de
+facturación PDF</strong> - Generación de facturas en formato PDF
+profesional</label></li>
+<li><label><input type="checkbox" />Registro manual de
+pagos</label></li>
+<li><label><input type="checkbox" />Generación de extracto o estado de
+cuenta</label></li>
+<li><label><input type="checkbox" />Integración con pasarelas de pago
+(MercadoPago, Wompi, etc.)</label></li>
+</ul>
+<hr />
+<h2 id="gestión-de-apartamentos">🏠 Gestión de Apartamentos</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>CRUD completo de
+apartamentos</strong> - Crear, ver, editar y eliminar
+apartamentos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Organización por
+torres</strong> - Gestión de apartamentos por torre (A, B,
+C)</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Tipos de
+apartamento configurables</strong> - Tipo A, B, C, Penthouse con
+características específicas</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Seguimiento de
+estado de pagos</strong> - Visualización del estado financiero por
+apartamento</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Vista de
+apartamentos morosos</strong> - Listado especializado de apartamentos
+con deudas</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Información de
+acuerdos de pago</strong> - Estado y detalles de acuerdos
+especiales</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Exportación de
+reportes</strong> - Excel y PDF de apartamentos morosos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Estadísticas por
+torre</strong> - Resumen de ocupación y pagos por torre</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Validaciones de
+integridad</strong> - Verificación de datos de apartamento
+únicos</label></li>
+</ul>
+<hr />
+<h2 id="correspondencia-y-paquetería">📦 Correspondencia y
+Paquetería</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Registro de paquetes por
+portería/recepción</label></li>
+<li><label><input type="checkbox" />Notificación automática al residente
+al llegar un paquete</label></li>
+<li><label><input type="checkbox" />Marcar como entregado con firma
+digital o código de seguridad</label></li>
+<li><label><input type="checkbox" />Historial de correspondencia por
+apartamento</label></li>
+</ul>
+<hr />
+<h2 id="registro-de-visitas">🚗 Registro de Visitas</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Residentes generan código QR desde
+app/web</label></li>
+<li><label><input type="checkbox" />Escaneo del QR por parte de
+portería</label></li>
+<li><label><input type="checkbox" />Validación automática y registro de
+ingreso</label></li>
+<li><label><input type="checkbox" />Registro de salida manual o
+automática</label></li>
+<li><label><input type="checkbox" />Listado de visitas por unidad y
+rango de fechas</label></li>
+<li><label><input type="checkbox" />Modo sin QR: registro manual en
+portería</label></li>
+</ul>
+<hr />
+<h2 id="comunicados-y-anuncios">💬 Comunicados y Anuncios</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Creación de comunicados por la
+administración</label></li>
+<li><label><input type="checkbox" />Envío segmentado (a todos, a torre
+específica, a unidad)</label></li>
+<li><label><input type="checkbox" />Notificación por
+app/web/correo</label></li>
+<li><label><input type="checkbox" />Historial de comunicados leídos / no
+leídos</label></li>
+<li><label><input type="checkbox" />Confirmación de lectura
+opcional</label></li>
+</ul>
+<hr />
+<h2 id="documentos-y-actas">🧾 Documentos y Actas</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Subida y clasificación de documentos
+oficiales (actas, manuales, reglamentos)</label></li>
+<li><label><input type="checkbox" />Permisos por rol: lectura / descarga
+/ edición</label></li>
+<li><label><input type="checkbox" />Versionado de
+documentos</label></li>
+<li><label><input type="checkbox" />Categorías
+personalizables</label></li>
+</ul>
+<hr />
+<h2 id="proveedores-y-gastos">👷 Proveedores y Gastos</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Registro de proveedores por
+conjunto</label></li>
+<li><label><input type="checkbox" />Registro de facturas y
+egresos</label></li>
+<li><label><input type="checkbox" />Asociar gasto a rubros o
+presupuestos</label></li>
+<li><label><input type="checkbox" />Subida de comprobantes
+escaneados</label></li>
+<li><label><input type="checkbox" />Informe de flujo de caja y balance
+por periodo</label></li>
+</ul>
+<hr />
+<h2 id="seguridad-y-acceso">🔐 Seguridad y Acceso</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Sistema de
+autenticación Laravel Breeze</strong> - Login, registro, recuperación de
+contraseña</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Middleware de
+seguridad completo</strong> - Rate limiting, sanitización, headers de
+seguridad</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Validación de
+contraseñas seguras</strong> - Reglas de complejidad de
+contraseñas</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Sesiones
+seguras</strong> - Gestión segura de sesiones y tokens</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Subida segura de
+archivos</strong> - Validación y sanitización de archivos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Auditoría de
+acciones</strong> - Logging de acciones de usuarios</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Configuración de
+seguridad</strong> - Panel de configuración de parámetros de
+seguridad</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Servicio de
+autenticación de dos factores</strong> - Implementación 2FA
+disponible</label></li>
+<li><label><input type="checkbox" />Roles predefinidos específicos del
+dominio</label></li>
+<li><label><input type="checkbox" />Sistema de permisos granular por
+módulo</label></li>
+<li><label><input type="checkbox" />Historial detallado de
+accesos</label></li>
+</ul>
+<hr />
+<h2 id="reportes-e-inteligencia">🧠 Reportes e Inteligencia</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Dashboard con
+estadísticas clave</strong> - Resumen de apartamentos, residentes,
+pagos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Reportes de
+apartamentos morosos</strong> - Listado detallado con exportación
+Excel/PDF</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Estadísticas por
+torre</strong> - Datos de ocupación y morosidad por torre</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Datos de
+facturación</strong> - Estados de pago y saldos pendientes</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Vista de acuerdos
+de pago</strong> - Seguimiento de planes especiales de pago</label></li>
+<li><label><input type="checkbox" />Reporte de facturación mensual vs
+recaudado</label></li>
+<li><label><input type="checkbox" />Porcentaje de mora por periodo
+histórico</label></li>
+<li><label><input type="checkbox" />Estadísticas de visitas y
+correspondencia</label></li>
+<li><label><input type="checkbox" />Análisis predictivo de
+morosidad</label></li>
+</ul>
+<hr />
+<h2 id="automatización-y-comandos">🤖 Automatización y Comandos</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Generación
+automática de facturas mensuales</strong> - Comando programado para
+crear facturas</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Procesamiento
+automático de recargos por mora</strong> - Cálculo y aplicación de
+intereses</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Verificación de
+cumplimiento de acuerdos de pago</strong> - Monitoreo automático de
+planes</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Actualización de
+estados de pago</strong> - Sincronización automática de estados de
+apartamentos</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Notificaciones
+por email</strong> - Envío automático de facturas y
+recordatorios</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Seeders para
+datos de prueba</strong> - Generación de data mock para
+desarrollo</label></li>
+<li><label><input type="checkbox" />Recordatorios automáticos de
+vencimiento de pagos</label></li>
+<li><label><input type="checkbox" />Informes programados por
+email</label></li>
+<li><label><input type="checkbox" />Backup automático de
+datos</label></li>
+</ul>
+<hr />
+<h2 id="app-móvil-versión-responsive">📱 App Móvil / Versión
+Responsive</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Interfaz
+completamente responsive</strong> - Diseño adaptativo para móviles y
+tablets</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Componentes UI
+modernos</strong> - Implementación con shadcn/ui Vue y Tailwind
+CSS</label></li>
+<li><label><input type="checkbox" checked="" /><strong>SPA con
+Inertia.js</strong> - Experiencia de aplicación de página
+única</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Layouts
+adaptativos</strong> - Sistema de layouts anidados para diferentes
+secciones</label></li>
+<li><label><input type="checkbox" />Ver saldo y pagar desde el
+celular</label></li>
+<li><label><input type="checkbox" />Ver QR de visitas</label></li>
+<li><label><input type="checkbox" />Consultar comunicados, documentos y
+correspondencia</label></li>
+<li><label><input type="checkbox" />Notificaciones push
+nativas</label></li>
+</ul>
+<hr />
+<h2 id="requisitos-no-funcionales">⚙️ Requisitos No Funcionales</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" checked="" /><strong>Arquitectura
+moderna y escalable</strong> - Laravel 12 + Vue 3 +
+TypeScript</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Seguridad
+implementada</strong> - Middleware de seguridad, validaciones,
+sanitización</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Compatible con
+dispositivos móviles</strong> - Diseño responsive completo</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Validaciones
+tipo-seguras</strong> - TypeScript en frontend para mayor
+robustez</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Testing
+implementado</strong> - Tests unitarios (PHPUnit/Pest) y E2E
+(Playwright)</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Cumplimiento de
+buenas prácticas</strong> - Código limpio, patrones de
+diseño</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Base de datos
+optimizada</strong> - Migraciones, relaciones, índices
+adecuados</label></li>
+<li><label><input type="checkbox" checked="" /><strong>Manejo de errores
+robusto</strong> - Excepciones customizadas, logging de
+errores</label></li>
+<li><label><input type="checkbox" />Disponibilidad 99.9% (hosting en la
+nube)</label></li>
+<li><label><input type="checkbox" />Backups automáticos
+diarios</label></li>
+<li><label><input type="checkbox" />Soporte para idiomas
+(multilenguaje)</label></li>
+<li><label><input type="checkbox" />Escalabilidad horizontal con
+microservicios</label></li>
+<li><label><input type="checkbox" />Cumplimiento Ley 1581 de protección
+de datos Colombia</label></li>
+</ul>
+<h2 id="stack-tecnológico">🛠️ Stack Tecnológico</h2>
+<h3 id="backend">Backend</h3>
+<ul>
+<li><strong>Laravel 12</strong> - Framework PHP moderno con arquitectura
+robusta</li>
+<li><strong>PHP 8.3+</strong> - Últimas características del
+lenguaje</li>
+<li><strong>MySQL/SQLite</strong> - Base de datos relacional con
+migraciones y seeders</li>
+<li><strong>Laravel Breeze</strong> - Sistema de autenticación
+simplificado</li>
+<li><strong>Spatie Laravel Settings</strong> - Gestión de
+configuraciones aplicación</li>
+<li><strong>Laravel Excel</strong> - Exportación de reportes
+Excel/PDF</li>
+<li><strong>Telescope</strong> - Debugging y monitoring de
+aplicación</li>
+</ul>
+<h3 id="frontend">Frontend</h3>
+<ul>
+<li><strong>Vue.js 3</strong> - Framework JavaScript reactivo con
+Composition API</li>
+<li><strong>TypeScript</strong> - Tipado estático para mayor
+robustez</li>
+<li><strong>Inertia.js</strong> - SPA sin APIs, integración
+Laravel-Vue</li>
+<li><strong>shadcn/ui Vue</strong> - Componentes UI modernos y
+accesibles</li>
+<li><strong>Tailwind CSS</strong> - Framework CSS utilitario</li>
+<li><strong>Vite</strong> - Build tool rápido con HMR</li>
+</ul>
+<h3 id="testing-quality">Testing &amp; Quality</h3>
+<ul>
+<li><strong>PHPUnit/Pest</strong> - Testing backend unitario y de
+integración</li>
+<li><strong>Playwright</strong> - Testing E2E del frontend</li>
+<li><strong>Laravel Pint</strong> - Formateador de código PHP</li>
+<li><strong>ESLint + Prettier</strong> - Linting y formateo
+JavaScript/TypeScript</li>
+</ul>
+<h3 id="seguridad">Seguridad</h3>
+<ul>
+<li><strong>Rate Limiting</strong> - Protección contra spam/ataques</li>
+<li><strong>Input Sanitization</strong> - Limpieza automática de datos
+de entrada</li>
+<li><strong>Security Headers</strong> - Headers HTTP de seguridad</li>
+<li><strong>Audit Logging</strong> - Registro de acciones de
+usuarios</li>
+<li><strong>File Upload Security</strong> - Validación segura de
+archivos</li>
+<li><strong>Two-Factor Authentication</strong> - Autenticación de dos
+factores</li>
+</ul>
+</body>
+</html>

@@ -124,8 +124,8 @@ class PaymentConceptController extends Controller
             'description' => $validated['description'],
             'type' => $validated['type'],
             'default_amount' => $validated['default_amount'],
-            'is_recurring' => $validated['is_recurring'] ?? $paymentConcept->is_recurring,
-            'is_active' => $validated['is_active'] ?? $paymentConcept->is_active,
+            'is_recurring' => $request->boolean('is_recurring'),
+            'is_active' => $request->boolean('is_active'),
             'billing_cycle' => $validated['billing_cycle'],
             'applicable_apartment_types' => $validated['applicable_apartment_types'],
         ]);
