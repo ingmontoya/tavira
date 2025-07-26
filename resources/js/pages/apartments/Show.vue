@@ -510,9 +510,7 @@ const breadcrumbs = [
                                             <Badge :class="agreement.status_badge.class" class="text-xs">
                                                 {{ agreement.status_badge.text }}
                                             </Badge>
-                                            <span class="text-sm text-muted-foreground">
-                                                Acuerdo #{{ agreement.id }}
-                                            </span>
+                                            <span class="text-sm text-muted-foreground"> Acuerdo #{{ agreement.id }} </span>
                                         </div>
                                         <div class="grid grid-cols-2 gap-4 text-sm">
                                             <div>
@@ -525,7 +523,9 @@ const breadcrumbs = [
                                             </div>
                                             <div>
                                                 <p class="font-medium">Cuotas</p>
-                                                <p class="text-muted-foreground">{{ agreement.installments }} cuotas de {{ formatCurrency(agreement.monthly_payment) }}</p>
+                                                <p class="text-muted-foreground">
+                                                    {{ agreement.installments }} cuotas de {{ formatCurrency(agreement.monthly_payment) }}
+                                                </p>
                                             </div>
                                             <div>
                                                 <p class="font-medium">Progreso</p>

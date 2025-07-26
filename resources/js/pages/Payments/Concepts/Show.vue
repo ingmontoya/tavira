@@ -130,7 +130,7 @@ const breadcrumbs = [
                             Volver a Conceptos
                         </Link>
                     </Button>
-                    
+
                     <Button @click="toggleStatus" variant="outline" size="sm">
                         <component :is="concept.is_active ? ToggleLeft : ToggleRight" class="mr-2 h-4 w-4" />
                         {{ concept.is_active ? 'Desactivar' : 'Activar' }}
@@ -150,170 +150,172 @@ const breadcrumbs = [
                 </div>
             </div>
 
-        <div class="grid gap-6 lg:grid-cols-3">
-            <!-- Main Information -->
-            <div class="space-y-6 lg:col-span-2">
-                <!-- Basic Info -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle class="flex items-center space-x-2">
-                            <Settings class="h-5 w-5" />
-                            <span>Información del Concepto</span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent class="space-y-4">
-                        <div class="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <Label class="text-sm font-medium text-muted-foreground">Nombre</Label>
-                                <p class="text-lg font-medium">{{ concept.name }}</p>
+            <div class="grid gap-6 lg:grid-cols-3">
+                <!-- Main Information -->
+                <div class="space-y-6 lg:col-span-2">
+                    <!-- Basic Info -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle class="flex items-center space-x-2">
+                                <Settings class="h-5 w-5" />
+                                <span>Información del Concepto</span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-4">
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label class="text-sm font-medium text-muted-foreground">Nombre</Label>
+                                    <p class="text-lg font-medium">{{ concept.name }}</p>
+                                </div>
+
+                                <div>
+                                    <Label class="text-sm font-medium text-muted-foreground">Tipo</Label>
+                                    <div class="mt-1 flex items-center space-x-2">
+                                        <Badge :class="getTypeColor(concept.type)">
+                                            {{ concept.type_label }}
+                                        </Badge>
+                                    </div>
+                                    <p class="mt-1 text-sm text-muted-foreground">
+                                        {{ getTypeDescription(concept.type) }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <Label class="text-sm font-medium text-muted-foreground">Monto por Defecto</Label>
+                                    <p class="text-xl font-medium text-green-600">{{ formatCurrency(concept.default_amount) }}</p>
+                                </div>
+
+                                <div>
+                                    <Label class="text-sm font-medium text-muted-foreground">Ciclo de Facturación</Label>
+                                    <p>{{ concept.billing_cycle_label }}</p>
+                                </div>
+
+                                <div>
+                                    <Label class="text-sm font-medium text-muted-foreground">Recurrente</Label>
+                                    <Badge :variant="concept.is_recurring ? 'default' : 'secondary'">
+                                        {{ concept.is_recurring ? 'Sí' : 'No' }}
+                                    </Badge>
+                                    <p class="mt-1 text-sm text-muted-foreground">
+                                        {{ concept.is_recurring ? 'Se incluye en facturación automática' : 'Solo facturación manual' }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <Label class="text-sm font-medium text-muted-foreground">Estado</Label>
+                                    <Badge :class="concept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                                        {{ concept.is_active ? 'Activo' : 'Inactivo' }}
+                                    </Badge>
+                                    <p class="mt-1 text-sm text-muted-foreground">
+                                        {{ concept.is_active ? 'Disponible para facturar' : 'No disponible para facturar' }}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div>
-                                <Label class="text-sm font-medium text-muted-foreground">Tipo</Label>
-                                <div class="mt-1 flex items-center space-x-2">
-                                    <Badge :class="getTypeColor(concept.type)">
-                                        {{ concept.type_label }}
+                            <div v-if="concept.description">
+                                <Label class="text-sm font-medium text-muted-foreground">Descripción</Label>
+                                <p class="mt-1 text-sm">{{ concept.description }}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Apartment Types -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Tipos de Apartamento Aplicables</CardTitle>
+                            <CardDescription> Tipos de apartamento a los que aplica este concepto </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div v-if="!concept.applicable_apartment_types || concept.applicable_apartment_types.length === 0">
+                                <div class="py-8 text-center">
+                                    <p class="text-muted-foreground">Aplica a todos los tipos de apartamento</p>
+                                    <p class="mt-1 text-sm text-muted-foreground">
+                                        Este concepto se puede facturar a cualquier apartamento del conjunto
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div v-else class="space-y-2">
+                                <p class="text-sm text-muted-foreground">Este concepto solo aplica a los siguientes tipos de apartamento:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <Badge v-for="typeId in concept.applicable_apartment_types" :key="typeId" variant="secondary">
+                                        Tipo ID: {{ typeId }}
                                     </Badge>
                                 </div>
-                                <p class="mt-1 text-sm text-muted-foreground">
-                                    {{ getTypeDescription(concept.type) }}
-                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Quick Actions -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Acciones Rápidas</CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-3">
+                            <Button asChild class="w-full" variant="default">
+                                <Link :href="`/invoices/create?concept=${concept.id}`"> Crear Factura con este Concepto </Link>
+                            </Button>
+
+                            <Button asChild class="w-full" variant="outline">
+                                <Link :href="`/payment-concepts/${concept.id}/edit`"> Editar Concepto </Link>
+                            </Button>
+
+                            <Button @click="toggleStatus" class="w-full" variant="outline">
+                                {{ concept.is_active ? 'Desactivar' : 'Activar' }} Concepto
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Usage Stats -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Estadísticas de Uso</CardTitle>
+                            <CardDescription> Información sobre el uso de este concepto </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Facturas generadas:</span>
+                                    <span class="font-medium">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Total facturado:</span>
+                                    <span class="font-medium">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm">Último uso:</span>
+                                    <span class="text-sm text-muted-foreground">--</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Metadata -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Información del Sistema</CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-3">
+                            <div>
+                                <Label class="text-sm font-medium text-muted-foreground">Conjunto</Label>
+                                <p class="text-sm">{{ concept.conjunto_config.name }}</p>
                             </div>
 
                             <div>
-                                <Label class="text-sm font-medium text-muted-foreground">Monto por Defecto</Label>
-                                <p class="text-xl font-medium text-green-600">{{ formatCurrency(concept.default_amount) }}</p>
+                                <Label class="text-sm font-medium text-muted-foreground">Creado</Label>
+                                <p class="text-sm">{{ formatDate(concept.created_at) }}</p>
                             </div>
 
                             <div>
-                                <Label class="text-sm font-medium text-muted-foreground">Ciclo de Facturación</Label>
-                                <p>{{ concept.billing_cycle_label }}</p>
+                                <Label class="text-sm font-medium text-muted-foreground">Última Actualización</Label>
+                                <p class="text-sm">{{ formatDate(concept.updated_at) }}</p>
                             </div>
-
-                            <div>
-                                <Label class="text-sm font-medium text-muted-foreground">Recurrente</Label>
-                                <Badge :variant="concept.is_recurring ? 'default' : 'secondary'">
-                                    {{ concept.is_recurring ? 'Sí' : 'No' }}
-                                </Badge>
-                                <p class="mt-1 text-sm text-muted-foreground">
-                                    {{ concept.is_recurring ? 'Se incluye en facturación automática' : 'Solo facturación manual' }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <Label class="text-sm font-medium text-muted-foreground">Estado</Label>
-                                <Badge :class="concept.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                                    {{ concept.is_active ? 'Activo' : 'Inactivo' }}
-                                </Badge>
-                                <p class="mt-1 text-sm text-muted-foreground">
-                                    {{ concept.is_active ? 'Disponible para facturar' : 'No disponible para facturar' }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div v-if="concept.description">
-                            <Label class="text-sm font-medium text-muted-foreground">Descripción</Label>
-                            <p class="mt-1 text-sm">{{ concept.description }}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Apartment Types -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Tipos de Apartamento Aplicables</CardTitle>
-                        <CardDescription> Tipos de apartamento a los que aplica este concepto </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div v-if="!concept.applicable_apartment_types || concept.applicable_apartment_types.length === 0">
-                            <div class="py-8 text-center">
-                                <p class="text-muted-foreground">Aplica a todos los tipos de apartamento</p>
-                                <p class="mt-1 text-sm text-muted-foreground">Este concepto se puede facturar a cualquier apartamento del conjunto</p>
-                            </div>
-                        </div>
-
-                        <div v-else class="space-y-2">
-                            <p class="text-sm text-muted-foreground">Este concepto solo aplica a los siguientes tipos de apartamento:</p>
-                            <div class="flex flex-wrap gap-2">
-                                <Badge v-for="typeId in concept.applicable_apartment_types" :key="typeId" variant="secondary">
-                                    Tipo ID: {{ typeId }}
-                                </Badge>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Quick Actions -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Acciones Rápidas</CardTitle>
-                    </CardHeader>
-                    <CardContent class="space-y-3">
-                        <Button asChild class="w-full" variant="default">
-                            <Link :href="`/invoices/create?concept=${concept.id}`"> Crear Factura con este Concepto </Link>
-                        </Button>
-
-                        <Button asChild class="w-full" variant="outline">
-                            <Link :href="`/payment-concepts/${concept.id}/edit`"> Editar Concepto </Link>
-                        </Button>
-
-                        <Button @click="toggleStatus" class="w-full" variant="outline">
-                            {{ concept.is_active ? 'Desactivar' : 'Activar' }} Concepto
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                <!-- Usage Stats -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Estadísticas de Uso</CardTitle>
-                        <CardDescription> Información sobre el uso de este concepto </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-sm">Facturas generadas:</span>
-                                <span class="font-medium">--</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm">Total facturado:</span>
-                                <span class="font-medium">--</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm">Último uso:</span>
-                                <span class="text-sm text-muted-foreground">--</span>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Metadata -->
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Información del Sistema</CardTitle>
-                    </CardHeader>
-                    <CardContent class="space-y-3">
-                        <div>
-                            <Label class="text-sm font-medium text-muted-foreground">Conjunto</Label>
-                            <p class="text-sm">{{ concept.conjunto_config.name }}</p>
-                        </div>
-
-                        <div>
-                            <Label class="text-sm font-medium text-muted-foreground">Creado</Label>
-                            <p class="text-sm">{{ formatDate(concept.created_at) }}</p>
-                        </div>
-
-                        <div>
-                            <Label class="text-sm font-medium text-muted-foreground">Última Actualización</Label>
-                            <p class="text-sm">{{ formatDate(concept.updated_at) }}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
         </div>
     </AppLayout>
 </template>

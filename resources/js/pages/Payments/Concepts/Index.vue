@@ -66,33 +66,37 @@ const customFilters = ref({
 });
 
 // Watch for changes in props.filters to sync with server state
-watch(() => props.filters, (newFilters, oldFilters) => {
-    console.log('👁️ Watcher triggered!');
-    console.log('👁️ Old filters:', JSON.stringify(oldFilters));
-    console.log('👁️ New filters:', JSON.stringify(newFilters));
-    
-    let newCustomFilters;
-    
-    if (newFilters && Object.keys(newFilters).length > 0) {
-        newCustomFilters = {
-            search: newFilters.search || '',
-            type: newFilters.type || 'all',
-            is_active: newFilters.is_active !== undefined ? newFilters.is_active.toString() : 'all',
-        };
-        console.log('👁️ Setting filters from server:', JSON.stringify(newCustomFilters));
-    } else {
-        // No filters from server, reset to defaults
-        newCustomFilters = {
-            search: '',
-            type: 'all',
-            is_active: 'all',
-        };
-        console.log('👁️ Resetting to default filters:', JSON.stringify(newCustomFilters));
-    }
-    
-    customFilters.value = newCustomFilters;
-    console.log('👁️ CustomFilters after update:', JSON.stringify(customFilters.value));
-}, { immediate: true, deep: true });
+watch(
+    () => props.filters,
+    (newFilters, oldFilters) => {
+        console.log('👁️ Watcher triggered!');
+        console.log('👁️ Old filters:', JSON.stringify(oldFilters));
+        console.log('👁️ New filters:', JSON.stringify(newFilters));
+
+        let newCustomFilters;
+
+        if (newFilters && Object.keys(newFilters).length > 0) {
+            newCustomFilters = {
+                search: newFilters.search || '',
+                type: newFilters.type || 'all',
+                is_active: newFilters.is_active !== undefined ? newFilters.is_active.toString() : 'all',
+            };
+            console.log('👁️ Setting filters from server:', JSON.stringify(newCustomFilters));
+        } else {
+            // No filters from server, reset to defaults
+            newCustomFilters = {
+                search: '',
+                type: 'all',
+                is_active: 'all',
+            };
+            console.log('👁️ Resetting to default filters:', JSON.stringify(newCustomFilters));
+        }
+
+        customFilters.value = newCustomFilters;
+        console.log('👁️ CustomFilters after update:', JSON.stringify(customFilters.value));
+    },
+    { immediate: true, deep: true },
+);
 
 // Table state
 const sorting = ref<SortingState>([]);
@@ -300,23 +304,27 @@ const clearCustomFilters = () => {
     console.log('📋 Current customFilters:', JSON.stringify(customFilters.value));
     console.log('📋 Current props.filters:', JSON.stringify(props.filters));
     console.log('📋 Current concepts count:', props.concepts.data.length);
-    
-    router.get('/payment-concepts', {}, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['concepts', 'filters'],
-        onSuccess: (page) => {
-            console.log('✅ Request successful');
-            console.log('📋 New page.props.filters:', JSON.stringify(page.props.filters));
-            console.log('📋 New concepts count:', page.props.concepts.data.length);
+
+    router.get(
+        '/payment-concepts',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['concepts', 'filters'],
+            onSuccess: (page) => {
+                console.log('✅ Request successful');
+                console.log('📋 New page.props.filters:', JSON.stringify(page.props.filters));
+                console.log('📋 New concepts count:', page.props.concepts.data.length);
+            },
+            onError: (errors) => {
+                console.log('❌ Request failed:', errors);
+            },
+            onFinish: () => {
+                console.log('🏁 Request finished');
+            },
         },
-        onError: (errors) => {
-            console.log('❌ Request failed:', errors);
-        },
-        onFinish: () => {
-            console.log('🏁 Request finished');
-        }
-    });
+    );
 };
 
 // Toggle concept status
@@ -346,7 +354,7 @@ const nextPage = () => {
     if (currentPage < props.concepts.last_page) {
         const filterData = { ...customFilters.value, page: (currentPage + 1).toString() };
         // Clean up 'all' values
-        Object.keys(filterData).forEach(key => {
+        Object.keys(filterData).forEach((key) => {
             if (filterData[key] === 'all' || filterData[key] === '') {
                 delete filterData[key];
             }
@@ -363,7 +371,7 @@ const previousPage = () => {
     if (currentPage > 1) {
         const filterData = { ...customFilters.value, page: (currentPage - 1).toString() };
         // Clean up 'all' values
-        Object.keys(filterData).forEach(key => {
+        Object.keys(filterData).forEach((key) => {
             if (filterData[key] === 'all' || filterData[key] === '') {
                 delete filterData[key];
             }
@@ -444,10 +452,10 @@ const breadcrumbs = [
                             <Label for="search">Buscar</Label>
                             <div class="relative">
                                 <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
-                                <Input 
-                                    id="search" 
-                                    placeholder="Nombre o descripción..." 
-                                    v-model="customFilters.search" 
+                                <Input
+                                    id="search"
+                                    placeholder="Nombre o descripción..."
+                                    v-model="customFilters.search"
                                     class="pl-8"
                                     @keyup.enter="applyFilters"
                                 />
@@ -498,8 +506,7 @@ const breadcrumbs = [
                             </Button>
                         </div>
                         <div class="text-sm text-muted-foreground">
-                            Mostrando {{ props.concepts.from || 0 }} - {{ props.concepts.to || 0 }} de
-                            {{ props.concepts.total || 0 }} conceptos
+                            Mostrando {{ props.concepts.from || 0 }} - {{ props.concepts.to || 0 }} de {{ props.concepts.total || 0 }} conceptos
                         </div>
                     </div>
                 </div>
@@ -523,7 +530,11 @@ const breadcrumbs = [
                                     :key="column.id"
                                     class="capitalize"
                                     :model-value="column.getIsVisible()"
-                                    @update:model-value="(value) => { column.toggleVisibility(!!value); }"
+                                    @update:model-value="
+                                        (value) => {
+                                            column.toggleVisibility(!!value);
+                                        }
+                                    "
                                 >
                                     {{ column.id }}
                                 </DropdownMenuCheckboxItem>
@@ -554,8 +565,8 @@ const breadcrumbs = [
                                         class="cursor-pointer transition-colors hover:bg-muted/50"
                                         @click="router.visit(`/payment-concepts/${row.original.id}`)"
                                     >
-                                        <TableCell 
-                                            v-for="cell in row.getVisibleCells()" 
+                                        <TableCell
+                                            v-for="cell in row.getVisibleCells()"
                                             :key="cell.id"
                                             :class="cell.column.id === 'select' || cell.column.id === 'actions' ? 'cursor-default' : ''"
                                             @click="cell.column.id === 'select' || cell.column.id === 'actions' ? $event.stopPropagation() : null"
@@ -592,7 +603,12 @@ const breadcrumbs = [
                                 <Button variant="outline" size="sm" :disabled="props.concepts.current_page <= 1" @click="previousPage">
                                     Anterior
                                 </Button>
-                                <Button variant="outline" size="sm" :disabled="props.concepts.current_page >= props.concepts.last_page" @click="nextPage">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    :disabled="props.concepts.current_page >= props.concepts.last_page"
+                                    @click="nextPage"
+                                >
                                     Siguiente
                                 </Button>
                             </div>

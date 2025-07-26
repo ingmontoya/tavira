@@ -195,38 +195,28 @@ const billingCycleDescriptions = {
                             <!-- Boolean Controls -->
                             <div class="space-y-4">
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id="is_recurring"
-                                        v-model="form.is_recurring"
-                                    />
+                                    <Checkbox id="is_recurring" v-model="form.is_recurring" />
                                     <div class="grid gap-1.5 leading-none">
-                                        <Label 
+                                        <Label
                                             for="is_recurring"
-                                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
                                             Es recurrente
                                         </Label>
-                                        <p class="text-xs text-muted-foreground">
-                                            Se incluirá automáticamente en la facturación masiva mensual
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Se incluirá automáticamente en la facturación masiva mensual</p>
                                     </div>
                                 </div>
 
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox 
-                                        id="is_active"
-                                        v-model="form.is_active"
-                                    />
+                                    <Checkbox id="is_active" v-model="form.is_active" />
                                     <div class="grid gap-1.5 leading-none">
-                                        <Label 
+                                        <Label
                                             for="is_active"
-                                            class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
                                             Activo
                                         </Label>
-                                        <p class="text-xs text-muted-foreground">
-                                            Estará disponible para facturar
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Estará disponible para facturar</p>
                                     </div>
                                 </div>
                             </div>
