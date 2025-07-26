@@ -81,12 +81,6 @@ const financeNavItems: NavItem[] = [
         tourId: 'nav-payment-agreements',
     },
     {
-        title: 'Cuotas',
-        href: '/fees',
-        icon: FileText,
-        tourId: 'nav-fees',
-    },
-    {
         title: 'Proveedores',
         href: '/providers',
         icon: UserCog,

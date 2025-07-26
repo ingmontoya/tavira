@@ -62,8 +62,37 @@ const data = computed(() => props.concepts.data);
 const customFilters = ref({
     search: props.filters?.search || '',
     type: props.filters?.type || 'all',
-    is_active: props.filters?.is_active?.toString() || 'all',
+    is_active: props.filters?.is_active !== undefined ? props.filters.is_active.toString() : 'all',
 });
+
+// Watch for changes in props.filters to sync with server state
+watch(() => props.filters, (newFilters, oldFilters) => {
+    console.log('👁️ Watcher triggered!');
+    console.log('👁️ Old filters:', JSON.stringify(oldFilters));
+    console.log('👁️ New filters:', JSON.stringify(newFilters));
+    
+    let newCustomFilters;
+    
+    if (newFilters && Object.keys(newFilters).length > 0) {
+        newCustomFilters = {
+            search: newFilters.search || '',
+            type: newFilters.type || 'all',
+            is_active: newFilters.is_active !== undefined ? newFilters.is_active.toString() : 'all',
+        };
+        console.log('👁️ Setting filters from server:', JSON.stringify(newCustomFilters));
+    } else {
+        // No filters from server, reset to defaults
+        newCustomFilters = {
+            search: '',
+            type: 'all',
+            is_active: 'all',
+        };
+        console.log('👁️ Resetting to default filters:', JSON.stringify(newCustomFilters));
+    }
+    
+    customFilters.value = newCustomFilters;
+    console.log('👁️ CustomFilters after update:', JSON.stringify(customFilters.value));
+}, { immediate: true, deep: true });
 
 // Table state
 const sorting = ref<SortingState>([]);
@@ -253,13 +282,10 @@ const applyFilters = () => {
         filterData.is_active = customFilters.value.is_active;
     }
 
-    // Always reset to page 1 when filtering
-    filterData.page = '1';
-
-    router.visit('/payment-concepts', {
-        data: filterData,
+    router.get('/payment-concepts', filterData, {
         preserveState: true,
         preserveScroll: true,
+        only: ['concepts', 'filters'],
     });
 };
 
@@ -270,16 +296,26 @@ const hasActiveCustomFilters = computed(() => {
 
 // Clear custom filters
 const clearCustomFilters = () => {
-    customFilters.value = {
-        search: '',
-        type: 'all',
-        is_active: 'all',
-    };
-
-    router.visit('/payment-concepts', {
+    console.log('🔄 clearCustomFilters called');
+    console.log('📋 Current customFilters:', JSON.stringify(customFilters.value));
+    console.log('📋 Current props.filters:', JSON.stringify(props.filters));
+    console.log('📋 Current concepts count:', props.concepts.data.length);
+    
+    router.get('/payment-concepts', {}, {
         preserveState: true,
         preserveScroll: true,
         only: ['concepts', 'filters'],
+        onSuccess: (page) => {
+            console.log('✅ Request successful');
+            console.log('📋 New page.props.filters:', JSON.stringify(page.props.filters));
+            console.log('📋 New concepts count:', page.props.concepts.data.length);
+        },
+        onError: (errors) => {
+            console.log('❌ Request failed:', errors);
+        },
+        onFinish: () => {
+            console.log('🏁 Request finished');
+        }
     });
 };
 
@@ -302,7 +338,7 @@ const deleteConcept = (id: number) => {
     }
 };
 
-// Manual filter application instead of watchers
+// Manual filter application
 
 // Pagination functions
 const nextPage = () => {
@@ -408,7 +444,13 @@ const breadcrumbs = [
                             <Label for="search">Buscar</Label>
                             <div class="relative">
                                 <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
-                                <Input id="search" placeholder="Nombre o descripción..." v-model="customFilters.search" class="pl-8" />
+                                <Input 
+                                    id="search" 
+                                    placeholder="Nombre o descripción..." 
+                                    v-model="customFilters.search" 
+                                    class="pl-8"
+                                    @keyup.enter="applyFilters"
+                                />
                             </div>
                         </div>
 
