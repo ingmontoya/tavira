@@ -8,6 +8,7 @@ return [
      */
     'settings' => [
         App\Settings\SecuritySettings::class,
+        App\Settings\PaymentSettings::class,
     ],
 
     /*

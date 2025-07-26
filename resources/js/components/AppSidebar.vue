@@ -92,6 +92,12 @@ const financeNavItems: NavItem[] = [
         icon: UserCog,
         tourId: 'nav-providers',
     },
+    {
+        title: 'Config. de Pagos',
+        href: '/settings/payments',
+        icon: Settings,
+        tourId: 'nav-payment-settings',
+    },
 ];
 
 const communicationNavItems: NavItem[] = [

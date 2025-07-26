@@ -22,6 +22,7 @@ return new class extends Migration
             $table->year('billing_period_year');
             $table->integer('billing_period_month');
             $table->decimal('subtotal', 10, 2)->default(0);
+            $table->decimal('early_discount', 10, 2)->default(0);
             $table->decimal('late_fees', 10, 2)->default(0);
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->decimal('paid_amount', 10, 2)->default(0);

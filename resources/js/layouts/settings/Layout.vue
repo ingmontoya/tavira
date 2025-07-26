@@ -22,6 +22,10 @@ const sidebarNavItems: NavItem[] = [
         title: 'Apariencia',
         href: '/settings/appearance',
     },
+    {
+        title: 'Pagos',
+        href: '/settings/payments',
+    },
 ];
 
 const page = usePage();

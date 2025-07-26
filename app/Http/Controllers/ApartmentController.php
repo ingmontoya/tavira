@@ -52,12 +52,12 @@ class ApartmentController extends Controller
         // Append payment status badge and agreement info to each apartment
         $apartments->getCollection()->transform(function ($apartment) {
             $apartment->payment_status_badge = $apartment->paymentStatusBadge;
-            
+
             // Get active payment agreement info
             $activeAgreement = $apartment->paymentAgreements
                 ->whereIn('status', ['active', 'approved', 'pending_approval'])
                 ->first();
-            
+
             if ($activeAgreement) {
                 $apartment->has_payment_agreement = true;
                 $apartment->payment_agreement_status = $activeAgreement->status;
@@ -79,9 +79,9 @@ class ApartmentController extends Controller
         $overdue90 = Apartment::where('payment_status', 'overdue_90')->count();
         $overdue90Plus = Apartment::where('payment_status', 'overdue_90_plus')->count();
         $totalDelinquent = $overdue30 + $overdue60 + $overdue90 + $overdue90Plus;
-        
+
         // Payment agreement statistics
-        $apartmentsWithAgreements = Apartment::whereHas('paymentAgreements', function($query) {
+        $apartmentsWithAgreements = Apartment::whereHas('paymentAgreements', function ($query) {
             $query->whereIn('status', ['active', 'approved', 'pending_approval']);
         })->count();
 

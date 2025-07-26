@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\Settings\PaymentSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecuritySettingsController;
 use Illuminate\Support\Facades\Route;
@@ -25,4 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/security', [SecuritySettingsController::class, 'update'])->name('security.update');
     Route::post('settings/security/apply-level', [SecuritySettingsController::class, 'applySecurityLevel'])->name('security.apply-level');
     Route::post('settings/security/reset-defaults', [SecuritySettingsController::class, 'resetToDefaults'])->name('security.reset-defaults');
+
+    // Payment Settings Routes
+    Route::get('settings/payments', [PaymentSettingsController::class, 'index'])->name('payments.index');
+    Route::post('settings/payments', [PaymentSettingsController::class, 'update'])->name('payments.update');
 });

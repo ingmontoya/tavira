@@ -18,6 +18,7 @@ class Invoice extends Model
         'billing_period_year',
         'billing_period_month',
         'subtotal',
+        'early_discount',
         'late_fees',
         'total_amount',
         'paid_amount',
@@ -34,6 +35,7 @@ class Invoice extends Model
         'due_date' => 'date',
         'paid_date' => 'date',
         'subtotal' => 'decimal:2',
+        'early_discount' => 'decimal:2',
         'late_fees' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
@@ -91,13 +93,17 @@ class Invoice extends Model
     public function calculateTotals(): void
     {
         $this->subtotal = $this->items()->sum('total_price');
-        $this->total_amount = $this->subtotal + $this->late_fees;
+        $this->total_amount = $this->subtotal - $this->early_discount + $this->late_fees;
         $this->balance_due = $this->total_amount - $this->paid_amount;
         $this->save();
     }
 
     public function markAsPaid(float $amount, ?string $method = null, ?string $reference = null): void
     {
+        if ($this->status === 'pending') {
+            $this->applyEarlyDiscount();
+        }
+
         $this->paid_amount += $amount;
         $this->balance_due = $this->total_amount - $this->paid_amount;
 
@@ -132,6 +138,68 @@ class Invoice extends Model
         }
 
         return $this->due_date->diffInDays(now());
+    }
+
+    public function calculateEarlyDiscount(): float
+    {
+        $paymentSettings = app(\App\Settings\PaymentSettings::class);
+
+        if (! $paymentSettings->early_discount_enabled || $this->status !== 'pending') {
+            return 0;
+        }
+
+        $paymentDate = now();
+        $billingDate = $this->billing_date;
+        $earlyDiscountDeadline = $billingDate->copy()->addDays($paymentSettings->early_discount_days);
+
+        if ($paymentDate->lte($earlyDiscountDeadline)) {
+            return round($this->subtotal * ($paymentSettings->early_discount_percentage / 100), 2);
+        }
+
+        return 0;
+    }
+
+    public function calculateLateFees(): float
+    {
+        $paymentSettings = app(\App\Settings\PaymentSettings::class);
+
+        if (! $paymentSettings->late_fees_enabled || ! $this->isOverdue()) {
+            return $this->late_fees;
+        }
+
+        $gracePeriodEnd = $this->due_date->copy()->addDays($paymentSettings->grace_period_days);
+
+        if (now()->lte($gracePeriodEnd)) {
+            return $this->late_fees;
+        }
+
+        $monthsOverdue = max(1, $gracePeriodEnd->diffInMonths(now(), false));
+
+        if ($paymentSettings->late_fees_compound_monthly) {
+            $compoundRate = 1 + ($paymentSettings->late_fee_percentage / 100);
+            $lateFee = $this->subtotal * (pow($compoundRate, $monthsOverdue) - 1);
+        } else {
+            $lateFee = $this->subtotal * ($paymentSettings->late_fee_percentage / 100) * $monthsOverdue;
+        }
+
+        return round($lateFee, 2);
+    }
+
+    public function applyEarlyDiscount(): void
+    {
+        $this->early_discount = $this->calculateEarlyDiscount();
+        $this->calculateTotals();
+    }
+
+    public function updateLateFees(): void
+    {
+        $this->late_fees = $this->calculateLateFees();
+        $this->calculateTotals();
+
+        if ($this->isOverdue() && $this->status === 'pending') {
+            $this->status = 'overdue';
+            $this->save();
+        }
     }
 
     public function getStatusLabelAttribute(): string
