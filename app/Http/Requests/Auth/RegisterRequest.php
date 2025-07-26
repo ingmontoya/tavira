@@ -26,14 +26,6 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s\-\'\.]+$/'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class),
-            ],
             'password' => [
                 'required',
                 'string',
@@ -41,6 +33,7 @@ class RegisterRequest extends FormRequest
                 new SecurePasswordRule,
             ],
             'password_confirmation' => ['required', 'string'],
+            'token' => ['required', 'string', 'exists:invitations,token'],
         ];
     }
 

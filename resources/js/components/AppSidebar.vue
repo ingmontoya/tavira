@@ -17,6 +17,7 @@ import {
     MessageSquare,
     Phone,
     Receipt,
+    Send,
     Settings,
     Shield,
     UserCheck,
@@ -46,6 +47,12 @@ const residentsNavItems: NavItem[] = [
         href: '/apartments',
         icon: Home,
         tourId: 'nav-apartments',
+    },
+    {
+        title: 'Invitaciones',
+        href: '/invitations',
+        icon: Send,
+        tourId: 'nav-invitations',
     },
     {
         title: 'Config. Conjuntos',

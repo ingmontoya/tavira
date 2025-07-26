@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AccessRequestController;
 use App\Http\Controllers\ApartmentController;
 use App\Http\Controllers\ConjuntoConfigController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentAgreementController;
 use App\Http\Controllers\PaymentConceptController;
@@ -15,6 +17,10 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
+
+// Access Request (Landing Page for registration)
+Route::get('solicitar-acceso', [AccessRequestController::class, 'create'])->name('access-request.create');
+Route::post('solicitar-acceso', [AccessRequestController::class, 'store'])->name('access-request.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -123,6 +129,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('settings', function () {
         return Inertia::render('Settings/Index');
     })->name('settings.index')->middleware('rate.limit:default');
+
+    // Invitations Management
+    Route::resource('invitations', InvitationController::class)->except(['edit', 'update']);
+    Route::post('invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('invitations.resend');
 });
 
 require __DIR__.'/settings.php';

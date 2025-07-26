@@ -12,46 +12,53 @@ class RolePermissionSeeder extends Seeder
     {
         // Create permissions
         $permissions = [
-            // Academic Management
-            'view_programs',
-            'create_programs',
-            'edit_programs',
-            'delete_programs',
-            'view_study_plans',
-            'create_study_plans',
-            'edit_study_plans',
-            'delete_study_plans',
-            'view_periods',
-            'create_periods',
-            'edit_periods',
-            'delete_periods',
-            'view_subjects',
-            'create_subjects',
-            'edit_subjects',
-            'delete_subjects',
-            'view_groups',
-            'create_groups',
-            'edit_groups',
-            'delete_groups',
+            // Conjunto Management
+            'view_conjunto_config',
+            'edit_conjunto_config',
+            'view_dashboard',
 
-            // Enrollment Management
-            'view_enrollments',
-            'create_enrollments',
-            'edit_enrollments',
-            'delete_enrollments',
-            'view_academic_history',
+            // Apartment Management
+            'view_apartments',
+            'create_apartments',
+            'edit_apartments',
+            'delete_apartments',
+            'view_apartment_types',
+            'create_apartment_types',
+            'edit_apartment_types',
+            'delete_apartment_types',
 
-            // Student Management
-            'view_students',
-            'create_students',
-            'edit_students',
-            'delete_students',
+            // Resident Management
+            'view_residents',
+            'create_residents',
+            'edit_residents',
+            'delete_residents',
+            'assign_residents',
 
             // User Management
             'view_users',
             'create_users',
             'edit_users',
             'delete_users',
+            'manage_invitations',
+
+            // Financial Management
+            'view_payments',
+            'create_payments',
+            'edit_payments',
+            'delete_payments',
+            'view_reports',
+
+            // Communication
+            'view_announcements',
+            'create_announcements',
+            'edit_announcements',
+            'delete_announcements',
+            'send_notifications',
+
+            // Security & Access
+            'view_access_logs',
+            'manage_visitors',
+            'view_security_reports',
         ];
 
         foreach ($permissions as $permission) {
@@ -60,35 +67,52 @@ class RolePermissionSeeder extends Seeder
 
         // Create roles
         $superadmin = Role::firstOrCreate(['name' => 'superadmin']);
-        $academic_director = Role::firstOrCreate(['name' => 'academic_director']);
-        $teacher = Role::firstOrCreate(['name' => 'teacher']);
-        $student = Role::firstOrCreate(['name' => 'student']);
-        $parent = Role::firstOrCreate(['name' => 'parent']);
-        $treasury = Role::firstOrCreate(['name' => 'treasury']);
+        $admin_conjunto = Role::firstOrCreate(['name' => 'admin_conjunto']);
+        $consejo = Role::firstOrCreate(['name' => 'consejo']);
+        $propietario = Role::firstOrCreate(['name' => 'propietario']);
+        $residente = Role::firstOrCreate(['name' => 'residente']);
+        $porteria = Role::firstOrCreate(['name' => 'porteria']);
 
         // Assign permissions to roles
         $superadmin->givePermissionTo(Permission::all());
 
-        $academic_director->givePermissionTo([
-            'view_programs', 'create_programs', 'edit_programs',
-            'view_study_plans', 'create_study_plans', 'edit_study_plans',
-            'view_periods', 'create_periods', 'edit_periods',
-            'view_subjects', 'create_subjects', 'edit_subjects',
-            'view_groups', 'create_groups', 'edit_groups',
-            'view_enrollments', 'create_enrollments', 'edit_enrollments',
-            'view_students', 'create_students', 'edit_students',
-            'view_academic_history',
+        $admin_conjunto->givePermissionTo([
+            'view_conjunto_config', 'edit_conjunto_config',
+            'view_dashboard',
+            'view_apartments', 'create_apartments', 'edit_apartments', 'delete_apartments',
+            'view_apartment_types', 'create_apartment_types', 'edit_apartment_types', 'delete_apartment_types',
+            'view_residents', 'create_residents', 'edit_residents', 'delete_residents', 'assign_residents',
+            'view_users', 'create_users', 'edit_users', 'manage_invitations',
+            'view_payments', 'create_payments', 'edit_payments', 'view_reports',
+            'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',
+            'view_access_logs', 'manage_visitors', 'view_security_reports',
         ]);
 
-        $teacher->givePermissionTo([
-            'view_groups',
-            'view_enrollments',
-            'view_students',
-            'view_academic_history',
+        $consejo->givePermissionTo([
+            'view_dashboard',
+            'view_apartments', 'view_apartment_types',
+            'view_residents',
+            'view_payments', 'view_reports',
+            'view_announcements', 'create_announcements',
+            'view_access_logs',
         ]);
 
-        $student->givePermissionTo([
-            'view_academic_history',
+        $propietario->givePermissionTo([
+            'view_dashboard',
+            'view_apartments',
+            'view_residents',
+            'view_payments',
+            'view_announcements',
+        ]);
+
+        $residente->givePermissionTo([
+            'view_dashboard',
+            'view_announcements',
+        ]);
+
+        $porteria->givePermissionTo([
+            'view_access_logs',
+            'manage_visitors',
         ]);
     }
 }

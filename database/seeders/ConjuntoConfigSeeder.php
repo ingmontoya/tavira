@@ -20,7 +20,6 @@ class ConjuntoConfigSeeder extends Seeder
             'number_of_towers' => 5,
             'floors_per_tower' => 15,
             'apartments_per_floor' => 4,
-            'base_administration_fee' => 450000.00,
             'is_active' => true,
             'tower_names' => ['A', 'B', 'C', 'D', 'E'],
             'configuration_metadata' => [
@@ -87,7 +86,6 @@ class ConjuntoConfigSeeder extends Seeder
             'number_of_towers' => 3,
             'floors_per_tower' => 8,
             'apartments_per_floor' => 2,
-            'base_administration_fee' => 280000.00,
             'is_active' => true,
             'tower_names' => ['Norte', 'Sur', 'Central'],
             'configuration_metadata' => [
@@ -130,7 +128,6 @@ class ConjuntoConfigSeeder extends Seeder
             'number_of_towers' => 5, // We'll use "towers" as "sectors"
             'floors_per_tower' => 1, // Only ground floor
             'apartments_per_floor' => 10, // 10 houses per sector
-            'base_administration_fee' => 320000.00,
             'is_active' => true,
             'tower_names' => ['Sector 1', 'Sector 2', 'Sector 3', 'Sector 4', 'Sector 5'],
             'configuration_metadata' => [
