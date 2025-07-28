@@ -97,10 +97,12 @@ class Apartment extends Model
     {
         $lastMonth = now()->subMonth()->endOfMonth();
 
-        if (! $this->last_payment_date || $this->last_payment_date->lt($lastMonth)) {
-            $daysSinceLastPayment = $this->last_payment_date
-                ? $this->last_payment_date->diffInDays($lastMonth)
-                : 999;
+        if (! $this->last_payment_date) {
+            // Si no hay fecha de último pago, el apartamento está atrasado desde hace mucho tiempo
+            $this->payment_status = 'overdue_90_plus';
+        } elseif ($this->last_payment_date->lt($lastMonth)) {
+            // Si hay fecha pero es anterior al mes pasado, calcular días de atraso
+            $daysSinceLastPayment = $this->last_payment_date->diffInDays($lastMonth);
 
             if ($daysSinceLastPayment >= 90) {
                 $this->payment_status = 'overdue_90_plus';
@@ -112,6 +114,7 @@ class Apartment extends Model
                 $this->payment_status = 'overdue_30';
             }
         } else {
+            // Si la fecha de último pago es igual o posterior al último día del mes pasado
             $this->payment_status = 'current';
         }
 

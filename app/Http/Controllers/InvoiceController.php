@@ -297,6 +297,9 @@ class InvoiceController extends Controller
             }
 
             return DB::transaction(function () use ($conjunto, $validated) {
+                // Sync payment concepts with current apartment types before generating invoices
+                PaymentConcept::syncWithApartmentTypes($conjunto->id);
+
                 $apartments = Apartment::where('conjunto_config_id', $conjunto->id)
                     ->whereIn('status', ['Occupied', 'Available'])
                     ->with('apartmentType')
@@ -329,7 +332,6 @@ class InvoiceController extends Controller
 
                     if ($applicableConcepts->isEmpty()) {
                         $skippedCount++;
-
                         continue;
                     }
 

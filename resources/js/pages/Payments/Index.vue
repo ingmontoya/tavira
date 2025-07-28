@@ -111,19 +111,32 @@ const generateMonthlyInvoices = async () => {
                 month: parseInt(selectedMonth.value),
             },
             {
-                onSuccess: () => {
+                onSuccess: (page) => {
+                    console.log('Invoice generation successful:', page);
                     isModalOpen.value = false;
+                    // The success message will be handled by the flash message watcher
+                    // but we can also show an immediate toast for better UX
+                    success('Facturas generadas exitosamente', 'Éxito');
                 },
                 onError: (errors) => {
-                    // Errors will be handled by the watch functions above
                     console.error('Error generating invoices:', errors);
+                    if (errors.error) {
+                        error(errors.error, 'Error');
+                    } else if (Object.keys(errors).length > 0) {
+                        const firstError = Object.values(errors)[0];
+                        error(Array.isArray(firstError) ? firstError[0] : firstError, 'Error de validación');
+                    } else {
+                        error('Error desconocido al generar las facturas', 'Error');
+                    }
+                },
+                onFinish: () => {
+                    isGenerating.value = false;
                 },
             },
         );
     } catch (err) {
         console.error('Unexpected error:', err);
         error('Error inesperado al generar las facturas', 'Error');
-    } finally {
         isGenerating.value = false;
     }
 };

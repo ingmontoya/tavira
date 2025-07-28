@@ -19,7 +19,7 @@ class GenerateMonthlyInvoices extends Command
                            {--month= : The month for which to generate invoices (defaults to current month)}
                            {--force : Force generation even if invoices already exist}';
 
-    protected $description = 'Generate monthly invoices for all eligible apartments based on recurring payment concepts';
+    protected $description = 'Generate monthly invoices for all eligible apartments based on administration fees';
 
     public function handle()
     {
@@ -33,11 +33,11 @@ class GenerateMonthlyInvoices extends Command
             return DB::transaction(function () use ($year, $month, $force) {
                 $this->validateInputs($year, $month);
                 $conjunto = $this->getActiveConjunto();
+                
                 $this->handleExistingInvoices($conjunto, $year, $month, $force);
                 $apartments = $this->getOccupiedApartments($conjunto);
-                $concepts = $this->getPaymentConcepts($conjunto);
 
-                return $this->generateInvoices($conjunto, $apartments, $concepts, $year, $month);
+                return $this->generateInvoices($conjunto, $apartments, $year, $month);
             });
         } catch (InvoiceGenerationException $e) {
             $this->error($e->getMessage());
@@ -112,23 +112,8 @@ class GenerateMonthlyInvoices extends Command
         return $apartments;
     }
 
-    private function getPaymentConcepts(ConjuntoConfig $conjunto)
-    {
-        $concepts = PaymentConcept::where('conjunto_config_id', $conjunto->id)
-            ->where('type', 'common_expense')
-            ->where('is_active', true)
-            ->where('is_recurring', true)
-            ->where('billing_cycle', 'monthly')
-            ->get();
 
-        if ($concepts->isEmpty()) {
-            throw InvoiceGenerationException::noPaymentConcepts();
-        }
-
-        return $concepts;
-    }
-
-    private function generateInvoices($conjunto, $apartments, $concepts, int $year, int $month): int
+    private function generateInvoices($conjunto, $apartments, int $year, int $month): int
     {
         $billingDate = now();
         $dueDate = $billingDate->copy()->addDays(15);
@@ -146,15 +131,11 @@ class GenerateMonthlyInvoices extends Command
 
         foreach ($apartments as $apartment) {
             try {
-                $applicableConcepts = $concepts->filter(function ($concept) use ($apartment) {
-                    return $concept->isApplicableToApartmentType($apartment->apartment_type_id);
-                });
-
-                if ($applicableConcepts->isEmpty()) {
-                    $this->warn("Apartamento {$apartment->number} ({$apartment->apartmentType->name}) no tiene conceptos aplicables.");
+                // Skip apartments without administration fee
+                if (!$apartment->monthly_fee || $apartment->monthly_fee <= 0) {
+                    $this->warn("Apartamento {$apartment->number} no tiene cuota de administración configurada.");
                     $skippedCount++;
                     $progressBar->advance();
-
                     continue;
                 }
 
@@ -168,17 +149,16 @@ class GenerateMonthlyInvoices extends Command
                     'billing_period_month' => $month,
                 ]);
 
-                foreach ($applicableConcepts as $concept) {
-                    InvoiceItem::create([
-                        'invoice_id' => $invoice->id,
-                        'payment_concept_id' => $concept->id,
-                        'description' => $concept->name,
-                        'quantity' => 1,
-                        'unit_price' => $concept->default_amount,
-                        'period_start' => $periodStart,
-                        'period_end' => $periodEnd,
-                    ]);
-                }
+                // Create invoice item for administration fee
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'payment_concept_id' => null, // No payment concept needed for administration
+                    'description' => "Cuota de Administración - {$apartment->apartmentType->name}",
+                    'quantity' => 1,
+                    'unit_price' => $apartment->monthly_fee,
+                    'period_start' => $periodStart,
+                    'period_end' => $periodEnd,
+                ]);
 
                 $invoice->calculateTotals();
                 $generatedCount++;

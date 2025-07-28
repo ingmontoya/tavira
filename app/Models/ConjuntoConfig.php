@@ -80,8 +80,16 @@ class ConjuntoConfig extends Model
                 for ($position = 1; $position <= $this->apartments_per_floor; $position++) {
                     $apartmentNumber = $towerName.$floor.sprintf('%02d', $position);
 
-                    // Select apartment type based on position or random
-                    $apartmentType = $apartmentTypes->random();
+                    // Select apartment type based on floor_positions
+                    $apartmentType = $apartmentTypes->first(function ($type) use ($position) {
+                        $positions = $type->floor_positions ?? [];
+                        return in_array($position, $positions);
+                    });
+
+                    // Fallback to first type if no type matches the position
+                    if (!$apartmentType) {
+                        $apartmentType = $apartmentTypes->first();
+                    }
 
                     // Check if apartment already exists
                     $existingApartment = $this->apartments()

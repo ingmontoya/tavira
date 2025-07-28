@@ -61,6 +61,38 @@ class PaymentConcept extends Model
         return in_array($apartmentTypeId, $this->applicable_apartment_types);
     }
 
+    /**
+     * Sync payment concepts with current apartment types for the conjunto
+     */
+    public static function syncWithApartmentTypes(int $conjuntoConfigId): void
+    {
+        $apartmentTypes = \App\Models\ApartmentType::where('conjunto_config_id', $conjuntoConfigId)->get();
+        
+        if ($apartmentTypes->isEmpty()) {
+            return;
+        }
+
+        $concepts = self::where('conjunto_config_id', $conjuntoConfigId)->get();
+        
+        foreach ($concepts as $concept) {
+            $matchedTypeIds = [];
+            
+            // Check if concept name contains references to any apartment type
+            foreach ($apartmentTypes as $apartmentType) {
+                if (str_contains($concept->name, $apartmentType->name)) {
+                    $matchedTypeIds[] = $apartmentType->id;
+                }
+            }
+            
+            // If we found specific apartment type references, update the concept
+            if (!empty($matchedTypeIds)) {
+                $concept->applicable_apartment_types = $matchedTypeIds;
+                $concept->save();
+            }
+            // For concepts without specific type references, keep them as null (apply to all)
+        }
+    }
+
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {
