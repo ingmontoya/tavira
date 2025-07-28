@@ -85,7 +85,7 @@ const steps = [
 ];
 
 // Computed properties
-const currentStepData = computed(() => steps[currentStep.value]);
+const _currentStepData = computed(() => steps[currentStep.value]);
 const isLastStep = computed(() => currentStep.value === steps.length - 1);
 const isFirstStep = computed(() => currentStep.value === 0);
 

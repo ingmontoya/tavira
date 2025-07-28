@@ -22,7 +22,8 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Building, CheckCircle, Home, Info, Plus, Save, Settings, Trash2, X } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useToast } from '@/composables/useToast';
 
 interface ApartmentType {
     id?: number;
@@ -66,7 +67,24 @@ interface FormData {
 
 const props = defineProps<{
     conjunto: ConjuntoConfig;
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }>();
+
+// Toast notifications
+const { success: showSuccess, error: showError } = useToast();
+
+// Show toast messages from flash data
+onMounted(() => {
+    if (props.flash?.success) {
+        showSuccess(props.flash.success, 'Operación exitosa', { duration: 3000 });
+    }
+    if (props.flash?.error) {
+        showError(props.flash.error, 'Error');
+    }
+});
 
 // Form state
 const form = useForm<FormData>({
@@ -258,6 +276,16 @@ const submit = () => {
             data: cleanedData,
             onSuccess: () => {
                 isUnsavedChanges.value = false;
+                showSuccess('Configuración del conjunto actualizada exitosamente', 'Guardado exitoso', { duration: 3000 });
+            },
+            onError: (errors) => {
+                let errorMessage = 'Error al actualizar la configuración';
+                if (errors.error) {
+                    errorMessage = errors.error;
+                } else if (Object.keys(errors).length > 0) {
+                    errorMessage = `Error de validación: ${Object.values(errors)[0]}`;
+                }
+                showError(errorMessage, 'Error al guardar');
             },
         });
     }

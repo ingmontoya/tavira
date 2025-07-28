@@ -20,8 +20,9 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useToast } from '@/composables/useToast';
 import { Building, Calendar, Edit, Eye, Filter, Home, Info, Plus, RefreshCw, Search } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface ApartmentType {
     id: number;
@@ -55,11 +56,28 @@ interface ConjuntoConfig {
 
 const props = defineProps<{
     conjunto: ConjuntoConfig | null;
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }>();
 
 // Convert single conjunto to array for compatibility with original UI
 const conjuntos = computed(() => {
     return props.conjunto ? [props.conjunto] : [];
+});
+
+// Toast notifications
+const { success: showSuccess, error: showError } = useToast();
+
+// Show toast messages from flash data
+onMounted(() => {
+    if (props.flash?.success) {
+        showSuccess(props.flash.success, 'Operación exitosa', { duration: 3000 });
+    }
+    if (props.flash?.error) {
+        showError(props.flash.error, 'Error');
+    }
 });
 
 // Reactive state
@@ -128,8 +146,20 @@ const breadcrumbs = [
     },
 ];
 
-const generateApartments = (conjunto: ConjuntoConfig) => {
-    router.post('/conjunto-config/generate-apartments');
+const generateApartments = (_conjunto: ConjuntoConfig) => {
+    router.post('/conjunto-config/generate-apartments', {}, {
+        onSuccess: () => {
+            showSuccess('Apartamentos generados exitosamente según la configuración actual', 'Generación completada', { duration: 3000 });
+        },
+        onError: (errors) => {
+            const errorMessage = errors.error || 'Error al generar apartamentos';
+            showError(errorMessage, 'Error en la generación');
+        }
+    });
+};
+
+const navigateToConjunto = (_conjunto: ConjuntoConfig) => {
+    router.visit('/conjunto-config/show');
 };
 
 const formatCurrency = (amount: number) => {
@@ -229,8 +259,8 @@ const formatDate = (dateString: string) => {
                 </div>
             </div>
 
-            <!-- Filters and Search -->
-            <Card v-if="conjunto">
+            <!-- Filters and Search - Only show if multiple conjuntos -->
+            <Card v-if="conjuntos.length > 1">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2 text-lg">
                         <Filter class="h-5 w-5" />
@@ -291,27 +321,31 @@ const formatDate = (dateString: string) => {
                 </CardContent>
             </Card>
 
-            <!-- Results Summary -->
-            <div v-if="conjunto" class="flex items-center justify-between text-sm text-muted-foreground">
+            <!-- Results Summary - Only show if multiple conjuntos -->
+            <div v-if="conjuntos.length > 1" class="flex items-center justify-between text-sm text-muted-foreground">
                 <span> Mostrando {{ filteredConjuntos.length }} de {{ conjuntos.length }} conjuntos </span>
                 <span> Última actualización: {{ formatDate(new Date().toISOString()) }} </span>
             </div>
 
             <!-- Conjuntos Grid -->
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div :class="conjuntos.length === 1 ? 'flex justify-center' : 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'">
                 <Card
                     v-for="conjunto in filteredConjuntos"
                     :key="conjunto.id"
-                    class="group relative transition-all duration-200 hover:border-primary/50 hover:shadow-lg"
+                    :class="[
+                        'group relative transition-all duration-200 hover:border-primary/50 hover:shadow-lg cursor-pointer',
+                        conjuntos.length === 1 ? 'w-full max-w-2xl' : ''
+                    ]"
+                    @click="navigateToConjunto(conjunto)"
                 >
-                    <CardHeader class="pb-4">
+                    <CardHeader :class="conjuntos.length === 1 ? 'pb-6' : 'pb-4'">
                         <div class="flex items-start justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="rounded-lg bg-primary/10 p-2">
-                                    <Building class="h-5 w-5 text-primary" />
+                                <div :class="conjuntos.length === 1 ? 'rounded-lg bg-primary/10 p-3' : 'rounded-lg bg-primary/10 p-2'">
+                                    <Building :class="conjuntos.length === 1 ? 'h-6 w-6 text-primary' : 'h-5 w-5 text-primary'" />
                                 </div>
                                 <div>
-                                    <CardTitle class="text-lg transition-colors group-hover:text-primary">
+                                    <CardTitle :class="conjuntos.length === 1 ? 'text-2xl transition-colors group-hover:text-primary' : 'text-lg transition-colors group-hover:text-primary'">
                                         {{ conjunto.name }}
                                     </CardTitle>
                                     <div class="mt-1 flex items-center gap-2">
@@ -338,41 +372,41 @@ const formatDate = (dateString: string) => {
                                 </Tooltip>
                             </TooltipProvider>
                         </div>
-                        <CardDescription class="mt-2 line-clamp-2 text-sm">
+                        <CardDescription :class="conjuntos.length === 1 ? 'mt-3 text-base' : 'mt-2 line-clamp-2 text-sm'">
                             {{ conjunto.description }}
                         </CardDescription>
                     </CardHeader>
 
-                    <CardContent class="space-y-4">
+                    <CardContent :class="conjuntos.length === 1 ? 'space-y-6' : 'space-y-4'">
                         <!-- Key Statistics -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center gap-2 rounded-lg bg-muted/30 p-3">
-                                <Building class="h-4 w-4 text-blue-600" />
+                        <div :class="conjuntos.length === 1 ? 'grid grid-cols-2 gap-6' : 'grid grid-cols-2 gap-4'">
+                            <div :class="conjuntos.length === 1 ? 'flex items-center gap-3 rounded-lg bg-muted/30 p-4' : 'flex items-center gap-2 rounded-lg bg-muted/30 p-3'">
+                                <Building :class="conjuntos.length === 1 ? 'h-5 w-5 text-blue-600' : 'h-4 w-4 text-blue-600'" />
                                 <div>
-                                    <p class="text-lg font-semibold">{{ conjunto.number_of_towers }}</p>
-                                    <p class="text-xs text-muted-foreground">Torres</p>
+                                    <p :class="conjuntos.length === 1 ? 'text-2xl font-semibold' : 'text-lg font-semibold'">{{ conjunto.number_of_towers }}</p>
+                                    <p :class="conjuntos.length === 1 ? 'text-sm text-muted-foreground' : 'text-xs text-muted-foreground'">Torres</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 rounded-lg bg-muted/30 p-3">
-                                <Home class="h-4 w-4 text-green-600" />
+                            <div :class="conjuntos.length === 1 ? 'flex items-center gap-3 rounded-lg bg-muted/30 p-4' : 'flex items-center gap-2 rounded-lg bg-muted/30 p-3'">
+                                <Home :class="conjuntos.length === 1 ? 'h-5 w-5 text-green-600' : 'h-4 w-4 text-green-600'" />
                                 <div>
-                                    <p class="text-lg font-semibold">{{ conjunto.apartments_count }}</p>
-                                    <p class="text-xs text-muted-foreground">Apartamentos</p>
+                                    <p :class="conjuntos.length === 1 ? 'text-2xl font-semibold' : 'text-lg font-semibold'">{{ conjunto.apartments_count }}</p>
+                                    <p :class="conjuntos.length === 1 ? 'text-sm text-muted-foreground' : 'text-xs text-muted-foreground'">Apartamentos</p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Configuration Details -->
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between text-sm">
+                        <div :class="conjuntos.length === 1 ? 'space-y-3' : 'space-y-2'">
+                            <div :class="conjuntos.length === 1 ? 'flex items-center justify-between text-base' : 'flex items-center justify-between text-sm'">
                                 <span class="text-muted-foreground">Pisos por torre:</span>
                                 <span class="font-medium">{{ conjunto.floors_per_tower }}</span>
                             </div>
-                            <div class="flex items-center justify-between text-sm">
+                            <div :class="conjuntos.length === 1 ? 'flex items-center justify-between text-base' : 'flex items-center justify-between text-sm'">
                                 <span class="text-muted-foreground">Aptos por piso:</span>
                                 <span class="font-medium">{{ conjunto.apartments_per_floor }}</span>
                             </div>
-                            <div class="flex items-center justify-between text-sm">
+                            <div :class="conjuntos.length === 1 ? 'flex items-center justify-between text-base' : 'flex items-center justify-between text-sm'">
                                 <span class="text-muted-foreground">Tipos de apartamento:</span>
                                 <span class="font-medium">{{ conjunto.apartment_types_count }}</span>
                             </div>
@@ -381,8 +415,8 @@ const formatDate = (dateString: string) => {
                         <Separator />
 
                         <!-- Apartment Types -->
-                        <div v-if="conjunto.apartment_types && conjunto.apartment_types.length > 0" class="space-y-2">
-                            <p class="flex items-center gap-2 text-sm font-medium">
+                        <div v-if="conjunto.apartment_types && conjunto.apartment_types.length > 0" :class="conjuntos.length === 1 ? 'space-y-3' : 'space-y-2'">
+                            <p :class="conjuntos.length === 1 ? 'flex items-center gap-2 text-base font-medium' : 'flex items-center gap-2 text-sm font-medium'">
                                 <Home class="h-4 w-4" />
                                 Tipos de Apartamento
                             </p>
@@ -390,7 +424,7 @@ const formatDate = (dateString: string) => {
                                 <TooltipProvider v-for="type in conjunto.apartment_types" :key="type.id">
                                     <Tooltip>
                                         <TooltipTrigger>
-                                            <Badge variant="outline" class="text-xs hover:bg-muted/50">
+                                            <Badge variant="outline" :class="conjuntos.length === 1 ? 'text-sm hover:bg-muted/50' : 'text-xs hover:bg-muted/50'">
                                                 {{ type.name }} ({{ type.area_sqm }}m²)
                                             </Badge>
                                         </TooltipTrigger>
@@ -412,27 +446,27 @@ const formatDate = (dateString: string) => {
                         </div>
 
                         <!-- Actions -->
-                        <div class="flex gap-2 pt-2">
-                            <Link href="/conjunto-config/show">
-                                <Button variant="outline" size="sm" class="flex-1">
-                                    <Eye class="mr-2 h-4 w-4" />
-                                    Ver
+                        <div :class="conjuntos.length === 1 ? 'flex gap-3 pt-3' : 'flex gap-2 pt-2'">
+                            <Link href="/conjunto-config/show" @click.stop>
+                                <Button variant="outline" :size="conjuntos.length === 1 ? 'default' : 'sm'" class="flex-1">
+                                    <Eye :class="conjuntos.length === 1 ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'" />
+                                    Ver Detalles
                                 </Button>
                             </Link>
-                            <Link href="/conjunto-config/edit">
-                                <Button variant="outline" size="sm" class="flex-1">
-                                    <Edit class="mr-2 h-4 w-4" />
+                            <Link href="/conjunto-config/edit" @click.stop>
+                                <Button variant="outline" :size="conjuntos.length === 1 ? 'default' : 'sm'" class="flex-1">
+                                    <Edit :class="conjuntos.length === 1 ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'" />
                                     Editar
                                 </Button>
                             </Link>
                         </div>
 
-                        <div class="flex gap-2">
+                        <div :class="conjuntos.length === 1 ? 'flex gap-3' : 'flex gap-2'">
                             <AlertDialog>
                                 <AlertDialogTrigger as-child>
-                                    <Button variant="outline" size="sm" class="flex-1">
-                                        <RefreshCw class="mr-2 h-4 w-4" />
-                                        Generar
+                                    <Button variant="outline" :size="conjuntos.length === 1 ? 'default' : 'sm'" class="flex-1" @click.stop>
+                                        <RefreshCw :class="conjuntos.length === 1 ? 'mr-2 h-5 w-5' : 'mr-2 h-4 w-4'" />
+                                        Generar Apartamentos
                                     </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>

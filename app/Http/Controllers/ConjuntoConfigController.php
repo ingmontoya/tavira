@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConjuntoConfig;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -20,6 +21,10 @@ class ConjuntoConfigController extends Controller
 
         return Inertia::render('ConjuntoConfig/Index', [
             'conjunto' => $conjunto,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ],
         ]);
     }
 
@@ -50,6 +55,10 @@ class ConjuntoConfigController extends Controller
 
         return Inertia::render('ConjuntoConfig/Edit', [
             'conjunto' => $conjunto,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ],
         ]);
     }
 
@@ -151,7 +160,11 @@ class ConjuntoConfigController extends Controller
      */
     public function show()
     {
-        $conjunto = ConjuntoConfig::with(['apartmentTypes', 'apartments.apartmentType'])->first();
+        $conjunto = ConjuntoConfig::with([
+            'apartmentTypes', 
+            'apartments.apartmentType',
+            'apartments.invoices'
+        ])->first();
 
         if (! $conjunto) {
             return redirect()->route('conjunto-config.edit');
@@ -164,6 +177,24 @@ class ConjuntoConfigController extends Controller
                 return $apartments->groupBy('floor');
             });
 
+
+        // Calculate estimated monthly income (sum of all apartment monthly fees)
+        $estimatedMonthlyIncome = $conjunto->apartments->sum(function ($apartment) {
+            // Use apartment's monthly_fee if set, otherwise use apartment type's administration_fee
+            $fee = $apartment->monthly_fee ?? ($apartment->apartmentType ? $apartment->apartmentType->administration_fee ?? 0 : 0);
+            return $fee;
+        });
+
+        // Calculate real monthly income (sum of payments received this month)
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+        
+        $realMonthlyIncome = \App\Models\Invoice::where('conjunto_config_id', $conjunto->id)
+            ->where('status', 'paid')
+            ->whereMonth('paid_date', $currentMonth)
+            ->whereYear('paid_date', $currentYear)
+            ->sum('paid_amount');
+
         return Inertia::render('ConjuntoConfig/Show', [
             'conjunto' => $conjunto,
             'apartmentsByTower' => $apartmentsByTower,
@@ -172,10 +203,8 @@ class ConjuntoConfigController extends Controller
                 'occupied_apartments' => $conjunto->apartments->where('status', 'Occupied')->count(),
                 'available_apartments' => $conjunto->apartments->where('status', 'Available')->count(),
                 'maintenance_apartments' => $conjunto->apartments->where('status', 'Maintenance')->count(),
-                'total_area' => $conjunto->apartmentTypes->sum(function ($type) {
-                    return $type->area_sqm * $type->apartments->count();
-                }),
-                'monthly_fees_total' => $conjunto->apartments->sum('monthly_fee'),
+                'estimated_monthly_income' => $estimatedMonthlyIncome,
+                'real_monthly_income' => $realMonthlyIncome,
             ],
         ]);
     }

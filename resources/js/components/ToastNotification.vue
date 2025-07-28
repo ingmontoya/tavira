@@ -89,12 +89,13 @@ watch(
     () => props.message,
     (newMessage) => {
         if (newMessage && !newMessage.persistent) {
-            const duration = newMessage.duration || (newMessage.type === 'error' ? 7000 : 5000);
+            const duration = newMessage.duration || (newMessage.type === 'error' ? 7000 : 3000);
             setTimeout(() => {
                 closeNotification();
             }, duration);
         }
     },
+    { immediate: true }
 );
 </script>
 

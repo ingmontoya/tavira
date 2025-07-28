@@ -1,4 +1,15 @@
 <script setup lang="ts">
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,8 +68,8 @@ interface Statistics {
     occupied_apartments: number;
     available_apartments: number;
     maintenance_apartments: number;
-    total_area: number;
-    monthly_fees_total: number;
+    estimated_monthly_income: number;
+    real_monthly_income: number;
 }
 
 const props = defineProps<{
@@ -88,23 +99,17 @@ const formatDate = (dateString: string) => {
 const isGeneratingApartments = ref(false);
 
 const generateApartments = () => {
-    if (
-        confirm(
-            `¿Estás seguro de que deseas generar ${props.conjunto.number_of_towers * props.conjunto.floors_per_tower * props.conjunto.apartments_per_floor} apartamentos? Esta acción eliminará todos los apartamentos existentes.`,
-        )
-    ) {
-        isGeneratingApartments.value = true;
+    isGeneratingApartments.value = true;
 
-        router.post(
-            `/conjunto-config/${props.conjunto.id}/generate-apartments`,
-            {},
-            {
-                onFinish: () => {
-                    isGeneratingApartments.value = false;
-                },
+    router.post(
+        '/conjunto-config/generate-apartments',
+        {},
+        {
+            onFinish: () => {
+                isGeneratingApartments.value = false;
             },
-        );
-    }
+        },
+    );
 };
 
 const canGenerateApartments = computed(() => {
@@ -140,14 +145,30 @@ const getStatusLabel = (status: string) => {
     return labels[status] || status;
 };
 
+const getMetadataKeyLabel = (key: string) => {
+    const labels = {
+        architect: 'Arquitecto',
+        construction_year: 'Año de Construcción',
+        common_areas: 'Áreas Comunes',
+        security_features: 'Características de Seguridad',
+        address: 'Dirección',
+        phone: 'Teléfono',
+        email: 'Correo Electrónico',
+    };
+    return labels[key] || key;
+};
+
 const occupancyRate = computed(() => {
     if (props.statistics.total_apartments === 0) return 0;
     return Math.round((props.statistics.occupied_apartments / props.statistics.total_apartments) * 100);
 });
 
-const averageMonthlyFee = computed(() => {
-    if (props.statistics.total_apartments === 0) return 0;
-    return props.statistics.monthly_fees_total / props.statistics.total_apartments;
+const estimatedMonthlyIncome = computed(() => {
+    return props.statistics.estimated_monthly_income || 0;
+});
+
+const realMonthlyIncome = computed(() => {
+    return props.statistics.real_monthly_income || 0;
 });
 
 // Breadcrumbs
@@ -189,10 +210,31 @@ const breadcrumbs = [
                             Editar
                         </Button>
                     </Link>
-                    <Button @click="generateApartments" :disabled="!canGenerateApartments || isGeneratingApartments" variant="outline" class="gap-2">
-                        <RefreshCw :class="['h-4 w-4', { 'animate-spin': isGeneratingApartments }]" />
-                        {{ isGeneratingApartments ? 'Generando...' : 'Generar Apartamentos' }}
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger as-child>
+                            <Button :disabled="!canGenerateApartments || isGeneratingApartments" variant="outline" class="gap-2">
+                                <RefreshCw :class="['h-4 w-4', { 'animate-spin': isGeneratingApartments }]" />
+                                {{ isGeneratingApartments ? 'Generando...' : 'Generar Apartamentos' }}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>¿Generar apartamentos?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Se generarán <strong>{{ estimatedApartments }} apartamentos</strong> basados en la configuración actual 
+                                    ({{ conjunto.number_of_towers }} torres × {{ conjunto.floors_per_tower }} pisos × {{ conjunto.apartments_per_floor }} apartamentos).
+                                    <br><br>
+                                    <span class="text-destructive font-medium">⚠️ Esta acción eliminará todos los apartamentos existentes.</span>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="generateApartments" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                    Generar Apartamentos
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
 
@@ -236,12 +278,12 @@ const breadcrumbs = [
                 <Card>
                     <CardContent class="p-6">
                         <div class="flex items-center gap-2">
-                            <div class="rounded-lg bg-purple-100 p-2">
-                                <BarChart3 class="h-4 w-4 text-purple-600" />
+                            <div class="rounded-lg bg-yellow-100 p-2">
+                                <DollarSign class="h-4 w-4 text-yellow-600" />
                             </div>
                             <div>
-                                <p class="text-lg font-bold">{{ (statistics.total_area || 0).toLocaleString() }}m²</p>
-                                <p class="text-sm text-muted-foreground">Área Total</p>
+                                <p class="text-lg font-bold">{{ formatCurrency(estimatedMonthlyIncome) }}</p>
+                                <p class="text-sm text-muted-foreground">Ingresos Estimados</p>
                             </div>
                         </div>
                     </CardContent>
@@ -250,17 +292,18 @@ const breadcrumbs = [
                 <Card>
                     <CardContent class="p-6">
                         <div class="flex items-center gap-2">
-                            <div class="rounded-lg bg-yellow-100 p-2">
-                                <DollarSign class="h-4 w-4 text-yellow-600" />
+                            <div class="rounded-lg bg-emerald-100 p-2">
+                                <BarChart3 class="h-4 w-4 text-emerald-600" />
                             </div>
                             <div>
-                                <p class="text-lg font-bold">{{ formatCurrency(averageMonthlyFee) }}</p>
-                                <p class="text-sm text-muted-foreground">Tarifa Promedio</p>
+                                <p class="text-lg font-bold">{{ formatCurrency(realMonthlyIncome) }}</p>
+                                <p class="text-sm text-muted-foreground">Ingresos Reales</p>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
+
 
             <!-- Main Content -->
             <Tabs default-value="overview" class="space-y-6">
@@ -348,12 +391,12 @@ const breadcrumbs = [
 
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-sm">
-                                        <span>Ingresos Mensuales</span>
-                                        <span class="font-semibold">{{ formatCurrency(statistics.monthly_fees_total) }}</span>
+                                        <span>Ingresos Estimados</span>
+                                        <span class="font-semibold">{{ formatCurrency(estimatedMonthlyIncome) }}</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span>Tarifa Promedio</span>
-                                        <span class="font-semibold">{{ formatCurrency(averageMonthlyFee) }}</span>
+                                        <span>Ingresos Reales</span>
+                                        <span class="font-semibold">{{ formatCurrency(realMonthlyIncome) }}</span>
                                     </div>
                                 </div>
                             </CardContent>
@@ -509,14 +552,14 @@ const breadcrumbs = [
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Settings class="h-5 w-5" />
-                                    Metadatos de Configuración
+                                    Configuration Metadata
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div class="space-y-2">
                                     <div v-for="(value, key) in conjunto.configuration_metadata" :key="key" class="flex justify-between text-sm">
-                                        <span class="text-muted-foreground">{{ key }}</span>
-                                        <span class="font-medium">{{ value }}</span>
+                                        <span class="text-muted-foreground">{{ getMetadataKeyLabel(key) }}</span>
+                                        <span class="font-medium">{{ Array.isArray(value) ? `[${value.join(', ')}]` : value }}</span>
                                     </div>
                                 </div>
                             </CardContent>
