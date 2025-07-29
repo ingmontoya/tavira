@@ -116,9 +116,9 @@ class GenerateMonthlyInvoices extends Command
     private function generateInvoices($conjunto, $apartments, int $year, int $month): int
     {
         $billingDate = now();
-        $dueDate = $billingDate->copy()->addDays(15);
         $periodStart = Carbon::createFromDate($year, $month, 1);
         $periodEnd = $periodStart->copy()->endOfMonth();
+        $dueDate = $periodEnd->copy(); // Due date is the last day of the billing period month
 
         $generatedCount = 0;
         $skippedCount = 0;

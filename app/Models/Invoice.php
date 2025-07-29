@@ -123,6 +123,9 @@ class Invoice extends Model
         }
 
         $this->save();
+
+        // Update apartment payment status after payment
+        $this->apartment->updatePaymentStatus();
     }
 
     public function isOverdue(): bool

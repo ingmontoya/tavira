@@ -27,6 +27,11 @@ class PaymentConcept extends Model
         'applicable_apartment_types' => 'array',
     ];
 
+    protected $appends = [
+        'type_label',
+        'billing_cycle_label',
+    ];
+
     public function conjuntoConfig(): BelongsTo
     {
         return $this->belongsTo(ConjuntoConfig::class);
@@ -67,25 +72,25 @@ class PaymentConcept extends Model
     public static function syncWithApartmentTypes(int $conjuntoConfigId): void
     {
         $apartmentTypes = \App\Models\ApartmentType::where('conjunto_config_id', $conjuntoConfigId)->get();
-        
+
         if ($apartmentTypes->isEmpty()) {
             return;
         }
 
         $concepts = self::where('conjunto_config_id', $conjuntoConfigId)->get();
-        
+
         foreach ($concepts as $concept) {
             $matchedTypeIds = [];
-            
+
             // Check if concept name contains references to any apartment type
             foreach ($apartmentTypes as $apartmentType) {
                 if (str_contains($concept->name, $apartmentType->name)) {
                     $matchedTypeIds[] = $apartmentType->id;
                 }
             }
-            
+
             // If we found specific apartment type references, update the concept
-            if (!empty($matchedTypeIds)) {
+            if (! empty($matchedTypeIds)) {
                 $concept->applicable_apartment_types = $matchedTypeIds;
                 $concept->save();
             }

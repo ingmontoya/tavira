@@ -100,8 +100,8 @@ const removeItem = (index: number) => {
 const updateItemFromConcept = (index: number, conceptId: string) => {
     const concept = props.paymentConcepts.find((c) => c.id.toString() === conceptId);
     if (concept) {
-        form.items[index].description = concept.name;
-        form.items[index].unit_price = concept.default_amount;
+        form.items[index].description = concept.name || '';
+        form.items[index].unit_price = concept.default_amount || 0;
     }
 };
 
@@ -296,7 +296,7 @@ watch(
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem v-for="concept in paymentConcepts" :key="concept.id" :value="concept.id.toString()">
-                                                        {{ concept.name }} - {{ concept.type_label }}
+                                                        {{ concept.name }} - {{ concept.type_label || 'Sin tipo' }}
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>

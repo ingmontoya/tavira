@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
+use App\Models\Invoice;
+use App\Models\PaymentAgreementInstallment;
 use App\Models\Resident;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $selectedMonth = $request->get('month', now()->format('Y-m'));
+        [$selectedYear, $selectedMonthNum] = explode('-', $selectedMonth);
+        $selectedYear = (int) $selectedYear;
+        $selectedMonthNum = (int) $selectedMonthNum;
         // Obtener datos reales
         $totalResidents = Resident::count();
         $totalApartments = Apartment::count();
@@ -23,26 +30,30 @@ class DashboardController extends Controller
         $lastMonthResidents = Resident::whereMonth('created_at', now()->subMonth()->month)->count();
         $residentGrowth = $this->calculateGrowthPercentage($currentMonthResidents, $lastMonthResidents) ?: 15.2;
 
+        // Obtener datos reales de pagos para el mes seleccionado
+        $pendingPayments = $this->getPendingPaymentsCount($selectedYear, $selectedMonthNum);
+        $expectedPayments = $this->getExpectedPaymentsCount($selectedYear, $selectedMonthNum);
+        $totalPaymentsExpected = $this->getTotalExpectedAmount($selectedYear, $selectedMonthNum);
+        $totalPaymentsReceived = $this->getTotalReceivedAmount($selectedYear, $selectedMonthNum);
+
         // KPIs - Combinando datos reales con mockeados
         $kpis = [
             'totalResidents' => max($totalResidents, 347), // Mínimo de demo
             'totalApartments' => max($totalApartments, 182), // Mínimo de demo
-            'pendingPayments' => 23, // Mock data - implementar después
+            'pendingPayments' => $pendingPayments,
+            'expectedPayments' => $expectedPayments,
             'monthlyVisitors' => 1247, // Mock data - implementar después
             'residentGrowth' => $residentGrowth,
             'visitorGrowth' => 8.3, // Mock data
+            'totalPaymentsExpected' => $totalPaymentsExpected,
+            'totalPaymentsReceived' => $totalPaymentsReceived,
         ];
 
         // Residentes por Torre - Combinando datos reales con mock
         $residentsByTower = $this->getResidentsByTower();
 
-        // Estados de pago - Mock data
-        $paymentsByStatus = collect([
-            ['status' => 'Al día', 'count' => 156, 'color' => '#10b981'],
-            ['status' => 'Vencido 1-30 días', 'count' => 23, 'color' => '#f59e0b'],
-            ['status' => 'Vencido 31-60 días', 'count' => 8, 'color' => '#ef4444'],
-            ['status' => 'Vencido +60 días', 'count' => 3, 'color' => '#7f1d1d'],
-        ]);
+        // Estados de pago - Datos reales para el mes seleccionado
+        $paymentsByStatus = $this->getPaymentsByStatus($selectedYear, $selectedMonthNum);
 
         // Estado de ocupación - Combinando datos reales con mock
         $occupancyStatus = $this->getOccupancyStatus();
@@ -103,6 +114,8 @@ class DashboardController extends Controller
             ],
             'pendingNotifications' => $pendingNotifications,
             'recentActivity' => $this->getRecentActivity(),
+            'selectedMonth' => $selectedMonth,
+            'availableMonths' => $this->getAvailableMonths(),
         ]);
     }
 
@@ -294,5 +307,216 @@ class DashboardController extends Controller
         $colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'];
 
         return $colors[$id % count($colors)];
+    }
+
+    private function getPendingPaymentsCount(int $year, int $month): int
+    {
+        // Contar facturas pendientes para el período seleccionado
+        $invoicesCount = Invoice::forPeriod($year, $month)
+            ->whereIn('status', ['pending', 'overdue', 'partial'])
+            ->count();
+
+        // Contar cuotas de acuerdos de pago pendientes para el mes
+        $installmentsCount = $this->getInstallmentsByMonth($year, $month)
+            ->whereIn('status', ['pending', 'overdue'])
+            ->count();
+
+        return $invoicesCount + $installmentsCount;
+    }
+
+    private function getExpectedPaymentsCount(int $year, int $month): int
+    {
+        // Contar todas las facturas esperadas para el período (incluyendo pagadas)
+        $invoicesCount = Invoice::forPeriod($year, $month)->count();
+
+        // Contar todas las cuotas de acuerdos de pago esperadas para el mes
+        $installmentsCount = $this->getInstallmentsByMonth($year, $month)->count();
+
+        return $invoicesCount + $installmentsCount;
+    }
+
+    private function getTotalExpectedAmount(int $year, int $month): float
+    {
+        // Sumar montos esperados de facturas
+        $invoicesAmount = Invoice::forPeriod($year, $month)->sum('total_amount');
+
+        // Sumar montos esperados de cuotas de acuerdos de pago
+        $installmentsAmount = $this->getInstallmentsByMonth($year, $month)->sum('amount');
+
+        return $invoicesAmount + $installmentsAmount;
+    }
+
+    private function getTotalReceivedAmount(int $year, int $month): float
+    {
+        // Sumar montos recibidos de facturas
+        $invoicesAmount = Invoice::forPeriod($year, $month)->sum('paid_amount');
+
+        // Sumar montos recibidos de cuotas de acuerdos de pago
+        $installmentsAmount = $this->getInstallmentsByMonth($year, $month)->sum('paid_amount');
+
+        return $invoicesAmount + $installmentsAmount;
+    }
+
+    private function getPaymentsByStatus(int $year, int $month): \Illuminate\Support\Collection
+    {
+        // Obtener estadísticas de facturas para el período
+        $invoiceStats = Invoice::forPeriod($year, $month)
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        // Obtener estadísticas de cuotas de acuerdos para el mes
+        $installmentStats = $this->getInstallmentsByMonth($year, $month)
+            ->select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get()
+            ->keyBy('status');
+
+        // Consolidar datos
+        $paidCount = ($invoiceStats->get('paid')->count ?? 0) + ($installmentStats->get('paid')->count ?? 0);
+        $pendingCount = ($invoiceStats->get('pending')->count ?? 0) + ($installmentStats->get('pending')->count ?? 0);
+        $overdueCount = ($invoiceStats->get('overdue')->count ?? 0) + ($installmentStats->get('overdue')->count ?? 0);
+        $partialCount = ($invoiceStats->get('partial')->count ?? 0) + ($installmentStats->get('partial')->count ?? 0);
+
+        // Categorizar vencidos por días
+        $overdue1to30 = 0;
+        $overdue31to60 = 0;
+        $overdueOver60 = 0;
+
+        // Analizar facturas vencidas
+        $overdueInvoices = Invoice::forPeriod($year, $month)
+            ->where('status', 'overdue')
+            ->get();
+
+        foreach ($overdueInvoices as $invoice) {
+            $daysOverdue = $invoice->days_overdue;
+            if ($daysOverdue <= 30) {
+                $overdue1to30++;
+            } elseif ($daysOverdue <= 60) {
+                $overdue31to60++;
+            } else {
+                $overdueOver60++;
+            }
+        }
+
+        // Analizar cuotas vencidas
+        $overdueInstallments = $this->getInstallmentsByMonth($year, $month)
+            ->where('status', 'overdue')
+            ->get();
+
+        foreach ($overdueInstallments as $installment) {
+            $daysOverdue = $installment->days_overdue;
+            if ($daysOverdue <= 30) {
+                $overdue1to30++;
+            } elseif ($daysOverdue <= 60) {
+                $overdue31to60++;
+            } else {
+                $overdueOver60++;
+            }
+        }
+
+        return collect([
+            ['status' => 'Al día', 'count' => $paidCount, 'color' => '#10b981'],
+            ['status' => 'Pendiente', 'count' => $pendingCount, 'color' => '#3b82f6'],
+            ['status' => 'Vencido 1-30 días', 'count' => $overdue1to30, 'color' => '#f59e0b'],
+            ['status' => 'Vencido 31-60 días', 'count' => $overdue31to60, 'color' => '#ef4444'],
+            ['status' => 'Vencido +60 días', 'count' => $overdueOver60, 'color' => '#7f1d1d'],
+            ['status' => 'Pago parcial', 'count' => $partialCount, 'color' => '#8b5cf6'],
+        ])->filter(fn ($item) => $item['count'] > 0)->values();
+    }
+
+    private function getAvailableMonths(): array
+    {
+        // Obtener rango de meses con datos de facturas o cuotas
+        $invoiceMonths = Invoice::select(DB::raw('DISTINCT billing_period_year as year, billing_period_month as month'))
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
+
+        $installmentMonths = $this->getDistinctMonthsFromInstallments();
+
+        // Combinar y eliminar duplicados
+        $allMonths = collect();
+
+        foreach ($invoiceMonths as $month) {
+            $allMonths->push(['year' => $month->year, 'month' => $month->month]);
+        }
+
+        foreach ($installmentMonths as $month) {
+            $allMonths->push(['year' => (int) $month->year, 'month' => (int) $month->month]);
+        }
+
+        $uniqueMonths = $allMonths->unique(function ($item) {
+            return $item['year'].'-'.$item['month'];
+        })->sortByDesc(function ($item) {
+            return $item['year'] * 12 + $item['month'];
+        });
+
+        // Si no hay datos, incluir el mes actual y algunos anteriores
+        if ($uniqueMonths->isEmpty()) {
+            $currentDate = now();
+            $uniqueMonths = collect();
+            for ($i = 0; $i < 6; $i++) {
+                $date = $currentDate->copy()->subMonths($i);
+                $uniqueMonths->push(['year' => $date->year, 'month' => $date->month]);
+            }
+        }
+
+        // Formatear para el selector
+        return $uniqueMonths->map(function ($item) {
+            $monthNames = [
+                1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+                5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+                9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+            ];
+
+            return [
+                'value' => sprintf('%04d-%02d', $item['year'], $item['month']),
+                'label' => $monthNames[$item['month']].' '.$item['year'],
+            ];
+        })->values()->all();
+    }
+
+    /**
+     * Helper method to get installments by month using database-agnostic date functions
+     */
+    private function getInstallmentsByMonth(int $year, int $month)
+    {
+        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        if ($driver === 'sqlite') {
+            return PaymentAgreementInstallment::whereRaw('strftime("%Y", due_date) = ?', [$year])
+                ->whereRaw('strftime("%m", due_date) = ?', [sprintf('%02d', $month)]);
+        } else {
+            // MySQL/PostgreSQL
+            return PaymentAgreementInstallment::whereYear('due_date', $year)
+                ->whereMonth('due_date', $month);
+        }
+    }
+
+    /**
+     * Helper method to get distinct months from installments using database-agnostic functions
+     */
+    private function getDistinctMonthsFromInstallments()
+    {
+        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+
+        if ($driver === 'sqlite') {
+            return PaymentAgreementInstallment::select(
+                DB::raw('DISTINCT strftime("%Y", due_date) as year, strftime("%m", due_date) as month')
+            )
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->get();
+        } else {
+            // MySQL/PostgreSQL
+            return PaymentAgreementInstallment::select(
+                DB::raw('DISTINCT YEAR(due_date) as year, MONTH(due_date) as month')
+            )
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->get();
+        }
     }
 }

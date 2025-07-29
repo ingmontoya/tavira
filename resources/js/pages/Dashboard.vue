@@ -1,14 +1,28 @@
 <template>
     <AppLayout>
         <AppContent class="space-y-6 p-6" data-tour="dashboard">
-            <!-- Header with Tour Button -->
+            <!-- Header with Month Selector and Tour Button -->
             <div class="mb-8">
                 <div class="flex items-start justify-between">
-                    <div>
+                    <div class="flex-1">
                         <h1 class="text-3xl font-bold tracking-tight">Dashboard Habitta</h1>
                         <p class="text-muted-foreground">Resumen general del Sistema de Gestión para Propiedad Horizontal</p>
                     </div>
-                    <div class="flex space-x-2">
+                    <div class="flex items-center space-x-4">
+                        <!-- Month Selector -->
+                        <div class="flex items-center space-x-2">
+                            <Icon name="calendar" class="h-4 w-4 text-muted-foreground" />
+                            <select
+                                v-model="selectedMonth"
+                                @change="onMonthChange"
+                                class="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <option v-for="month in availableMonths" :key="month.value" :value="month.value">
+                                    {{ month.label }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="flex space-x-2">
                         <button
                             @click="
                                 () => {
@@ -32,12 +46,13 @@
                             <Icon name="refresh-cw" class="mr-2 h-4 w-4" />
                             Reiniciar
                         </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- KPIs Row -->
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4" data-tour="dashboard-metrics">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5" data-tour="dashboard-metrics">
                 <!-- Total Residents KPI -->
                 <Card class="relative overflow-hidden">
                     <div class="p-6">
@@ -89,10 +104,29 @@
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Pagos Pendientes</p>
                                 <p class="text-3xl font-bold">{{ kpis.pendingPayments || 0 }}</p>
-                                <p class="mt-2 text-sm text-muted-foreground">Cuotas de administración</p>
+                                <p class="mt-2 text-sm text-muted-foreground">
+                                    de {{ kpis.expectedPayments || 0 }} esperados
+                                </p>
+                            </div>
+                            <div class="rounded-full bg-red-100 p-3">
+                                <Icon name="alert-circle" class="h-8 w-8 text-red-600" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute right-0 bottom-0 left-0 h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+                </Card>
+
+                <!-- Expected Payments KPI -->
+                <Card class="relative overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Pagos Esperados</p>
+                                <p class="text-3xl font-bold">{{ kpis.expectedPayments || 0 }}</p>
+                                <p class="mt-2 text-sm text-muted-foreground">Total del mes</p>
                             </div>
                             <div class="rounded-full bg-purple-100 p-3">
-                                <Icon name="dollar-sign" class="h-8 w-8 text-purple-600" />
+                                <Icon name="target" class="h-8 w-8 text-purple-600" />
                             </div>
                         </div>
                     </div>
@@ -127,6 +161,55 @@
                 </Card>
             </div>
 
+            <!-- Payment Summary Row -->
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2" v-if="kpis.totalPaymentsExpected || kpis.totalPaymentsReceived">
+                <!-- Expected Amount -->
+                <Card class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold">Monto Esperado</h3>
+                            <p class="text-3xl font-bold text-blue-600">
+                                ${{ (kpis.totalPaymentsExpected || 0).toLocaleString() }}
+                            </p>
+                            <p class="text-sm text-muted-foreground">{{ selectedMonthLabel }}</p>
+                        </div>
+                        <div class="rounded-full bg-blue-100 p-3">
+                            <Icon name="target" class="h-8 w-8 text-blue-600" />
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- Received Amount -->
+                <Card class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold">Monto Recibido</h3>
+                            <p class="text-3xl font-bold text-green-600">
+                                ${{ (kpis.totalPaymentsReceived || 0).toLocaleString() }}
+                            </p>
+                            <div class="mt-2 flex items-center">
+                                <div class="mr-2 h-2 w-32 rounded-full bg-gray-200">
+                                    <div
+                                        class="h-2 rounded-full bg-green-500 transition-all"
+                                        :style="{
+                                            width: `${kpis.totalPaymentsExpected > 0 ? 
+                                                (kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100 : 0}%`
+                                        }"
+                                    ></div>
+                                </div>
+                                <span class="text-sm text-muted-foreground">
+                                    {{ kpis.totalPaymentsExpected > 0 ? 
+                                        Math.round((kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100) : 0 }}%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="rounded-full bg-green-100 p-3">
+                            <Icon name="dollar-sign" class="h-8 w-8 text-green-600" />
+                        </div>
+                    </div>
+                </Card>
+            </div>
+
             <!-- Charts Row 1 -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <!-- Residents by Tower Chart -->
@@ -150,7 +233,7 @@
                 <Card class="p-6">
                     <div class="mb-4">
                         <h3 class="text-lg font-semibold">Estado de Pagos</h3>
-                        <p class="text-sm text-muted-foreground">Distribución de pagos por estado</p>
+                        <p class="text-sm text-muted-foreground">Distribución de pagos por estado - {{ selectedMonthLabel }}</p>
                     </div>
                     <div class="flex h-80 items-center justify-center">
                         <div v-if="charts.paymentsByStatus && charts.paymentsByStatus.length > 0" class="h-full w-full">
@@ -290,7 +373,7 @@
     </AppLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AppContent from '@/components/AppContent.vue';
 import Icon from '@/components/Icon.vue';
 import { Card } from '@/components/ui/card';
@@ -298,7 +381,8 @@ import VirtualTour from '@/components/VirtualTour.vue';
 import { useFlow1Tour } from '@/composables/useFlow1Tour';
 import { useTourState } from '@/composables/useTourState';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { nextTick, onMounted, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { computed, nextTick, onMounted, ref } from 'vue';
 
 const props = defineProps({
     kpis: {
@@ -317,11 +401,20 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    selectedMonth: {
+        type: String,
+        default: '',
+    },
+    availableMonths: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const towerChart = ref(null);
 const statusChart = ref(null);
 const trendChart = ref(null);
+const selectedMonth = ref(props.selectedMonth);
 
 // Virtual Tour functionality
 const virtualTourRef = ref(null);
@@ -364,6 +457,18 @@ const onTourClose = () => {
     setTimeout(() => {
         checkSavedTour();
     }, 100);
+};
+
+const selectedMonthLabel = computed(() => {
+    const monthOption = props.availableMonths.find(m => m.value === selectedMonth.value);
+    return monthOption ? monthOption.label : '';
+});
+
+const onMonthChange = () => {
+    router.get(route('dashboard'), { month: selectedMonth.value }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
 };
 
 const getTotalApartments = () => {

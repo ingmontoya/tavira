@@ -38,12 +38,12 @@ interface InvoiceItem {
     period_start?: string;
     period_end?: string;
     notes?: string;
-    payment_concept: {
+    payment_concept?: {
         id: number;
         name: string;
         type: string;
         type_label: string;
-    };
+    } | null;
 }
 
 interface Invoice {
@@ -305,7 +305,7 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
                                             <h4 class="font-medium">{{ item.description }}</h4>
-                                            <p class="text-sm text-muted-foreground">{{ item.payment_concept.type_label }}</p>
+                                            <p class="text-sm text-muted-foreground">{{ item.payment_concept?.type_label || 'Sin tipo' }}</p>
                                             <div v-if="item.period_start && item.period_end" class="mt-1 text-xs text-muted-foreground">
                                                 Período: {{ formatDate(item.period_start) }} - {{ formatDate(item.period_end) }}
                                             </div>

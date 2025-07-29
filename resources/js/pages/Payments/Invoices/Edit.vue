@@ -93,10 +93,10 @@ const form = useForm({
     billing_period_month: props.invoice.billing_period_month,
     notes: props.invoice.notes || '',
     items: props.invoice.items.map((item) => ({
-        payment_concept_id: item.payment_concept_id.toString(),
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
+        payment_concept_id: item.payment_concept_id ? item.payment_concept_id.toString() : '',
+        description: item.description || '',
+        quantity: item.quantity || 1,
+        unit_price: item.unit_price || 0,
         notes: item.notes || '',
     })) as InvoiceItem[],
 });
@@ -120,8 +120,8 @@ const removeItem = (index: number) => {
 const updateItemFromConcept = (index: number, conceptId: string) => {
     const concept = props.paymentConcepts.find((c) => c.id.toString() === conceptId);
     if (concept) {
-        form.items[index].description = concept.name;
-        form.items[index].unit_price = concept.default_amount;
+        form.items[index].description = concept.name || '';
+        form.items[index].unit_price = concept.default_amount || 0;
     }
 };
 
@@ -321,7 +321,7 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status);
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem v-for="concept in paymentConcepts" :key="concept.id" :value="concept.id.toString()">
-                                                        {{ concept.name }} - {{ concept.type_label }}
+                                                        {{ concept.name }} - {{ concept.type_label || 'Sin tipo' }}
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
