@@ -18,15 +18,12 @@
                     {{ $t('nav.dashboard') }}
                 </Link>
                 <template v-else>
-                    <Link
-                        :href="route('login')"
-                        class="rounded-lg px-4 py-2 text-white/80 transition-colors duration-200 hover:text-white"
-                    >
+                    <Link :href="route('login')" class="rounded-lg px-4 py-2 text-white/80 transition-colors duration-200 hover:text-white">
                         {{ $t('nav.login') }}
                     </Link>
                     <Link
                         :href="route('register')"
-                        class="transform rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-2 py-1.5 sm:px-6 sm:py-2.5 text-xs sm:text-base font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-cyan-600 hover:to-blue-700 hover:shadow-xl flex-shrink-0"
+                        class="flex-shrink-0 transform rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-2 py-1.5 text-xs font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-cyan-600 hover:to-blue-700 hover:shadow-xl sm:px-6 sm:py-2.5 sm:text-base"
                     >
                         {{ $t('nav.register') }}
                     </Link>

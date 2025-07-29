@@ -16,7 +16,9 @@
 
             <div class="grid gap-8 md:grid-cols-3">
                 <div v-for="(step, index) in steps" :key="index" class="text-center">
-                    <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-2xl font-bold text-white">
+                    <div
+                        class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-2xl font-bold text-white"
+                    >
                         {{ index + 1 }}
                     </div>
                     <h3 class="mb-4 text-2xl font-bold text-gray-900">{{ step.title }}</h3>

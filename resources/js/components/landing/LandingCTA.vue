@@ -16,12 +16,14 @@
                     <Link
                         v-if="!$page.props.auth.user"
                         :href="route('register')"
-                        class="transform rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 sm:px-8 sm:py-4 text-xs sm:text-lg font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-cyan-600 hover:to-blue-700 hover:shadow-cyan-500/25 flex-shrink-0"
+                        class="flex-shrink-0 transform rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-cyan-600 hover:to-blue-700 hover:shadow-cyan-500/25 sm:px-8 sm:py-4 sm:text-lg"
                     >
                         <span class="d-none sm:hidden">{{ $t('cta.primary') }}</span>
                         <span class="hidden sm:inline">{{ $t('cta.primaryFull') }}</span>
                     </Link>
-                    <button class="rounded-xl border-2 border-white/20 px-3 py-2 sm:px-8 sm:py-4 text-xs sm:text-lg font-semibold text-white transition-all duration-200 hover:bg-white/10 flex-shrink-0">
+                    <button
+                        class="flex-shrink-0 rounded-xl border-2 border-white/20 px-3 py-2 text-xs font-semibold text-white transition-all duration-200 hover:bg-white/10 sm:px-8 sm:py-4 sm:text-lg"
+                    >
                         <span class="sm:hidden">{{ $t('cta.secondary') }}</span>
                         <span class="hidden sm:inline">{{ $t('cta.secondaryFull') }}</span>
                     </button>
@@ -51,10 +53,5 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const benefits = computed(() => [
-    t('cta.benefits.freeTrial'),
-    t('cta.benefits.noCard'),
-    t('cta.benefits.support'),
-    t('cta.benefits.implementation'),
-]);
+const benefits = computed(() => [t('cta.benefits.freeTrial'), t('cta.benefits.noCard'), t('cta.benefits.support'), t('cta.benefits.implementation')]);
 </script>

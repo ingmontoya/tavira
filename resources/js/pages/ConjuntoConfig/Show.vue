@@ -221,15 +221,19 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>¿Generar apartamentos?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Se generarán <strong>{{ estimatedApartments }} apartamentos</strong> basados en la configuración actual 
-                                    ({{ conjunto.number_of_towers }} torres × {{ conjunto.floors_per_tower }} pisos × {{ conjunto.apartments_per_floor }} apartamentos).
-                                    <br><br>
-                                    <span class="text-destructive font-medium">⚠️ Esta acción eliminará todos los apartamentos existentes.</span>
+                                    Se generarán <strong>{{ estimatedApartments }} apartamentos</strong> basados en la configuración actual ({{
+                                        conjunto.number_of_towers
+                                    }}
+                                    torres × {{ conjunto.floors_per_tower }} pisos × {{ conjunto.apartments_per_floor }} apartamentos). <br /><br />
+                                    <span class="font-medium text-destructive">⚠️ Esta acción eliminará todos los apartamentos existentes.</span>
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction @click="generateApartments" class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                <AlertDialogAction
+                                    @click="generateApartments"
+                                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
                                     Generar Apartamentos
                                 </AlertDialogAction>
                             </AlertDialogFooter>
@@ -303,7 +307,6 @@ const breadcrumbs = [
                     </CardContent>
                 </Card>
             </div>
-
 
             <!-- Main Content -->
             <Tabs default-value="overview" class="space-y-6">

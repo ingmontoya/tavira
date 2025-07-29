@@ -14,7 +14,7 @@ class AccessRequestController extends Controller
             'conjunto' => [
                 'name' => 'Conjunto Residencial Vista Hermosa',
                 'description' => 'Plataforma de gestión integral para residentes y propietarios',
-            ]
+            ],
         ]);
     }
 
@@ -30,7 +30,7 @@ class AccessRequestController extends Controller
             'message' => ['nullable', 'string', 'max:500'],
         ]);
 
-        return back()->with('success', 
+        return back()->with('success',
             'Tu solicitud ha sido enviada correctamente. Un administrador la revisará y te contactará pronto.'
         );
     }

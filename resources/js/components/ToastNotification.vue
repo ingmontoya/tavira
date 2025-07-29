@@ -95,7 +95,7 @@ watch(
             }, duration);
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 </script>
 

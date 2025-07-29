@@ -35,11 +35,15 @@ const stats = computed(() => [
 ]);
 
 // Watch for parent's isVisible changes
-watch(() => props.parentVisible, (visible) => {
-    if (visible) {
-        setTimeout(() => {
-            isVisible.value = true;
-        }, 200);
-    }
-}, { immediate: true });
+watch(
+    () => props.parentVisible,
+    (visible) => {
+        if (visible) {
+            setTimeout(() => {
+                isVisible.value = true;
+            }, 200);
+        }
+    },
+    { immediate: true },
+);
 </script>

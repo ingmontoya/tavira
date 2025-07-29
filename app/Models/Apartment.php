@@ -101,30 +101,30 @@ class Apartment extends Model
             ->orderBy('due_date', 'asc')
             ->first();
 
-        if (!$oldestUnpaidInvoice) {
+        if (! $oldestUnpaidInvoice) {
             // No unpaid invoices, apartment is current
             $this->payment_status = 'current';
             $this->outstanding_balance = 0;
-            
+
             // Get the most recent paid invoice to set last_payment_date
             $lastPaidInvoice = $this->invoices()
                 ->where('status', 'paid')
                 ->orderBy('paid_date', 'desc')
                 ->first();
-            
+
             $this->last_payment_date = $lastPaidInvoice ? $lastPaidInvoice->paid_date : null;
         } else {
             // Calculate days overdue based on the oldest unpaid invoice
             $today = now()->startOfDay();
             $dueDate = $oldestUnpaidInvoice->due_date->startOfDay();
-            
+
             if ($today->lte($dueDate)) {
                 // Not overdue yet
                 $this->payment_status = 'current';
             } else {
                 // Calculate days overdue
                 $daysOverdue = $dueDate->diffInDays($today);
-                
+
                 if ($daysOverdue >= 90) {
                     $this->payment_status = 'overdue_90_plus';
                 } elseif ($daysOverdue >= 60) {
@@ -135,7 +135,7 @@ class Apartment extends Model
                     $this->payment_status = 'overdue_30';
                 }
             }
-            
+
             // Calculate total outstanding balance
             $this->outstanding_balance = $this->invoices()
                 ->whereIn('status', ['pending', 'partial', 'overdue'])
@@ -153,7 +153,7 @@ class Apartment extends Model
             ->orderBy('due_date', 'asc')
             ->first();
 
-        if (!$oldestUnpaidInvoice) {
+        if (! $oldestUnpaidInvoice) {
             return 0;
         }
 

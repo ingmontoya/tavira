@@ -52,37 +52,37 @@ const features = computed(() => [
         icon: '👥',
         title: t('detailedFeatures.residents.title'),
         description: t('detailedFeatures.residents.description'),
-        features: Array.isArray(t('detailedFeatures.residents.features')) ? t('detailedFeatures.residents.features') as string[] : [],
+        features: Array.isArray(t('detailedFeatures.residents.features')) ? (t('detailedFeatures.residents.features') as string[]) : [],
     },
     {
         icon: '🏠',
         title: t('detailedFeatures.apartments.title'),
         description: t('detailedFeatures.apartments.description'),
-        features: Array.isArray(t('detailedFeatures.apartments.features')) ? t('detailedFeatures.apartments.features') as string[] : [],
+        features: Array.isArray(t('detailedFeatures.apartments.features')) ? (t('detailedFeatures.apartments.features') as string[]) : [],
     },
     {
         icon: '💳',
         title: t('detailedFeatures.payments.title'),
         description: t('detailedFeatures.payments.description'),
-        features: Array.isArray(t('detailedFeatures.payments.features')) ? t('detailedFeatures.payments.features') as string[] : [],
+        features: Array.isArray(t('detailedFeatures.payments.features')) ? (t('detailedFeatures.payments.features') as string[]) : [],
     },
     {
         icon: '📊',
         title: t('detailedFeatures.reports.title'),
         description: t('detailedFeatures.reports.description'),
-        features: Array.isArray(t('detailedFeatures.reports.features')) ? t('detailedFeatures.reports.features') as string[] : [],
+        features: Array.isArray(t('detailedFeatures.reports.features')) ? (t('detailedFeatures.reports.features') as string[]) : [],
     },
     {
         icon: '📢',
         title: t('detailedFeatures.communication.title'),
         description: t('detailedFeatures.communication.description'),
-        features: Array.isArray(t('detailedFeatures.communication.features')) ? t('detailedFeatures.communication.features') as string[] : [],
+        features: Array.isArray(t('detailedFeatures.communication.features')) ? (t('detailedFeatures.communication.features') as string[]) : [],
     },
     {
         icon: '🛡️',
         title: t('detailedFeatures.access.title'),
         description: t('detailedFeatures.access.description'),
-        features: Array.isArray(t('detailedFeatures.access.features')) ? t('detailedFeatures.access.features') as string[] : [],
+        features: Array.isArray(t('detailedFeatures.access.features')) ? (t('detailedFeatures.access.features') as string[]) : [],
     },
 ]);
 </script>

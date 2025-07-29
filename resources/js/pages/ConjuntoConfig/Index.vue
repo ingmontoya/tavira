@@ -18,9 +18,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { useToast } from '@/composables/useToast';
 import { Building, Calendar, Edit, Eye, Filter, Home, Info, Plus, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -147,15 +147,19 @@ const breadcrumbs = [
 ];
 
 const generateApartments = (_conjunto: ConjuntoConfig) => {
-    router.post('/conjunto-config/generate-apartments', {}, {
-        onSuccess: () => {
-            showSuccess('Apartamentos generados exitosamente según la configuración actual', 'Generación completada', { duration: 3000 });
+    router.post(
+        '/conjunto-config/generate-apartments',
+        {},
+        {
+            onSuccess: () => {
+                showSuccess('Apartamentos generados exitosamente según la configuración actual', 'Generación completada', { duration: 3000 });
+            },
+            onError: (errors) => {
+                const errorMessage = errors.error || 'Error al generar apartamentos';
+                showError(errorMessage, 'Error en la generación');
+            },
         },
-        onError: (errors) => {
-            const errorMessage = errors.error || 'Error al generar apartamentos';
-            showError(errorMessage, 'Error en la generación');
-        }
-    });
+    );
 };
 
 const navigateToConjunto = (_conjunto: ConjuntoConfig) => {
@@ -333,8 +337,8 @@ const formatDate = (dateString: string) => {
                     v-for="conjunto in filteredConjuntos"
                     :key="conjunto.id"
                     :class="[
-                        'group relative transition-all duration-200 hover:border-primary/50 hover:shadow-lg cursor-pointer',
-                        conjuntos.length === 1 ? 'w-full max-w-2xl' : ''
+                        'group relative cursor-pointer transition-all duration-200 hover:border-primary/50 hover:shadow-lg',
+                        conjuntos.length === 1 ? 'w-full max-w-2xl' : '',
                     ]"
                     @click="navigateToConjunto(conjunto)"
                 >
@@ -345,7 +349,13 @@ const formatDate = (dateString: string) => {
                                     <Building :class="conjuntos.length === 1 ? 'h-6 w-6 text-primary' : 'h-5 w-5 text-primary'" />
                                 </div>
                                 <div>
-                                    <CardTitle :class="conjuntos.length === 1 ? 'text-2xl transition-colors group-hover:text-primary' : 'text-lg transition-colors group-hover:text-primary'">
+                                    <CardTitle
+                                        :class="
+                                            conjuntos.length === 1
+                                                ? 'text-2xl transition-colors group-hover:text-primary'
+                                                : 'text-lg transition-colors group-hover:text-primary'
+                                        "
+                                    >
                                         {{ conjunto.name }}
                                     </CardTitle>
                                     <div class="mt-1 flex items-center gap-2">
@@ -380,33 +390,69 @@ const formatDate = (dateString: string) => {
                     <CardContent :class="conjuntos.length === 1 ? 'space-y-6' : 'space-y-4'">
                         <!-- Key Statistics -->
                         <div :class="conjuntos.length === 1 ? 'grid grid-cols-2 gap-6' : 'grid grid-cols-2 gap-4'">
-                            <div :class="conjuntos.length === 1 ? 'flex items-center gap-3 rounded-lg bg-muted/30 p-4' : 'flex items-center gap-2 rounded-lg bg-muted/30 p-3'">
+                            <div
+                                :class="
+                                    conjuntos.length === 1
+                                        ? 'flex items-center gap-3 rounded-lg bg-muted/30 p-4'
+                                        : 'flex items-center gap-2 rounded-lg bg-muted/30 p-3'
+                                "
+                            >
                                 <Building :class="conjuntos.length === 1 ? 'h-5 w-5 text-blue-600' : 'h-4 w-4 text-blue-600'" />
                                 <div>
-                                    <p :class="conjuntos.length === 1 ? 'text-2xl font-semibold' : 'text-lg font-semibold'">{{ conjunto.number_of_towers }}</p>
+                                    <p :class="conjuntos.length === 1 ? 'text-2xl font-semibold' : 'text-lg font-semibold'">
+                                        {{ conjunto.number_of_towers }}
+                                    </p>
                                     <p :class="conjuntos.length === 1 ? 'text-sm text-muted-foreground' : 'text-xs text-muted-foreground'">Torres</p>
                                 </div>
                             </div>
-                            <div :class="conjuntos.length === 1 ? 'flex items-center gap-3 rounded-lg bg-muted/30 p-4' : 'flex items-center gap-2 rounded-lg bg-muted/30 p-3'">
+                            <div
+                                :class="
+                                    conjuntos.length === 1
+                                        ? 'flex items-center gap-3 rounded-lg bg-muted/30 p-4'
+                                        : 'flex items-center gap-2 rounded-lg bg-muted/30 p-3'
+                                "
+                            >
                                 <Home :class="conjuntos.length === 1 ? 'h-5 w-5 text-green-600' : 'h-4 w-4 text-green-600'" />
                                 <div>
-                                    <p :class="conjuntos.length === 1 ? 'text-2xl font-semibold' : 'text-lg font-semibold'">{{ conjunto.apartments_count }}</p>
-                                    <p :class="conjuntos.length === 1 ? 'text-sm text-muted-foreground' : 'text-xs text-muted-foreground'">Apartamentos</p>
+                                    <p :class="conjuntos.length === 1 ? 'text-2xl font-semibold' : 'text-lg font-semibold'">
+                                        {{ conjunto.apartments_count }}
+                                    </p>
+                                    <p :class="conjuntos.length === 1 ? 'text-sm text-muted-foreground' : 'text-xs text-muted-foreground'">
+                                        Apartamentos
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Configuration Details -->
                         <div :class="conjuntos.length === 1 ? 'space-y-3' : 'space-y-2'">
-                            <div :class="conjuntos.length === 1 ? 'flex items-center justify-between text-base' : 'flex items-center justify-between text-sm'">
+                            <div
+                                :class="
+                                    conjuntos.length === 1
+                                        ? 'flex items-center justify-between text-base'
+                                        : 'flex items-center justify-between text-sm'
+                                "
+                            >
                                 <span class="text-muted-foreground">Pisos por torre:</span>
                                 <span class="font-medium">{{ conjunto.floors_per_tower }}</span>
                             </div>
-                            <div :class="conjuntos.length === 1 ? 'flex items-center justify-between text-base' : 'flex items-center justify-between text-sm'">
+                            <div
+                                :class="
+                                    conjuntos.length === 1
+                                        ? 'flex items-center justify-between text-base'
+                                        : 'flex items-center justify-between text-sm'
+                                "
+                            >
                                 <span class="text-muted-foreground">Aptos por piso:</span>
                                 <span class="font-medium">{{ conjunto.apartments_per_floor }}</span>
                             </div>
-                            <div :class="conjuntos.length === 1 ? 'flex items-center justify-between text-base' : 'flex items-center justify-between text-sm'">
+                            <div
+                                :class="
+                                    conjuntos.length === 1
+                                        ? 'flex items-center justify-between text-base'
+                                        : 'flex items-center justify-between text-sm'
+                                "
+                            >
                                 <span class="text-muted-foreground">Tipos de apartamento:</span>
                                 <span class="font-medium">{{ conjunto.apartment_types_count }}</span>
                             </div>
@@ -415,8 +461,17 @@ const formatDate = (dateString: string) => {
                         <Separator />
 
                         <!-- Apartment Types -->
-                        <div v-if="conjunto.apartment_types && conjunto.apartment_types.length > 0" :class="conjuntos.length === 1 ? 'space-y-3' : 'space-y-2'">
-                            <p :class="conjuntos.length === 1 ? 'flex items-center gap-2 text-base font-medium' : 'flex items-center gap-2 text-sm font-medium'">
+                        <div
+                            v-if="conjunto.apartment_types && conjunto.apartment_types.length > 0"
+                            :class="conjuntos.length === 1 ? 'space-y-3' : 'space-y-2'"
+                        >
+                            <p
+                                :class="
+                                    conjuntos.length === 1
+                                        ? 'flex items-center gap-2 text-base font-medium'
+                                        : 'flex items-center gap-2 text-sm font-medium'
+                                "
+                            >
                                 <Home class="h-4 w-4" />
                                 Tipos de Apartamento
                             </p>
@@ -424,7 +479,10 @@ const formatDate = (dateString: string) => {
                                 <TooltipProvider v-for="type in conjunto.apartment_types" :key="type.id">
                                     <Tooltip>
                                         <TooltipTrigger>
-                                            <Badge variant="outline" :class="conjuntos.length === 1 ? 'text-sm hover:bg-muted/50' : 'text-xs hover:bg-muted/50'">
+                                            <Badge
+                                                variant="outline"
+                                                :class="conjuntos.length === 1 ? 'text-sm hover:bg-muted/50' : 'text-xs hover:bg-muted/50'"
+                                            >
                                                 {{ type.name }} ({{ type.area_sqm }}m²)
                                             </Badge>
                                         </TooltipTrigger>

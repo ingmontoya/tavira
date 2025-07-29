@@ -6,13 +6,11 @@ use App\Models\Apartment;
 use App\Models\Invitation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class InvitationController extends Controller
 {
-
     public function index(): Response
     {
         $invitations = Invitation::with(['invitedBy', 'acceptedBy', 'apartment'])

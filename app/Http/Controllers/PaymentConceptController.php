@@ -36,12 +36,12 @@ class PaymentConceptController extends Controller
         $concepts = $query->orderBy('type')->orderBy('name')->paginate(15);
 
         $filters = $request->only(['type', 'is_active', 'search']);
-        
+
         // If no filters are applied, return null instead of empty array
         if (empty(array_filter($filters))) {
             $filters = null;
         }
-        
+
         return Inertia::render('Payments/Concepts/Index', [
             'concepts' => $concepts,
             'filters' => $filters,

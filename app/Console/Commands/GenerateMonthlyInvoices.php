@@ -7,7 +7,6 @@ use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\PaymentConcept;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +32,7 @@ class GenerateMonthlyInvoices extends Command
             return DB::transaction(function () use ($year, $month, $force) {
                 $this->validateInputs($year, $month);
                 $conjunto = $this->getActiveConjunto();
-                
+
                 $this->handleExistingInvoices($conjunto, $year, $month, $force);
                 $apartments = $this->getOccupiedApartments($conjunto);
 
@@ -112,7 +111,6 @@ class GenerateMonthlyInvoices extends Command
         return $apartments;
     }
 
-
     private function generateInvoices($conjunto, $apartments, int $year, int $month): int
     {
         $billingDate = now();
@@ -132,10 +130,11 @@ class GenerateMonthlyInvoices extends Command
         foreach ($apartments as $apartment) {
             try {
                 // Skip apartments without administration fee
-                if (!$apartment->monthly_fee || $apartment->monthly_fee <= 0) {
+                if (! $apartment->monthly_fee || $apartment->monthly_fee <= 0) {
                     $this->warn("Apartamento {$apartment->number} no tiene cuota de administración configurada.");
                     $skippedCount++;
                     $progressBar->advance();
+
                     continue;
                 }
 

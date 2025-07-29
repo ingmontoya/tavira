@@ -28,16 +28,16 @@ class UpdateApartmentPaymentStatus extends Command
     {
         $this->info('Updating apartment payment status...');
 
-        $apartments = Apartment::with(['invoices' => function($query) {
+        $apartments = Apartment::with(['invoices' => function ($query) {
             $query->whereIn('status', ['pending', 'partial', 'overdue'])
-                  ->orderBy('due_date', 'desc');
+                ->orderBy('due_date', 'desc');
         }])->get();
-        
+
         $updated = 0;
 
         foreach ($apartments as $apartment) {
             $oldStatus = $apartment->payment_status;
-            
+
             // Calculate payment status based on real invoices
             $apartment->updatePaymentStatus();
 

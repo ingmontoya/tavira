@@ -21,8 +21,8 @@ class RegisteredUserController extends Controller
     public function create(): Response|RedirectResponse
     {
         $token = request('token');
-        
-        if (!$token) {
+
+        if (! $token) {
             return redirect()->route('access-request.create')
                 ->with('error', 'Se requiere una invitación válida para registrarse.');
         }
@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
             ->whereNull('accepted_at')
             ->first();
 
-        if (!$invitation) {
+        if (! $invitation) {
             return redirect()->route('access-request.create')
                 ->with('error', 'La invitación es inválida o ha expirado.');
         }

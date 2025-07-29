@@ -83,11 +83,12 @@ class ConjuntoConfig extends Model
                     // Select apartment type based on floor_positions
                     $apartmentType = $apartmentTypes->first(function ($type) use ($position) {
                         $positions = $type->floor_positions ?? [];
+
                         return in_array($position, $positions);
                     });
 
                     // Fallback to first type if no type matches the position
-                    if (!$apartmentType) {
+                    if (! $apartmentType) {
                         $apartmentType = $apartmentTypes->first();
                     }
 

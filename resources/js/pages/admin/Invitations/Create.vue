@@ -60,7 +60,7 @@ const breadcrumbs = [
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <div class="flex items-center gap-4 mb-4">
+            <div class="mb-4 flex items-center gap-4">
                 <Button variant="outline" size="sm" @click="router.visit('/invitations')">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
@@ -70,16 +70,14 @@ const breadcrumbs = [
                 </div>
             </div>
 
-            <div class="grid gap-6 max-w-2xl">
+            <div class="grid max-w-2xl gap-6">
                 <Card>
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2">
                             <Mail class="h-5 w-5" />
                             Información de la Invitación
                         </CardTitle>
-                        <CardDescription>
-                            Completa los datos para enviar la invitación por email
-                        </CardDescription>
+                        <CardDescription> Completa los datos para enviar la invitación por email </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form @submit.prevent="submit" class="space-y-6">
@@ -131,9 +129,7 @@ const breadcrumbs = [
                                 <p v-if="form.errors.apartment_id" class="text-sm text-red-600">
                                     {{ form.errors.apartment_id }}
                                 </p>
-                                <p class="text-sm text-muted-foreground">
-                                    Solo requerido para roles de propietario y residente
-                                </p>
+                                <p class="text-sm text-muted-foreground">Solo requerido para roles de propietario y residente</p>
                             </div>
 
                             <div class="space-y-2">
@@ -148,9 +144,7 @@ const breadcrumbs = [
                                 <p v-if="form.errors.message" class="text-sm text-red-600">
                                     {{ form.errors.message }}
                                 </p>
-                                <p class="text-sm text-muted-foreground">
-                                    Este mensaje se incluirá en el email de invitación
-                                </p>
+                                <p class="text-sm text-muted-foreground">Este mensaje se incluirá en el email de invitación</p>
                             </div>
 
                             <div class="flex items-center gap-3 pt-4">
@@ -158,9 +152,7 @@ const breadcrumbs = [
                                     <Send class="mr-2 h-4 w-4" />
                                     {{ form.processing ? 'Enviando...' : 'Enviar Invitación' }}
                                 </Button>
-                                <Button type="button" variant="outline" @click="router.visit('/invitations')">
-                                    Cancelar
-                                </Button>
+                                <Button type="button" variant="outline" @click="router.visit('/invitations')"> Cancelar </Button>
                             </div>
                         </form>
                     </CardContent>
@@ -172,21 +164,11 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-3 text-sm">
-                            <div>
-                                <strong>Admin Conjunto:</strong> Acceso completo al sistema
-                            </div>
-                            <div>
-                                <strong>Consejo:</strong> Acceso a finanzas y administración
-                            </div>
-                            <div>
-                                <strong>Propietario:</strong> Acceso a información de su apartamento
-                            </div>
-                            <div>
-                                <strong>Residente:</strong> Acceso básico para residentes
-                            </div>
-                            <div>
-                                <strong>Portería:</strong> Acceso a seguridad y visitas
-                            </div>
+                            <div><strong>Admin Conjunto:</strong> Acceso completo al sistema</div>
+                            <div><strong>Consejo:</strong> Acceso a finanzas y administración</div>
+                            <div><strong>Propietario:</strong> Acceso a información de su apartamento</div>
+                            <div><strong>Residente:</strong> Acceso básico para residentes</div>
+                            <div><strong>Portería:</strong> Acceso a seguridad y visitas</div>
                         </div>
                     </CardContent>
                 </Card>

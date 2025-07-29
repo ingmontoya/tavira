@@ -20,7 +20,7 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ChevronDown, ChevronsUpDown, Mail, Plus, Search, X } from 'lucide-vue-next';
+import { ChevronDown, ChevronsUpDown, Plus, Search, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 
@@ -190,10 +190,10 @@ const columns = [
             const invitation = row.original;
             const isExpired = new Date(invitation.expires_at) <= new Date();
             const isAccepted = !!invitation.accepted_at;
-            
+
             let status = 'Pendiente';
             let className = 'bg-yellow-100 text-yellow-800';
-            
+
             if (isAccepted) {
                 status = 'Aceptada';
                 className = 'bg-green-100 text-green-800';
@@ -201,7 +201,7 @@ const columns = [
                 status = 'Expirada';
                 className = 'bg-red-100 text-red-800';
             }
-            
+
             return h(
                 'span',
                 {

@@ -1,185 +1,185 @@
 {
-  "nav": {
-    "login": "Iniciar Sesión",
-    "register": "Comenzar Gratis",
-    "dashboard": "Dashboard"
-  },
-  "hero": {
-    "badge": "Tecnología de Nueva Generación",
-    "title": "Gestión",
-    "titleHighlight": "Inteligente",
-    "titleEnd": "de Conjuntos",
-    "description": "Diseñada para revolucionar la administración de conjuntos residenciales en Colombia. Automatiza procesos, mejora la comunicación y optimiza las finanzas con tecnología inteligente.",
-    "ctaPrimary": "Prueba Gratis",
-    "ctaPrimaryFull": "Prueba Gratis 30 Días",
-    "ctaSecondary": "Demo",
-    "ctaSecondaryFull": "Ver Demo en Vivo"
-  },
-  "stats": {
-    "complexes": "Conjuntos Gestionados",
-    "apartments": "Apartamentos Administrados", 
-    "uptime": "Tiempo de Actividad",
-    "support": "Soporte Técnico"
-  },
-  "features": {
-    "sectionTitle": "Funcionalidades que",
-    "sectionTitleHighlight": "Revolucionan",
-    "sectionTitleEnd": "la Administración",
-    "sectionDescription": "Descubre cómo Habitta está diseñada para transformar la gestión de conjuntos residenciales con tecnología innovadora",
-    "management": {
-      "title": "Gestión Integral",
-      "description": "Administra residentes, apartamentos y pagos desde una sola plataforma"
+    "nav": {
+        "login": "Iniciar Sesión",
+        "register": "Comenzar Gratis",
+        "dashboard": "Dashboard"
     },
-    "finance": {
-      "title": "Finanzas Inteligentes", 
-      "description": "Facturación automática, control de morosos y reportes financieros"
+    "hero": {
+        "badge": "Tecnología de Nueva Generación",
+        "title": "Gestión",
+        "titleHighlight": "Inteligente",
+        "titleEnd": "de Conjuntos",
+        "description": "Diseñada para revolucionar la administración de conjuntos residenciales en Colombia. Automatiza procesos, mejora la comunicación y optimiza las finanzas con tecnología inteligente.",
+        "ctaPrimary": "Prueba Gratis",
+        "ctaPrimaryFull": "Prueba Gratis 30 Días",
+        "ctaSecondary": "Demo",
+        "ctaSecondaryFull": "Ver Demo en Vivo"
     },
-    "mobile": {
-      "title": "Experiencia Móvil",
-      "description": "Acceso completo desde cualquier dispositivo, en cualquier momento"
+    "stats": {
+        "complexes": "Conjuntos Gestionados",
+        "apartments": "Apartamentos Administrados",
+        "uptime": "Tiempo de Actividad",
+        "support": "Soporte Técnico"
     },
-    "security": {
-      "title": "Seguridad Avanzada",
-      "description": "Protección de datos con encriptación y autenticación de dos factores"
-    }
-  },
-  "benefits": {
-    "sectionTitle": "¿Por qué elegir",
-    "sectionTitleHighlight": "Habitta?",
-    "sectionDescription": "Beneficios reales diseñados para transformar la gestión de tu conjunto residencial",
-    "timeSaving": {
-      "title": "Ahorro de Tiempo",
-      "description": "Automatiza muchas de las tareas administrativas repetitivas",
-      "percentage": "Eficiente"
+    "features": {
+        "sectionTitle": "Funcionalidades que",
+        "sectionTitleHighlight": "Revolucionan",
+        "sectionTitleEnd": "la Administración",
+        "sectionDescription": "Descubre cómo Habitta está diseñada para transformar la gestión de conjuntos residenciales con tecnología innovadora",
+        "management": {
+            "title": "Gestión Integral",
+            "description": "Administra residentes, apartamentos y pagos desde una sola plataforma"
+        },
+        "finance": {
+            "title": "Finanzas Inteligentes",
+            "description": "Facturación automática, control de morosos y reportes financieros"
+        },
+        "mobile": {
+            "title": "Experiencia Móvil",
+            "description": "Acceso completo desde cualquier dispositivo, en cualquier momento"
+        },
+        "security": {
+            "title": "Seguridad Avanzada",
+            "description": "Protección de datos con encriptación y autenticación de dos factores"
+        }
     },
-    "costReduction": {
-      "title": "Reducción de Costos",
-      "description": "Ayuda a reducir gastos operativos y mejorar la eficiencia financiera", 
-      "percentage": "Optimiza"
-    },
-    "satisfaction": {
-      "title": "Satisfacción del Cliente",
-      "description": "Mejora la experiencia de residentes con servicios digitales",
-      "percentage": "Mejora"
-    },
-    "transparency": {
-      "title": "Transparencia",
-      "description": "Información clara y accesible para todos los stakeholders",
-      "percentage": "100%"
-    }
-  },
-  "detailedFeatures": {
-    "sectionTitle": "Plataforma",
-    "sectionTitleHighlight": "Completa",
-    "sectionTitleEnd": "e Integrada",
-    "sectionDescription": "Todas las herramientas que necesitas para gestionar tu conjunto residencial de manera eficiente",
-    "residents": {
-      "title": "Gestión de Residentes",
-      "description": "Base de datos completa de propietarios e inquilinos con historial detallado",
-      "features": ["Registro automático", "Historial de pagos", "Documentos digitales", "Control de acceso"]
-    },
-    "apartments": {
-      "title": "Administración de Apartamentos", 
-      "description": "Control total de unidades, tipos y configuraciones del conjunto",
-      "features": ["Catálogo de apartamentos", "Estados de ocupación", "Mantenimientos", "Valuaciones"]
-    },
-    "payments": {
-      "title": "Sistema de Pagos",
-      "description": "Facturación inteligente con múltiples métodos de pago y seguimiento",
-      "features": ["Facturación automática", "Pasarelas de pago", "Recordatorios", "Recibos digitales"]
-    },
-    "reports": {
-      "title": "Reportes y Analytics",
-      "description": "Análisis profundo con métricas clave para la toma de decisiones",
-      "features": ["Dashboard en tiempo real", "Reportes personalizados", "Predicciones", "Exportación de datos"]
-    },
-    "communication": {
-      "title": "Comunicación",
-      "description": "Sistema integral de comunicación con residentes y proveedores",
-      "features": ["Anuncios masivos", "Chat integrado", "Notificaciones push", "Correspondencia digital"]
-    },
-    "access": {
-      "title": "Seguridad y Visitantes",
-      "description": "Control de acceso y gestión de visitantes con tecnología moderna",
-      "features": ["Control de acceso", "Registro de visitantes", "Cámaras integradas", "Alertas de seguridad"]
-    }
-  },
-  "testimonials": {
-    "sectionTitle": "Lo que dicen nuestros",
-    "sectionTitleHighlight": "Clientes",
-    "sectionDescription": "Experiencias de administradores que están mejorando su gestión con Habitta",
-    "maria": {
-      "name": "María González",
-      "role": "Administradora - Conjunto Villa Hermosa",
-      "content": "Habitta está mejorando significativamente nuestra gestión. Procesos que tomaban días ahora son mucho más eficientes."
-    },
-    "carlos": {
-      "name": "Carlos Mendoza", 
-      "role": "Propietario - Conjunto Los Cedros",
-      "content": "La plataforma ofrece gran transparencia en pagos y comunicación. Es muy fácil acceder a toda la información."
-    },
-    "ana": {
-      "name": "Ana Ruiz",
-      "role": "Administradora - Residencial Santa Fe", 
-      "content": "El soporte técnico es muy bueno y la plataforma es intuitiva. Nuestros residentes están contentos con el cambio."
-    }
-  },
-  "howItWorks": {
-    "sectionTitle": "Implementación",
-    "sectionTitleHighlight": "Rápida",
-    "sectionTitleEnd": "y Sencilla",
-    "sectionDescription": "Comienza a usar Habitta en menos de 24 horas con nuestro proceso de configuración guiada",
-    "step1": {
-      "title": "Registro e Configuración",
-      "description": "Crea tu cuenta y configura tu conjunto con nuestro asistente inteligente. Importa datos existentes en minutos."
-    },
-    "step2": {
-      "title": "Capacitación y Migración",
-      "description": "Nuestro equipo te capacita y migra todos tus datos históricos. Soporte completo durante la transición."
-    },
-    "step3": {
-      "title": "¡Listo para Usar!",
-      "description": "Comienza a gestionar tu conjunto de manera inteligente. Soporte 24/7 y actualizaciones automáticas incluidas."
-    }
-  },
-  "cta": {
-    "title": "¿Listo para Transformar tu",
-    "titleHighlight": "Conjunto?",
-    "description": "Sé parte del cambio en la gestión de conjuntos residenciales. Únete a administradores que están transformando su trabajo con Habitta. Sin compromisos, sin configuración compleja.",
-    "primary": "Empezar",
-    "primaryFull": "Comenzar Prueba Gratuita",
-    "secondary": "Demo",
-    "secondaryFull": "Agendar Demo Personalizada",
     "benefits": {
-      "freeTrial": "30 días gratis",
-      "noCard": "Sin tarjeta de crédito", 
-      "support": "Soporte 24/7",
-      "implementation": "Implementación incluida"
-    }
-  },
-  "footer": {
-    "description": "Innovando la gestión de conjuntos residenciales en Colombia. Creamos soluciones que transforman la administración con tecnología de vanguardia.",
-    "copyright": "© 2024 Habitta. Todos los derechos reservados.",
-    "product": {
-      "title": "Producto",
-      "features": "Funcionalidades",
-      "pricing": "Precios", 
-      "security": "Seguridad",
-      "integrations": "Integraciones"
+        "sectionTitle": "¿Por qué elegir",
+        "sectionTitleHighlight": "Habitta?",
+        "sectionDescription": "Beneficios reales diseñados para transformar la gestión de tu conjunto residencial",
+        "timeSaving": {
+            "title": "Ahorro de Tiempo",
+            "description": "Automatiza muchas de las tareas administrativas repetitivas",
+            "percentage": "Eficiente"
+        },
+        "costReduction": {
+            "title": "Reducción de Costos",
+            "description": "Ayuda a reducir gastos operativos y mejorar la eficiencia financiera",
+            "percentage": "Optimiza"
+        },
+        "satisfaction": {
+            "title": "Satisfacción del Cliente",
+            "description": "Mejora la experiencia de residentes con servicios digitales",
+            "percentage": "Mejora"
+        },
+        "transparency": {
+            "title": "Transparencia",
+            "description": "Información clara y accesible para todos los stakeholders",
+            "percentage": "100%"
+        }
     },
-    "support": {
-      "title": "Soporte",
-      "helpCenter": "Centro de Ayuda",
-      "contact": "Contacto",
-      "status": "Estado del Servicio",
-      "api": "API"
+    "detailedFeatures": {
+        "sectionTitle": "Plataforma",
+        "sectionTitleHighlight": "Completa",
+        "sectionTitleEnd": "e Integrada",
+        "sectionDescription": "Todas las herramientas que necesitas para gestionar tu conjunto residencial de manera eficiente",
+        "residents": {
+            "title": "Gestión de Residentes",
+            "description": "Base de datos completa de propietarios e inquilinos con historial detallado",
+            "features": ["Registro automático", "Historial de pagos", "Documentos digitales", "Control de acceso"]
+        },
+        "apartments": {
+            "title": "Administración de Apartamentos",
+            "description": "Control total de unidades, tipos y configuraciones del conjunto",
+            "features": ["Catálogo de apartamentos", "Estados de ocupación", "Mantenimientos", "Valuaciones"]
+        },
+        "payments": {
+            "title": "Sistema de Pagos",
+            "description": "Facturación inteligente con múltiples métodos de pago y seguimiento",
+            "features": ["Facturación automática", "Pasarelas de pago", "Recordatorios", "Recibos digitales"]
+        },
+        "reports": {
+            "title": "Reportes y Analytics",
+            "description": "Análisis profundo con métricas clave para la toma de decisiones",
+            "features": ["Dashboard en tiempo real", "Reportes personalizados", "Predicciones", "Exportación de datos"]
+        },
+        "communication": {
+            "title": "Comunicación",
+            "description": "Sistema integral de comunicación con residentes y proveedores",
+            "features": ["Anuncios masivos", "Chat integrado", "Notificaciones push", "Correspondencia digital"]
+        },
+        "access": {
+            "title": "Seguridad y Visitantes",
+            "description": "Control de acceso y gestión de visitantes con tecnología moderna",
+            "features": ["Control de acceso", "Registro de visitantes", "Cámaras integradas", "Alertas de seguridad"]
+        }
+    },
+    "testimonials": {
+        "sectionTitle": "Lo que dicen nuestros",
+        "sectionTitleHighlight": "Clientes",
+        "sectionDescription": "Experiencias de administradores que están mejorando su gestión con Habitta",
+        "maria": {
+            "name": "María González",
+            "role": "Administradora - Conjunto Villa Hermosa",
+            "content": "Habitta está mejorando significativamente nuestra gestión. Procesos que tomaban días ahora son mucho más eficientes."
+        },
+        "carlos": {
+            "name": "Carlos Mendoza",
+            "role": "Propietario - Conjunto Los Cedros",
+            "content": "La plataforma ofrece gran transparencia en pagos y comunicación. Es muy fácil acceder a toda la información."
+        },
+        "ana": {
+            "name": "Ana Ruiz",
+            "role": "Administradora - Residencial Santa Fe",
+            "content": "El soporte técnico es muy bueno y la plataforma es intuitiva. Nuestros residentes están contentos con el cambio."
+        }
+    },
+    "howItWorks": {
+        "sectionTitle": "Implementación",
+        "sectionTitleHighlight": "Rápida",
+        "sectionTitleEnd": "y Sencilla",
+        "sectionDescription": "Comienza a usar Habitta en menos de 24 horas con nuestro proceso de configuración guiada",
+        "step1": {
+            "title": "Registro e Configuración",
+            "description": "Crea tu cuenta y configura tu conjunto con nuestro asistente inteligente. Importa datos existentes en minutos."
+        },
+        "step2": {
+            "title": "Capacitación y Migración",
+            "description": "Nuestro equipo te capacita y migra todos tus datos históricos. Soporte completo durante la transición."
+        },
+        "step3": {
+            "title": "¡Listo para Usar!",
+            "description": "Comienza a gestionar tu conjunto de manera inteligente. Soporte 24/7 y actualizaciones automáticas incluidas."
+        }
+    },
+    "cta": {
+        "title": "¿Listo para Transformar tu",
+        "titleHighlight": "Conjunto?",
+        "description": "Sé parte del cambio en la gestión de conjuntos residenciales. Únete a administradores que están transformando su trabajo con Habitta. Sin compromisos, sin configuración compleja.",
+        "primary": "Empezar",
+        "primaryFull": "Comenzar Prueba Gratuita",
+        "secondary": "Demo",
+        "secondaryFull": "Agendar Demo Personalizada",
+        "benefits": {
+            "freeTrial": "30 días gratis",
+            "noCard": "Sin tarjeta de crédito",
+            "support": "Soporte 24/7",
+            "implementation": "Implementación incluida"
+        }
+    },
+    "footer": {
+        "description": "Innovando la gestión de conjuntos residenciales en Colombia. Creamos soluciones que transforman la administración con tecnología de vanguardia.",
+        "copyright": "© 2024 Habitta. Todos los derechos reservados.",
+        "product": {
+            "title": "Producto",
+            "features": "Funcionalidades",
+            "pricing": "Precios",
+            "security": "Seguridad",
+            "integrations": "Integraciones"
+        },
+        "support": {
+            "title": "Soporte",
+            "helpCenter": "Centro de Ayuda",
+            "contact": "Contacto",
+            "status": "Estado del Servicio",
+            "api": "API"
+        }
+    },
+    "dashboard": {
+        "monthlyIncome": "Ingresos del Mes",
+        "apartments": "Apartamentos",
+        "delinquent": "Morosos",
+        "newInvoice": "Nueva Factura",
+        "paymentReceived": "Pago Recibido"
     }
-  },
-  "dashboard": {
-    "monthlyIncome": "Ingresos del Mes",
-    "apartments": "Apartamentos",
-    "delinquent": "Morosos",
-    "newInvoice": "Nueva Factura",
-    "paymentReceived": "Pago Recibido"
-  }
 }

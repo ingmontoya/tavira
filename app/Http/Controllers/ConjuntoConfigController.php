@@ -161,9 +161,9 @@ class ConjuntoConfigController extends Controller
     public function show()
     {
         $conjunto = ConjuntoConfig::with([
-            'apartmentTypes', 
+            'apartmentTypes',
             'apartments.apartmentType',
-            'apartments.invoices'
+            'apartments.invoices',
         ])->first();
 
         if (! $conjunto) {
@@ -177,18 +177,18 @@ class ConjuntoConfigController extends Controller
                 return $apartments->groupBy('floor');
             });
 
-
         // Calculate estimated monthly income (sum of all apartment monthly fees)
         $estimatedMonthlyIncome = $conjunto->apartments->sum(function ($apartment) {
             // Use apartment's monthly_fee if set, otherwise use apartment type's administration_fee
             $fee = $apartment->monthly_fee ?? ($apartment->apartmentType ? $apartment->apartmentType->administration_fee ?? 0 : 0);
+
             return $fee;
         });
 
         // Calculate real monthly income (sum of payments received this month)
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
-        
+
         $realMonthlyIncome = \App\Models\Invoice::where('conjunto_config_id', $conjunto->id)
             ->where('status', 'paid')
             ->whereMonth('paid_date', $currentMonth)

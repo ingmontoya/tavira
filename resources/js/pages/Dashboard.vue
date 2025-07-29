@@ -15,7 +15,7 @@
                             <select
                                 v-model="selectedMonth"
                                 @change="onMonthChange"
-                                class="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <option v-for="month in availableMonths" :key="month.value" :value="month.value">
                                     {{ month.label }}
@@ -23,29 +23,29 @@
                             </select>
                         </div>
                         <div class="flex space-x-2">
-                        <button
-                            @click="
-                                () => {
-                                    hasSavedTour ? continueTour() : startTour();
-                                }
-                            "
-                            class="inline-flex flex-col items-center rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                            :class="hasSavedTour ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'"
-                        >
-                            <div class="flex items-center">
-                                <Icon name="play" class="mr-2 h-4 w-4" />
-                                {{ hasSavedTour ? 'Continuar Tour' : 'Tour Guiado' }}
-                            </div>
-                            <div v-if="hasSavedTour" class="mt-1 text-xs opacity-90">Paso {{ savedTourStep + 1 }} de {{ tourSteps.length }}</div>
-                        </button>
-                        <button
-                            v-if="hasSavedTour"
-                            @click="restartTour"
-                            class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
-                        >
-                            <Icon name="refresh-cw" class="mr-2 h-4 w-4" />
-                            Reiniciar
-                        </button>
+                            <button
+                                @click="
+                                    () => {
+                                        hasSavedTour ? continueTour() : startTour();
+                                    }
+                                "
+                                class="inline-flex flex-col items-center rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
+                                :class="hasSavedTour ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'"
+                            >
+                                <div class="flex items-center">
+                                    <Icon name="play" class="mr-2 h-4 w-4" />
+                                    {{ hasSavedTour ? 'Continuar Tour' : 'Tour Guiado' }}
+                                </div>
+                                <div v-if="hasSavedTour" class="mt-1 text-xs opacity-90">Paso {{ savedTourStep + 1 }} de {{ tourSteps.length }}</div>
+                            </button>
+                            <button
+                                v-if="hasSavedTour"
+                                @click="restartTour"
+                                class="inline-flex items-center rounded-lg bg-gray-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                            >
+                                <Icon name="refresh-cw" class="mr-2 h-4 w-4" />
+                                Reiniciar
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -104,9 +104,7 @@
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Pagos Pendientes</p>
                                 <p class="text-3xl font-bold">{{ kpis.pendingPayments || 0 }}</p>
-                                <p class="mt-2 text-sm text-muted-foreground">
-                                    de {{ kpis.expectedPayments || 0 }} esperados
-                                </p>
+                                <p class="mt-2 text-sm text-muted-foreground">de {{ kpis.expectedPayments || 0 }} esperados</p>
                             </div>
                             <div class="rounded-full bg-red-100 p-3">
                                 <Icon name="alert-circle" class="h-8 w-8 text-red-600" />
@@ -168,9 +166,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-lg font-semibold">Monto Esperado</h3>
-                            <p class="text-3xl font-bold text-blue-600">
-                                ${{ (kpis.totalPaymentsExpected || 0).toLocaleString() }}
-                            </p>
+                            <p class="text-3xl font-bold text-blue-600">${{ (kpis.totalPaymentsExpected || 0).toLocaleString() }}</p>
                             <p class="text-sm text-muted-foreground">{{ selectedMonthLabel }}</p>
                         </div>
                         <div class="rounded-full bg-blue-100 p-3">
@@ -184,22 +180,24 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="text-lg font-semibold">Monto Recibido</h3>
-                            <p class="text-3xl font-bold text-green-600">
-                                ${{ (kpis.totalPaymentsReceived || 0).toLocaleString() }}
-                            </p>
+                            <p class="text-3xl font-bold text-green-600">${{ (kpis.totalPaymentsReceived || 0).toLocaleString() }}</p>
                             <div class="mt-2 flex items-center">
                                 <div class="mr-2 h-2 w-32 rounded-full bg-gray-200">
                                     <div
                                         class="h-2 rounded-full bg-green-500 transition-all"
                                         :style="{
-                                            width: `${kpis.totalPaymentsExpected > 0 ? 
-                                                (kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100 : 0}%`
+                                            width: `${
+                                                kpis.totalPaymentsExpected > 0 ? (kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100 : 0
+                                            }%`,
                                         }"
                                     ></div>
                                 </div>
                                 <span class="text-sm text-muted-foreground">
-                                    {{ kpis.totalPaymentsExpected > 0 ? 
-                                        Math.round((kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100) : 0 }}%
+                                    {{
+                                        kpis.totalPaymentsExpected > 0
+                                            ? Math.round((kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100)
+                                            : 0
+                                    }}%
                                 </span>
                             </div>
                         </div>
@@ -460,15 +458,19 @@ const onTourClose = () => {
 };
 
 const selectedMonthLabel = computed(() => {
-    const monthOption = props.availableMonths.find(m => m.value === selectedMonth.value);
+    const monthOption = props.availableMonths.find((m) => m.value === selectedMonth.value);
     return monthOption ? monthOption.label : '';
 });
 
 const onMonthChange = () => {
-    router.get(route('dashboard'), { month: selectedMonth.value }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        route('dashboard'),
+        { month: selectedMonth.value },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const getTotalApartments = () => {

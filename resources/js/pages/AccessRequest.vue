@@ -2,14 +2,14 @@
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle, Building2, Shield, Users, Mail } from 'lucide-vue-next';
+import { Building2, LoaderCircle, Mail, Shield, Users } from 'lucide-vue-next';
 
 interface Props {
     conjunto: {
@@ -152,13 +152,7 @@ const submit = () => {
 
                     <div class="grid gap-2">
                         <Label for="phone">Teléfono (opcional)</Label>
-                        <Input
-                            id="phone"
-                            type="tel"
-                            :tabindex="6"
-                            v-model="form.phone"
-                            placeholder="Número de contacto"
-                        />
+                        <Input id="phone" type="tel" :tabindex="6" v-model="form.phone" placeholder="Número de contacto" />
                         <InputError :message="form.errors.phone" />
                     </div>
 
@@ -187,9 +181,7 @@ const submit = () => {
 
                 <div class="text-center text-sm text-muted-foreground">
                     ¿Ya tienes una cuenta?
-                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="9">
-                        Iniciar sesión
-                    </TextLink>
+                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="9"> Iniciar sesión </TextLink>
                 </div>
             </form>
         </div>

@@ -332,6 +332,7 @@ class InvoiceController extends Controller
 
                     if ($applicableConcepts->isEmpty()) {
                         $skippedCount++;
+
                         continue;
                     }
 

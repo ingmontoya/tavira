@@ -2,12 +2,12 @@
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle, Shield, Building2 } from 'lucide-vue-next';
+import { Building2, LoaderCircle, Shield } from 'lucide-vue-next';
 
 interface Props {
     invitation?: {
@@ -73,7 +73,7 @@ const getRoleLabel = (role: string) => {
                             <span class="font-medium">{{ getRoleLabel(invitation.role) }}</span>
                         </div>
                         <div v-if="apartment" class="flex justify-between">
-                            <span class="text-muted-foreground flex items-center gap-1">
+                            <span class="flex items-center gap-1 text-muted-foreground">
                                 <Building2 class="h-4 w-4" />
                                 Apartamento:
                             </span>
@@ -141,9 +141,7 @@ const getRoleLabel = (role: string) => {
 
                 <div class="text-center text-sm text-muted-foreground">
                     ¿Ya tienes una cuenta?
-                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="5">
-                        Iniciar sesión
-                    </TextLink>
+                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="5"> Iniciar sesión </TextLink>
                 </div>
             </form>
         </div>

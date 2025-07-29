@@ -1,5 +1,10 @@
 <template>
-    <div :class="['relative transition-all delay-300 duration-1000 overflow-hidden', isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0']">
+    <div
+        :class="[
+            'relative overflow-hidden transition-all delay-300 duration-1000',
+            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0',
+        ]"
+    >
         <div class="relative px-8 py-6">
             <!-- Main Dashboard Preview -->
             <div class="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-lg">

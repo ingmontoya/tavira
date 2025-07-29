@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Calendar, CheckCircle, Clock, Mail, RefreshCw, Trash2, User, XCircle } from 'lucide-vue-next';
@@ -71,7 +71,7 @@ const getRoleLabel = (role: string) => {
 const getStatusInfo = () => {
     const isExpired = new Date(props.invitation.expires_at) <= new Date();
     const isAccepted = !!props.invitation.accepted_at;
-    
+
     if (isAccepted) {
         return {
             label: 'Aceptada',
@@ -131,7 +131,7 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <div class="flex items-center justify-between mb-4">
+            <div class="mb-4 flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <Button variant="outline" size="sm" @click="router.visit('/invitations')">
                         <ArrowLeft class="h-4 w-4" />
@@ -141,16 +141,16 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                         <p class="text-muted-foreground">{{ invitation.email }}</p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Badge :class="statusInfo.className">
-                        <component :is="statusInfo.icon" class="w-3 h-3 mr-1" />
+                        <component :is="statusInfo.icon" class="mr-1 h-3 w-3" />
                         {{ statusInfo.label }}
                     </Badge>
                 </div>
             </div>
 
-            <div class="grid gap-6 max-w-4xl">
+            <div class="grid max-w-4xl gap-6">
                 <div class="grid gap-6 md:grid-cols-2">
                     <!-- Información Principal -->
                     <Card>
@@ -165,17 +165,15 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                                 <Label class="text-sm font-medium text-muted-foreground">Email</Label>
                                 <p class="text-sm">{{ invitation.email }}</p>
                             </div>
-                            
+
                             <div>
                                 <Label class="text-sm font-medium text-muted-foreground">Rol</Label>
                                 <p class="text-sm">{{ getRoleLabel(invitation.role) }}</p>
                             </div>
-                            
+
                             <div v-if="invitation.apartment">
                                 <Label class="text-sm font-medium text-muted-foreground">Apartamento</Label>
-                                <p class="text-sm">
-                                    Torre {{ invitation.apartment.tower }} - Apartamento {{ invitation.apartment.number }}
-                                </p>
+                                <p class="text-sm">Torre {{ invitation.apartment.tower }} - Apartamento {{ invitation.apartment.number }}</p>
                                 <p class="text-xs text-muted-foreground">
                                     Piso {{ invitation.apartment.floor }} - {{ invitation.apartment.apartment_type.name }}
                                 </p>
@@ -196,12 +194,12 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                                 <Label class="text-sm font-medium text-muted-foreground">Fecha de Invitación</Label>
                                 <p class="text-sm">{{ formatDate(invitation.created_at) }}</p>
                             </div>
-                            
+
                             <div>
                                 <Label class="text-sm font-medium text-muted-foreground">Fecha de Expiración</Label>
                                 <p class="text-sm">{{ formatDate(invitation.expires_at) }}</p>
                             </div>
-                            
+
                             <div v-if="invitation.accepted_at">
                                 <Label class="text-sm font-medium text-muted-foreground">Fecha de Aceptación</Label>
                                 <p class="text-sm">{{ formatDate(invitation.accepted_at) }}</p>
@@ -224,7 +222,7 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                             <p class="text-sm">{{ invitation.invited_by.name }}</p>
                             <p class="text-xs text-muted-foreground">{{ invitation.invited_by.email }}</p>
                         </div>
-                        
+
                         <div v-if="invitation.accepted_by">
                             <Label class="text-sm font-medium text-muted-foreground">Aceptado por</Label>
                             <p class="text-sm">{{ invitation.accepted_by.name }}</p>
@@ -247,20 +245,12 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                 <Card v-if="!invitation.accepted_at">
                     <CardHeader>
                         <CardTitle>URL de Registro</CardTitle>
-                        <CardDescription>
-                            Comparte esta URL con el invitado para que pueda registrarse
-                        </CardDescription>
+                        <CardDescription> Comparte esta URL con el invitado para que pueda registrarse </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div class="flex items-center gap-2 p-3 bg-muted rounded-md">
-                            <code class="text-sm flex-1 break-all">{{ registrationUrl }}</code>
-                            <Button 
-                                size="sm" 
-                                variant="outline"
-                                @click="navigator.clipboard.writeText(registrationUrl)"
-                            >
-                                Copiar
-                            </Button>
+                        <div class="flex items-center gap-2 rounded-md bg-muted p-3">
+                            <code class="flex-1 text-sm break-all">{{ registrationUrl }}</code>
+                            <Button size="sm" variant="outline" @click="navigator.clipboard.writeText(registrationUrl)"> Copiar </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -272,7 +262,7 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                     </CardHeader>
                     <CardContent>
                         <div class="flex items-center gap-3">
-                            <Button 
+                            <Button
                                 v-if="!invitation.accepted_at && new Date(invitation.expires_at) > new Date()"
                                 @click="resendInvitation"
                                 :disabled="resendForm.processing"
@@ -280,12 +270,8 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                                 <RefreshCw class="mr-2 h-4 w-4" />
                                 {{ resendForm.processing ? 'Reenviando...' : 'Reenviar Invitación' }}
                             </Button>
-                            
-                            <Button 
-                                variant="destructive"
-                                @click="deleteInvitation"
-                                :disabled="deleteForm.processing"
-                            >
+
+                            <Button variant="destructive" @click="deleteInvitation" :disabled="deleteForm.processing">
                                 <Trash2 class="mr-2 h-4 w-4" />
                                 {{ deleteForm.processing ? 'Eliminando...' : 'Eliminar Invitación' }}
                             </Button>

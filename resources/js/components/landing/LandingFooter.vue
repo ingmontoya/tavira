@@ -18,20 +18,36 @@
                 <div>
                     <h4 class="mb-4 font-semibold text-gray-900">{{ $t('footer.product.title') }}</h4>
                     <ul class="space-y-2 text-sm text-gray-600">
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.product.features') }}</a></li>
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.product.pricing') }}</a></li>
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.product.security') }}</a></li>
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.product.integrations') }}</a></li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.product.features') }}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.product.pricing') }}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.product.security') }}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.product.integrations') }}</a>
+                        </li>
                     </ul>
                 </div>
 
                 <div>
                     <h4 class="mb-4 font-semibold text-gray-900">{{ $t('footer.support.title') }}</h4>
                     <ul class="space-y-2 text-sm text-gray-600">
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.support.helpCenter') }}</a></li>
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.support.contact') }}</a></li>
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.support.status') }}</a></li>
-                        <li><a href="#" class="hover:text-blue-600">{{ $t('footer.support.api') }}</a></li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.support.helpCenter') }}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.support.contact') }}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.support.status') }}</a>
+                        </li>
+                        <li>
+                            <a href="#" class="hover:text-blue-600">{{ $t('footer.support.api') }}</a>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -71,13 +71,17 @@ class ApartmentController extends Controller
             return $apartment;
         });
 
-        // Payment statistics
-        $totalApartments = Apartment::count();
-        $currentPayments = Apartment::where('payment_status', 'current')->count();
-        $overdue30 = Apartment::where('payment_status', 'overdue_30')->count();
-        $overdue60 = Apartment::where('payment_status', 'overdue_60')->count();
-        $overdue90 = Apartment::where('payment_status', 'overdue_90')->count();
-        $overdue90Plus = Apartment::where('payment_status', 'overdue_90_plus')->count();
+        // Payment statistics - calculate dynamically like Dashboard/Payments
+        $conjuntoConfig = ConjuntoConfig::first();
+        $totalApartments = Apartment::where('conjunto_config_id', $conjuntoConfig->id)->count();
+
+        // Use same dynamic calculation as Dashboard
+        $paymentStatusBreakdown = $this->getPaymentStatusBreakdown($conjuntoConfig->id);
+        $currentPayments = $paymentStatusBreakdown['current'];
+        $overdue30 = $paymentStatusBreakdown['overdue_30'];
+        $overdue60 = $paymentStatusBreakdown['overdue_60'];
+        $overdue90 = $paymentStatusBreakdown['overdue_90'];
+        $overdue90Plus = $paymentStatusBreakdown['overdue_90_plus'];
         $totalDelinquent = $overdue30 + $overdue60 + $overdue90 + $overdue90Plus;
 
         // Payment agreement statistics
@@ -340,5 +344,61 @@ class ApartmentController extends Controller
         $filename = 'morosos_'.now()->format('Y-m-d_H-i-s').'.pdf';
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Get payment status breakdown using same logic as Dashboard/Payments
+     */
+    private function getPaymentStatusBreakdown(int $conjuntoConfigId): array
+    {
+        $apartments = Apartment::where('conjunto_config_id', $conjuntoConfigId)
+            ->with(['invoices' => function ($query) {
+                $query->whereIn('status', ['pending', 'overdue', 'partial'])
+                    ->orderBy('due_date', 'asc');
+            }])->get();
+
+        $current = 0;
+        $overdue30 = 0;
+        $overdue60 = 0;
+        $overdue90 = 0;
+        $overdue90Plus = 0;
+
+        foreach ($apartments as $apartment) {
+            $oldestUnpaidInvoice = $apartment->invoices->first();
+
+            if (! $oldestUnpaidInvoice) {
+                // No hay facturas pendientes, apartamento al día
+                $current++;
+            } else {
+                // Calcular días de mora
+                $today = now()->startOfDay();
+                $dueDate = $oldestUnpaidInvoice->due_date->startOfDay();
+
+                if ($today->lte($dueDate)) {
+                    // Aún no vencida
+                    $current++;
+                } else {
+                    $daysOverdue = $dueDate->diffInDays($today);
+
+                    if ($daysOverdue >= 90) {
+                        $overdue90Plus++;
+                    } elseif ($daysOverdue >= 60) {
+                        $overdue90++;
+                    } elseif ($daysOverdue >= 30) {
+                        $overdue60++;
+                    } else {
+                        $overdue30++;
+                    }
+                }
+            }
+        }
+
+        return [
+            'current' => $current,
+            'overdue_30' => $overdue30,
+            'overdue_60' => $overdue60,
+            'overdue_90' => $overdue90,
+            'overdue_90_plus' => $overdue90Plus,
+        ];
     }
 }

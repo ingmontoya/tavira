@@ -18,10 +18,18 @@ interface Stats {
     monthly_collection: number;
     delinquent_apartments: number;
     active_concepts: number;
+    total_apartments: number;
+}
+
+interface PaymentStatus {
+    status: string;
+    count: number;
+    color: string;
 }
 
 interface Props {
     stats: Stats;
+    paymentsByStatus: PaymentStatus[];
 }
 
 const props = defineProps<Props>();
@@ -169,7 +177,7 @@ const generateMonthlyInvoices = async () => {
             </div>
 
             <!-- Quick Stats Cards -->
-            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">Facturas Pendientes</CardTitle>
@@ -211,6 +219,47 @@ const generateMonthlyInvoices = async () => {
                     <CardContent>
                         <div class="text-2xl font-bold">{{ props.stats.active_concepts }}</div>
                         <p class="text-xs text-muted-foreground">Conceptos de pago configurados</p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">Total Apartamentos</CardTitle>
+                        <CreditCard class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold">{{ props.stats.total_apartments }}</div>
+                        <p class="text-xs text-muted-foreground">
+                            {{ props.stats.pending_invoices }} pendientes de {{ props.stats.total_apartments }} esperados
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <!-- Payment Status Breakdown -->
+            <div v-if="props.paymentsByStatus && props.paymentsByStatus.length > 0" class="mt-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="text-lg">Estado de Pagos por Apartamento</CardTitle>
+                        <CardDescription>Distribución detallada del estado de pagos</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                            <div v-for="statusItem in props.paymentsByStatus" :key="statusItem.status" class="rounded-lg border p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-muted-foreground">{{ statusItem.status }}</p>
+                                        <p class="text-2xl font-bold" :style="{ color: statusItem.color }">
+                                            {{ statusItem.count }}
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">
+                                            {{ ((statusItem.count / props.stats.total_apartments) * 100).toFixed(1) }}% del total
+                                        </p>
+                                    </div>
+                                    <div class="h-3 w-3 rounded-full" :style="{ backgroundColor: statusItem.color }"></div>
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

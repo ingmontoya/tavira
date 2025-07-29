@@ -5,7 +5,6 @@ namespace App\Http\Requests\Auth;
 use App\Models\User;
 use App\Rules\SecurePasswordRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class RegisterRequest extends FormRequest
 {

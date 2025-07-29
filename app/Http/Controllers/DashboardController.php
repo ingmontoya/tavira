@@ -36,10 +36,10 @@ class DashboardController extends Controller
         $totalPaymentsExpected = $this->getTotalExpectedAmount($selectedYear, $selectedMonthNum);
         $totalPaymentsReceived = $this->getTotalReceivedAmount($selectedYear, $selectedMonthNum);
 
-        // KPIs - Combinando datos reales con mockeados
+        // KPIs - Usando datos reales del sistema
         $kpis = [
-            'totalResidents' => max($totalResidents, 347), // Mínimo de demo
-            'totalApartments' => max($totalApartments, 182), // Mínimo de demo
+            'totalResidents' => $totalResidents,
+            'totalApartments' => $totalApartments,
             'pendingPayments' => $pendingPayments,
             'expectedPayments' => $expectedPayments,
             'monthlyVisitors' => 1247, // Mock data - implementar después
@@ -311,28 +311,27 @@ class DashboardController extends Controller
 
     private function getPendingPaymentsCount(int $year, int $month): int
     {
-        // Contar facturas pendientes para el período seleccionado
-        $invoicesCount = Invoice::forPeriod($year, $month)
-            ->whereIn('status', ['pending', 'overdue', 'partial'])
-            ->count();
+        // Contar apartamentos con facturas pendientes dinámicamente
+        $conjuntoConfig = ConjuntoConfig::first();
+        if (! $conjuntoConfig) {
+            return 0;
+        }
 
-        // Contar cuotas de acuerdos de pago pendientes para el mes
-        $installmentsCount = $this->getInstallmentsByMonth($year, $month)
-            ->whereIn('status', ['pending', 'overdue'])
-            ->count();
-
-        return $invoicesCount + $installmentsCount;
+        return Apartment::where('conjunto_config_id', $conjuntoConfig->id)
+            ->whereHas('invoices', function ($query) {
+                $query->whereIn('status', ['pending', 'overdue', 'partial']);
+            })->count();
     }
 
     private function getExpectedPaymentsCount(int $year, int $month): int
     {
-        // Contar todas las facturas esperadas para el período (incluyendo pagadas)
-        $invoicesCount = Invoice::forPeriod($year, $month)->count();
+        // Contar todos los apartamentos del conjunto (este es el "total esperado")
+        $conjuntoConfig = ConjuntoConfig::first();
+        if (! $conjuntoConfig) {
+            return 0;
+        }
 
-        // Contar todas las cuotas de acuerdos de pago esperadas para el mes
-        $installmentsCount = $this->getInstallmentsByMonth($year, $month)->count();
-
-        return $invoicesCount + $installmentsCount;
+        return Apartment::where('conjunto_config_id', $conjuntoConfig->id)->count();
     }
 
     private function getTotalExpectedAmount(int $year, int $month): float
@@ -359,70 +358,60 @@ class DashboardController extends Controller
 
     private function getPaymentsByStatus(int $year, int $month): \Illuminate\Support\Collection
     {
-        // Obtener estadísticas de facturas para el período
-        $invoiceStats = Invoice::forPeriod($year, $month)
-            ->select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->keyBy('status');
-
-        // Obtener estadísticas de cuotas de acuerdos para el mes
-        $installmentStats = $this->getInstallmentsByMonth($year, $month)
-            ->select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->keyBy('status');
-
-        // Consolidar datos
-        $paidCount = ($invoiceStats->get('paid')->count ?? 0) + ($installmentStats->get('paid')->count ?? 0);
-        $pendingCount = ($invoiceStats->get('pending')->count ?? 0) + ($installmentStats->get('pending')->count ?? 0);
-        $overdueCount = ($invoiceStats->get('overdue')->count ?? 0) + ($installmentStats->get('overdue')->count ?? 0);
-        $partialCount = ($invoiceStats->get('partial')->count ?? 0) + ($installmentStats->get('partial')->count ?? 0);
-
-        // Categorizar vencidos por días
-        $overdue1to30 = 0;
-        $overdue31to60 = 0;
-        $overdueOver60 = 0;
-
-        // Analizar facturas vencidas
-        $overdueInvoices = Invoice::forPeriod($year, $month)
-            ->where('status', 'overdue')
-            ->get();
-
-        foreach ($overdueInvoices as $invoice) {
-            $daysOverdue = $invoice->days_overdue;
-            if ($daysOverdue <= 30) {
-                $overdue1to30++;
-            } elseif ($daysOverdue <= 60) {
-                $overdue31to60++;
-            } else {
-                $overdueOver60++;
-            }
+        // Calcular dinámicamente basado en facturas reales, no en payment_status almacenado
+        $conjuntoConfig = ConjuntoConfig::first();
+        if (! $conjuntoConfig) {
+            return collect();
         }
 
-        // Analizar cuotas vencidas
-        $overdueInstallments = $this->getInstallmentsByMonth($year, $month)
-            ->where('status', 'overdue')
-            ->get();
+        $apartments = Apartment::where('conjunto_config_id', $conjuntoConfig->id)
+            ->with(['invoices' => function ($query) {
+                $query->whereIn('status', ['pending', 'overdue', 'partial'])
+                    ->orderBy('due_date', 'asc');
+            }])->get();
 
-        foreach ($overdueInstallments as $installment) {
-            $daysOverdue = $installment->days_overdue;
-            if ($daysOverdue <= 30) {
-                $overdue1to30++;
-            } elseif ($daysOverdue <= 60) {
-                $overdue31to60++;
+        $alDia = 0;
+        $overdue30 = 0;
+        $overdue60 = 0;
+        $overdue90 = 0;
+        $overdue90Plus = 0;
+
+        foreach ($apartments as $apartment) {
+            $oldestUnpaidInvoice = $apartment->invoices->first();
+
+            if (! $oldestUnpaidInvoice) {
+                // No hay facturas pendientes, apartamento al día
+                $alDia++;
             } else {
-                $overdueOver60++;
+                // Calcular días de mora
+                $today = now()->startOfDay();
+                $dueDate = $oldestUnpaidInvoice->due_date->startOfDay();
+
+                if ($today->lte($dueDate)) {
+                    // Aún no vencida
+                    $alDia++;
+                } else {
+                    $daysOverdue = $dueDate->diffInDays($today);
+
+                    if ($daysOverdue >= 90) {
+                        $overdue90Plus++;
+                    } elseif ($daysOverdue >= 60) {
+                        $overdue90++;
+                    } elseif ($daysOverdue >= 30) {
+                        $overdue60++;
+                    } else {
+                        $overdue30++;
+                    }
+                }
             }
         }
 
         return collect([
-            ['status' => 'Al día', 'count' => $paidCount, 'color' => '#10b981'],
-            ['status' => 'Pendiente', 'count' => $pendingCount, 'color' => '#3b82f6'],
-            ['status' => 'Vencido 1-30 días', 'count' => $overdue1to30, 'color' => '#f59e0b'],
-            ['status' => 'Vencido 31-60 días', 'count' => $overdue31to60, 'color' => '#ef4444'],
-            ['status' => 'Vencido +60 días', 'count' => $overdueOver60, 'color' => '#7f1d1d'],
-            ['status' => 'Pago parcial', 'count' => $partialCount, 'color' => '#8b5cf6'],
+            ['status' => 'Al día', 'count' => $alDia, 'color' => '#10b981'],
+            ['status' => '30 días de mora', 'count' => $overdue30, 'color' => '#f59e0b'],
+            ['status' => '60 días de mora', 'count' => $overdue60, 'color' => '#ef4444'],
+            ['status' => '90 días de mora', 'count' => $overdue90, 'color' => '#dc2626'],
+            ['status' => '+90 días de mora', 'count' => $overdue90Plus, 'color' => '#7f1d1d'],
         ])->filter(fn ($item) => $item['count'] > 0)->values();
     }
 

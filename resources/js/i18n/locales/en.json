@@ -1,181 +1,181 @@
 {
-  "nav": {
-    "login": "Login",
-    "register": "Get Started Free",
-    "dashboard": "Dashboard"
-  },
-  "hero": {
-    "badge": "Next Generation Technology",
-    "title": "Smart",
-    "titleHighlight": "Management",
-    "titleEnd": "for Residential Complexes",
-    "description": "The most advanced platform for managing residential complexes in Colombia. Automate processes, improve communication, and optimize finances with artificial intelligence.",
-    "ctaPrimary": "Start Free 30-Day Trial",
-    "ctaSecondary": "Watch Live Demo"
-  },
-  "stats": {
-    "complexes": "Managed Complexes",
-    "apartments": "Administered Apartments",
-    "uptime": "Uptime",
-    "support": "Technical Support"
-  },
-  "features": {
-    "sectionTitle": "Features that",
-    "sectionTitleHighlight": "Revolutionize",
-    "sectionTitleEnd": "Administration",
-    "sectionDescription": "Discover how Habitta transforms residential complex management with cutting-edge technology",
-    "management": {
-      "title": "Comprehensive Management",
-      "description": "Manage residents, apartments, and payments from a single platform"
+    "nav": {
+        "login": "Login",
+        "register": "Get Started Free",
+        "dashboard": "Dashboard"
     },
-    "finance": {
-      "title": "Smart Finance",
-      "description": "Automatic billing, delinquency control, and financial reports"
+    "hero": {
+        "badge": "Next Generation Technology",
+        "title": "Smart",
+        "titleHighlight": "Management",
+        "titleEnd": "for Residential Complexes",
+        "description": "The most advanced platform for managing residential complexes in Colombia. Automate processes, improve communication, and optimize finances with artificial intelligence.",
+        "ctaPrimary": "Start Free 30-Day Trial",
+        "ctaSecondary": "Watch Live Demo"
     },
-    "mobile": {
-      "title": "Mobile Experience",
-      "description": "Complete access from any device, anytime"
+    "stats": {
+        "complexes": "Managed Complexes",
+        "apartments": "Administered Apartments",
+        "uptime": "Uptime",
+        "support": "Technical Support"
     },
-    "security": {
-      "title": "Advanced Security",
-      "description": "Data protection with encryption and two-factor authentication"
-    }
-  },
-  "benefits": {
-    "sectionTitle": "Why choose",
-    "sectionTitleHighlight": "Habitta?",
-    "sectionDescription": "Proven results that transform your residential complex management",
-    "timeSaving": {
-      "title": "Time Saving",
-      "description": "Automate up to 80% of repetitive administrative tasks",
-      "percentage": "80%"
+    "features": {
+        "sectionTitle": "Features that",
+        "sectionTitleHighlight": "Revolutionize",
+        "sectionTitleEnd": "Administration",
+        "sectionDescription": "Discover how Habitta transforms residential complex management with cutting-edge technology",
+        "management": {
+            "title": "Comprehensive Management",
+            "description": "Manage residents, apartments, and payments from a single platform"
+        },
+        "finance": {
+            "title": "Smart Finance",
+            "description": "Automatic billing, delinquency control, and financial reports"
+        },
+        "mobile": {
+            "title": "Mobile Experience",
+            "description": "Complete access from any device, anytime"
+        },
+        "security": {
+            "title": "Advanced Security",
+            "description": "Data protection with encryption and two-factor authentication"
+        }
     },
-    "costReduction": {
-      "title": "Cost Reduction",
-      "description": "Reduce operational expenses and improve financial efficiency",
-      "percentage": "40%"
-    },
-    "satisfaction": {
-      "title": "Customer Satisfaction",
-      "description": "Improve resident experience with digital services",
-      "percentage": "95%"
-    },
-    "transparency": {
-      "title": "Transparency",
-      "description": "Clear and accessible information for all stakeholders",
-      "percentage": "100%"
-    }
-  },
-  "detailedFeatures": {
-    "sectionTitle": "Complete and",
-    "sectionTitleHighlight": "Integrated",
-    "sectionTitleEnd": "Platform",
-    "sectionDescription": "All the tools you need to efficiently manage your residential complex",
-    "residents": {
-      "title": "Resident Management",
-      "description": "Complete database of owners and tenants with detailed history",
-      "features": ["Automatic registration", "Payment history", "Digital documents", "Access control"]
-    },
-    "apartments": {
-      "title": "Apartment Administration",
-      "description": "Total control of units, types, and complex configurations",
-      "features": ["Apartment catalog", "Occupancy status", "Maintenance", "Valuations"]
-    },
-    "payments": {
-      "title": "Payment System",
-      "description": "Smart billing with multiple payment methods and tracking",
-      "features": ["Automatic billing", "Payment gateways", "Reminders", "Digital receipts"]
-    },
-    "reports": {
-      "title": "Reports & Analytics",
-      "description": "Deep analysis with key metrics for decision making",
-      "features": ["Real-time dashboard", "Custom reports", "Predictions", "Data export"]
-    },
-    "communication": {
-      "title": "Communication",
-      "description": "Comprehensive communication system with residents and suppliers",
-      "features": ["Mass announcements", "Integrated chat", "Push notifications", "Digital correspondence"]
-    },
-    "access": {
-      "title": "Security & Visitors",
-      "description": "Access control and visitor management with modern technology",
-      "features": ["Access control", "Visitor registration", "Integrated cameras", "Security alerts"]
-    }
-  },
-  "testimonials": {
-    "sectionTitle": "What our",
-    "sectionTitleHighlight": "Clients",
-    "sectionDescription": "Real testimonials from administrators who transformed their management with Habitta",
-    "maria": {
-      "name": "María González",
-      "role": "Administrator - Villa Hermosa Complex",
-      "content": "Habitta completely transformed our management. What used to take days, we now do in minutes."
-    },
-    "carlos": {
-      "name": "Carlos Mendoza",
-      "role": "Owner - Los Cedros Complex",
-      "content": "The transparency in payments and communication is exceptional. Everything is just a click away."
-    },
-    "ana": {
-      "name": "Ana Ruiz",
-      "role": "Administrator - Santa Fe Residential",
-      "content": "The technical support is incredible and the platform is very intuitive. Our residents are happy."
-    }
-  },
-  "howItWorks": {
-    "sectionTitle": "Fast and",
-    "sectionTitleHighlight": "Simple",
-    "sectionTitleEnd": "Implementation",
-    "sectionDescription": "Start using Habitta in less than 24 hours with our guided setup process",
-    "step1": {
-      "title": "Registration & Setup",
-      "description": "Create your account and configure your complex with our smart assistant. Import existing data in minutes."
-    },
-    "step2": {
-      "title": "Training & Migration",
-      "description": "Our team trains you and migrates all your historical data. Complete support during transition."
-    },
-    "step3": {
-      "title": "Ready to Use!",
-      "description": "Start managing your complex intelligently. 24/7 support and automatic updates included."
-    }
-  },
-  "cta": {
-    "title": "Ready to Transform your",
-    "titleHighlight": "Complex?",
-    "description": "Join hundreds of administrators who have already optimized their management with Habitta. No commitments, no complex setup.",
-    "primary": "Start Free Trial",
-    "secondary": "Schedule Personalized Demo",
     "benefits": {
-      "freeTrial": "30 days free",
-      "noCard": "No credit card",
-      "support": "24/7 Support",
-      "implementation": "Implementation included"
-    }
-  },
-  "footer": {
-    "description": "The leading platform for residential complex management in Colombia. We transform administration with cutting-edge technology.",
-    "copyright": "© 2024 Habitta. All rights reserved.",
-    "product": {
-      "title": "Product",
-      "features": "Features",
-      "pricing": "Pricing",
-      "security": "Security",
-      "integrations": "Integrations"
+        "sectionTitle": "Why choose",
+        "sectionTitleHighlight": "Habitta?",
+        "sectionDescription": "Proven results that transform your residential complex management",
+        "timeSaving": {
+            "title": "Time Saving",
+            "description": "Automate up to 80% of repetitive administrative tasks",
+            "percentage": "80%"
+        },
+        "costReduction": {
+            "title": "Cost Reduction",
+            "description": "Reduce operational expenses and improve financial efficiency",
+            "percentage": "40%"
+        },
+        "satisfaction": {
+            "title": "Customer Satisfaction",
+            "description": "Improve resident experience with digital services",
+            "percentage": "95%"
+        },
+        "transparency": {
+            "title": "Transparency",
+            "description": "Clear and accessible information for all stakeholders",
+            "percentage": "100%"
+        }
     },
-    "support": {
-      "title": "Support",
-      "helpCenter": "Help Center",
-      "contact": "Contact",
-      "status": "Service Status",
-      "api": "API"
+    "detailedFeatures": {
+        "sectionTitle": "Complete and",
+        "sectionTitleHighlight": "Integrated",
+        "sectionTitleEnd": "Platform",
+        "sectionDescription": "All the tools you need to efficiently manage your residential complex",
+        "residents": {
+            "title": "Resident Management",
+            "description": "Complete database of owners and tenants with detailed history",
+            "features": ["Automatic registration", "Payment history", "Digital documents", "Access control"]
+        },
+        "apartments": {
+            "title": "Apartment Administration",
+            "description": "Total control of units, types, and complex configurations",
+            "features": ["Apartment catalog", "Occupancy status", "Maintenance", "Valuations"]
+        },
+        "payments": {
+            "title": "Payment System",
+            "description": "Smart billing with multiple payment methods and tracking",
+            "features": ["Automatic billing", "Payment gateways", "Reminders", "Digital receipts"]
+        },
+        "reports": {
+            "title": "Reports & Analytics",
+            "description": "Deep analysis with key metrics for decision making",
+            "features": ["Real-time dashboard", "Custom reports", "Predictions", "Data export"]
+        },
+        "communication": {
+            "title": "Communication",
+            "description": "Comprehensive communication system with residents and suppliers",
+            "features": ["Mass announcements", "Integrated chat", "Push notifications", "Digital correspondence"]
+        },
+        "access": {
+            "title": "Security & Visitors",
+            "description": "Access control and visitor management with modern technology",
+            "features": ["Access control", "Visitor registration", "Integrated cameras", "Security alerts"]
+        }
+    },
+    "testimonials": {
+        "sectionTitle": "What our",
+        "sectionTitleHighlight": "Clients",
+        "sectionDescription": "Real testimonials from administrators who transformed their management with Habitta",
+        "maria": {
+            "name": "María González",
+            "role": "Administrator - Villa Hermosa Complex",
+            "content": "Habitta completely transformed our management. What used to take days, we now do in minutes."
+        },
+        "carlos": {
+            "name": "Carlos Mendoza",
+            "role": "Owner - Los Cedros Complex",
+            "content": "The transparency in payments and communication is exceptional. Everything is just a click away."
+        },
+        "ana": {
+            "name": "Ana Ruiz",
+            "role": "Administrator - Santa Fe Residential",
+            "content": "The technical support is incredible and the platform is very intuitive. Our residents are happy."
+        }
+    },
+    "howItWorks": {
+        "sectionTitle": "Fast and",
+        "sectionTitleHighlight": "Simple",
+        "sectionTitleEnd": "Implementation",
+        "sectionDescription": "Start using Habitta in less than 24 hours with our guided setup process",
+        "step1": {
+            "title": "Registration & Setup",
+            "description": "Create your account and configure your complex with our smart assistant. Import existing data in minutes."
+        },
+        "step2": {
+            "title": "Training & Migration",
+            "description": "Our team trains you and migrates all your historical data. Complete support during transition."
+        },
+        "step3": {
+            "title": "Ready to Use!",
+            "description": "Start managing your complex intelligently. 24/7 support and automatic updates included."
+        }
+    },
+    "cta": {
+        "title": "Ready to Transform your",
+        "titleHighlight": "Complex?",
+        "description": "Join hundreds of administrators who have already optimized their management with Habitta. No commitments, no complex setup.",
+        "primary": "Start Free Trial",
+        "secondary": "Schedule Personalized Demo",
+        "benefits": {
+            "freeTrial": "30 days free",
+            "noCard": "No credit card",
+            "support": "24/7 Support",
+            "implementation": "Implementation included"
+        }
+    },
+    "footer": {
+        "description": "The leading platform for residential complex management in Colombia. We transform administration with cutting-edge technology.",
+        "copyright": "© 2024 Habitta. All rights reserved.",
+        "product": {
+            "title": "Product",
+            "features": "Features",
+            "pricing": "Pricing",
+            "security": "Security",
+            "integrations": "Integrations"
+        },
+        "support": {
+            "title": "Support",
+            "helpCenter": "Help Center",
+            "contact": "Contact",
+            "status": "Service Status",
+            "api": "API"
+        }
+    },
+    "dashboard": {
+        "monthlyIncome": "Monthly Income",
+        "apartments": "Apartments",
+        "delinquent": "Delinquent",
+        "newInvoice": "New Invoice",
+        "paymentReceived": "Payment Received"
     }
-  },
-  "dashboard": {
-    "monthlyIncome": "Monthly Income",
-    "apartments": "Apartments",
-    "delinquent": "Delinquent",
-    "newInvoice": "New Invoice",
-    "paymentReceived": "Payment Received"
-  }
 }
