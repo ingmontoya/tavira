@@ -9,11 +9,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { router } from '@inertiajs/vue3';
-import { Copy, Edit, Eye, MoreHorizontal, Trash2 } from 'lucide-vue-next';
+import { Copy, Edit, Eye, MoreHorizontal, QrCode, RefreshCw, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps<{
     resident?: any;
     apartment?: any;
+    invitation?: any;
 }>();
 
 // Resident actions
@@ -52,6 +53,25 @@ const deleteApartment = () => {
 
 const copyApartmentNumber = () => {
     navigator.clipboard.writeText(props.apartment.number);
+};
+
+// Invitation actions
+const viewInvitation = () => {
+    router.visit(`/invitations/${props.invitation.id}`);
+};
+
+const getInvitationUrl = () => {
+    router.visit(`/invitations/${props.invitation.id}/url`);
+};
+
+const resendInvitation = () => {
+    router.post(`/invitations/${props.invitation.id}/resend`);
+};
+
+const deleteInvitation = () => {
+    if (confirm('¿Está seguro que desea eliminar esta invitación?')) {
+        router.delete(`/invitations/${props.invitation.id}`);
+    }
 };
 </script>
 
@@ -104,6 +124,27 @@ const copyApartmentNumber = () => {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem @click="deleteApartment" class="text-red-600">
+                    <Trash2 class="mr-2 h-4 w-4" />
+                    Eliminar
+                </DropdownMenuItem>
+            </template>
+
+            <!-- Invitation actions -->
+            <template v-if="invitation">
+                <DropdownMenuItem @click="getInvitationUrl">
+                    <QrCode class="mr-2 h-4 w-4" />
+                    Ver URL y QR
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="viewInvitation">
+                    <Eye class="mr-2 h-4 w-4" />
+                    Ver invitación
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="resendInvitation" v-if="!invitation.accepted_at">
+                    <RefreshCw class="mr-2 h-4 w-4" />
+                    Reenviar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem @click="deleteInvitation" class="text-red-600">
                     <Trash2 class="mr-2 h-4 w-4" />
                     Eliminar
                 </DropdownMenuItem>

@@ -23,7 +23,7 @@ class RegisterRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z\s\-\'\.]+$/'],
             'password' => [
                 'required',
@@ -32,8 +32,26 @@ class RegisterRequest extends FormRequest
                 new SecurePasswordRule,
             ],
             'password_confirmation' => ['required', 'string'],
-            'token' => ['required', 'string', 'exists:invitations,token'],
         ];
+
+        // Add email validation for admin registration
+        if ($this->routeIs('register.admin')) {
+            $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
+        } else {
+            // Token required for regular invitation-based registration
+            $rules['token'] = ['required', 'string', 'exists:invitations,token'];
+            
+            // If token is for a mass invitation, email and apartment are required
+            if ($this->has('token')) {
+                $invitation = \App\Models\Invitation::where('token', $this->token)->first();
+                if ($invitation && $invitation->is_mass_invitation) {
+                    $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
+                    $rules['apartment_id'] = ['required', 'exists:apartments,id'];
+                }
+            }
+        }
+
+        return $rules;
     }
 
     /**

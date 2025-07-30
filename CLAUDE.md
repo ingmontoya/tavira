@@ -103,11 +103,9 @@ The application is organized into logical modules:
 
 ## Important Notes
 
-- The application manages a single configurable conjunto (currently "Conjunto Residencial Vista Hermosa")
-- `conjunto_config_id` references are maintained but only one conjunto exists in the database
 - All apartments and apartment types must reference the conjunto_config_id
 - Use existing middleware patterns for security and rate limiting
-- Follow the established component patterns when creating new Vue components
+- Follow the established component patterns when creating new Vue components (apartments/index.vue, Edit.vue, Create.vue and Show.vue)
 - Maintain type safety with TypeScript definitions
 - Use the existing composables for common functionality
 - Security is a priority - leverage existing security services and patterns
@@ -116,9 +114,9 @@ The application is organized into logical modules:
 ## Current Data Structure
 
 ### Conjunto Configuration (Configurable)
-- **Default Name**: Conjunto Residencial Vista Hermosa
-- **Default Towers**: 3 towers named A, B, C
-- **Default Floors**: 8 floors per tower
+- **Default Name**: Conjunto Torres de Villa campestre
+- **Default Towers**: 5 towers named 1, 2, 3, 4, 5
+- **Default Floors**: 15 floors per tower
 - **Default Apartments**: 4 apartments per floor
 - **Total Units**: Configurable based on conjunto settings
 

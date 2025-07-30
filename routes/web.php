@@ -132,7 +132,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Invitations Management
     Route::resource('invitations', InvitationController::class)->except(['edit', 'update']);
+    Route::post('invitations/mass', [InvitationController::class, 'storeMass'])->name('invitations.mass.store');
     Route::post('invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('invitations.resend');
+    Route::get('invitations/{invitation}/url', [InvitationController::class, 'getRegistrationUrl'])->name('invitations.url');
 });
 
 require __DIR__.'/settings.php';

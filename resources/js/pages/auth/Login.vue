@@ -9,9 +9,10 @@ import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
-defineProps<{
+const props = defineProps<{
     status?: string;
     canResetPassword: boolean;
+    canRegisterAdmin?: boolean;
 }>();
 
 const form = useForm({
@@ -85,8 +86,14 @@ const submit = () => {
             </div>
 
             <div class="text-center text-sm text-muted-foreground">
-                ¿No tienes una cuenta?
-                <TextLink :href="route('register')" :tabindex="5">Registrarse</TextLink>
+                <div v-if="props.canRegisterAdmin" class="mb-2">
+                    ¿Eres el primer administrador?
+                    <TextLink :href="route('register.admin')" :tabindex="5" class="text-amber-600 hover:text-amber-700">Crear cuenta de administrador</TextLink>
+                </div>
+                <div>
+                    ¿No tienes una cuenta?
+                    <TextLink :href="route('register')" :tabindex="5">Registrarse</TextLink>
+                </div>
             </div>
         </form>
     </AuthBase>

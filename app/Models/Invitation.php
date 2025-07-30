@@ -18,11 +18,15 @@ class Invitation extends Model
         'accepted_at',
         'accepted_by',
         'message',
+        'is_mass_invitation',
+        'mass_invitation_title',
+        'mass_invitation_description',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'accepted_at' => 'datetime',
+        'is_mass_invitation' => 'boolean',
     ];
 
     protected static function booted(): void

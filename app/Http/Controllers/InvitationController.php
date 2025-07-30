@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class InvitationController extends Controller
 {
@@ -30,6 +31,11 @@ class InvitationController extends Controller
             ->orderBy('number')
             ->get();
 
+        // Check for existing active mass invitation
+        $activeMassInvitation = Invitation::where('is_mass_invitation', true)
+            ->where('expires_at', '>', now())
+            ->first();
+
         return Inertia::render('admin/Invitations/Create', [
             'apartments' => $apartments,
             'roles' => [
@@ -39,6 +45,7 @@ class InvitationController extends Controller
                 'residente' => 'Residente',
                 'porteria' => 'Portería',
             ],
+            'activeMassInvitation' => $activeMassInvitation,
         ]);
     }
 
@@ -61,6 +68,39 @@ class InvitationController extends Controller
 
         return redirect()->route('invitations.index')
             ->with('success', 'Invitación enviada correctamente.');
+    }
+
+    public function storeMass(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'mass_invitation_title' => ['required', 'string', 'max:100'],
+            'mass_invitation_description' => ['nullable', 'string', 'max:1000'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
+        ]);
+
+        // Check if there's already an active mass invitation
+        $existingMassInvitation = Invitation::where('is_mass_invitation', true)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if ($existingMassInvitation) {
+            return back()->with('error', 'Ya existe una invitación masiva activa. Debe expirar o eliminarse antes de crear una nueva.');
+        }
+
+        $invitation = Invitation::create([
+            'email' => 'mass-invitation@conjunto.local', // Placeholder email
+            'role' => 'mass_invitation', // Special role for mass invitations
+            'apartment_id' => null,
+            'invited_by' => auth()->id(),
+            'message' => null,
+            'is_mass_invitation' => true,
+            'mass_invitation_title' => $validated['mass_invitation_title'],
+            'mass_invitation_description' => $validated['mass_invitation_description'],
+            'expires_at' => $validated['expires_at'] ? \Carbon\Carbon::parse($validated['expires_at']) : now()->addDays(30),
+        ]);
+
+        return redirect()->route('invitations.index')
+            ->with('success', 'Invitación masiva creada correctamente.');
     }
 
     public function show(Invitation $invitation): Response
@@ -91,5 +131,47 @@ class InvitationController extends Controller
         ]);
 
         return back()->with('success', 'Invitación reenviada correctamente.');
+    }
+
+    public function getRegistrationUrl(Invitation $invitation)
+    {
+        \Log::info('getRegistrationUrl called', [
+            'invitation_id' => $invitation->id,
+            'is_accepted' => $invitation->isAccepted(),
+            'is_expired' => $invitation->isExpired(),
+            'is_mass_invitation' => $invitation->is_mass_invitation
+        ]);
+
+        // For mass invitations, don't check if accepted since multiple people can use it
+        if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
+            \Log::info('Individual invitation is accepted, redirecting');
+            return redirect()->route('invitations.show', $invitation)->with('error', 'Esta invitación ya fue aceptada.');
+        }
+
+        if ($invitation->isExpired()) {
+            \Log::info('Invitation is expired, redirecting');
+            return redirect()->route('invitations.show', $invitation)->with('error', 'Esta invitación ha expirado.');
+        }
+
+        $registrationUrl = route('register', ['token' => $invitation->token]);
+        \Log::info('Generated registration URL', ['url' => $registrationUrl]);
+
+        // Generate QR code as SVG string
+        $qrCode = (string) QrCode::format('svg')
+            ->size(200)
+            ->margin(2)
+            ->generate($registrationUrl);
+
+        \Log::info('Generated QR code', [
+            'qr_length' => strlen($qrCode),
+            'qr_type' => gettype($qrCode),
+            'qr_first_100_chars' => substr($qrCode, 0, 100)
+        ]);
+
+        return Inertia::render('admin/Invitations/RegistrationUrl', [
+            'invitation' => $invitation->load(['apartment.apartmentType']),
+            'registrationUrl' => $registrationUrl,
+            'qrCode' => $qrCode,
+        ]);
     }
 }

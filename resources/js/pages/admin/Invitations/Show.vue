@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, CheckCircle, Clock, Mail, RefreshCw, Trash2, User, XCircle } from 'lucide-vue-next';
+import { ArrowLeft, Calendar, CheckCircle, Clock, Mail, QrCode, RefreshCw, Trash2, User, XCircle } from 'lucide-vue-next';
 
 interface Invitation {
     id: number;
@@ -247,10 +247,20 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                         <CardTitle>URL de Registro</CardTitle>
                         <CardDescription> Comparte esta URL con el invitado para que pueda registrarse </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent class="space-y-4">
                         <div class="flex items-center gap-2 rounded-md bg-muted p-3">
                             <code class="flex-1 text-sm break-all">{{ registrationUrl }}</code>
                             <Button size="sm" variant="outline" @click="navigator.clipboard.writeText(registrationUrl)"> Copiar </Button>
+                        </div>
+                        <div class="flex justify-center">
+                            <Button 
+                                @click="router.visit(route('invitations.url', invitation.id))"
+                                variant="outline"
+                                class="flex items-center gap-2"
+                            >
+                                <QrCode class="h-4 w-4" />
+                                Ver URL y Código QR
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
