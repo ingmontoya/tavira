@@ -59,6 +59,16 @@ class RolePermissionSeeder extends Seeder
             'view_access_logs',
             'manage_visitors',
             'view_security_reports',
+
+            // New modules for residents/propietarios
+            'view_account_statement',
+            'invite_visitors',
+            'receive_notifications',
+            'send_pqrs',
+            'send_messages_to_admin',
+
+            // Council/Consejo specific
+            'review_provider_proposals',
         ];
 
         foreach ($permissions as $permission) {
@@ -89,25 +99,26 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         $consejo->givePermissionTo([
-            'view_dashboard',
+            'view_dashboard', 'view_account_statement',
             'view_apartments', 'view_apartment_types',
             'view_residents',
             'view_payments', 'view_reports',
             'view_announcements', 'create_announcements',
             'view_access_logs',
+            'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
+            'review_provider_proposals',
         ]);
 
         $propietario->givePermissionTo([
-            'view_dashboard',
-            'view_apartments',
-            'view_residents',
-            'view_payments',
+            'view_dashboard', 'view_account_statement',
             'view_announcements',
+            'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
         ]);
 
         $residente->givePermissionTo([
-            'view_dashboard',
+            'view_dashboard', 'view_account_statement',
             'view_announcements',
+            'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
         ]);
 
         $porteria->givePermissionTo([

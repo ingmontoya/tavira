@@ -8,6 +8,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\InputSanitizationMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
 use App\Http\Middleware\SecurityHeadersMiddleware;
+use App\Http\Middleware\SharePermissions;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             InputSanitizationMiddleware::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
+            SharePermissions::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 

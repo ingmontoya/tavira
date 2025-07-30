@@ -139,17 +139,19 @@ class InvitationController extends Controller
             'invitation_id' => $invitation->id,
             'is_accepted' => $invitation->isAccepted(),
             'is_expired' => $invitation->isExpired(),
-            'is_mass_invitation' => $invitation->is_mass_invitation
+            'is_mass_invitation' => $invitation->is_mass_invitation,
         ]);
 
         // For mass invitations, don't check if accepted since multiple people can use it
-        if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
+        if (! $invitation->is_mass_invitation && $invitation->isAccepted()) {
             \Log::info('Individual invitation is accepted, redirecting');
+
             return redirect()->route('invitations.show', $invitation)->with('error', 'Esta invitación ya fue aceptada.');
         }
 
         if ($invitation->isExpired()) {
             \Log::info('Invitation is expired, redirecting');
+
             return redirect()->route('invitations.show', $invitation)->with('error', 'Esta invitación ha expirado.');
         }
 
@@ -165,7 +167,7 @@ class InvitationController extends Controller
         \Log::info('Generated QR code', [
             'qr_length' => strlen($qrCode),
             'qr_type' => gettype($qrCode),
-            'qr_first_100_chars' => substr($qrCode, 0, 100)
+            'qr_first_100_chars' => substr($qrCode, 0, 100),
         ]);
 
         return Inertia::render('admin/Invitations/RegistrationUrl', [

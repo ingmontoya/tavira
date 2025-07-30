@@ -25,96 +25,121 @@ Route::post('solicitar-acceso', [AccessRequestController::class, 'store'])->name
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // New modules - Under construction
+    Route::get('account-statement', function () {
+        return Inertia::render('AccountStatement/Index');
+    })->name('account-statement.index')->middleware('can:view_account_statement');
+
+    Route::get('visitor-invitations', function () {
+        return Inertia::render('VisitorInvitations/Index');
+    })->name('visitor-invitations.index')->middleware('can:invite_visitors');
+
+    Route::get('notifications', function () {
+        return Inertia::render('Notifications/Index');
+    })->name('notifications.index')->middleware('can:receive_notifications');
+
+    Route::get('pqrs', function () {
+        return Inertia::render('PQRS/Index');
+    })->name('pqrs.index')->middleware('can:send_pqrs');
+
+    Route::get('messages', function () {
+        return Inertia::render('Messages/Index');
+    })->name('messages.index')->middleware('can:send_messages_to_admin');
+
+    Route::get('provider-proposals', function () {
+        return Inertia::render('ProviderProposals/Index');
+    })->name('provider-proposals.index')->middleware('can:review_provider_proposals');
+
     Route::get('users', function () {
         return Inertia::render('Users/Index');
     })->name('users.index')->middleware('rate.limit:strict');
 
     // Reports
-    Route::get('reports', [ReportsController::class, 'index'])->name('reports.index')->middleware('rate.limit:search');
+    Route::get('reports', [ReportsController::class, 'index'])->name('reports.index')->middleware(['rate.limit:search', 'can:view_reports']);
 
     // Residents Management
-    Route::resource('residents', ResidentController::class);
+    Route::resource('residents', ResidentController::class)->middleware('can:view_residents');
 
     // Conjunto Configuration Management (Single conjunto)
-    Route::get('conjunto-config', [ConjuntoConfigController::class, 'index'])->name('conjunto-config.index');
-    Route::get('conjunto-config/show', [ConjuntoConfigController::class, 'show'])->name('conjunto-config.show');
-    Route::get('conjunto-config/edit', [ConjuntoConfigController::class, 'edit'])->name('conjunto-config.edit');
-    Route::put('conjunto-config', [ConjuntoConfigController::class, 'update'])->name('conjunto-config.update');
+    Route::get('conjunto-config', [ConjuntoConfigController::class, 'index'])->name('conjunto-config.index')->middleware('can:view_conjunto_config');
+    Route::get('conjunto-config/show', [ConjuntoConfigController::class, 'show'])->name('conjunto-config.show')->middleware('can:view_conjunto_config');
+    Route::get('conjunto-config/edit', [ConjuntoConfigController::class, 'edit'])->name('conjunto-config.edit')->middleware('can:edit_conjunto_config');
+    Route::put('conjunto-config', [ConjuntoConfigController::class, 'update'])->name('conjunto-config.update')->middleware('can:edit_conjunto_config');
     Route::post('conjunto-config/generate-apartments', [ConjuntoConfigController::class, 'generateApartments'])
-        ->name('conjunto-config.generate-apartments');
+        ->name('conjunto-config.generate-apartments')->middleware('can:edit_conjunto_config');
 
     // Conjuntos Management
     Route::get('conjuntos', function () {
         return Inertia::render('Conjuntos/Index');
-    })->name('conjuntos.index')->middleware('rate.limit:default');
+    })->name('conjuntos.index')->middleware(['rate.limit:default', 'can:view_conjunto_config']);
 
     // Apartments Management
-    Route::resource('apartments', ApartmentController::class);
-    Route::get('apartments-delinquent', [ApartmentController::class, 'delinquent'])->name('apartments.delinquent');
-    Route::get('apartments-delinquent/export-excel', [ApartmentController::class, 'exportDelinquentExcel'])->name('apartments.delinquent.export.excel');
-    Route::get('apartments-delinquent/export-pdf', [ApartmentController::class, 'exportDelinquentPdf'])->name('apartments.delinquent.export.pdf');
+    Route::resource('apartments', ApartmentController::class)->middleware('can:view_apartments');
+    Route::get('apartments-delinquent', [ApartmentController::class, 'delinquent'])->name('apartments.delinquent')->middleware('can:view_apartments');
+    Route::get('apartments-delinquent/export-excel', [ApartmentController::class, 'exportDelinquentExcel'])->name('apartments.delinquent.export.excel')->middleware('can:view_apartments');
+    Route::get('apartments-delinquent/export-pdf', [ApartmentController::class, 'exportDelinquentPdf'])->name('apartments.delinquent.export.pdf')->middleware('can:view_apartments');
 
     // Finance Management
     Route::get('finances', function () {
         return Inertia::render('Finances/Index');
-    })->name('finances.index')->middleware('rate.limit:default');
+    })->name('finances.index')->middleware(['rate.limit:default', 'can:view_payments']);
 
     Route::get('fees', function () {
         return Inertia::render('Fees/Index');
-    })->name('fees.index')->middleware('rate.limit:default');
+    })->name('fees.index')->middleware(['rate.limit:default', 'can:view_payments']);
 
     // Payments Management
-    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index')->middleware('rate.limit:default');
+    Route::get('payments', [PaymentController::class, 'index'])->name('payments.index')->middleware(['rate.limit:default', 'can:view_payments']);
 
     // Invoices Management
-    Route::resource('invoices', InvoiceController::class);
-    Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
-    Route::post('invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generate-monthly');
-    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
-    Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByEmail'])->name('invoices.send-email');
+    Route::resource('invoices', InvoiceController::class)->middleware('can:view_payments');
+    Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid')->middleware('can:edit_payments');
+    Route::post('invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generate-monthly')->middleware('can:create_payments');
+    Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf')->middleware('can:view_payments');
+    Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByEmail'])->name('invoices.send-email')->middleware('can:edit_payments');
 
     // Payment Concepts Management
-    Route::resource('payment-concepts', PaymentConceptController::class);
-    Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptController::class, 'toggle'])->name('payment-concepts.toggle');
+    Route::resource('payment-concepts', PaymentConceptController::class)->middleware('can:view_payments');
+    Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptController::class, 'toggle'])->name('payment-concepts.toggle')->middleware('can:edit_payments');
 
     // Payment Agreements Management
-    Route::resource('payment-agreements', PaymentAgreementController::class);
-    Route::post('payment-agreements/{paymentAgreement}/approve', [PaymentAgreementController::class, 'approve'])->name('payment-agreements.approve');
-    Route::post('payment-agreements/{paymentAgreement}/activate', [PaymentAgreementController::class, 'activate'])->name('payment-agreements.activate');
-    Route::post('payment-agreements/{paymentAgreement}/cancel', [PaymentAgreementController::class, 'cancel'])->name('payment-agreements.cancel');
-    Route::post('payment-agreements/{paymentAgreement}/submit-for-approval', [PaymentAgreementController::class, 'submitForApproval'])->name('payment-agreements.submit-for-approval');
-    Route::post('payment-agreements/{paymentAgreement}/record-payment', [PaymentAgreementController::class, 'recordPayment'])->name('payment-agreements.record-payment');
+    Route::resource('payment-agreements', PaymentAgreementController::class)->middleware('can:view_payments');
+    Route::post('payment-agreements/{paymentAgreement}/approve', [PaymentAgreementController::class, 'approve'])->name('payment-agreements.approve')->middleware('can:edit_payments');
+    Route::post('payment-agreements/{paymentAgreement}/activate', [PaymentAgreementController::class, 'activate'])->name('payment-agreements.activate')->middleware('can:edit_payments');
+    Route::post('payment-agreements/{paymentAgreement}/cancel', [PaymentAgreementController::class, 'cancel'])->name('payment-agreements.cancel')->middleware('can:edit_payments');
+    Route::post('payment-agreements/{paymentAgreement}/submit-for-approval', [PaymentAgreementController::class, 'submitForApproval'])->name('payment-agreements.submit-for-approval')->middleware('can:view_payments');
+    Route::post('payment-agreements/{paymentAgreement}/record-payment', [PaymentAgreementController::class, 'recordPayment'])->name('payment-agreements.record-payment')->middleware('can:edit_payments');
 
     Route::get('providers', function () {
         return Inertia::render('Providers/Index');
-    })->name('providers.index')->middleware('rate.limit:default');
+    })->name('providers.index')->middleware(['rate.limit:default', 'can:view_payments']);
 
     // Communication
     Route::get('correspondence', function () {
         return Inertia::render('Correspondence/Index');
-    })->name('correspondence.index')->middleware('rate.limit:default');
+    })->name('correspondence.index')->middleware(['rate.limit:default', 'can:view_announcements']);
 
     Route::get('announcements', function () {
         return Inertia::render('Announcements/Index');
-    })->name('announcements.index')->middleware('rate.limit:default');
+    })->name('announcements.index')->middleware(['rate.limit:default', 'can:view_announcements']);
 
     Route::get('visits', function () {
         return Inertia::render('Visits/Index');
-    })->name('visits.index')->middleware('rate.limit:default');
+    })->name('visits.index')->middleware(['rate.limit:default', 'can:manage_visitors']);
 
     // Documents
     Route::get('documents', function () {
         return Inertia::render('Documents/Index');
-    })->name('documents.index')->middleware('rate.limit:default');
+    })->name('documents.index')->middleware(['rate.limit:default', 'can:view_announcements']);
 
     Route::get('minutes', function () {
         return Inertia::render('Minutes/Index');
-    })->name('minutes.index')->middleware('rate.limit:default');
+    })->name('minutes.index')->middleware(['rate.limit:default', 'can:view_announcements']);
 
     // Security
     Route::get('security', function () {
         return Inertia::render('Security/Index');
-    })->name('security.main')->middleware('rate.limit:default');
+    })->name('security.main')->middleware(['rate.limit:default', 'can:view_access_logs']);
 
     // Support
     Route::get('support', function () {
@@ -128,13 +153,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('settings', function () {
         return Inertia::render('Settings/Index');
-    })->name('settings.index')->middleware('rate.limit:default');
+    })->name('settings.index')->middleware(['rate.limit:default', 'can:edit_conjunto_config']);
 
     // Invitations Management
-    Route::resource('invitations', InvitationController::class)->except(['edit', 'update']);
-    Route::post('invitations/mass', [InvitationController::class, 'storeMass'])->name('invitations.mass.store');
-    Route::post('invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('invitations.resend');
-    Route::get('invitations/{invitation}/url', [InvitationController::class, 'getRegistrationUrl'])->name('invitations.url');
+    Route::resource('invitations', InvitationController::class)->except(['edit', 'update'])->middleware('can:manage_invitations');
+    Route::post('invitations/mass', [InvitationController::class, 'storeMass'])->name('invitations.mass.store')->middleware('can:manage_invitations');
+    Route::post('invitations/{invitation}/resend', [InvitationController::class, 'resend'])->name('invitations.resend')->middleware('can:manage_invitations');
+    Route::get('invitations/{invitation}/url', [InvitationController::class, 'getRegistrationUrl'])->name('invitations.url')->middleware('can:manage_invitations');
 });
 
 require __DIR__.'/settings.php';

@@ -3,6 +3,7 @@ import type { Config } from 'ziggy-js';
 
 export interface Auth {
     user: User;
+    permissions?: string[];
 }
 
 export interface BreadcrumbItem {
@@ -17,6 +18,7 @@ export interface NavItem {
     isActive?: boolean;
     items?: NavItem[];
     tourId?: string;
+    visible?: boolean;
 }
 
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

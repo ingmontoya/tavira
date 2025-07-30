@@ -4,6 +4,7 @@ use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\PaymentSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecuritySettingsController;
+use App\Http\Controllers\Settings\UserPermissionsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -28,6 +29,12 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/security/reset-defaults', [SecuritySettingsController::class, 'resetToDefaults'])->name('security.reset-defaults');
 
     // Payment Settings Routes
-    Route::get('settings/payments', [PaymentSettingsController::class, 'index'])->name('payments.index');
-    Route::post('settings/payments', [PaymentSettingsController::class, 'update'])->name('payments.update');
+    Route::get('settings/payments', [PaymentSettingsController::class, 'index'])->name('settings.payments.index');
+    Route::post('settings/payments', [PaymentSettingsController::class, 'update'])->name('settings.payments.update');
+
+    // User Permissions Routes
+    Route::get('settings/permissions', [UserPermissionsController::class, 'index'])->name('permissions.index')->middleware('can:edit_users');
+    Route::patch('settings/permissions/users/{user}/role', [UserPermissionsController::class, 'updateUserRole'])->name('permissions.user.role')->middleware('can:edit_users');
+    Route::patch('settings/permissions/users/{user}/permissions', [UserPermissionsController::class, 'updateUserPermissions'])->name('permissions.user.permissions')->middleware('can:edit_users');
+    Route::patch('settings/permissions/roles/{role}/permissions', [UserPermissionsController::class, 'updateRolePermissions'])->name('permissions.role.permissions')->middleware('can:edit_users');
 });

@@ -15,26 +15,33 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        $user = $request->user();
         $selectedMonth = $request->get('month', now()->format('Y-m'));
         [$selectedYear, $selectedMonthNum] = explode('-', $selectedMonth);
         $selectedYear = (int) $selectedYear;
         $selectedMonthNum = (int) $selectedMonthNum;
-        // Obtener datos reales
-        $totalResidents = Resident::count();
-        $totalApartments = Apartment::count();
-        $totalConjuntos = ConjuntoConfig::count();
+
+        // Check user permissions to determine what data to show
+        $canViewFullAdmin = $user->can('view_residents') && $user->can('view_apartments');
+        $canViewPayments = $user->can('view_payments');
+        $canViewReports = $user->can('view_reports');
+
+        // Obtener datos reales (only if user has permissions)
+        $totalResidents = $canViewFullAdmin ? Resident::count() : 0;
+        $totalApartments = $canViewFullAdmin ? Apartment::count() : 0;
+        $totalConjuntos = $canViewFullAdmin ? ConjuntoConfig::count() : 0;
         $conjunto = ConjuntoConfig::first(); // Obtener el conjunto único
 
         // Calcular crecimiento de residentes (mock data si no hay suficientes datos)
-        $currentMonthResidents = Resident::whereMonth('created_at', now()->month)->count();
-        $lastMonthResidents = Resident::whereMonth('created_at', now()->subMonth()->month)->count();
-        $residentGrowth = $this->calculateGrowthPercentage($currentMonthResidents, $lastMonthResidents) ?: 15.2;
+        $currentMonthResidents = $canViewFullAdmin ? Resident::whereMonth('created_at', now()->month)->count() : 0;
+        $lastMonthResidents = $canViewFullAdmin ? Resident::whereMonth('created_at', now()->subMonth()->month)->count() : 0;
+        $residentGrowth = $canViewFullAdmin ? ($this->calculateGrowthPercentage($currentMonthResidents, $lastMonthResidents) ?: 15.2) : 0;
 
-        // Obtener datos reales de pagos para el mes seleccionado
-        $pendingPayments = $this->getPendingPaymentsCount($selectedYear, $selectedMonthNum);
-        $expectedPayments = $this->getExpectedPaymentsCount($selectedYear, $selectedMonthNum);
-        $totalPaymentsExpected = $this->getTotalExpectedAmount($selectedYear, $selectedMonthNum);
-        $totalPaymentsReceived = $this->getTotalReceivedAmount($selectedYear, $selectedMonthNum);
+        // Obtener datos reales de pagos para el mes seleccionado (only if user has permissions)
+        $pendingPayments = $canViewPayments ? $this->getPendingPaymentsCount($selectedYear, $selectedMonthNum) : 0;
+        $expectedPayments = $canViewPayments ? $this->getExpectedPaymentsCount($selectedYear, $selectedMonthNum) : 0;
+        $totalPaymentsExpected = $canViewPayments ? $this->getTotalExpectedAmount($selectedYear, $selectedMonthNum) : 0;
+        $totalPaymentsReceived = $canViewPayments ? $this->getTotalReceivedAmount($selectedYear, $selectedMonthNum) : 0;
 
         // KPIs - Usando datos reales del sistema
         $kpis = [
@@ -49,34 +56,34 @@ class DashboardController extends Controller
             'totalPaymentsReceived' => $totalPaymentsReceived,
         ];
 
-        // Residentes por Torre - Combinando datos reales con mock
-        $residentsByTower = $this->getResidentsByTower();
+        // Residentes por Torre - Combinando datos reales con mock (only for admin users)
+        $residentsByTower = $canViewFullAdmin ? $this->getResidentsByTower() : collect();
 
-        // Estados de pago - Datos reales para el mes seleccionado
-        $paymentsByStatus = $this->getPaymentsByStatus($selectedYear, $selectedMonthNum);
+        // Estados de pago - Datos reales para el mes seleccionado (only for users with payment permissions)
+        $paymentsByStatus = $canViewPayments ? $this->getPaymentsByStatus($selectedYear, $selectedMonthNum) : collect();
 
-        // Estado de ocupación - Combinando datos reales con mock
-        $occupancyStatus = $this->getOccupancyStatus();
+        // Estado de ocupación - Combinando datos reales con mock (only for admin users)
+        $occupancyStatus = $canViewFullAdmin ? $this->getOccupancyStatus() : collect();
 
-        // Gastos mensuales - Mock data
-        $monthlyExpenses = collect([
+        // Gastos mensuales - Mock data (only for users with reports permission)
+        $monthlyExpenses = $canViewReports ? collect([
             ['category' => 'Servicios Públicos', 'amount' => 2450000, 'percentage' => 35, 'color' => '#3b82f6'],
             ['category' => 'Mantenimiento', 'amount' => 1890000, 'percentage' => 27, 'color' => '#ef4444'],
             ['category' => 'Seguridad', 'amount' => 1200000, 'percentage' => 17, 'color' => '#10b981'],
             ['category' => 'Aseo', 'amount' => 780000, 'percentage' => 11, 'color' => '#f59e0b'],
             ['category' => 'Administración', 'amount' => 450000, 'percentage' => 6, 'color' => '#8b5cf6'],
             ['category' => 'Jardinería', 'amount' => 280000, 'percentage' => 4, 'color' => '#06b6d4'],
-        ]);
+        ]) : collect();
 
-        // Tendencia de recaudo - Mock data
-        $paymentTrend = collect([
+        // Tendencia de recaudo - Mock data (only for users with payment permissions)
+        $paymentTrend = $canViewPayments ? collect([
             ['month' => '2024-02', 'amount' => 15420000, 'label' => 'Feb 2024'],
             ['month' => '2024-03', 'amount' => 16890000, 'label' => 'Mar 2024'],
             ['month' => '2024-04', 'amount' => 15680000, 'label' => 'Abr 2024'],
             ['month' => '2024-05', 'amount' => 17230000, 'label' => 'May 2024'],
             ['month' => '2024-06', 'amount' => 16950000, 'label' => 'Jun 2024'],
             ['month' => '2024-07', 'amount' => 18120000, 'label' => 'Jul 2024'],
-        ]);
+        ]) : collect();
 
         // Notificaciones pendientes - Mock data
         $pendingNotifications = collect([
@@ -113,9 +120,14 @@ class DashboardController extends Controller
                 'paymentTrend' => $paymentTrend,
             ],
             'pendingNotifications' => $pendingNotifications,
-            'recentActivity' => $this->getRecentActivity(),
+            'recentActivity' => $canViewFullAdmin ? $this->getRecentActivity() : collect(),
             'selectedMonth' => $selectedMonth,
-            'availableMonths' => $this->getAvailableMonths(),
+            'availableMonths' => $canViewPayments ? $this->getAvailableMonths() : [],
+            'userPermissions' => [
+                'canViewFullAdmin' => $canViewFullAdmin,
+                'canViewPayments' => $canViewPayments,
+                'canViewReports' => $canViewReports,
+            ],
         ]);
     }
 

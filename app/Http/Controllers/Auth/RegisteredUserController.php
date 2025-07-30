@@ -60,7 +60,7 @@ class RegisteredUserController extends Controller
             ->first();
 
         // For mass invitations, don't check if already accepted
-        if (!$invitation || (!$invitation->is_mass_invitation && $invitation->accepted_at)) {
+        if (! $invitation || (! $invitation->is_mass_invitation && $invitation->accepted_at)) {
             return redirect()->route('access-request.create')
                 ->with('error', 'La invitación es inválida o ha expirado.');
         }
@@ -73,7 +73,7 @@ class RegisteredUserController extends Controller
                 ->orderBy('floor')
                 ->orderBy('number')
                 ->get()
-                ->map(fn($apartment) => [
+                ->map(fn ($apartment) => [
                     'id' => $apartment->id,
                     'number' => $apartment->number,
                     'tower' => $apartment->tower,
@@ -142,7 +142,7 @@ class RegisteredUserController extends Controller
                 ->firstOrFail();
 
             // For mass invitations, don't check if already accepted
-            if (!$invitation->is_mass_invitation && $invitation->accepted_at) {
+            if (! $invitation->is_mass_invitation && $invitation->accepted_at) {
                 return redirect()->route('access-request.create')
                     ->with('error', 'Esta invitación ya ha sido utilizada.');
             }
@@ -173,7 +173,7 @@ class RegisteredUserController extends Controller
             }
 
             // For individual invitations, mark as accepted
-            if (!$invitation->is_mass_invitation) {
+            if (! $invitation->is_mass_invitation) {
                 $invitation->update([
                     'accepted_at' => now(),
                     'accepted_by' => $user->id,

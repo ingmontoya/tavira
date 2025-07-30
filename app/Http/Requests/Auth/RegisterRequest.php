@@ -40,7 +40,7 @@ class RegisterRequest extends FormRequest
         } else {
             // Token required for regular invitation-based registration
             $rules['token'] = ['required', 'string', 'exists:invitations,token'];
-            
+
             // If token is for a mass invitation, email and apartment are required
             if ($this->has('token')) {
                 $invitation = \App\Models\Invitation::where('token', $this->token)->first();
