@@ -35,7 +35,7 @@ class ProcessLateFees extends Command
 
             if ($invoice->late_fees != $oldLateFees) {
                 $processed++;
-                $this->line("Updated late fees for Invoice #{$invoice->invoice_number}: ${$oldLateFees} -> ${$invoice->late_fees}");
+                $this->line("Updated late fees for Invoice #{$invoice->invoice_number}: {$oldLateFees} -> {$invoice->late_fees}");
             }
         }
 

@@ -90,7 +90,7 @@ class ProcessLateFeesCommand extends Command
             $lateFeeAmount = round($lateFeeAmount, 2);
 
             if ($lateFeeAmount > 0) {
-                $this->line("\nApartment {$invoice->apartment->full_address}: ${$lateFeeAmount} ({$daysOverdue} days overdue)");
+                $this->line("\nApartment {$invoice->apartment->full_address}: {$lateFeeAmount} ({$daysOverdue} days overdue)");
 
                 if (! $dryRun) {
                     $invoice->update([
@@ -114,10 +114,10 @@ class ProcessLateFeesCommand extends Command
         $this->newLine();
 
         if ($dryRun) {
-            $this->info("DRY RUN: Would process {$processedCount} invoices with total late fees of \${$totalLateFees}");
+            $this->info("DRY RUN: Would process {$processedCount} invoices with total late fees of {$totalLateFees}");
         } else {
             $this->info("Processed {$processedCount} overdue invoices.");
-            $this->info("Total late fees applied: \${$totalLateFees}");
+            $this->info("Total late fees applied: {$totalLateFees}");
 
             $overdueInvoices->each(function ($invoice) {
                 $invoice->apartment->updatePaymentStatus();
