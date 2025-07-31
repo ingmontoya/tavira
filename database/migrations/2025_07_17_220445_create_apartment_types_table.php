@@ -11,6 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Ensure conjunto_configs table exists before creating apartment_types
+        if (!Schema::hasTable('conjunto_configs')) {
+            Schema::create('conjunto_configs', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->unique();
+                $table->text('description')->nullable();
+                $table->integer('number_of_towers');
+                $table->integer('floors_per_tower');
+                $table->integer('apartments_per_floor');
+                $table->boolean('is_active')->default(true);
+                $table->json('tower_names')->nullable(); // ['A', 'B', 'C']
+                $table->json('configuration_metadata')->nullable(); // Additional config data
+                $table->timestamps();
+            });
+        }
+
         Schema::create('apartment_types', function (Blueprint $table) {
             $table->id();
             $table->foreignId('conjunto_config_id')->constrained()->onDelete('cascade');
