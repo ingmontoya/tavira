@@ -14,7 +14,7 @@ return new class extends Migration
         // Remove conjunto_config_id from apartments table
         Schema::table('apartments', function (Blueprint $table) {
             $table->dropForeign(['conjunto_config_id']);
-            $table->dropIndex('apartments_conjunto_config_id_tower_number_unique');
+            $table->dropUnique('apartments_conjunto_config_id_tower_number_unique');
             $table->dropIndex('apartments_conjunto_config_id_tower_floor_index');
             $table->dropColumn('conjunto_config_id');
         });
