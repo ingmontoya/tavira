@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop if exists and recreate to ensure clean state
+        Schema::dropIfExists('conjunto_configs');
+        
         Schema::create('conjunto_configs', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
