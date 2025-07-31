@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             SecuritySettingsSeeder::class,
+            RolePermissionSeeder::class,
             ConjuntoConfigSeeder::class,
             ResidentSeeder::class,
         ]);

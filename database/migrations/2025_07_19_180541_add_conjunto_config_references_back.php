@@ -12,6 +12,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Recreate conjunto_configs table for single configuration
+        Schema::create('conjunto_configs', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->text('description')->nullable();
+            $table->integer('number_of_towers');
+            $table->integer('floors_per_tower');
+            $table->integer('apartments_per_floor');
+            $table->boolean('is_active')->default(true);
+            $table->json('tower_names')->nullable();
+            $table->json('configuration_metadata')->nullable();
+            $table->timestamps();
+        });
+
         // First create the default conjunto config
         DB::table('conjunto_configs')->insert([
             'name' => 'Conjunto Residencial Vista Hermosa',
@@ -69,5 +83,7 @@ return new class extends Migration
             $table->dropUnique(['conjunto_config_id', 'name']);
             $table->dropColumn('conjunto_config_id');
         });
+
+        Schema::dropIfExists('conjunto_configs');
     }
 };

@@ -33,6 +33,33 @@ return new class extends Migration
             $table->dropColumn(['role', 'conjunto_config_id']);
         });
 
+        // Remove conjunto_config_id from payment_concepts table
+        if (Schema::hasTable('payment_concepts')) {
+            Schema::table('payment_concepts', function (Blueprint $table) {
+                $table->dropForeign(['conjunto_config_id']);
+                $table->dropIndex('payment_concepts_conjunto_config_id_type_index');
+                $table->dropColumn('conjunto_config_id');
+            });
+        }
+
+        // Remove conjunto_config_id from invoices table
+        if (Schema::hasTable('invoices')) {
+            Schema::table('invoices', function (Blueprint $table) {
+                $table->dropForeign(['conjunto_config_id']);
+                $table->dropIndex('invoices_conjunto_config_id_type_index');
+                $table->dropColumn('conjunto_config_id');
+            });
+        }
+
+        // Remove conjunto_config_id from payment_agreements table
+        if (Schema::hasTable('payment_agreements')) {
+            Schema::table('payment_agreements', function (Blueprint $table) {
+                $table->dropForeign(['conjunto_config_id']);
+                $table->dropIndex('payment_agreements_conjunto_config_id_status_index');
+                $table->dropColumn('conjunto_config_id');
+            });
+        }
+
         // Drop conjunto_configs table entirely
         Schema::dropIfExists('conjunto_configs');
     }
@@ -72,5 +99,29 @@ return new class extends Migration
             $table->enum('role', ['company', 'individual'])->default('individual');
             $table->foreignId('conjunto_config_id')->nullable()->constrained()->onDelete('set null');
         });
+
+        // Add back conjunto_config_id to payment_concepts table
+        if (Schema::hasTable('payment_concepts')) {
+            Schema::table('payment_concepts', function (Blueprint $table) {
+                $table->foreignId('conjunto_config_id')->constrained()->onDelete('cascade');
+                $table->index(['conjunto_config_id', 'type']);
+            });
+        }
+
+        // Add back conjunto_config_id to invoices table
+        if (Schema::hasTable('invoices')) {
+            Schema::table('invoices', function (Blueprint $table) {
+                $table->foreignId('conjunto_config_id')->constrained()->onDelete('cascade');
+                $table->index(['conjunto_config_id', 'type']);
+            });
+        }
+
+        // Add back conjunto_config_id to payment_agreements table
+        if (Schema::hasTable('payment_agreements')) {
+            Schema::table('payment_agreements', function (Blueprint $table) {
+                $table->foreignId('conjunto_config_id')->constrained()->onDelete('cascade');
+                $table->index(['conjunto_config_id', 'status']);
+            });
+        }
     }
 };
