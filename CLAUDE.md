@@ -15,6 +15,7 @@ Habitta is a comprehensive property management platform for residential complexe
 - `php artisan serve` - Start Laravel development server only
 - `php artisan migrate` - Run database migrations
 - `php artisan db:seed` - Seed database with test data
+- `php artisan db:seed --class=ChartOfAccountsSeeder` - Seed accounting chart of accounts
 - `php artisan queue:work` - Start queue worker
 - `php artisan pail` - Monitor logs in real-time
 - `./vendor/bin/pint` - Format PHP code (Laravel Pint)
@@ -41,6 +42,7 @@ Habitta is a comprehensive property management platform for residential complexe
 - **Authentication**: Laravel Breeze with simplified user management
 - **Security**: Comprehensive middleware for rate limiting, input sanitization, security headers, and audit logging
 - **Key Models**: User, ConjuntoConfig, Apartment, ApartmentType, Resident
+- **Accounting Models**: ChartOfAccounts, AccountingTransaction, AccountingTransactionEntry, Budget, BudgetItem
 - **Permissions**: Uses Spatie Laravel Permission for role-based access control
 - **Settings**: Spatie Laravel Settings for configurable application settings
 - **Note**: Multitenancy has been removed but ConjuntoConfig remains for single conjunto configuration
@@ -76,7 +78,11 @@ The application is organized into logical modules:
 - **Resident Management**: CRUD operations for residents and apartment assignments
 - **Apartment Management**: Management of apartments and apartment types
 - **Dashboard**: Property management analytics with mock data combined with real data
-- **Finance**: Billing, payments, and financial reporting (planned)
+- **Finance**: Billing, payments, and financial reporting ✅ **IMPLEMENTED**
+  - **Accounting System**: Complete double-entry bookkeeping with Colombian chart of accounts
+  - **Automatic Integration**: Invoice and payment events generate accounting entries automatically
+  - **Budget Management**: Annual budgets with monthly distribution and execution tracking
+  - **Chart of Accounts**: 60+ accounts following Decreto 2650 (Colombian GAAP)
 - **Communication**: Correspondence, announcements, and notifications (planned)
 - **Security**: Access control and visitor management (planned)
 - **Documents**: Official documents and meeting minutes (planned)

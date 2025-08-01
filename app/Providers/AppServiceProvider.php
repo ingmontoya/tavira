@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\InvoiceCreated;
+use App\Events\PaymentReceived;
+use App\Listeners\GenerateAccountingEntryFromInvoice;
+use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Event;
@@ -23,5 +27,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(Verified::class, SendWelcomeEmail::class);
+        
+        // Eventos contables
+        Event::listen(InvoiceCreated::class, GenerateAccountingEntryFromInvoice::class);
+        Event::listen(PaymentReceived::class, GenerateAccountingEntryFromPayment::class);
     }
 }

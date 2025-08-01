@@ -1,0 +1,291 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+class AccountingTransaction extends Model
+{
+    protected $fillable = [
+        'conjunto_config_id',
+        'transaction_number',
+        'transaction_date',
+        'description',
+        'reference_type',
+        'reference_id',
+        'total_debit',
+        'total_credit',
+        'status',
+        'created_by',
+        'posted_by',
+        'posted_at',
+    ];
+
+    protected $casts = [
+        'transaction_date' => 'date',
+        'total_debit' => 'decimal:2',
+        'total_credit' => 'decimal:2',
+        'posted_at' => 'datetime',
+    ];
+
+    protected $appends = [
+        'status_label',
+        'status_badge',
+        'is_balanced',
+        'can_be_posted',
+        'can_be_cancelled',
+    ];
+
+    public function conjuntoConfig(): BelongsTo
+    {
+        return $this->belongsTo(ConjuntoConfig::class);
+    }
+
+    public function entries(): HasMany
+    {
+        return $this->hasMany(AccountingTransactionEntry::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function postedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'posted_by');
+    }
+
+    public function reference(): MorphTo
+    {
+        return $this->morphTo('reference', 'reference_type', 'reference_id');
+    }
+
+    public function scopeForConjunto($query, int $conjuntoConfigId)
+    {
+        return $query->where('conjunto_config_id', $conjuntoConfigId);
+    }
+
+    public function scopeByStatus($query, string $status)
+    {
+        return $query->where('status', $status);
+    }
+
+    public function scopePosted($query)
+    {
+        return $query->where('status', 'posted');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
+    }
+
+    public function scopeByPeriod($query, string $startDate, string $endDate)
+    {
+        return $query->whereBetween('transaction_date', [$startDate, $endDate]);
+    }
+
+    public function scopeByReference($query, string $referenceType, int $referenceId)
+    {
+        return $query->where('reference_type', $referenceType)
+                    ->where('reference_id', $referenceId);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'draft' => 'Borrador',
+            'posted' => 'Contabilizado',
+            'cancelled' => 'Cancelado',
+            default => 'Sin estado',
+        };
+    }
+
+    public function getStatusBadgeAttribute(): array
+    {
+        return match ($this->status) {
+            'draft' => ['text' => 'Borrador', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'posted' => ['text' => 'Contabilizado', 'class' => 'bg-green-100 text-green-800'],
+            'cancelled' => ['text' => 'Cancelado', 'class' => 'bg-red-100 text-red-800'],
+            default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
+        ];
+    }
+
+    public function getIsBalancedAttribute(): bool
+    {
+        return $this->total_debit == $this->total_credit;
+    }
+
+    public function getCanBePostedAttribute(): bool
+    {
+        return $this->status === 'draft' && 
+               $this->is_balanced && 
+               $this->entries()->count() > 0;
+    }
+
+    public function getCanBeCancelledAttribute(): bool
+    {
+        return $this->status === 'posted';
+    }
+
+    public function calculateTotals(): void
+    {
+        $this->total_debit = $this->entries()->sum('debit_amount');
+        $this->total_credit = $this->entries()->sum('credit_amount');
+        $this->save();
+    }
+
+    public function validateDoubleEntry(): bool
+    {
+        $this->calculateTotals();
+        return $this->is_balanced && $this->total_debit > 0;
+    }
+
+    public function post(): void
+    {
+        if (!$this->can_be_posted) {
+            throw new \Exception('La transacción no puede ser contabilizada');
+        }
+
+        if (!$this->validateDoubleEntry()) {
+            throw new \Exception('La transacción no cumple con la partida doble');
+        }
+
+        $this->update([
+            'status' => 'posted',
+            'posted_by' => auth()->id(),
+            'posted_at' => now(),
+        ]);
+    }
+
+    public function cancel(): void
+    {
+        if (!$this->can_be_cancelled) {
+            throw new \Exception('La transacción no puede ser cancelada');
+        }
+
+        $this->update(['status' => 'cancelled']);
+    }
+
+    public function addEntry(array $entryData): AccountingTransactionEntry
+    {
+        if ($this->status !== 'draft') {
+            throw new \Exception('Solo se pueden agregar movimientos a transacciones en borrador');
+        }
+
+        $entry = $this->entries()->create($entryData);
+        $this->calculateTotals();
+
+        return $entry;
+    }
+
+    public function createFromInvoice(Invoice $invoice): self
+    {
+        $transaction = self::create([
+            'conjunto_config_id' => $invoice->apartment->apartmentType->conjunto_config_id,
+            'transaction_date' => $invoice->billing_date,
+            'description' => "Factura {$invoice->invoice_number} - {$invoice->apartment->number}",
+            'reference_type' => 'invoice',
+            'reference_id' => $invoice->id,
+            'created_by' => auth()->id(),
+        ]);
+
+        // Débito: Cartera de clientes
+        $transaction->addEntry([
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '130501'),
+            'description' => "Cartera factura {$invoice->invoice_number}",
+            'debit_amount' => $invoice->total_amount,
+            'credit_amount' => 0,
+            'third_party_type' => 'apartment',
+            'third_party_id' => $invoice->apartment_id,
+        ]);
+
+        // Crédito: Ingresos por administración
+        $transaction->addEntry([
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '413501'),
+            'description' => "Ingreso por administración {$invoice->invoice_number}",
+            'debit_amount' => 0,
+            'credit_amount' => $invoice->total_amount,
+        ]);
+
+        $transaction->post();
+
+        return $transaction;
+    }
+
+    public function createFromPayment(Invoice $invoice, float $paymentAmount): self
+    {
+        $transaction = self::create([
+            'conjunto_config_id' => $invoice->apartment->apartmentType->conjunto_config_id,
+            'transaction_date' => now()->toDateString(),
+            'description' => "Pago factura {$invoice->invoice_number} - {$invoice->apartment->number}",
+            'reference_type' => 'payment',
+            'reference_id' => $invoice->id,
+            'created_by' => auth()->id(),
+        ]);
+
+        // Débito: Caja/Banco
+        $transaction->addEntry([
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '111001'),
+            'description' => "Pago recibido factura {$invoice->invoice_number}",
+            'debit_amount' => $paymentAmount,
+            'credit_amount' => 0,
+        ]);
+
+        // Crédito: Cartera de clientes
+        $transaction->addEntry([
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '130501'),
+            'description' => "Pago cartera factura {$invoice->invoice_number}",
+            'debit_amount' => 0,
+            'credit_amount' => $paymentAmount,
+            'third_party_type' => 'apartment',
+            'third_party_id' => $invoice->apartment_id,
+        ]);
+
+        $transaction->post();
+
+        return $transaction;
+    }
+
+    private function getAccountByCode(int $conjuntoConfigId, string $code): int
+    {
+        $account = ChartOfAccounts::forConjunto($conjuntoConfigId)
+            ->where('code', $code)
+            ->first();
+
+        if (!$account) {
+            throw new \Exception("No se encontró la cuenta contable con código: {$code}");
+        }
+
+        return $account->id;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($transaction) {
+            if (empty($transaction->transaction_number)) {
+                $transaction->transaction_number = self::generateTransactionNumber();
+            }
+        });
+    }
+
+    private static function generateTransactionNumber(): string
+    {
+        $year = now()->year;
+        $month = now()->format('m');
+        $lastTransaction = self::whereYear('created_at', $year)
+            ->whereMonth('created_at', now()->month)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
+
+        return sprintf('TXN-%s%s-%04d', $year, $month, $sequence);
+    }
+}
