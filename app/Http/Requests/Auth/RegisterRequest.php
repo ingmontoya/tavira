@@ -35,7 +35,7 @@ class RegisterRequest extends FormRequest
         ];
 
         // Add email validation for admin registration
-        if ($this->routeIs('register.admin')) {
+        if ($this->routeIs('register.admin') || $this->routeIs('register.admin.store')) {
             $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
         } else {
             // Token required for regular invitation-based registration
