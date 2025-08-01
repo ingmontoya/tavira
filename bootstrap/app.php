@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $trustedProxies = env('TRUSTED_PROXIES') ? 
             explode(',', env('TRUSTED_PROXIES')) : 
             [
-                // Cloudflare IPv4 ranges (principales)
+                // Cloudflare IPv4 ranges (principales)  
                 '103.21.244.0/22',
                 '103.22.200.0/22', 
                 '103.31.4.0/22',
@@ -58,13 +58,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 '192.168.0.0/16',
             ];
 
-        $middleware->trustProxies(
-            at: $trustedProxies,
-            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
-                    \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
-                    \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
-                    \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
-        );
+        $trustedHeaders = \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+                         \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+                         \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+                         \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO;
+
+        $middleware->trustProxies($trustedProxies, $trustedHeaders);
 
         $middleware->web(append: [
             // SecurityHeadersMiddleware::class, // Temporarily disabled for testing
