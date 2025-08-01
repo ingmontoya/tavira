@@ -112,7 +112,7 @@ class AccountingTransaction extends Model
             'posted' => ['text' => 'Contabilizado', 'class' => 'bg-green-100 text-green-800'],
             'cancelled' => ['text' => 'Cancelado', 'class' => 'bg-red-100 text-red-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
-        ];
+        };
     }
 
     public function getIsBalancedAttribute(): bool
