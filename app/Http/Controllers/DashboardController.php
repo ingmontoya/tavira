@@ -489,8 +489,12 @@ class DashboardController extends Controller
         if ($driver === 'sqlite') {
             return PaymentAgreementInstallment::whereRaw('strftime("%Y", due_date) = ?', [$year])
                 ->whereRaw('strftime("%m", due_date) = ?', [sprintf('%02d', $month)]);
+        } elseif ($driver === 'pgsql') {
+            // PostgreSQL
+            return PaymentAgreementInstallment::whereRaw('EXTRACT(YEAR FROM due_date) = ?', [$year])
+                ->whereRaw('EXTRACT(MONTH FROM due_date) = ?', [$month]);
         } else {
-            // MySQL/PostgreSQL
+            // MySQL
             return PaymentAgreementInstallment::whereYear('due_date', $year)
                 ->whereMonth('due_date', $month);
         }
@@ -510,8 +514,16 @@ class DashboardController extends Controller
                 ->orderBy('year', 'desc')
                 ->orderBy('month', 'desc')
                 ->get();
+        } elseif ($driver === 'pgsql') {
+            // PostgreSQL
+            return PaymentAgreementInstallment::select(
+                DB::raw('DISTINCT EXTRACT(YEAR FROM due_date) as year, EXTRACT(MONTH FROM due_date) as month')
+            )
+                ->orderBy('year', 'desc')
+                ->orderBy('month', 'desc')
+                ->get();
         } else {
-            // MySQL/PostgreSQL
+            // MySQL
             return PaymentAgreementInstallment::select(
                 DB::raw('DISTINCT YEAR(due_date) as year, MONTH(due_date) as month')
             )
