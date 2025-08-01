@@ -15,7 +15,7 @@ class PaymentConceptController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        $query = PaymentConcept::where('conjunto_config_id', $conjunto->id);
+        $query = PaymentConcept::query();
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
@@ -52,7 +52,7 @@ class PaymentConceptController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        $apartmentTypes = ApartmentType::where('conjunto_config_id', $conjunto->id)->get();
+        $apartmentTypes = ApartmentType::all();
 
         return Inertia::render('Payments/Concepts/Create', [
             'apartmentTypes' => $apartmentTypes,
@@ -76,7 +76,6 @@ class PaymentConceptController extends Controller
         ]);
 
         PaymentConcept::create([
-            'conjunto_config_id' => $conjunto->id,
             'name' => $validated['name'],
             'description' => $validated['description'],
             'type' => $validated['type'],
@@ -104,7 +103,7 @@ class PaymentConceptController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        $apartmentTypes = ApartmentType::where('conjunto_config_id', $conjunto->id)->get();
+        $apartmentTypes = ApartmentType::all();
 
         return Inertia::render('Payments/Concepts/Edit', [
             'concept' => $paymentConcept,

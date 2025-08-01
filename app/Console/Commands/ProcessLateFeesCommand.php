@@ -36,8 +36,7 @@ class ProcessLateFeesCommand extends Command
             return Command::FAILURE;
         }
 
-        $lateFeesConcept = PaymentConcept::where('conjunto_config_id', $conjunto->id)
-            ->where('type', 'late_fee')
+        $lateFeesConcept = PaymentConcept::where('type', 'late_fee')
             ->where('is_active', true)
             ->first();
 
@@ -46,7 +45,6 @@ class ProcessLateFeesCommand extends Command
 
             if (! $dryRun) {
                 $lateFeesConcept = PaymentConcept::create([
-                    'conjunto_config_id' => $conjunto->id,
                     'name' => 'Interés de mora',
                     'description' => 'Intereses por mora en el pago de administración',
                     'type' => 'late_fee',
@@ -63,7 +61,6 @@ class ProcessLateFeesCommand extends Command
         $cutoffDate = now()->subDays($graceDays);
 
         $overdueInvoices = Invoice::with(['apartment'])
-            ->where('conjunto_config_id', $conjunto->id)
             ->where('status', 'pending')
             ->where('due_date', '<', $cutoffDate)
             ->get();

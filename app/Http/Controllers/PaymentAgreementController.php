@@ -14,8 +14,7 @@ class PaymentAgreementController extends Controller
     {
         $conjuntoConfig = ConjuntoConfig::first();
 
-        $query = PaymentAgreement::with(['apartment.residents'])
-            ->where('conjunto_config_id', $conjuntoConfig->id);
+        $query = PaymentAgreement::with(['apartment.residents']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -31,12 +30,12 @@ class PaymentAgreementController extends Controller
         $agreements = $query->orderBy('created_at', 'desc')->paginate(15);
 
         $statusCounts = [
-            'all' => PaymentAgreement::where('conjunto_config_id', $conjuntoConfig->id)->count(),
-            'draft' => PaymentAgreement::where('conjunto_config_id', $conjuntoConfig->id)->byStatus('draft')->count(),
-            'pending_approval' => PaymentAgreement::where('conjunto_config_id', $conjuntoConfig->id)->byStatus('pending_approval')->count(),
-            'active' => PaymentAgreement::where('conjunto_config_id', $conjuntoConfig->id)->active()->count(),
-            'breached' => PaymentAgreement::where('conjunto_config_id', $conjuntoConfig->id)->breached()->count(),
-            'completed' => PaymentAgreement::where('conjunto_config_id', $conjuntoConfig->id)->byStatus('completed')->count(),
+            'all' => PaymentAgreement::count(),
+            'draft' => PaymentAgreement::byStatus('draft')->count(),
+            'pending_approval' => PaymentAgreement::byStatus('pending_approval')->count(),
+            'active' => PaymentAgreement::active()->count(),
+            'breached' => PaymentAgreement::breached()->count(),
+            'completed' => PaymentAgreement::byStatus('completed')->count(),
         ];
 
         return Inertia::render('PaymentAgreements/Index', [
@@ -56,7 +55,6 @@ class PaymentAgreementController extends Controller
 
         if ($request->filled('apartment_id')) {
             $apartment = Apartment::with(['residents', 'invoices'])
-                ->where('conjunto_config_id', $conjuntoConfig->id)
                 ->findOrFail($request->apartment_id);
 
             $overdueInvoices = $apartment->invoices()
@@ -85,7 +83,6 @@ class PaymentAgreementController extends Controller
         }
 
         $delinquentApartments = Apartment::with(['residents', 'invoices'])
-            ->where('conjunto_config_id', $conjuntoConfig->id)
             ->whereIn('payment_status', ['overdue_30', 'overdue_60', 'overdue_90', 'overdue_90_plus'])
             ->orderBy('tower')
             ->orderBy('number')
@@ -147,7 +144,6 @@ class PaymentAgreementController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $validated['conjunto_config_id'] = $conjuntoConfig->id;
         $validated['created_by'] = auth()->user()->name;
         $validated['end_date'] = now()->createFromFormat('Y-m-d', $validated['start_date'])
             ->addMonths($validated['installments'] - 1);

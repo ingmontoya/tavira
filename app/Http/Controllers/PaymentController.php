@@ -47,8 +47,7 @@ class PaymentController extends Controller
     private function getPendingInvoicesCount(int $conjuntoConfigId): int
     {
         // Contar apartamentos con facturas pendientes dinámicamente
-        return Apartment::where('conjunto_config_id', $conjuntoConfigId)
-            ->whereHas('invoices', function ($query) {
+        return Apartment::whereHas('invoices', function ($query) {
                 $query->whereIn('status', ['pending', 'overdue', 'partial']);
             })
             ->count();
@@ -68,8 +67,7 @@ class PaymentController extends Controller
     private function getDelinquentApartmentsCount(int $conjuntoConfigId): int
     {
         // Calcular apartamentos en mora dinámicamente basado en facturas reales
-        $apartments = Apartment::where('conjunto_config_id', $conjuntoConfigId)
-            ->with(['invoices' => function ($query) {
+        $apartments = Apartment::with(['invoices' => function ($query) {
                 $query->whereIn('status', ['pending', 'overdue', 'partial'])
                     ->orderBy('due_date', 'asc');
             }])
@@ -98,21 +96,19 @@ class PaymentController extends Controller
 
     private function getActivePaymentConceptsCount(int $conjuntoConfigId): int
     {
-        return PaymentConcept::where('conjunto_config_id', $conjuntoConfigId)
-            ->active()
+        return PaymentConcept::active()
             ->count();
     }
 
     private function getTotalApartmentsCount(int $conjuntoConfigId): int
     {
-        return Apartment::where('conjunto_config_id', $conjuntoConfigId)->count();
+        return Apartment::count();
     }
 
     private function getPaymentsByStatus(int $conjuntoConfigId): \Illuminate\Support\Collection
     {
         // Same logic as Dashboard - calcular dinámicamente basado en facturas reales
-        $apartments = Apartment::where('conjunto_config_id', $conjuntoConfigId)
-            ->with(['invoices' => function ($query) {
+        $apartments = Apartment::with(['invoices' => function ($query) {
                 $query->whereIn('status', ['pending', 'overdue', 'partial'])
                     ->orderBy('due_date', 'asc');
             }])->get();

@@ -22,8 +22,7 @@ class InvoiceController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        $query = Invoice::with(['apartment', 'items.paymentConcept'])
-            ->where('conjunto_config_id', $conjunto->id);
+        $query = Invoice::with(['apartment', 'items.paymentConcept']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -72,8 +71,7 @@ class InvoiceController extends Controller
             ->with('apartmentType')
             ->orderBy('tower')->orderBy('number')->get();
 
-        $paymentConcepts = PaymentConcept::where('conjunto_config_id', $conjunto->id)
-            ->where('is_active', true)
+        $paymentConcepts = PaymentConcept::where('is_active', true)
             ->get();
 
         return Inertia::render('Payments/Invoices/Create', [
@@ -128,7 +126,6 @@ class InvoiceController extends Controller
 
             return DB::transaction(function () use ($conjunto, $validated) {
                 $invoice = Invoice::create([
-                    'conjunto_config_id' => $conjunto->id,
                     'apartment_id' => $validated['apartment_id'],
                     'type' => $validated['type'],
                     'billing_date' => $validated['billing_date'],
@@ -178,8 +175,7 @@ class InvoiceController extends Controller
             ->with('apartmentType')
             ->orderBy('tower')->orderBy('number')->get();
 
-        $paymentConcepts = PaymentConcept::where('conjunto_config_id', $conjunto->id)
-            ->where('is_active', true)
+        $paymentConcepts = PaymentConcept::where('is_active', true)
             ->get();
 
         $invoice->load(['items.paymentConcept']);
@@ -307,10 +303,9 @@ class InvoiceController extends Controller
                     throw InvoiceGenerationException::noOccupiedApartments();
                 }
 
-                $commonExpenseConcepts = PaymentConcept::where('conjunto_config_id', $conjunto->id)
-                    ->where('type', 'common_expense')
+                $commonExpenseConcepts = PaymentConcept::where('type', 'common_expense')
                     ->where('is_active', true)
-                    ->where('is_recurring', true)
+                    ->where('is_recurring', true)  
                     ->where('billing_cycle', 'monthly')
                     ->get();
 
@@ -335,7 +330,6 @@ class InvoiceController extends Controller
                     }
 
                     $invoice = Invoice::create([
-                        'conjunto_config_id' => $conjunto->id,
                         'apartment_id' => $apartment->id,
                         'type' => 'monthly',
                         'billing_date' => $billingDate,

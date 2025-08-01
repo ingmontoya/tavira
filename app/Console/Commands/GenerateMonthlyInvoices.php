@@ -137,7 +137,6 @@ class GenerateMonthlyInvoices extends Command
                 }
 
                 $invoice = Invoice::create([
-                    'conjunto_config_id' => $conjunto->id,
                     'apartment_id' => $apartment->id,
                     'type' => 'monthly',
                     'billing_date' => $billingDate,
