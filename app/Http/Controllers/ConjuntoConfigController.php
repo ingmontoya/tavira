@@ -189,8 +189,7 @@ class ConjuntoConfigController extends Controller
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        $realMonthlyIncome = \App\Models\Invoice::where('conjunto_config_id', $conjunto->id)
-            ->where('status', 'paid')
+        $realMonthlyIncome = \App\Models\Invoice::where('status', 'paid')
             ->whereMonth('paid_date', $currentMonth)
             ->whereYear('paid_date', $currentYear)
             ->sum('paid_amount');

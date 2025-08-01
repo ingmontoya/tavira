@@ -59,8 +59,7 @@ class PaymentController extends Controller
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        return Invoice::where('conjunto_config_id', $conjuntoConfigId)
-            ->where('status', 'paid')
+        return Invoice::where('status', 'paid')
             ->whereMonth('paid_date', $currentMonth)
             ->whereYear('paid_date', $currentYear)
             ->sum('paid_amount');

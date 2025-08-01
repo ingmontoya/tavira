@@ -113,8 +113,7 @@ class InvoiceController extends Controller
                 isset($validated['billing_period_year']) &&
                 isset($validated['billing_period_month'])) {
 
-                $existingInvoice = Invoice::where('conjunto_config_id', $conjunto->id)
-                    ->where('apartment_id', $validated['apartment_id'])
+                $existingInvoice = Invoice::where('apartment_id', $validated['apartment_id'])
                     ->where('type', 'monthly')
                     ->where('billing_period_year', $validated['billing_period_year'])
                     ->where('billing_period_month', $validated['billing_period_month'])
@@ -287,8 +286,7 @@ class InvoiceController extends Controller
             }
 
             // Check for existing invoices
-            $existingInvoices = Invoice::where('conjunto_config_id', $conjunto->id)
-                ->where('type', 'monthly')
+            $existingInvoices = Invoice::where('type', 'monthly')
                 ->forPeriod($validated['year'], $validated['month'])
                 ->count();
 

@@ -74,8 +74,7 @@ class GenerateMonthlyInvoices extends Command
 
     private function handleExistingInvoices(ConjuntoConfig $conjunto, int $year, int $month, bool $force): void
     {
-        $existingInvoices = Invoice::where('conjunto_config_id', $conjunto->id)
-            ->where('type', 'monthly')
+        $existingInvoices = Invoice::where('type', 'monthly')
             ->where('billing_period_year', $year)
             ->where('billing_period_month', $month)
             ->count();
@@ -87,8 +86,7 @@ class GenerateMonthlyInvoices extends Command
         if ($existingInvoices > 0 && $force) {
             $this->warn("Eliminando {$existingInvoices} facturas existentes para {$year}-{$month}...");
 
-            $deleted = Invoice::where('conjunto_config_id', $conjunto->id)
-                ->where('type', 'monthly')
+            $deleted = Invoice::where('type', 'monthly')
                 ->where('billing_period_year', $year)
                 ->where('billing_period_month', $month)
                 ->delete();

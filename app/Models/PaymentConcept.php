@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PaymentConcept extends Model
 {
     protected $fillable = [
-        'conjunto_config_id',
         'name',
         'description',
         'type',
@@ -31,11 +30,6 @@ class PaymentConcept extends Model
         'type_label',
         'billing_cycle_label',
     ];
-
-    public function conjuntoConfig(): BelongsTo
-    {
-        return $this->belongsTo(ConjuntoConfig::class);
-    }
 
     public function invoiceItems(): HasMany
     {
@@ -69,15 +63,15 @@ class PaymentConcept extends Model
     /**
      * Sync payment concepts with current apartment types for the conjunto
      */
-    public static function syncWithApartmentTypes(int $conjuntoConfigId): void
+    public static function syncWithApartmentTypes(int $conjuntoConfigId = null): void
     {
-        $apartmentTypes = \App\Models\ApartmentType::where('conjunto_config_id', $conjuntoConfigId)->get();
+        $apartmentTypes = \App\Models\ApartmentType::all();
 
         if ($apartmentTypes->isEmpty()) {
             return;
         }
 
-        $concepts = self::where('conjunto_config_id', $conjuntoConfigId)->get();
+        $concepts = self::all();
 
         foreach ($concepts as $concept) {
             $matchedTypeIds = [];

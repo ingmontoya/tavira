@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PaymentAgreement extends Model
 {
     protected $fillable = [
-        'conjunto_config_id',
         'apartment_id',
         'agreement_number',
         'status',
@@ -45,11 +44,6 @@ class PaymentAgreement extends Model
         'overdue_installments_count',
         'next_due_date',
     ];
-
-    public function conjuntoConfig(): BelongsTo
-    {
-        return $this->belongsTo(ConjuntoConfig::class);
-    }
 
     public function apartment(): BelongsTo
     {
