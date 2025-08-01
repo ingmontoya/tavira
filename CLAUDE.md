@@ -113,12 +113,17 @@ The application is organized into logical modules:
 
 ## Current Data Structure
 
-### Conjunto Configuration (Configurable)
-- **Default Name**: Conjunto Torres de Villa campestre
-- **Default Towers**: 5 towers named 1, 2, 3, 4, 5
-- **Default Floors**: 15 floors per tower
-- **Default Apartments**: 4 apartments per floor
-- **Total Units**: Configurable based on conjunto settings
+### Conjunto Configuration (User-Defined)
+- **No Default Examples**: Users must create their own conjunto configurations
+- **Flexible Structure**: Support for variable apartment counts per floor
+- **Advanced Configuration**: Floor-specific settings and penthouse support
+- **Total Units**: Dynamically calculated based on configuration
+
+### Advanced Configuration Features
+- **Floor-specific Configuration**: Different apartment counts per floor via `configuration_metadata.floor_configuration`
+- **Penthouse Support**: Automatic penthouse detection and configuration on top floors
+- **Flexible Apartment Generation**: Smart apartment type assignment based on position and floor
+- **Configuration Metadata**: Extensible JSON field for additional settings
 
 ### Apartment Types (Configurable per conjunto)
 - **Tipo A**: 1 bedroom, 1 bathroom, compact units

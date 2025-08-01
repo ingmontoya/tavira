@@ -46,7 +46,15 @@ class ConjuntoConfig extends Model
 
     public function getEstimatedApartmentsCountAttribute(): int
     {
-        return $this->number_of_towers * $this->floors_per_tower * $this->apartments_per_floor;
+        $totalApartments = 0;
+
+        // Calculate apartments per floor considering special configurations
+        for ($floor = 1; $floor <= $this->floors_per_tower; $floor++) {
+            $totalApartments += $this->getApartmentsCountForFloor($floor);
+        }
+
+        // Multiply by number of towers
+        return $this->number_of_towers * $totalApartments;
     }
 
     public function getTowerNamesListAttribute(): array
@@ -77,20 +85,14 @@ class ConjuntoConfig extends Model
             $towerName = $towerNames[$towerIndex] ?? ($towerIndex + 1);
 
             for ($floor = 1; $floor <= $this->floors_per_tower; $floor++) {
-                for ($position = 1; $position <= $this->apartments_per_floor; $position++) {
+                // Get the actual apartments count for this floor based on apartment types
+                $actualApartmentsThisFloor = $this->getApartmentsCountForFloor($floor);
+
+                for ($position = 1; $position <= $actualApartmentsThisFloor; $position++) {
                     $apartmentNumber = $towerName.$floor.sprintf('%02d', $position);
 
-                    // Select apartment type based on floor_positions
-                    $apartmentType = $apartmentTypes->first(function ($type) use ($position) {
-                        $positions = $type->floor_positions ?? [];
-
-                        return in_array($position, $positions);
-                    });
-
-                    // Fallback to first type if no type matches the position
-                    if (! $apartmentType) {
-                        $apartmentType = $apartmentTypes->first();
-                    }
+                    // Select apartment type based on floor_positions and floor-specific logic
+                    $apartmentType = $this->selectApartmentTypeForPosition($apartmentTypes, $floor, $position);
 
                     // Check if apartment already exists
                     $existingApartment = $this->apartments()
@@ -114,5 +116,69 @@ class ConjuntoConfig extends Model
                 }
             }
         }
+    }
+
+    /**
+     * Calculate the number of apartments for a specific floor
+     * This allows for different configurations per floor
+     */
+    private function getApartmentsCountForFloor(int $floor): int
+    {
+        // Check if we have floor-specific configuration
+        $floorConfig = $this->configuration_metadata['floor_configuration'] ?? null;
+
+        if ($floorConfig && isset($floorConfig[$floor])) {
+            return $floorConfig[$floor]['apartments_count'] ?? $this->apartments_per_floor;
+        }
+
+        // Check for special floors (like penthouses on top floor)
+        if ($floor == $this->floors_per_tower) {
+            $penthouseConfig = $this->configuration_metadata['penthouse_configuration'] ?? null;
+            if ($penthouseConfig && isset($penthouseConfig['apartments_count'])) {
+                return $penthouseConfig['apartments_count'];
+            }
+        }
+
+        // Default to the standard apartments per floor
+        return $this->apartments_per_floor;
+    }
+
+    /**
+     * Select the appropriate apartment type for a given floor and position
+     */
+    private function selectApartmentTypeForPosition($apartmentTypes, int $floor, int $position)
+    {
+        // First, try floor-specific type assignment
+        $floorConfig = $this->configuration_metadata['floor_configuration'] ?? null;
+        if ($floorConfig && isset($floorConfig[$floor]['type_assignments'][$position])) {
+            $typeId = $floorConfig[$floor]['type_assignments'][$position];
+            $specificType = $apartmentTypes->firstWhere('id', $typeId);
+            if ($specificType) {
+                return $specificType;
+            }
+        }
+
+        // Check for penthouse on top floor
+        if ($floor == $this->floors_per_tower) {
+            $penthouseType = $apartmentTypes->where('name', 'like', '%penthouse%')->first() ??
+                           $apartmentTypes->where('name', 'like', '%Penthouse%')->first();
+            if ($penthouseType) {
+                return $penthouseType;
+            }
+        }
+
+        // Standard logic: Select apartment type based on floor_positions
+        $apartmentType = $apartmentTypes->first(function ($type) use ($position) {
+            $positions = $type->floor_positions ?? [];
+
+            return in_array($position, $positions);
+        });
+
+        // Fallback to first type if no type matches the position
+        if (! $apartmentType) {
+            $apartmentType = $apartmentTypes->first();
+        }
+
+        return $apartmentType;
     }
 }

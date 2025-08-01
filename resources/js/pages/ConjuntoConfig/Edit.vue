@@ -25,34 +25,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Building, CheckCircle, Home, Info, Plus, Save, Settings, Trash2, X } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
-interface ApartmentType {
-    id?: number;
-    name: string;
-    description: string;
-    area_sqm: number;
-    bedrooms: number;
-    bathrooms: number;
-    has_balcony: boolean;
-    has_laundry_room: boolean;
-    has_maid_room: boolean;
-    coefficient: number;
-    administration_fee: number;
-    floor_positions: number[];
-}
-
-interface ConjuntoConfig {
-    id: number;
-    name: string;
-    description: string;
-    number_of_towers: number;
-    floors_per_tower: number;
-    apartments_per_floor: number;
-    is_active: boolean;
-    tower_names: string[];
-    apartment_types: ApartmentType[];
-    created_at: string;
-    updated_at: string;
-}
+import type { ConjuntoConfig, ApartmentType, ConfigurationMetadata } from '@/types';
 
 interface FormData {
     name: string;
@@ -63,6 +36,7 @@ interface FormData {
     is_active: boolean;
     tower_names: string[];
     apartment_types: ApartmentType[];
+    configuration_metadata: ConfigurationMetadata;
 }
 
 const props = defineProps<{

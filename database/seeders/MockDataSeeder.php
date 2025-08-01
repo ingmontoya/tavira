@@ -15,22 +15,9 @@ class MockDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = Faker::create('es_ES');
-
-        // Crear usuario administrador de ejemplo si no existe
-        $adminUser = User::firstOrCreate(
-            ['email' => 'admin@habitta.com'],
-            [
-                'name' => 'Administrador Principal',
-                'password' => Hash::make('password'),
-            ]
-        );
-
-        // Obtener el conjunto único
-        $conjunto = ConjuntoConfig::first();
-        if (! $conjunto) {
-            throw new \Exception('No se encontró configuración del conjunto. Ejecute las migraciones primero.');
-        }
+        $this->command->info('MockDataSeeder disabled - no default examples created.');
+        $this->command->info('Users must create their own conjunto configurations first.');
+        return;
 
         // Crear tipos de apartamento para el conjunto único
         $apartmentTypes = [

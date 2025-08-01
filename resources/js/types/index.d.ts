@@ -40,3 +40,76 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+// Conjunto Configuration Types
+export interface FloorConfiguration {
+    apartments_count?: number;
+    type_assignments?: Record<number, number>; // position -> apartment_type_id
+}
+
+export interface PenthouseConfiguration {
+    apartments_count: number;
+}
+
+export interface ConfigurationMetadata {
+    architect?: string;
+    construction_year?: string;
+    common_areas?: string[];
+    security_features?: string[];
+    floor_configuration?: Record<number, FloorConfiguration>; // floor -> configuration
+    penthouse_configuration?: PenthouseConfiguration;
+}
+
+export interface ApartmentType {
+    id?: number;
+    conjunto_config_id?: number;
+    name: string;
+    description: string;
+    area_sqm: number;
+    bedrooms: number;
+    bathrooms: number;
+    has_balcony: boolean;
+    has_laundry_room: boolean;
+    has_maid_room: boolean;
+    coefficient: number;
+    administration_fee: number;
+    floor_positions: number[];
+    features?: string[];
+    apartments_count?: number;
+}
+
+export interface ConjuntoConfig {
+    id?: number;
+    name: string;
+    description: string;
+    number_of_towers: number;
+    floors_per_tower: number;
+    apartments_per_floor: number;
+    is_active: boolean;
+    tower_names: string[];
+    configuration_metadata: ConfigurationMetadata;
+    apartment_types?: ApartmentType[];
+    apartment_types_count?: number;
+    apartments_count?: number;
+    estimated_apartments_count?: number;
+    total_apartments?: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface Apartment {
+    id: number;
+    apartment_type_id: number;
+    conjunto_config_id: number;
+    number: string;
+    tower: string;
+    floor: number;
+    position_on_floor: number;
+    status: 'Available' | 'Occupied' | 'Maintenance' | 'Reserved';
+    monthly_fee: number;
+    utilities?: Record<string, any>;
+    features?: string[];
+    apartment_type?: ApartmentType;
+    created_at: string;
+    updated_at: string;
+}

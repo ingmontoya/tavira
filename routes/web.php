@@ -62,6 +62,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Conjunto Configuration Management (Single conjunto)
     Route::get('conjunto-config', [ConjuntoConfigController::class, 'index'])->name('conjunto-config.index')->middleware('can:view_conjunto_config');
+    Route::get('conjunto-config/create', [ConjuntoConfigController::class, 'create'])->name('conjunto-config.create')->middleware('can:edit_conjunto_config');
+    Route::post('conjunto-config', [ConjuntoConfigController::class, 'store'])->name('conjunto-config.store')->middleware('can:edit_conjunto_config');
     Route::get('conjunto-config/show', [ConjuntoConfigController::class, 'show'])->name('conjunto-config.show')->middleware('can:view_conjunto_config');
     Route::get('conjunto-config/edit', [ConjuntoConfigController::class, 'edit'])->name('conjunto-config.edit')->middleware('can:edit_conjunto_config');
     Route::put('conjunto-config', [ConjuntoConfigController::class, 'update'])->name('conjunto-config.update')->middleware('can:edit_conjunto_config');

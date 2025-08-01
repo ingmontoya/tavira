@@ -29,6 +29,89 @@ class ConjuntoConfigController extends Controller
     }
 
     /**
+     * Show the form for creating a new conjunto configuration.
+     */
+    public function create()
+    {
+        // Check if a conjunto already exists (single conjunto system)
+        $existingConjunto = ConjuntoConfig::first();
+        
+        if ($existingConjunto) {
+            return redirect()->route('conjunto-config.index')
+                ->with('error', 'Ya existe una configuración de conjunto. Solo se permite una configuración por sistema.');
+        }
+
+        return Inertia::render('ConjuntoConfig/Create');
+    }
+
+    /**
+     * Store a newly created conjunto configuration.
+     */
+    public function store(Request $request)
+    {
+        // Check if a conjunto already exists (single conjunto system)
+        $existingConjunto = ConjuntoConfig::first();
+        
+        if ($existingConjunto) {
+            return redirect()->route('conjunto-config.index')
+                ->with('error', 'Ya existe una configuración de conjunto. Solo se permite una configuración por sistema.');
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:conjunto_configs,name',
+            'description' => 'nullable|string',
+            'number_of_towers' => 'required|integer|min:1|max:20',
+            'floors_per_tower' => 'required|integer|min:1|max:50',
+            'apartments_per_floor' => 'required|integer|min:1|max:10',
+            'tower_names' => 'nullable|array',
+            'tower_names.*' => 'string|max:10',
+            'configuration_metadata' => 'nullable|array',
+            'apartment_types' => 'required|array|min:1',
+            'apartment_types.*.name' => 'required|string|max:255',
+            'apartment_types.*.description' => 'nullable|string',
+            'apartment_types.*.area_sqm' => 'required|numeric|min:1',
+            'apartment_types.*.bedrooms' => 'required|integer|min:0',
+            'apartment_types.*.bathrooms' => 'required|integer|min:0',
+            'apartment_types.*.has_balcony' => 'boolean',
+            'apartment_types.*.has_laundry_room' => 'boolean',
+            'apartment_types.*.has_maid_room' => 'boolean',
+            'apartment_types.*.coefficient' => 'required|numeric|min:0|max:1',
+            'apartment_types.*.administration_fee' => 'required|numeric|min:0',
+            'apartment_types.*.floor_positions' => 'required|array|min:1',
+            'apartment_types.*.floor_positions.*' => 'integer|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Create conjunto configuration (excluding apartment_types)
+            $configData = collect($validated)->except(['apartment_types'])->toArray();
+            $configData['is_active'] = true; // New conjuntos are active by default
+            
+            $conjunto = ConjuntoConfig::create($configData);
+
+            // Create apartment types
+            foreach ($validated['apartment_types'] as $typeData) {
+                $conjunto->apartmentTypes()->create($typeData);
+            }
+
+            // Generate apartments automatically
+            $conjunto->generateApartments();
+
+            DB::commit();
+
+            return redirect()->route('conjunto-config.index')
+                ->with('success', 'Conjunto creado exitosamente con ' . $conjunto->estimated_apartments_count . ' apartamentos generados.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            return back()->withErrors(['error' => 'Error al crear el conjunto: '.$e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
      * Show the form for editing the conjunto configuration.
      */
     public function edit()
@@ -36,21 +119,8 @@ class ConjuntoConfigController extends Controller
         $conjunto = ConjuntoConfig::with('apartmentTypes')->first();
 
         if (! $conjunto) {
-            // Create default configuration if none exists
-            $conjunto = ConjuntoConfig::create([
-                'name' => 'Conjunto Residencial Vista Hermosa',
-                'description' => 'Moderno conjunto residencial ubicado en el norte de Bogotá.',
-                'number_of_towers' => 3,
-                'floors_per_tower' => 8,
-                'apartments_per_floor' => 4,
-                'is_active' => true,
-                'tower_names' => ['A', 'B', 'C'],
-                'configuration_metadata' => [
-                    'address' => 'Carrera 15 #85-23, Bogotá',
-                    'phone' => '601-234-5678',
-                    'email' => 'administracion@vistahermosa.com',
-                ],
-            ]);
+            return redirect()->route('conjunto-config.create')
+                ->with('error', 'No se encontró configuración del conjunto. Primero debe crear uno.');
         }
 
         return Inertia::render('ConjuntoConfig/Edit', [

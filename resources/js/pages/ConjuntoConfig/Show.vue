@@ -15,53 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { ConjuntoConfig, ApartmentType, Apartment } from '@/types';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeft, BarChart3, Building, DollarSign, Edit, FileText, Home, RefreshCw, Settings, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-
-interface ApartmentType {
-    id: number;
-    name: string;
-    description: string;
-    area_sqm: number;
-    bedrooms: number;
-    bathrooms: number;
-    has_balcony: boolean;
-    has_laundry_room: boolean;
-    has_maid_room: boolean;
-    coefficient: number;
-    administration_fee: number;
-    floor_positions: number[];
-    apartments_count: number;
-}
-
-interface Apartment {
-    id: number;
-    number: string;
-    tower: string;
-    floor: number;
-    position_on_floor: number;
-    status: 'Available' | 'Occupied' | 'Maintenance' | 'Reserved';
-    monthly_fee: number;
-    apartment_type: ApartmentType;
-}
-
-interface ConjuntoConfig {
-    id: number;
-    name: string;
-    description: string;
-    number_of_towers: number;
-    floors_per_tower: number;
-    apartments_per_floor: number;
-    is_active: boolean;
-    tower_names: string[];
-    configuration_metadata: any;
-    apartment_types: ApartmentType[];
-    apartments: Apartment[];
-    created_at: string;
-    updated_at: string;
-}
 
 interface Statistics {
     total_apartments: number;
@@ -122,7 +80,21 @@ const canGenerateApartments = computed(() => {
 });
 
 const estimatedApartments = computed(() => {
-    return props.conjunto.number_of_towers * props.conjunto.floors_per_tower * props.conjunto.apartments_per_floor;
+    let totalPerTower = 0;
+    
+    // Calculate apartments per tower considering special configurations
+    for (let floor = 1; floor <= props.conjunto.floors_per_tower; floor++) {
+        const floorConfig = props.conjunto.configuration_metadata?.floor_configuration?.[floor];
+        if (floorConfig?.apartments_count !== undefined) {
+            totalPerTower += floorConfig.apartments_count;
+        } else if (floor === props.conjunto.floors_per_tower && props.conjunto.configuration_metadata?.penthouse_configuration) {
+            totalPerTower += props.conjunto.configuration_metadata.penthouse_configuration.apartments_count;
+        } else {
+            totalPerTower += props.conjunto.apartments_per_floor;
+        }
+    }
+    
+    return props.conjunto.number_of_towers * totalPerTower;
 });
 
 const getStatusColor = (status: string) => {

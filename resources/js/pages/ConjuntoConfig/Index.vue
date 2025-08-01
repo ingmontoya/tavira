@@ -24,35 +24,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Calendar, Edit, Eye, Filter, Home, Info, Plus, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
-interface ApartmentType {
-    id: number;
-    name: string;
-    area_sqm: number;
-    bedrooms: number;
-    bathrooms: number;
-    administration_fee: number;
-    has_balcony: boolean;
-    has_laundry_room: boolean;
-    has_maid_room: boolean;
-    coefficient: number;
-}
-
-interface ConjuntoConfig {
-    id: number;
-    name: string;
-    description: string;
-    number_of_towers: number;
-    floors_per_tower: number;
-    apartments_per_floor: number;
-    is_active: boolean;
-    tower_names: string[];
-    apartment_types: ApartmentType[];
-    apartment_types_count: number;
-    apartments_count: number;
-    created_at: string;
-    updated_at: string;
-    total_apartments: number;
-}
+import type { ConjuntoConfig, ApartmentType } from '@/types';
 
 const props = defineProps<{
     conjunto: ConjuntoConfig | null;
@@ -556,7 +528,7 @@ const formatDate = (dateString: string) => {
                     Comienza creando la configuración de tu conjunto residencial. Define torres, pisos, tipos de apartamento y genera la estructura
                     automáticamente.
                 </p>
-                <Link href="/conjunto-config/edit">
+                <Link href="/conjunto-config/create">
                     <Button class="gap-2">
                         <Plus class="h-4 w-4" />
                         Crear Conjunto
