@@ -15,6 +15,7 @@ Route::middleware('guest')->group(function () {
         ->name('register.admin');
 
     Route::post('register/admin', [RegisteredUserController::class, 'storeAdmin'])
+        ->name('register.admin.store')
         ->middleware('rate.limit:auth');
 
     Route::get('register', [RegisteredUserController::class, 'create'])
