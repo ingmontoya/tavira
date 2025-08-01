@@ -13,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Support\Facades\URL;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -25,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+
+        // Force HTTPS in production
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
 
         // Trust specific proxy IPs - Cloudflare IP ranges
         $middleware->trustProxies(
@@ -51,7 +57,11 @@ return Application::configure(basePath: dirname(__DIR__))
                     '10.0.0.0/8',
                     '172.16.0.0/12',
                     '192.168.0.0/16',
-                ]
+                ],
+            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+                    \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+                    \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+                    \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO
         );
 
         $middleware->web(append: [
