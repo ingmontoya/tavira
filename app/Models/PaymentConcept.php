@@ -100,6 +100,7 @@ class PaymentConcept extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {
+            'monthly_administration' => 'Administración Mensual',
             'common_expense' => 'Administración',
             'sanction' => 'Sanción',
             'parking' => 'Parqueadero',

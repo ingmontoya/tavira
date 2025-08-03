@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Save, TrendingUp, Trash2 } from 'lucide-vue-next';
+import { ArrowLeft, Save, Trash2, TrendingUp } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface ChartOfAccount {
@@ -84,13 +84,11 @@ const natures = [
 
 const filteredParentAccounts = computed(() => {
     if (!form.account_type) return [];
-    return props.parentAccounts.filter(account => 
-        account.account_type === form.account_type && account.id !== props.account.id
-    );
+    return props.parentAccounts.filter((account) => account.account_type === form.account_type && account.id !== props.account.id);
 });
 
 const selectedAccountType = computed(() => {
-    return accountTypes.find(type => type.value === form.account_type);
+    return accountTypes.find((type) => type.value === form.account_type);
 });
 
 // Methods
@@ -129,7 +127,7 @@ watch(
         if (form.account_type !== props.account.account_type) {
             form.parent_id = null;
         }
-    }
+    },
 );
 
 // Breadcrumbs
@@ -173,9 +171,7 @@ const breadcrumbs = [
                             <TrendingUp class="h-5 w-5" />
                             Información de la Cuenta
                         </CardTitle>
-                        <CardDescription>
-                            Modifica los datos de la cuenta contable
-                        </CardDescription>
+                        <CardDescription> Modifica los datos de la cuenta contable </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Code and Name -->
@@ -189,9 +185,7 @@ const breadcrumbs = [
                                     class="font-mono"
                                     :class="{ 'border-red-500': form.errors.code }"
                                 />
-                                <p class="text-xs text-muted-foreground">
-                                    Código numérico único para identificar la cuenta
-                                </p>
+                                <p class="text-xs text-muted-foreground">Código numérico único para identificar la cuenta</p>
                                 <p v-if="form.errors.code" class="text-sm text-red-600">
                                     {{ form.errors.code }}
                                 </p>
@@ -199,12 +193,7 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="name">Nombre de la Cuenta *</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    placeholder="Ej: Caja General"
-                                    :class="{ 'border-red-500': form.errors.name }"
-                                />
+                                <Input id="name" v-model="form.name" placeholder="Ej: Caja General" :class="{ 'border-red-500': form.errors.name }" />
                                 <p v-if="form.errors.name" class="text-sm text-red-600">
                                     {{ form.errors.name }}
                                 </p>
@@ -296,9 +285,7 @@ const breadcrumbs = [
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p class="text-xs text-muted-foreground">
-                                Las subcuentas heredan el tipo de la cuenta principal
-                            </p>
+                            <p class="text-xs text-muted-foreground">Las subcuentas heredan el tipo de la cuenta principal</p>
                             <p v-if="form.errors.parent_id" class="text-sm text-red-600">
                                 {{ form.errors.parent_id }}
                             </p>
@@ -328,10 +315,7 @@ const breadcrumbs = [
                                         Las cuentas que aceptan movimientos pueden tener transacciones directas
                                     </p>
                                 </div>
-                                <Switch
-                                    v-model:checked="form.accepts_posting"
-                                    :class="{ 'border-red-500': form.errors.accepts_posting }"
-                                />
+                                <Switch v-model:checked="form.accepts_posting" :class="{ 'border-red-500': form.errors.accepts_posting }" />
                             </div>
 
                             <div class="flex items-center justify-between rounded-lg border p-4">
@@ -341,23 +325,15 @@ const breadcrumbs = [
                                         Indica si la cuenta requiere información de terceros (clientes, proveedores)
                                     </p>
                                 </div>
-                                <Switch
-                                    v-model:checked="form.requires_third_party"
-                                    :class="{ 'border-red-500': form.errors.requires_third_party }"
-                                />
+                                <Switch v-model:checked="form.requires_third_party" :class="{ 'border-red-500': form.errors.requires_third_party }" />
                             </div>
 
                             <div class="flex items-center justify-between rounded-lg border p-4">
                                 <div class="space-y-0.5">
                                     <Label for="is_active">Estado de la Cuenta</Label>
-                                    <p class="text-sm text-muted-foreground">
-                                        Las cuentas activas aparecen en los formularios de transacciones
-                                    </p>
+                                    <p class="text-sm text-muted-foreground">Las cuentas activas aparecen en los formularios de transacciones</p>
                                 </div>
-                                <Switch
-                                    v-model:checked="form.is_active"
-                                    :class="{ 'border-red-500': form.errors.is_active }"
-                                />
+                                <Switch v-model:checked="form.is_active" :class="{ 'border-red-500': form.errors.is_active }" />
                             </div>
                         </div>
                     </CardContent>
@@ -365,26 +341,15 @@ const breadcrumbs = [
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-between">
-                    <Button 
-                        type="button" 
-                        variant="destructive" 
-                        @click="deleteAccount"
-                        class="gap-2"
-                    >
+                    <Button type="button" variant="destructive" @click="deleteAccount" class="gap-2">
                         <Trash2 class="h-4 w-4" />
                         Eliminar Cuenta
                     </Button>
 
                     <div class="flex items-center gap-3">
-                        <Button type="button" variant="outline" @click="resetForm">
-                            Descartar Cambios
-                        </Button>
-                        
-                        <Button 
-                            type="submit" 
-                            :disabled="form.processing"
-                            class="gap-2"
-                        >
+                        <Button type="button" variant="outline" @click="resetForm"> Descartar Cambios </Button>
+
+                        <Button type="submit" :disabled="form.processing" class="gap-2">
                             <Save class="h-4 w-4" />
                             {{ form.processing ? 'Guardando...' : 'Guardar Cambios' }}
                         </Button>

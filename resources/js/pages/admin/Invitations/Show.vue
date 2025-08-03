@@ -253,11 +253,7 @@ const registrationUrl = `${window.location.origin}/register?token=${props.invita
                             <Button size="sm" variant="outline" @click="navigator.clipboard.writeText(registrationUrl)"> Copiar </Button>
                         </div>
                         <div class="flex justify-center">
-                            <Button 
-                                @click="router.visit(route('invitations.url', invitation.id))"
-                                variant="outline"
-                                class="flex items-center gap-2"
-                            >
+                            <Button @click="router.visit(route('invitations.url', invitation.id))" variant="outline" class="flex items-center gap-2">
                                 <QrCode class="h-4 w-4" />
                                 Ver URL y Código QR
                             </Button>

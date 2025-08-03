@@ -7,6 +7,7 @@ use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\PaymentConcept;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -116,11 +117,21 @@ class GenerateMonthlyInvoices extends Command
         $periodEnd = $periodStart->copy()->endOfMonth();
         $dueDate = $periodEnd->copy(); // Due date is the last day of the billing period month
 
+        // Obtener el concepto de Administración Mensual
+        $monthlyAdminConcept = PaymentConcept::where('type', 'monthly_administration')
+            ->where('is_active', true)
+            ->first();
+
+        if (!$monthlyAdminConcept) {
+            throw new InvoiceGenerationException('No se encontró el concepto de Administración Mensual activo. Ejecute el seeder PaymentConceptSeeder.');
+        }
+
         $generatedCount = 0;
         $skippedCount = 0;
         $errorCount = 0;
 
         $this->info("Procesando {$apartments->count()} apartamentos elegibles...");
+        $this->info("Usando concepto: {$monthlyAdminConcept->name} (ID: {$monthlyAdminConcept->id})");
 
         $progressBar = $this->output->createProgressBar($apartments->count());
         $progressBar->start();
@@ -145,10 +156,10 @@ class GenerateMonthlyInvoices extends Command
                     'billing_period_month' => $month,
                 ]);
 
-                // Create invoice item for administration fee
+                // Create invoice item for administration fee using the monthly administration concept
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
-                    'payment_concept_id' => null, // No payment concept needed for administration
+                    'payment_concept_id' => $monthlyAdminConcept->id,
                     'description' => "Cuota de Administración - {$apartment->apartmentType->name}",
                     'quantity' => 1,
                     'unit_price' => $apartment->monthly_fee,

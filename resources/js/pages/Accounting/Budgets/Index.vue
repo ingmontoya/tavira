@@ -6,9 +6,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import type { ColumnFiltersState, ExpandedState, SortingState, VisibilityState } from '@tanstack/vue-table';
@@ -22,7 +22,7 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ChevronDown, ChevronsUpDown, Download, Plus, Search, X, TrendingUp, TrendingDown } from 'lucide-vue-next';
+import { ChevronDown, ChevronsUpDown, Download, Plus, Search, TrendingUp, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 
@@ -69,7 +69,7 @@ const customFilters = ref({
 
 // Computed values for filter options
 const uniqueYears = computed(() => {
-    const years = [...new Set(data.map(budget => budget.year))].sort((a, b) => b - a);
+    const years = [...new Set(data.map((budget) => budget.year))].sort((a, b) => b - a);
     return years;
 });
 
@@ -190,9 +190,13 @@ const columns = [
         },
         cell: ({ row }) => {
             const amount = row.getValue('total_budget') as number;
-            return h('div', { 
-                class: 'text-right font-mono text-sm font-medium' 
-            }, `$${amount.toLocaleString()}`);
+            return h(
+                'div',
+                {
+                    class: 'text-right font-mono text-sm font-medium',
+                },
+                `$${amount.toLocaleString()}`,
+            );
         },
     }),
     columnHelper.display({
@@ -203,20 +207,21 @@ const columns = [
             const percentage = budget.execution_percentage;
             const variance = budget.total_executed - budget.total_budget;
             const isOverBudget = variance > 0;
-            
+
             return h('div', { class: 'space-y-2 min-w-[120px]' }, [
                 h('div', { class: 'flex items-center justify-between text-xs' }, [
                     h('span', `${percentage}%`),
                     h('span', { class: 'font-mono' }, `$${budget.total_executed.toLocaleString()}`),
                 ]),
-                h(Progress, { 
-                    value: Math.min(percentage, 100), 
-                    class: isOverBudget ? 'bg-red-100' : ''
+                h(Progress, {
+                    value: Math.min(percentage, 100),
+                    class: isOverBudget ? 'bg-red-100' : '',
                 }),
-                isOverBudget && h('div', { class: 'text-xs text-red-600 flex items-center gap-1' }, [
-                    h(TrendingUp, { class: 'h-3 w-3' }),
-                    `+$${variance.toLocaleString()}`
-                ]),
+                isOverBudget &&
+                    h('div', { class: 'text-xs text-red-600 flex items-center gap-1' }, [
+                        h(TrendingUp, { class: 'h-3 w-3' }),
+                        `+$${variance.toLocaleString()}`,
+                    ]),
             ]);
         },
     }),

@@ -104,7 +104,7 @@ const breadcrumbs = [
                 <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">Editar Presupuesto</h1>
                     <p class="text-muted-foreground">{{ budget.name }} - {{ budget.status }}</p>
-                    <div v-if="!canEdit" class="text-sm text-orange-600 bg-orange-50 rounded px-2 py-1 inline-block">
+                    <div v-if="!canEdit" class="inline-block rounded bg-orange-50 px-2 py-1 text-sm text-orange-600">
                         ⚠️ Solo se pueden editar presupuestos en estado "Borrador"
                     </div>
                 </div>
@@ -129,9 +129,7 @@ const breadcrumbs = [
                             <Wallet class="h-5 w-5" />
                             Información del Presupuesto
                         </CardTitle>
-                        <CardDescription>
-                            Datos básicos del presupuesto
-                        </CardDescription>
+                        <CardDescription> Datos básicos del presupuesto </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Name and Year -->
@@ -219,27 +217,15 @@ const breadcrumbs = [
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-between">
-                    <Button 
-                        type="button" 
-                        variant="destructive" 
-                        :disabled="!canEdit"
-                        @click="deleteBudget"
-                        class="gap-2"
-                    >
+                    <Button type="button" variant="destructive" :disabled="!canEdit" @click="deleteBudget" class="gap-2">
                         <Trash2 class="h-4 w-4" />
                         Eliminar Presupuesto
                     </Button>
 
                     <div class="flex items-center gap-3">
-                        <Button type="button" variant="outline" @click="resetForm" :disabled="!canEdit">
-                            Descartar Cambios
-                        </Button>
-                        
-                        <Button 
-                            type="submit" 
-                            :disabled="form.processing || !canEdit"
-                            class="gap-2"
-                        >
+                        <Button type="button" variant="outline" @click="resetForm" :disabled="!canEdit"> Descartar Cambios </Button>
+
+                        <Button type="submit" :disabled="form.processing || !canEdit" class="gap-2">
                             <Save class="h-4 w-4" />
                             {{ form.processing ? 'Guardando...' : 'Guardar Cambios' }}
                         </Button>

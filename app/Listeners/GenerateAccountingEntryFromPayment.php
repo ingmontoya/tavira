@@ -18,50 +18,46 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
         try {
             $invoice = $event->invoice;
             $paymentAmount = $event->paymentAmount;
+            $paymentMethod = $event->paymentMethod ?? 'bank_transfer';
             
             // Obtener el conjunto_config_id desde la relación del apartamento
             $conjuntoConfigId = $invoice->apartment->apartmentType->conjunto_config_id;
 
-            // Crear transacción contable para el pago
-            $transaction = AccountingTransaction::create([
-                'conjunto_config_id' => $conjuntoConfigId,
-                'transaction_date' => now()->toDateString(),
-                'description' => "Pago factura {$invoice->invoice_number} - Apto {$invoice->apartment->number}",
-                'reference_type' => 'payment',
-                'reference_id' => $invoice->id,
-                'created_by' => auth()->id() ?? 1,
-            ]);
+            // Cargar los items de la factura con sus conceptos
+            $invoice->load('items.paymentConcept');
 
-            // Obtener cuentas contables
-            $bancoAccount = $this->getAccountByCode($conjuntoConfigId, '111001'); // Banco Principal
-            $carteraAccount = $this->getAccountByCode($conjuntoConfigId, '130501'); // Cartera Administración
+            // Si la factura no tiene items, usar el método anterior
+            if ($invoice->items->isEmpty()) {
+                $this->createSinglePaymentTransaction($invoice, $conjuntoConfigId, $paymentAmount, $paymentMethod);
+                return;
+            }
 
-            // Débito: Banco/Caja (ingreso de dinero)
-            $transaction->addEntry([
-                'account_id' => $bancoAccount->id,
-                'description' => "Pago recibido factura {$invoice->invoice_number}",
-                'debit_amount' => $paymentAmount,
-                'credit_amount' => 0,
-            ]);
+            // Distribuir el pago proporcionalmente entre los conceptos
+            $itemsByConceptType = $invoice->items->groupBy(function ($item) {
+                return $item->paymentConcept ? $item->paymentConcept->type : 'common_expense';
+            });
 
-            // Crédito: Cartera de clientes (disminución de cartera)
-            $transaction->addEntry([
-                'account_id' => $carteraAccount->id,
-                'description' => "Pago cartera factura {$invoice->invoice_number}",
-                'debit_amount' => 0,
-                'credit_amount' => $paymentAmount,
-                'third_party_type' => 'apartment',
-                'third_party_id' => $invoice->apartment_id,
-            ]);
+            foreach ($itemsByConceptType as $conceptType => $items) {
+                $conceptTotal = $items->sum('total_price');
+                $conceptPayment = ($paymentAmount * $conceptTotal) / $invoice->total_amount;
+                
+                if ($conceptPayment > 0) {
+                    $this->createPaymentTransactionForConcept(
+                        $invoice, 
+                        $conjuntoConfigId, 
+                        $conceptType, 
+                        $conceptPayment, 
+                        $paymentMethod,
+                        $items
+                    );
+                }
+            }
 
-            // Contabilizar automáticamente
-            $transaction->post();
-
-            Log::info("Asiento contable de pago generado automáticamente", [
-                'transaction_id' => $transaction->id,
+            Log::info("Asientos contables de pago generados por concepto", [
                 'invoice_id' => $invoice->id,
                 'payment_amount' => $paymentAmount,
-                'payment_method' => $event->paymentMethod
+                'payment_method' => $paymentMethod,
+                'concepts_count' => $itemsByConceptType->count()
             ]);
 
         } catch (\Exception $e) {
@@ -74,6 +70,154 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             // Re-lanzar la excepción para que Laravel maneje el retry
             throw $e;
         }
+    }
+
+    private function createPaymentTransactionForConcept($invoice, $conjuntoConfigId, $conceptType, $paymentAmount, $paymentMethod, $items)
+    {
+        $firstItem = $items->first();
+        
+        // Obtener las cuentas contables según el concepto
+        $accounts = $this->getAccountsForConceptType($conjuntoConfigId, $conceptType, $firstItem->payment_concept_id ?? null);
+        
+        if (!$accounts) {
+            Log::warning("No se encontraron cuentas para el pago del concepto", [
+                'concept_type' => $conceptType,
+                'invoice_id' => $invoice->id
+            ]);
+            return;
+        }
+
+        // Determinar cuenta de efectivo según método de pago
+        $cashAccount = $this->getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod);
+
+        // Crear transacción contable específica para este concepto
+        $transaction = AccountingTransaction::create([
+            'conjunto_config_id' => $conjuntoConfigId,
+            'transaction_date' => now()->toDateString(),
+            'description' => "Pago {$this->getConceptTypeLabel($conceptType)} - Factura {$invoice->invoice_number} - Apto {$invoice->apartment->number}",
+            'reference_type' => 'payment',
+            'reference_id' => $invoice->id,
+            'created_by' => auth()->id() ?? 1,
+        ]);
+
+        // Débito: Cuenta de efectivo (ingreso de dinero)
+        $transaction->addEntry([
+            'account_id' => $cashAccount->id,
+            'description' => "Pago recibido {$this->getConceptTypeLabel($conceptType)} - {$invoice->invoice_number}",
+            'debit_amount' => $paymentAmount,
+            'credit_amount' => 0,
+        ]);
+
+        // Crédito: Cartera específica del concepto (disminución de cartera)
+        $transaction->addEntry([
+            'account_id' => $accounts['receivable_account']->id,
+            'description' => "Pago cartera {$this->getConceptTypeLabel($conceptType)} - {$invoice->invoice_number}",
+            'debit_amount' => 0,
+            'credit_amount' => $paymentAmount,
+            'third_party_type' => 'apartment',
+            'third_party_id' => $invoice->apartment_id,
+        ]);
+
+        // Contabilizar automáticamente
+        $transaction->post();
+    }
+
+    private function createSinglePaymentTransaction($invoice, $conjuntoConfigId, $paymentAmount, $paymentMethod)
+    {
+        $transaction = AccountingTransaction::create([
+            'conjunto_config_id' => $conjuntoConfigId,
+            'transaction_date' => now()->toDateString(),
+            'description' => "Pago factura {$invoice->invoice_number} - Apto {$invoice->apartment->number}",
+            'reference_type' => 'payment',
+            'reference_id' => $invoice->id,
+            'created_by' => auth()->id() ?? 1,
+        ]);
+
+        $cashAccount = $this->getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod);
+        $carteraAccount = $this->getAccountByCode($conjuntoConfigId, '130501');
+
+        $transaction->addEntry([
+            'account_id' => $cashAccount->id,
+            'description' => "Pago recibido factura {$invoice->invoice_number}",
+            'debit_amount' => $paymentAmount,
+            'credit_amount' => 0,
+        ]);
+
+        $transaction->addEntry([
+            'account_id' => $carteraAccount->id,
+            'description' => "Pago cartera factura {$invoice->invoice_number}",
+            'debit_amount' => 0,
+            'credit_amount' => $paymentAmount,
+            'third_party_type' => 'apartment',
+            'third_party_id' => $invoice->apartment_id,
+        ]);
+
+        $transaction->post();
+    }
+
+    private function getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod)
+    {
+        $cashAccountCodes = [
+            'cash' => '110501', // Caja General
+            'bank_transfer' => '111001', // Banco Principal
+            'pse' => '111001', // Banco Principal
+            'credit_card' => '111001', // Banco Principal
+            'debit_card' => '111001', // Banco Principal
+            'check' => '111001', // Banco Principal
+        ];
+
+        $accountCode = $cashAccountCodes[$paymentMethod] ?? $cashAccountCodes['bank_transfer'];
+        
+        return $this->getAccountByCode($conjuntoConfigId, $accountCode);
+    }
+
+    private function getAccountsForConceptType($conjuntoConfigId, $conceptType, $paymentConceptId = null)
+    {
+        // Si tenemos el ID del concepto, usar el mapeo específico
+        if ($paymentConceptId) {
+            $accounts = \App\Models\PaymentConceptAccountMapping::getAccountsForConcept($paymentConceptId);
+            if ($accounts) {
+                return $accounts;
+            }
+        }
+
+        // Mapeo por defecto basado en el tipo
+        $defaultMappings = [
+            'common_expense' => [
+                'receivable_code' => '130501', // Cartera Administración
+            ],
+            'sanction' => [
+                'receivable_code' => '130501', // Cartera Administración
+            ],
+            'parking' => [
+                'receivable_code' => '130501', // Cartera Administración
+            ],
+            'late_fee' => [
+                'receivable_code' => '130503', // Cartera Intereses Mora
+            ],
+            'special' => [
+                'receivable_code' => '130502', // Cartera Cuotas Extraordinarias
+            ],
+        ];
+
+        $mapping = $defaultMappings[$conceptType] ?? $defaultMappings['common_expense'];
+
+        return [
+            'receivable_account' => $this->getAccountByCode($conjuntoConfigId, $mapping['receivable_code']),
+        ];
+    }
+
+    private function getConceptTypeLabel($conceptType)
+    {
+        $labels = [
+            'common_expense' => 'Cuotas Administración',
+            'sanction' => 'Multas y Sanciones',
+            'parking' => 'Parqueaderos',
+            'late_fee' => 'Intereses de Mora',
+            'special' => 'Cuotas Extraordinarias',
+        ];
+
+        return $labels[$conceptType] ?? 'Otros Ingresos';
     }
 
     private function getAccountByCode(int $conjuntoConfigId, string $code): ChartOfAccounts

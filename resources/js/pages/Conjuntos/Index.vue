@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { Building2, MapPin, Users, Settings } from 'lucide-vue-next';
+import { Building2, MapPin, Settings, Users } from 'lucide-vue-next';
 
 const breadcrumbs = [
     {
@@ -26,9 +26,7 @@ const breadcrumbs = [
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Gestión de Conjuntos</h1>
-                    <p class="text-muted-foreground">
-                        Administra la configuración de conjuntos residenciales
-                    </p>
+                    <p class="text-muted-foreground">Administra la configuración de conjuntos residenciales</p>
                 </div>
                 <Button>
                     <Building2 class="mr-2 h-4 w-4" />
@@ -45,9 +43,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">1</div>
-                        <p class="text-xs text-muted-foreground">
-                            conjunto configurado
-                        </p>
+                        <p class="text-xs text-muted-foreground">conjunto configurado</p>
                     </CardContent>
                 </Card>
 
@@ -58,9 +54,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">-</div>
-                        <p class="text-xs text-muted-foreground">
-                            apartamentos disponibles
-                        </p>
+                        <p class="text-xs text-muted-foreground">apartamentos disponibles</p>
                     </CardContent>
                 </Card>
 
@@ -71,9 +65,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">-</div>
-                        <p class="text-xs text-muted-foreground">
-                            residentes registrados
-                        </p>
+                        <p class="text-xs text-muted-foreground">residentes registrados</p>
                     </CardContent>
                 </Card>
 
@@ -84,9 +76,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">Activa</div>
-                        <p class="text-xs text-muted-foreground">
-                            estado del sistema
-                        </p>
+                        <p class="text-xs text-muted-foreground">estado del sistema</p>
                     </CardContent>
                 </Card>
             </div>
@@ -95,17 +85,15 @@ const breadcrumbs = [
             <Card>
                 <CardHeader>
                     <CardTitle>Configuración del Conjunto</CardTitle>
-                    <CardDescription>
-                        Gestiona la configuración actual del conjunto residencial
-                    </CardDescription>
+                    <CardDescription> Gestiona la configuración actual del conjunto residencial </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="flex flex-col items-center justify-center py-12 text-center">
-                        <Building2 class="h-16 w-16 text-muted-foreground mb-4" />
-                        <h3 class="text-lg font-semibold mb-2">Configuración de Conjunto</h3>
-                        <p class="text-muted-foreground mb-6 max-w-md">
-                            El sistema está configurado para manejar un conjunto residencial único. 
-                            Aquí puedes ver y gestionar la configuración actual del conjunto.
+                        <Building2 class="mb-4 h-16 w-16 text-muted-foreground" />
+                        <h3 class="mb-2 text-lg font-semibold">Configuración de Conjunto</h3>
+                        <p class="mb-6 max-w-md text-muted-foreground">
+                            El sistema está configurado para manejar un conjunto residencial único. Aquí puedes ver y gestionar la configuración
+                            actual del conjunto.
                         </p>
                         <div class="flex gap-2">
                             <Button variant="outline">
@@ -128,8 +116,8 @@ const breadcrumbs = [
                 </CardHeader>
                 <CardContent>
                     <p class="text-sm text-muted-foreground">
-                        Esta aplicación está configurada para gestionar un solo conjunto residencial. 
-                        Para configurar o modificar los datos del conjunto, visita la sección de 
+                        Esta aplicación está configurada para gestionar un solo conjunto residencial. Para configurar o modificar los datos del
+                        conjunto, visita la sección de
                         <strong>Configuración del Conjunto</strong> en el menú principal.
                     </p>
                 </CardContent>

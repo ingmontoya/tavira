@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -101,7 +100,6 @@ const shareUrl = async () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="`URL de Registro - ${invitation.email}`" />
 
-
         <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header -->
             <div class="flex items-center gap-4">
@@ -118,9 +116,7 @@ const shareUrl = async () => {
                         <User class="h-5 w-5" />
                         Detalles de la Invitación
                     </CardTitle>
-                    <CardDescription>
-                        Información del usuario invitado
-                    </CardDescription>
+                    <CardDescription> Información del usuario invitado </CardDescription>
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="grid gap-4 md:grid-cols-2">
@@ -134,7 +130,9 @@ const shareUrl = async () => {
                         </div>
                         <div v-if="invitation.apartment">
                             <Label class="text-muted-foreground">Apartamento</Label>
-                            <p class="font-medium">{{ invitation.apartment.tower }}{{ invitation.apartment.number }} - Piso {{ invitation.apartment.floor }}</p>
+                            <p class="font-medium">
+                                {{ invitation.apartment.tower }}{{ invitation.apartment.number }} - Piso {{ invitation.apartment.floor }}
+                            </p>
                         </div>
                         <div v-if="invitation.apartment?.apartment_type">
                             <Label class="text-muted-foreground">Tipo</Label>
@@ -164,9 +162,7 @@ const shareUrl = async () => {
                         <Share class="h-5 w-5" />
                         URL de Registro
                     </CardTitle>
-                    <CardDescription>
-                        Comparte esta URL con el usuario para que pueda completar su registro
-                    </CardDescription>
+                    <CardDescription> Comparte esta URL con el usuario para que pueda completar su registro </CardDescription>
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="flex gap-2">
@@ -174,7 +170,7 @@ const shareUrl = async () => {
                         <input
                             :value="registrationUrl"
                             readonly
-                            class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            class="flex-1 rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <Button @click="copyUrl" variant="outline" size="icon">
                             <Copy class="h-4 w-4" />
@@ -193,13 +189,11 @@ const shareUrl = async () => {
                         <QrCode class="h-5 w-5" />
                         Código QR
                     </CardTitle>
-                    <CardDescription>
-                        El usuario puede escanear este código QR para acceder directamente al formulario de registro
-                    </CardDescription>
+                    <CardDescription> El usuario puede escanear este código QR para acceder directamente al formulario de registro </CardDescription>
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div class="flex flex-col items-center space-y-4">
-                        <div class="flex justify-center p-4 bg-white rounded-lg border">
+                        <div class="flex justify-center rounded-lg border bg-white p-4">
                             <div v-html="qrCode" class="max-w-[200px]"></div>
                         </div>
                         <Button @click="downloadQR" variant="outline" class="flex items-center gap-2">

@@ -25,7 +25,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Building, CheckCircle, Home, Info, Plus, Save, Settings, Trash2, X } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
-import type { ConjuntoConfig, ApartmentType, ConfigurationMetadata } from '@/types';
+import type { ApartmentType, ConfigurationMetadata, ConjuntoConfig } from '@/types';
 
 interface FormData {
     name: string;

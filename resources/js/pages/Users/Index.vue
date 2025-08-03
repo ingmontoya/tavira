@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { Users, Shield, UserPlus, Settings } from 'lucide-vue-next';
+import { Settings, Shield, UserPlus, Users } from 'lucide-vue-next';
 
 const breadcrumbs = [
     {
@@ -26,9 +26,7 @@ const breadcrumbs = [
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Gestión de Usuarios</h1>
-                    <p class="text-muted-foreground">
-                        Administra los usuarios del sistema y sus permisos
-                    </p>
+                    <p class="text-muted-foreground">Administra los usuarios del sistema y sus permisos</p>
                 </div>
                 <Button>
                     <UserPlus class="mr-2 h-4 w-4" />
@@ -45,9 +43,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
-                            usuarios registrados
-                        </p>
+                        <p class="text-xs text-muted-foreground">usuarios registrados</p>
                     </CardContent>
                 </Card>
 
@@ -58,9 +54,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
-                            con permisos admin
-                        </p>
+                        <p class="text-xs text-muted-foreground">con permisos admin</p>
                     </CardContent>
                 </Card>
 
@@ -71,9 +65,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
-                            activos este mes
-                        </p>
+                        <p class="text-xs text-muted-foreground">activos este mes</p>
                     </CardContent>
                 </Card>
 
@@ -84,9 +76,7 @@ const breadcrumbs = [
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">0</div>
-                        <p class="text-xs text-muted-foreground">
-                            invitaciones pendientes
-                        </p>
+                        <p class="text-xs text-muted-foreground">invitaciones pendientes</p>
                     </CardContent>
                 </Card>
             </div>
@@ -95,17 +85,15 @@ const breadcrumbs = [
             <Card>
                 <CardHeader>
                     <CardTitle>Lista de Usuarios</CardTitle>
-                    <CardDescription>
-                        Gestiona los usuarios del sistema, sus roles y permisos
-                    </CardDescription>
+                    <CardDescription> Gestiona los usuarios del sistema, sus roles y permisos </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="flex flex-col items-center justify-center py-12 text-center">
-                        <Users class="h-16 w-16 text-muted-foreground mb-4" />
-                        <h3 class="text-lg font-semibold mb-2">Gestión de Usuarios</h3>
-                        <p class="text-muted-foreground mb-6 max-w-md">
-                            Esta funcionalidad está en desarrollo. Pronto podrás gestionar todos los usuarios del sistema, 
-                            asignar roles y controlar permisos de acceso.
+                        <Users class="mb-4 h-16 w-16 text-muted-foreground" />
+                        <h3 class="mb-2 text-lg font-semibold">Gestión de Usuarios</h3>
+                        <p class="mb-6 max-w-md text-muted-foreground">
+                            Esta funcionalidad está en desarrollo. Pronto podrás gestionar todos los usuarios del sistema, asignar roles y controlar
+                            permisos de acceso.
                         </p>
                         <div class="flex gap-2">
                             <Button variant="outline">

@@ -109,9 +109,8 @@ const filteredData = computed(() => {
                 transaction.reference?.toLowerCase().includes(searchTerm) ||
                 transaction.description?.toLowerCase().includes(searchTerm) ||
                 transaction.created_by?.name?.toLowerCase().includes(searchTerm) ||
-                transaction.entries?.some(entry => 
-                    entry.account.code.toLowerCase().includes(searchTerm) ||
-                    entry.account.name.toLowerCase().includes(searchTerm)
+                transaction.entries?.some(
+                    (entry) => entry.account.code.toLowerCase().includes(searchTerm) || entry.account.name.toLowerCase().includes(searchTerm),
                 ),
         );
     }
@@ -156,7 +155,25 @@ const columns = [
     columnHelper.accessor('reference', {
         enablePinning: true,
         header: 'Referencia',
-        cell: ({ row }) => h('div', { class: 'font-mono text-sm' }, row.getValue('reference')),
+        cell: ({ row }) => {
+            const reference = row.getValue('reference') as any;
+            const referenceType = row.original.reference_type;
+            
+            if (!reference || !referenceType) {
+                return h('div', { class: 'text-muted-foreground text-sm' }, 'Manual');
+            }
+            
+            let displayText = '';
+            if (referenceType === 'invoice' && reference.invoice_number) {
+                displayText = reference.invoice_number;
+            } else if (referenceType === 'payment' && reference.payment_number) {
+                displayText = reference.payment_number;
+            } else {
+                displayText = `${referenceType.charAt(0).toUpperCase() + referenceType.slice(1)} #${reference.id}`;
+            }
+            
+            return h('div', { class: 'font-mono text-sm' }, displayText);
+        },
     }),
     columnHelper.accessor('transaction_date', {
         enablePinning: true,
@@ -198,9 +215,14 @@ const columns = [
         },
         cell: ({ row }) => {
             const amount = row.getValue('total_amount') as number;
-            return h('div', { 
-                class: 'text-right font-mono text-sm font-medium' 
-            }, `$${amount.toLocaleString()}`);
+            const formattedAmount = amount != null ? amount.toLocaleString() : '0';
+            return h(
+                'div',
+                {
+                    class: 'text-right font-mono text-sm font-medium',
+                },
+                `$${formattedAmount}`,
+            );
         },
     }),
     columnHelper.accessor('status', {
@@ -352,22 +374,12 @@ const exportTransactions = () => {
 
                         <div class="min-w-0 space-y-2">
                             <Label for="filter_date_from">Fecha Desde</Label>
-                            <Input
-                                id="filter_date_from"
-                                v-model="customFilters.date_from"
-                                type="date"
-                                class="w-full"
-                            />
+                            <Input id="filter_date_from" v-model="customFilters.date_from" type="date" class="w-full" />
                         </div>
 
                         <div class="min-w-0 space-y-2">
                             <Label for="filter_date_to">Fecha Hasta</Label>
-                            <Input
-                                id="filter_date_to"
-                                v-model="customFilters.date_to"
-                                type="date"
-                                class="w-full"
-                            />
+                            <Input id="filter_date_to" v-model="customFilters.date_to" type="date" class="w-full" />
                         </div>
                     </div>
 

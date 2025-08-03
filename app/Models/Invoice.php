@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\InvoiceCreated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -47,6 +48,10 @@ class Invoice extends Model
         'type_label',
         'billing_period_label',
         'days_overdue',
+    ];
+
+    protected $dispatchesEvents = [
+        'created' => InvoiceCreated::class,
     ];
 
     public function apartment(): BelongsTo

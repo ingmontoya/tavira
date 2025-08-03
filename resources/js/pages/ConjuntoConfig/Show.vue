@@ -15,8 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { ConjuntoConfig, ApartmentType, Apartment } from '@/types';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { Apartment, ConjuntoConfig } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ArrowLeft, BarChart3, Building, DollarSign, Edit, FileText, Home, RefreshCw, Settings, Users } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
@@ -81,7 +81,7 @@ const canGenerateApartments = computed(() => {
 
 const estimatedApartments = computed(() => {
     let totalPerTower = 0;
-    
+
     // Calculate apartments per tower considering special configurations
     for (let floor = 1; floor <= props.conjunto.floors_per_tower; floor++) {
         const floorConfig = props.conjunto.configuration_metadata?.floor_configuration?.[floor];
@@ -93,7 +93,7 @@ const estimatedApartments = computed(() => {
             totalPerTower += props.conjunto.apartments_per_floor;
         }
     }
-    
+
     return props.conjunto.number_of_towers * totalPerTower;
 });
 

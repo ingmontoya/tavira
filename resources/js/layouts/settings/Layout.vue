@@ -2,45 +2,52 @@
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useNavigation } from '@/composables/useNavigation';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { useNavigation } from '@/composables/useNavigation';
 import { computed } from 'vue';
 
 const { hasPermission } = useNavigation();
 
-const sidebarNavItems = computed((): NavItem[] => [
-    {
-        title: 'Perfil',
-        href: '/settings/profile',
-        visible: true,
-    },
-    {
-        title: 'Contraseña',
-        href: '/settings/password',
-        visible: true,
-    },
-    {
-        title: 'Seguridad',
-        href: '/settings/security',
-        visible: true,
-    },
-    {
-        title: 'Apariencia',
-        href: '/settings/appearance',
-        visible: true,
-    },
-    {
-        title: 'Pagos',
-        href: '/settings/payments',
-        visible: hasPermission('view_payments'),
-    },
-    {
-        title: 'Permisos',
-        href: '/settings/permissions',
-        visible: hasPermission('edit_users'),
-    },
-].filter(item => item.visible !== false));
+const sidebarNavItems = computed((): NavItem[] =>
+    [
+        {
+            title: 'Perfil',
+            href: '/settings/profile',
+            visible: true,
+        },
+        {
+            title: 'Contraseña',
+            href: '/settings/password',
+            visible: true,
+        },
+        {
+            title: 'Seguridad',
+            href: '/settings/security',
+            visible: true,
+        },
+        {
+            title: 'Apariencia',
+            href: '/settings/appearance',
+            visible: true,
+        },
+        {
+            title: 'Pagos',
+            href: '/settings/payments',
+            visible: hasPermission('view_payments'),
+        },
+        {
+            title: 'Permisos',
+            href: '/settings/permissions',
+            visible: hasPermission('edit_users'),
+        },
+        {
+            title: 'Mapeo Contable',
+            href: '/settings/payment-concept-mapping',
+            visible: hasPermission('manage_accounting'),
+        },
+    ].filter((item) => item.visible !== false),
+);
 
 const page = usePage();
 

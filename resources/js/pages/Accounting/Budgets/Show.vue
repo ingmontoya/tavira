@@ -6,10 +6,10 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Edit, Calendar, TrendingUp, TrendingDown, Hash, DollarSign, CheckCircle, AlertCircle, Clock } from 'lucide-vue-next';
-import { computed } from 'vue';
 import { formatCurrency } from '@/utils';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, DollarSign, Edit, Hash, TrendingDown, TrendingUp } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface BudgetItem {
     id: number;
@@ -50,31 +50,33 @@ const props = defineProps<{
 // Computed properties
 const statusInfo = computed(() => {
     const statusMap = {
-        Draft: { 
-            label: 'Borrador', 
+        Draft: {
+            label: 'Borrador',
             color: 'bg-gray-100 text-gray-800',
             icon: Edit,
-            description: 'Presupuesto en proceso de creación'
+            description: 'Presupuesto en proceso de creación',
         },
-        Active: { 
-            label: 'Activo', 
+        Active: {
+            label: 'Activo',
             color: 'bg-green-100 text-green-800',
             icon: CheckCircle,
-            description: 'Presupuesto aprobado y en ejecución'
+            description: 'Presupuesto aprobado y en ejecución',
         },
-        Closed: { 
-            label: 'Cerrado', 
+        Closed: {
+            label: 'Cerrado',
             color: 'bg-blue-100 text-blue-800',
             icon: Clock,
-            description: 'Presupuesto finalizado'
+            description: 'Presupuesto finalizado',
         },
     };
-    return statusMap[props.budget.status] || {
-        label: 'Desconocido',
-        color: 'bg-gray-100 text-gray-800',
-        icon: AlertCircle,
-        description: 'Estado no reconocido'
-    };
+    return (
+        statusMap[props.budget.status] || {
+            label: 'Desconocido',
+            color: 'bg-gray-100 text-gray-800',
+            icon: AlertCircle,
+            description: 'Estado no reconocido',
+        }
+    );
 });
 
 const totalVariance = computed(() => {
@@ -88,7 +90,6 @@ const isOverBudget = computed(() => {
 const canEdit = computed(() => {
     return props.budget.status === 'Draft';
 });
-
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
@@ -152,7 +153,7 @@ const breadcrumbs = [
 
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <!-- Main Content -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Budget Details -->
                     <Card>
                         <CardHeader>
@@ -173,7 +174,7 @@ const breadcrumbs = [
                                             {{ statusInfo.label }}
                                         </Badge>
                                     </div>
-                                    <p class="text-xs text-muted-foreground mt-1">{{ statusInfo.description }}</p>
+                                    <p class="mt-1 text-xs text-muted-foreground">{{ statusInfo.description }}</p>
                                 </div>
                             </div>
 
@@ -194,11 +195,8 @@ const breadcrumbs = [
                                     <Label class="text-sm font-medium text-muted-foreground">Progreso de Ejecución</Label>
                                     <span class="text-sm font-medium">{{ budget.execution_percentage }}%</span>
                                 </div>
-                                <Progress 
-                                    :value="Math.min(budget.execution_percentage, 100)" 
-                                    :class="isOverBudget ? 'bg-red-100' : ''"
-                                />
-                                <div v-if="isOverBudget" class="text-xs text-red-600 flex items-center gap-1">
+                                <Progress :value="Math.min(budget.execution_percentage, 100)" :class="isOverBudget ? 'bg-red-100' : ''" />
+                                <div v-if="isOverBudget" class="flex items-center gap-1 text-xs text-red-600">
                                     <TrendingUp class="h-3 w-3" />
                                     Sobrepresupuesto por {{ formatCurrency(totalVariance) }}
                                 </div>
@@ -227,10 +225,10 @@ const breadcrumbs = [
                                     <CardTitle>Partidas Presupuestales</CardTitle>
                                     <CardDescription>Detalle por cuenta contable</CardDescription>
                                 </div>
-                                <Button 
+                                <Button
                                     v-if="canEdit"
-                                    variant="outline" 
-                                    size="sm" 
+                                    variant="outline"
+                                    size="sm"
                                     @click="router.visit(`/accounting/budgets/${budget.id}/items/create`)"
                                 >
                                     Agregar Partida
@@ -238,8 +236,8 @@ const breadcrumbs = [
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="budget.items.length === 0" class="text-center py-8">
-                                <Hash class="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <div v-if="budget.items.length === 0" class="py-8 text-center">
+                                <Hash class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                                 <p class="text-muted-foreground">No hay partidas presupuestales definidas</p>
                             </div>
                             <div v-else>
@@ -254,8 +252,8 @@ const breadcrumbs = [
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow 
-                                            v-for="item in budget.items" 
+                                        <TableRow
+                                            v-for="item in budget.items"
                                             :key="item.id"
                                             class="cursor-pointer hover:bg-muted/50"
                                             @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)"
@@ -280,11 +278,32 @@ const breadcrumbs = [
                                             </TableCell>
                                             <TableCell class="text-center">
                                                 <div class="flex items-center justify-center gap-1">
-                                                    <component 
-                                                        :is="item.variance_percentage > 0 ? TrendingUp : item.variance_percentage < 0 ? TrendingDown : Hash" 
-                                                        :class="['h-3 w-3', item.variance_percentage > 0 ? 'text-red-500' : item.variance_percentage < 0 ? 'text-green-500' : 'text-gray-500']"
+                                                    <component
+                                                        :is="
+                                                            item.variance_percentage > 0
+                                                                ? TrendingUp
+                                                                : item.variance_percentage < 0
+                                                                  ? TrendingDown
+                                                                  : Hash
+                                                        "
+                                                        :class="[
+                                                            'h-3 w-3',
+                                                            item.variance_percentage > 0
+                                                                ? 'text-red-500'
+                                                                : item.variance_percentage < 0
+                                                                  ? 'text-green-500'
+                                                                  : 'text-gray-500',
+                                                        ]"
                                                     />
-                                                    <span :class="item.variance_percentage > 0 ? 'text-red-600' : item.variance_percentage < 0 ? 'text-green-600' : 'text-gray-600'">
+                                                    <span
+                                                        :class="
+                                                            item.variance_percentage > 0
+                                                                ? 'text-red-600'
+                                                                : item.variance_percentage < 0
+                                                                  ? 'text-green-600'
+                                                                  : 'text-gray-600'
+                                                        "
+                                                    >
                                                         {{ Math.abs(item.variance_percentage).toFixed(1) }}%
                                                     </span>
                                                 </div>
@@ -313,12 +332,12 @@ const breadcrumbs = [
                                     <Label class="text-sm text-muted-foreground">Presupuesto Total</Label>
                                     <p class="text-2xl font-bold">{{ formatCurrency(budget.total_budget) }}</p>
                                 </div>
-                                
+
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Ejecutado</Label>
                                     <p class="text-xl font-semibold text-blue-600">{{ formatCurrency(budget.total_executed) }}</p>
                                 </div>
-                                
+
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Variación</Label>
                                     <p :class="['text-lg font-semibold', isOverBudget ? 'text-red-600' : 'text-green-600']">
@@ -326,9 +345,9 @@ const breadcrumbs = [
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Partidas:</span>
@@ -348,27 +367,27 @@ const breadcrumbs = [
                             <CardTitle>Acciones Rápidas</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-2">
-                            <Button 
+                            <Button
                                 v-if="canEdit"
-                                variant="outline" 
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/budgets/${budget.id}/edit`)"
                             >
                                 <Edit class="h-4 w-4" />
                                 Editar Presupuesto
                             </Button>
-                            
-                            <Button 
-                                variant="outline" 
+
+                            <Button
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/budgets/${budget.id}/execution`)"
                             >
                                 <TrendingUp class="h-4 w-4" />
                                 Ver Ejecución
                             </Button>
-                            
-                            <Button 
-                                variant="outline" 
+
+                            <Button
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/reports/budget-execution?budget=${budget.id}`)"
                             >

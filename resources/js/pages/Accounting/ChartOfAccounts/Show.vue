@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, Edit, FileText, TrendingDown, TrendingUp, Hash, DollarSign } from 'lucide-vue-next';
-import { computed } from 'vue';
 import { formatCurrency } from '@/utils';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, DollarSign, Edit, FileText, Hash, TrendingDown, TrendingUp } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface ChartOfAccount {
     id: number;
@@ -52,37 +52,39 @@ const props = defineProps<{
 // Computed properties
 const accountTypeInfo = computed(() => {
     const typeMap = {
-        asset: { 
-            label: 'Activo', 
+        asset: {
+            label: 'Activo',
             color: 'bg-blue-100 text-blue-800',
-            description: 'Recursos económicos controlados por la entidad'
+            description: 'Recursos económicos controlados por la entidad',
         },
-        liability: { 
-            label: 'Pasivo', 
+        liability: {
+            label: 'Pasivo',
             color: 'bg-red-100 text-red-800',
-            description: 'Obligaciones presentes de la entidad'
+            description: 'Obligaciones presentes de la entidad',
         },
-        equity: { 
-            label: 'Patrimonio', 
+        equity: {
+            label: 'Patrimonio',
             color: 'bg-purple-100 text-purple-800',
-            description: 'Participación residual en los activos'
+            description: 'Participación residual en los activos',
         },
-        income: { 
-            label: 'Ingreso', 
+        income: {
+            label: 'Ingreso',
             color: 'bg-green-100 text-green-800',
-            description: 'Incrementos en los beneficios económicos'
+            description: 'Incrementos en los beneficios económicos',
         },
-        expense: { 
-            label: 'Gasto', 
+        expense: {
+            label: 'Gasto',
             color: 'bg-orange-100 text-orange-800',
-            description: 'Decrementos en los beneficios económicos'
+            description: 'Decrementos en los beneficios económicos',
         },
     };
-    return typeMap[props.account.account_type] || {
-        label: 'Desconocido',
-        color: 'bg-gray-100 text-gray-800',
-        description: 'Tipo de cuenta no reconocido'
-    };
+    return (
+        typeMap[props.account.account_type] || {
+            label: 'Desconocido',
+            color: 'bg-gray-100 text-gray-800',
+            description: 'Tipo de cuenta no reconocido',
+        }
+    );
 });
 
 const balanceColor = computed(() => {
@@ -132,9 +134,7 @@ const breadcrumbs = [
                         <Badge :class="accountTypeInfo.color">
                             {{ accountTypeInfo.label }}
                         </Badge>
-                        <Badge variant="outline" v-if="!account.is_active">
-                            Inactiva
-                        </Badge>
+                        <Badge variant="outline" v-if="!account.is_active"> Inactiva </Badge>
                     </div>
                     <p class="text-muted-foreground">Código: {{ account.code }}</p>
                 </div>
@@ -156,7 +156,7 @@ const breadcrumbs = [
 
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <!-- Main Information -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Account Details -->
                     <Card>
                         <CardHeader>
@@ -176,15 +176,15 @@ const breadcrumbs = [
                                             {{ accountTypeInfo.label }}
                                         </Badge>
                                     </div>
-                                    <p class="text-xs text-muted-foreground mt-1">{{ accountTypeInfo.description }}</p>
+                                    <p class="mt-1 text-xs text-muted-foreground">{{ accountTypeInfo.description }}</p>
                                 </div>
                             </div>
 
                             <div v-if="account.parent_account">
                                 <Label class="text-sm font-medium text-muted-foreground">Cuenta Principal</Label>
-                                <Button 
-                                    variant="link" 
-                                    class="p-0 h-auto font-normal text-base"
+                                <Button
+                                    variant="link"
+                                    class="h-auto p-0 text-base font-normal"
                                     @click="router.visit(`/accounting/chart-of-accounts/${account.parent_account.id}`)"
                                 >
                                     {{ account.parent_account.code }} - {{ account.parent_account.name }}
@@ -225,8 +225,8 @@ const breadcrumbs = [
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="!recentTransactions || recentTransactions.length === 0" class="text-center py-8">
-                                <FileText class="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <div v-if="!recentTransactions || recentTransactions.length === 0" class="py-8 text-center">
+                                <FileText class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                                 <p class="text-muted-foreground">No hay transacciones registradas</p>
                             </div>
                             <Table v-else>
@@ -239,7 +239,7 @@ const breadcrumbs = [
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow v-for="transaction in (recentTransactions || [])" :key="transaction.id">
+                                    <TableRow v-for="transaction in recentTransactions || []" :key="transaction.id">
                                         <TableCell class="text-sm">
                                             {{ formatDate(transaction.transaction_date) }}
                                         </TableCell>
@@ -277,8 +277,8 @@ const breadcrumbs = [
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow 
-                                        v-for="childAccount in account.child_accounts" 
+                                    <TableRow
+                                        v-for="childAccount in account.child_accounts"
                                         :key="childAccount.id"
                                         class="cursor-pointer hover:bg-muted/50"
                                         @click="router.visit(`/accounting/chart-of-accounts/${childAccount.id}`)"
@@ -313,14 +313,13 @@ const breadcrumbs = [
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div class="text-center space-y-2">
+                            <div class="space-y-2 text-center">
                                 <component :is="balanceIcon" :class="['mx-auto h-8 w-8', balanceColor]" />
                                 <p :class="['text-3xl font-bold', balanceColor]">
                                     {{ formatCurrencyAbs(account.balance) }}
                                 </p>
                                 <p class="text-sm text-muted-foreground">
-                                    {{ account.balance === 0 ? 'Cuenta en equilibrio' : 
-                                       account.balance > 0 ? 'Saldo positivo' : 'Saldo negativo' }}
+                                    {{ account.balance === 0 ? 'Cuenta en equilibrio' : account.balance > 0 ? 'Saldo positivo' : 'Saldo negativo' }}
                                 </p>
                             </div>
                         </CardContent>
@@ -344,7 +343,7 @@ const breadcrumbs = [
                                             {{ month.change >= 0 ? '+' : '' }}{{ month.change.toFixed(1) }}%
                                         </p>
                                     </div>
-                                    <p class="text-sm font-mono">
+                                    <p class="font-mono text-sm">
                                         {{ formatCurrencyAbs(month.balance) }}
                                     </p>
                                 </div>
@@ -358,16 +357,16 @@ const breadcrumbs = [
                             <CardTitle>Acciones Rápidas</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-2">
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/transactions/create?account=${account.id}`)"
                             >
                                 <FileText class="h-4 w-4" />
                                 Nueva Transacción
                             </Button>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/reports/account-ledger?account=${account.id}`)"
                             >

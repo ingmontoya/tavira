@@ -54,6 +54,7 @@ class RolePermissionSeeder extends Seeder
             'edit_accounting',
             'delete_accounting',
             'approve_accounting',
+            'manage_accounting',
 
             // Communication
             'view_announcements',
@@ -101,7 +102,7 @@ class RolePermissionSeeder extends Seeder
             'view_residents', 'create_residents', 'edit_residents', 'delete_residents', 'assign_residents',
             'view_users', 'create_users', 'edit_users', 'manage_invitations',
             'view_payments', 'create_payments', 'edit_payments', 'view_reports',
-            'view_accounting', 'create_accounting', 'edit_accounting', 'delete_accounting', 'approve_accounting',
+            'view_accounting', 'create_accounting', 'edit_accounting', 'delete_accounting', 'approve_accounting', 'manage_accounting',
             'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',
             'view_access_logs', 'manage_visitors', 'view_security_reports',
         ]);
@@ -111,7 +112,7 @@ class RolePermissionSeeder extends Seeder
             'view_apartments', 'view_apartment_types',
             'view_residents',
             'view_payments', 'view_reports',
-            'view_accounting', 'create_accounting', 'edit_accounting',
+            'view_accounting', 'create_accounting', 'edit_accounting', 'manage_accounting',
             'view_announcements', 'create_announcements',
             'view_access_logs',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',

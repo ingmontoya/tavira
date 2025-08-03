@@ -65,12 +65,15 @@ watch(
 );
 
 // Auto-set dates when year changes
-watch(() => form.year, (newYear) => {
-    if (newYear) {
-        form.start_date = `${newYear}-01-01`;
-        form.end_date = `${newYear}-12-31`;
-    }
-});
+watch(
+    () => form.year,
+    (newYear) => {
+        if (newYear) {
+            form.start_date = `${newYear}-01-01`;
+            form.end_date = `${newYear}-12-31`;
+        }
+    },
+);
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -113,9 +116,7 @@ const breadcrumbs = [
                             <Wallet class="h-5 w-5" />
                             Información del Presupuesto
                         </CardTitle>
-                        <CardDescription>
-                            Datos básicos del nuevo presupuesto
-                        </CardDescription>
+                        <CardDescription> Datos básicos del nuevo presupuesto </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Name and Year -->
@@ -155,12 +156,7 @@ const breadcrumbs = [
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="start_date">Fecha de Inicio *</Label>
-                                <Input
-                                    id="start_date"
-                                    v-model="form.start_date"
-                                    type="date"
-                                    :class="{ 'border-red-500': form.errors.start_date }"
-                                />
+                                <Input id="start_date" v-model="form.start_date" type="date" :class="{ 'border-red-500': form.errors.start_date }" />
                                 <p v-if="form.errors.start_date" class="text-sm text-red-600">
                                     {{ form.errors.start_date }}
                                 </p>
@@ -168,12 +164,7 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="end_date">Fecha de Fin *</Label>
-                                <Input
-                                    id="end_date"
-                                    v-model="form.end_date"
-                                    type="date"
-                                    :class="{ 'border-red-500': form.errors.end_date }"
-                                />
+                                <Input id="end_date" v-model="form.end_date" type="date" :class="{ 'border-red-500': form.errors.end_date }" />
                                 <p v-if="form.errors.end_date" class="text-sm text-red-600">
                                     {{ form.errors.end_date }}
                                 </p>
@@ -199,16 +190,10 @@ const breadcrumbs = [
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-between">
-                    <Button type="button" variant="outline" @click="resetForm">
-                        Limpiar Formulario
-                    </Button>
+                    <Button type="button" variant="outline" @click="resetForm"> Limpiar Formulario </Button>
 
                     <div class="flex items-center gap-3">
-                        <Button 
-                            type="submit" 
-                            :disabled="form.processing"
-                            class="gap-2"
-                        >
+                        <Button type="submit" :disabled="form.processing" class="gap-2">
                             <Save class="h-4 w-4" />
                             {{ form.processing ? 'Guardando...' : 'Crear Presupuesto' }}
                         </Button>

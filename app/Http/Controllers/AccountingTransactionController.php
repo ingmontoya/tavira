@@ -63,7 +63,7 @@ class AccountingTransactionController extends Controller
     public function create(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $accounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->postable()
             ->active()
@@ -155,7 +155,7 @@ class AccountingTransactionController extends Controller
         }
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $accounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->postable()
             ->active()

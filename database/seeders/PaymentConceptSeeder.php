@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\ConjuntoConfig;
 use App\Models\PaymentConcept;
 use Illuminate\Database\Seeder;
 
@@ -10,24 +9,27 @@ class PaymentConceptSeeder extends Seeder
 {
     public function run(): void
     {
-        $conjunto = ConjuntoConfig::where('is_active', true)->first();
-
-        if (! $conjunto) {
-            $this->command->warn('No active conjunto configuration found. Skipping payment concepts seeding.');
-
-            return;
-        }
 
         $concepts = [
             [
-                'name' => 'Administración',
-                'description' => 'Cuota de administración mensual que cubre gastos comunes del conjunto',
+                'name' => 'Administración Mensual',
+                'description' => 'Cuota de administración mensual base por tipo de apartamento',
+                'type' => 'monthly_administration',
+                'default_amount' => 0, // Será dinámico por apartamento
+                'is_recurring' => true,
+                'is_active' => true,
+                'billing_cycle' => 'monthly',
+                'applicable_apartment_types' => null, // Applies to all apartment types
+            ],
+            [
+                'name' => 'Administración - Gastos Adicionales',
+                'description' => 'Gastos administrativos adicionales fuera de la cuota base',
                 'type' => 'common_expense',
                 'default_amount' => 150000,
                 'is_recurring' => true,
                 'is_active' => true,
                 'billing_cycle' => 'monthly',
-                'applicable_apartment_types' => null, // Applies to all apartment types
+                'applicable_apartment_types' => null,
             ],
             [
                 'name' => 'Mantenimiento de Ascensores',
@@ -124,7 +126,6 @@ class PaymentConceptSeeder extends Seeder
         foreach ($concepts as $conceptData) {
             PaymentConcept::firstOrCreate(
                 [
-                    'conjunto_config_id' => $conjunto->id,
                     'name' => $conceptData['name'],
                     'type' => $conceptData['type'],
                 ],

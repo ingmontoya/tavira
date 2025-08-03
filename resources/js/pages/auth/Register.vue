@@ -37,7 +37,7 @@ const props = defineProps<Props>();
 
 const form = useForm({
     name: '',
-    email: props.invitation?.is_mass_invitation ? '' : (props.invitation ? '' : ''),
+    email: props.invitation?.is_mass_invitation ? '' : props.invitation ? '' : '',
     password: '',
     password_confirmation: '',
     token: props.invitation?.token || '',
@@ -81,7 +81,7 @@ const getSubmitTabIndex = () => {
 </script>
 
 <template>
-    <AuthBase 
+    <AuthBase
         :title="invitation ? 'Completar registro' : 'Crear cuenta'"
         :description="invitation ? 'Has sido invitado para unirte a Habitta' : 'Únete a Habitta'"
     >
@@ -100,9 +100,7 @@ const getSubmitTabIndex = () => {
                     <p v-if="invitation.mass_invitation_description" class="text-sm text-blue-700">
                         {{ invitation.mass_invitation_description }}
                     </p>
-                    <p v-else class="text-sm text-blue-700">
-                        Completa tu registro seleccionando tu apartamento y creando tu cuenta.
-                    </p>
+                    <p v-else class="text-sm text-blue-700">Completa tu registro seleccionando tu apartamento y creando tu cuenta.</p>
                 </CardContent>
             </Card>
 
@@ -155,15 +153,7 @@ const getSubmitTabIndex = () => {
                     <!-- Email field for free registration or mass invitations -->
                     <div v-if="!invitation || invitation.is_mass_invitation" class="grid gap-2">
                         <Label for="email">Correo electrónico</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            required
-                            :tabindex="2"
-                            autocomplete="email"
-                            v-model="form.email"
-                            placeholder="tu@correo.com"
-                        />
+                        <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="tu@correo.com" />
                         <InputError :message="form.errors.email" />
                     </div>
 
@@ -177,16 +167,12 @@ const getSubmitTabIndex = () => {
                             <SelectContent>
                                 <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id">
                                     Torre {{ apartment.tower }} - Apt {{ apartment.number }} (Piso {{ apartment.floor }})
-                                    <span v-if="apartment.apartment_type" class="text-muted-foreground ml-2">
-                                        - {{ apartment.apartment_type }}
-                                    </span>
+                                    <span v-if="apartment.apartment_type" class="ml-2 text-muted-foreground"> - {{ apartment.apartment_type }} </span>
                                 </SelectItem>
                             </SelectContent>
                         </Select>
                         <InputError :message="form.errors.apartment_id" />
-                        <p class="text-sm text-muted-foreground">
-                            Selecciona el apartamento donde resides
-                        </p>
+                        <p class="text-sm text-muted-foreground">Selecciona el apartamento donde resides</p>
                     </div>
 
                     <div class="grid gap-2">
@@ -230,7 +216,9 @@ const getSubmitTabIndex = () => {
 
                 <div class="text-center text-sm text-muted-foreground">
                     ¿Ya tienes una cuenta?
-                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="getSubmitTabIndex() + 1"> Iniciar sesión </TextLink>
+                    <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="getSubmitTabIndex() + 1">
+                        Iniciar sesión
+                    </TextLink>
                 </div>
             </form>
         </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\Settings\PaymentConceptMappingController;
 use App\Http\Controllers\Settings\PaymentSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecuritySettingsController;
@@ -37,4 +38,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('settings/permissions/users/{user}/role', [UserPermissionsController::class, 'updateUserRole'])->name('permissions.user.role')->middleware('can:edit_users');
     Route::patch('settings/permissions/users/{user}/permissions', [UserPermissionsController::class, 'updateUserPermissions'])->name('permissions.user.permissions')->middleware('can:edit_users');
     Route::patch('settings/permissions/roles/{role}/permissions', [UserPermissionsController::class, 'updateRolePermissions'])->name('permissions.role.permissions')->middleware('can:edit_users');
+
+    // Payment Concept Mapping Routes
+    Route::get('settings/payment-concept-mapping', [PaymentConceptMappingController::class, 'index'])->name('settings.payment-concept-mapping.index')->middleware('can:manage_accounting');
+    Route::post('settings/payment-concept-mapping', [PaymentConceptMappingController::class, 'store'])->name('settings.payment-concept-mapping.store')->middleware('can:manage_accounting');
+    Route::put('settings/payment-concept-mapping/{mapping}', [PaymentConceptMappingController::class, 'update'])->name('settings.payment-concept-mapping.update')->middleware('can:manage_accounting');
+    Route::delete('settings/payment-concept-mapping/{mapping}', [PaymentConceptMappingController::class, 'destroy'])->name('settings.payment-concept-mapping.destroy')->middleware('can:manage_accounting');
+    Route::post('settings/payment-concept-mapping/create-defaults', [PaymentConceptMappingController::class, 'createDefaultMappings'])->name('settings.payment-concept-mapping.create-defaults')->middleware('can:manage_accounting');
+    Route::post('settings/payment-concept-mapping/{mapping}/toggle-active', [PaymentConceptMappingController::class, 'toggleActive'])->name('settings.payment-concept-mapping.toggle-active')->middleware('can:manage_accounting');
 });

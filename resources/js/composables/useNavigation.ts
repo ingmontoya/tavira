@@ -1,12 +1,13 @@
-import { usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import type { NavItem } from '@/types';
+import { usePage } from '@inertiajs/vue3';
 import {
     BarChart3,
+    Bell,
     BookOpen,
     Building2,
     Calculator,
     CreditCard,
+    FileQuestion,
     FileText,
     Home,
     LayoutGrid,
@@ -18,14 +19,13 @@ import {
     Settings,
     Shield,
     TrendingUp,
+    Truck,
     UserCheck,
     UserCog,
     Users,
-    Bell,
-    FileQuestion,
-    Truck,
     Wallet,
 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 export function useNavigation() {
     const page = usePage();
@@ -33,13 +33,11 @@ export function useNavigation() {
     const permissions = computed(() => page.props.auth?.permissions || []);
     const roles = computed(() => page.props.auth?.roles || []);
 
-
     const hasPermission = (permission: string): boolean => {
         // Ensure permissions array exists and is not empty
         const permsArray = permissions.value || [];
         const hasPerms = Array.isArray(permsArray) && permsArray.includes(permission);
-        
-        
+
         return hasPerms;
     };
 
@@ -283,8 +281,7 @@ export function useNavigation() {
     ]);
 
     // Filter visible items
-    const filterVisibleItems = (items: NavItem[]): NavItem[] => 
-        items.filter(item => item.visible === true);
+    const filterVisibleItems = (items: NavItem[]): NavItem[] => items.filter((item) => item.visible === true);
 
     return {
         user,

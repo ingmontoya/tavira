@@ -13,18 +13,31 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import type { ApartmentType, ConjuntoConfig, ConfigurationMetadata, FloorConfiguration } from '@/types';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { ApartmentType, ConfigurationMetadata } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Building, Calculator, CheckCircle, ChevronDown, ChevronRight, Home, Info, Plus, Save, Settings, Trash2, X } from 'lucide-vue-next';
+import {
+    ArrowLeft,
+    Building,
+    Calculator,
+    CheckCircle,
+    ChevronDown,
+    ChevronRight,
+    Home,
+    Info,
+    Plus,
+    Save,
+    Settings,
+    Trash2,
+    X,
+} from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface FormData {
@@ -96,7 +109,7 @@ const isFirstStep = computed(() => currentStep.value === 0);
 
 const totalApartments = computed(() => {
     let totalPerTower = 0;
-    
+
     // Calculate apartments per tower considering special configurations
     for (let floor = 1; floor <= form.floors_per_tower; floor++) {
         const floorConfig = form.configuration_metadata.floor_configuration?.[floor];
@@ -108,7 +121,7 @@ const totalApartments = computed(() => {
             totalPerTower += form.apartments_per_floor;
         }
     }
-    
+
     return form.number_of_towers * totalPerTower;
 });
 
@@ -273,7 +286,7 @@ const getFloorApartmentCount = (floor: number): number => {
 
 const hasCustomFloorConfiguration = (floor: number): boolean => {
     return (
-        (form.configuration_metadata.floor_configuration?.[floor]?.apartments_count !== undefined) ||
+        form.configuration_metadata.floor_configuration?.[floor]?.apartments_count !== undefined ||
         (floor === form.floors_per_tower && form.configuration_metadata.penthouse_configuration !== undefined)
     );
 };
@@ -733,9 +746,7 @@ const breadcrumbs = [
                                     <Settings class="h-5 w-5" />
                                     Configuración Avanzada (Opcional)
                                 </CardTitle>
-                                <CardDescription>
-                                    Define configuraciones especiales para pisos específicos o penthouses
-                                </CardDescription>
+                                <CardDescription> Define configuraciones especiales para pisos específicos o penthouses </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <!-- Penthouse Configuration -->
@@ -753,7 +764,7 @@ const breadcrumbs = [
                                         />
                                     </div>
 
-                                    <div v-if="form.configuration_metadata.penthouse_configuration" class="rounded-lg border p-4 space-y-4">
+                                    <div v-if="form.configuration_metadata.penthouse_configuration" class="space-y-4 rounded-lg border p-4">
                                         <div class="grid grid-cols-2 gap-4">
                                             <div class="space-y-2">
                                                 <Label>Piso Penthouse</Label>
@@ -770,7 +781,7 @@ const breadcrumbs = [
                                             </div>
                                         </div>
                                         <p class="text-xs text-muted-foreground">
-                                            En lugar de {{ form.apartments_per_floor }} apartamentos regulares, este piso tendrá 
+                                            En lugar de {{ form.apartments_per_floor }} apartamentos regulares, este piso tendrá
                                             {{ form.configuration_metadata.penthouse_configuration.apartments_count }} penthouses más amplios.
                                         </p>
                                     </div>
@@ -782,9 +793,7 @@ const breadcrumbs = [
                                 <div class="space-y-4">
                                     <div>
                                         <Label class="text-base font-medium">Configuración por Piso</Label>
-                                        <p class="text-sm text-muted-foreground">
-                                            Personaliza el número de apartamentos para pisos específicos
-                                        </p>
+                                        <p class="text-sm text-muted-foreground">Personaliza el número de apartamentos para pisos específicos</p>
                                     </div>
 
                                     <Collapsible v-model:open="showAdvancedConfig">
@@ -815,7 +824,9 @@ const breadcrumbs = [
                                                             min="1"
                                                             max="10"
                                                             class="w-20"
-                                                            @input="setFloorApartmentCount(floor, parseInt(($event.target as HTMLInputElement).value))"
+                                                            @input="
+                                                                setFloorApartmentCount(floor, parseInt(($event.target as HTMLInputElement).value))
+                                                            "
                                                         />
                                                         <span class="text-sm text-muted-foreground">aptos</span>
                                                         <Button
@@ -830,8 +841,8 @@ const breadcrumbs = [
                                                 </div>
                                             </div>
                                             <p class="text-xs text-muted-foreground">
-                                                Por defecto, cada piso tiene {{ form.apartments_per_floor }} apartamentos. 
-                                                Modifica los valores para personalizar pisos específicos.
+                                                Por defecto, cada piso tiene {{ form.apartments_per_floor }} apartamentos. Modifica los valores para
+                                                personalizar pisos específicos.
                                             </p>
                                         </CollapsibleContent>
                                     </Collapsible>
@@ -844,13 +855,17 @@ const breadcrumbs = [
                                         <p class="text-sm font-medium">Resumen de Configuración Avanzada</p>
                                     </div>
                                     <div class="space-y-1 text-sm text-muted-foreground">
-                                        <p><strong>Total apartamentos por torre:</strong> {{ Math.floor(totalApartments / form.number_of_towers) }}</p>
+                                        <p>
+                                            <strong>Total apartamentos por torre:</strong> {{ Math.floor(totalApartments / form.number_of_towers) }}
+                                        </p>
                                         <p><strong>Total conjunto:</strong> {{ totalApartments }} apartamentos</p>
                                         <p v-if="form.configuration_metadata.penthouse_configuration">
-                                            <strong>Penthouses:</strong> {{ form.configuration_metadata.penthouse_configuration.apartments_count }} en piso {{ form.floors_per_tower }}
+                                            <strong>Penthouses:</strong> {{ form.configuration_metadata.penthouse_configuration.apartments_count }} en
+                                            piso {{ form.floors_per_tower }}
                                         </p>
                                         <p v-if="Object.keys(form.configuration_metadata.floor_configuration || {}).length > 0">
-                                            <strong>Pisos personalizados:</strong> {{ Object.keys(form.configuration_metadata.floor_configuration || {}).length }}
+                                            <strong>Pisos personalizados:</strong>
+                                            {{ Object.keys(form.configuration_metadata.floor_configuration || {}).length }}
                                         </p>
                                     </div>
                                 </div>

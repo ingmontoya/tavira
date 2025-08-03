@@ -37,6 +37,7 @@ class AccountingTransaction extends Model
         'is_balanced',
         'can_be_posted',
         'can_be_cancelled',
+        'total_amount',
     ];
 
     public function conjuntoConfig(): BelongsTo
@@ -130,6 +131,13 @@ class AccountingTransaction extends Model
     public function getCanBeCancelledAttribute(): bool
     {
         return $this->status === 'posted';
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        // En contabilidad de doble entrada, débito y crédito deben ser iguales
+        // Retornamos el total de débito (que debería ser igual al crédito)
+        return (float) ($this->total_debit ?? 0);
     }
 
     public function calculateTotals(): void

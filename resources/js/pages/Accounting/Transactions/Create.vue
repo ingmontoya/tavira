@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Save, FileText, Plus, Trash2, Calculator } from 'lucide-vue-next';
+import { ArrowLeft, Calculator, FileText, Plus, Save, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface TransactionEntry {
@@ -58,7 +58,7 @@ const isUnsavedChanges = ref(false);
 
 // Computed properties
 const activeAccounts = computed(() => {
-    return props.accounts.filter(account => account.is_active);
+    return props.accounts.filter((account) => account.is_active);
 });
 
 const totalDebits = computed(() => {
@@ -78,9 +78,11 @@ const balanceDifference = computed(() => {
 });
 
 const canSubmit = computed(() => {
-    return isBalanced.value && 
-           form.entries.length >= 2 && 
-           form.entries.every(entry => entry.account_id && (entry.debit_amount > 0 || entry.credit_amount > 0));
+    return (
+        isBalanced.value &&
+        form.entries.length >= 2 &&
+        form.entries.every((entry) => entry.account_id && (entry.debit_amount > 0 || entry.credit_amount > 0))
+    );
 });
 
 // Methods
@@ -100,12 +102,12 @@ const removeEntry = (index: number) => {
 };
 
 const getAccountDisplay = (accountId: number) => {
-    const account = activeAccounts.value.find(acc => acc.id === accountId);
+    const account = activeAccounts.value.find((acc) => acc.id === accountId);
     return account ? `${account.code} - ${account.name}` : '';
 };
 
 const onAccountChange = (index: number, accountId: number) => {
-    const account = activeAccounts.value.find(acc => acc.id === accountId);
+    const account = activeAccounts.value.find((acc) => acc.id === accountId);
     if (account) {
         form.entries[index].account = {
             code: account.code,
@@ -190,9 +192,7 @@ const breadcrumbs = [
                             <FileText class="h-5 w-5" />
                             Información de la Transacción
                         </CardTitle>
-                        <CardDescription>
-                            Datos básicos del asiento contable
-                        </CardDescription>
+                        <CardDescription> Datos básicos del asiento contable </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Reference and Date -->
@@ -206,9 +206,7 @@ const breadcrumbs = [
                                     class="font-mono"
                                     :class="{ 'border-red-500': form.errors.reference }"
                                 />
-                                <p class="text-xs text-muted-foreground">
-                                    Código único para identificar la transacción
-                                </p>
+                                <p class="text-xs text-muted-foreground">Código único para identificar la transacción</p>
                                 <p v-if="form.errors.reference" class="text-sm text-red-600">
                                     {{ form.errors.reference }}
                                 </p>
@@ -254,9 +252,7 @@ const breadcrumbs = [
                                     <Calculator class="h-5 w-5" />
                                     Asientos Contables
                                 </CardTitle>
-                                <CardDescription>
-                                    Detalle de débitos y créditos (debe estar balanceado)
-                                </CardDescription>
+                                <CardDescription> Detalle de débitos y créditos (debe estar balanceado) </CardDescription>
                             </div>
                             <Button type="button" variant="outline" size="sm" @click="addEntry" class="gap-2">
                                 <Plus class="h-4 w-4" />
@@ -269,30 +265,19 @@ const breadcrumbs = [
                         <div class="mb-6 grid grid-cols-3 gap-4 rounded-lg bg-muted p-4">
                             <div class="text-center">
                                 <p class="text-sm text-muted-foreground">Total Débitos</p>
-                                <p class="text-xl font-bold text-red-600">
-                                    ${{ totalDebits.toLocaleString() }}
-                                </p>
+                                <p class="text-xl font-bold text-red-600">${{ totalDebits.toLocaleString() }}</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-muted-foreground">Total Créditos</p>
-                                <p class="text-xl font-bold text-green-600">
-                                    ${{ totalCredits.toLocaleString() }}
-                                </p>
+                                <p class="text-xl font-bold text-green-600">${{ totalCredits.toLocaleString() }}</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-muted-foreground">Diferencia</p>
-                                <p :class="[
-                                    'text-xl font-bold',
-                                    isBalanced ? 'text-green-600' : 'text-red-600'
-                                ]">
+                                <p :class="['text-xl font-bold', isBalanced ? 'text-green-600' : 'text-red-600']">
                                     ${{ Math.abs(balanceDifference).toLocaleString() }}
                                 </p>
-                                <p v-if="!isBalanced" class="text-xs text-red-600">
-                                    No balanceado
-                                </p>
-                                <p v-else class="text-xs text-green-600">
-                                    ✓ Balanceado
-                                </p>
+                                <p v-if="!isBalanced" class="text-xs text-red-600">No balanceado</p>
+                                <p v-else class="text-xs text-green-600">✓ Balanceado</p>
                             </div>
                         </div>
 
@@ -311,22 +296,20 @@ const breadcrumbs = [
                                 <TableBody>
                                     <TableRow v-for="(entry, index) in form.entries" :key="index">
                                         <TableCell>
-                                            <Select 
-                                                :model-value="entry.account_id" 
-                                                @update:model-value="(value) => { 
-                                                    entry.account_id = value; 
-                                                    onAccountChange(index, value); 
-                                                }"
+                                            <Select
+                                                :model-value="entry.account_id"
+                                                @update:model-value="
+                                                    (value) => {
+                                                        entry.account_id = value;
+                                                        onAccountChange(index, value);
+                                                    }
+                                                "
                                             >
                                                 <SelectTrigger class="w-full">
                                                     <SelectValue placeholder="Seleccionar cuenta" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem 
-                                                        v-for="account in activeAccounts" 
-                                                        :key="account.id" 
-                                                        :value="account.id"
-                                                    >
+                                                    <SelectItem v-for="account in activeAccounts" :key="account.id" :value="account.id">
                                                         <div class="flex flex-col">
                                                             <span class="font-mono text-sm">{{ account.code }}</span>
                                                             <span class="text-xs text-muted-foreground">{{ account.name }}</span>
@@ -336,11 +319,7 @@ const breadcrumbs = [
                                             </Select>
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                v-model="entry.description"
-                                                placeholder="Descripción del movimiento"
-                                                class="w-full"
-                                            />
+                                            <Input v-model="entry.description" placeholder="Descripción del movimiento" class="w-full" />
                                         </TableCell>
                                         <TableCell>
                                             <Input
@@ -380,7 +359,7 @@ const breadcrumbs = [
                             </Table>
                         </div>
 
-                        <p v-if="form.errors.entries" class="text-sm text-red-600 mt-2">
+                        <p v-if="form.errors.entries" class="mt-2 text-sm text-red-600">
                             {{ form.errors.entries }}
                         </p>
                     </CardContent>
@@ -388,20 +367,12 @@ const breadcrumbs = [
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-between">
-                    <Button type="button" variant="outline" @click="resetForm">
-                        Limpiar Formulario
-                    </Button>
+                    <Button type="button" variant="outline" @click="resetForm"> Limpiar Formulario </Button>
 
                     <div class="flex items-center gap-3">
-                        <div v-if="!isBalanced" class="text-sm text-red-600">
-                            El asiento debe estar balanceado para continuar
-                        </div>
-                        
-                        <Button 
-                            type="submit" 
-                            :disabled="form.processing || !canSubmit"
-                            class="gap-2"
-                        >
+                        <div v-if="!isBalanced" class="text-sm text-red-600">El asiento debe estar balanceado para continuar</div>
+
+                        <Button type="submit" :disabled="form.processing || !canSubmit" class="gap-2">
                             <Save class="h-4 w-4" />
                             {{ form.processing ? 'Guardando...' : 'Guardar Transacción' }}
                         </Button>

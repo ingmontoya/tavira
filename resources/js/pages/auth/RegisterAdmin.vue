@@ -36,7 +36,8 @@ const submit = () => {
                         Registro de Administrador
                     </CardTitle>
                     <CardDescription class="text-amber-700">
-                        Como primer administrador, tendrás acceso completo para gestionar el conjunto residencial y crear invitaciones para otros usuarios.
+                        Como primer administrador, tendrás acceso completo para gestionar el conjunto residencial y crear invitaciones para otros
+                        usuarios.
                     </CardDescription>
                 </CardHeader>
             </Card>

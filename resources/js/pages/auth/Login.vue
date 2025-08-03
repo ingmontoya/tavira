@@ -88,7 +88,9 @@ const submit = () => {
             <div class="text-center text-sm text-muted-foreground">
                 <div v-if="props.canRegisterAdmin" class="mb-2">
                     ¿Eres el primer administrador?
-                    <TextLink :href="route('register.admin')" :tabindex="5" class="text-amber-600 hover:text-amber-700">Crear cuenta de administrador</TextLink>
+                    <TextLink :href="route('register.admin')" :tabindex="5" class="text-amber-600 hover:text-amber-700"
+                        >Crear cuenta de administrador</TextLink
+                    >
                 </div>
                 <div>
                     ¿No tienes una cuenta?

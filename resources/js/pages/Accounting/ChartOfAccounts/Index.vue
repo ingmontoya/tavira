@@ -201,9 +201,13 @@ const columns = [
             const balance = row.getValue('balance') as number | null | undefined;
             const numericBalance = balance ?? 0;
             const isNegative = numericBalance < 0;
-            return h('div', { 
-                class: `text-right font-mono ${isNegative ? 'text-red-600' : 'text-green-600'}` 
-            }, `$${Math.abs(numericBalance).toLocaleString()}`);
+            return h(
+                'div',
+                {
+                    class: `text-right font-mono ${isNegative ? 'text-red-600' : 'text-green-600'}`,
+                },
+                `$${Math.abs(numericBalance).toLocaleString()}`,
+            );
         },
     }),
     columnHelper.accessor('is_active', {

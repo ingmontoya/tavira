@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Mail, Send, Users, AlertCircle, QrCode, Clock } from 'lucide-vue-next';
+import { AlertCircle, ArrowLeft, Clock, Mail, QrCode, Send, Users } from 'lucide-vue-next';
 
 interface Apartment {
     id: number;
@@ -174,7 +174,7 @@ const breadcrumbs = [
                         <div class="space-y-3">
                             <div>
                                 <p class="font-semibold">{{ activeMassInvitation.mass_invitation_title }}</p>
-                                <p v-if="activeMassInvitation.mass_invitation_description" class="text-sm text-muted-foreground mt-1">
+                                <p v-if="activeMassInvitation.mass_invitation_description" class="mt-1 text-sm text-muted-foreground">
                                     {{ activeMassInvitation.mass_invitation_description }}
                                 </p>
                             </div>
@@ -183,19 +183,11 @@ const breadcrumbs = [
                                 Expira: {{ new Date(activeMassInvitation.expires_at).toLocaleDateString('es-CO') }}
                             </div>
                             <div class="flex items-center gap-3 pt-2">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="router.visit(`/invitations/${activeMassInvitation.id}/url`)"
-                                >
+                                <Button variant="outline" size="sm" @click="router.visit(`/invitations/${activeMassInvitation.id}/url`)">
                                     <QrCode class="mr-2 h-4 w-4" />
                                     Ver URL y QR
                                 </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    @click="router.visit(`/invitations/${activeMassInvitation.id}`)"
-                                >
+                                <Button variant="outline" size="sm" @click="router.visit(`/invitations/${activeMassInvitation.id}`)">
                                     Ver Detalles
                                 </Button>
                             </div>
@@ -210,9 +202,7 @@ const breadcrumbs = [
                             <Mail class="h-5 w-5" />
                             Invitación Individual
                         </CardTitle>
-                        <CardDescription> 
-                            Para invitar miembros específicos del consejo, administradores o proveedores
-                        </CardDescription>
+                        <CardDescription> Para invitar miembros específicos del consejo, administradores o proveedores </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form @submit.prevent="submit" class="space-y-6">

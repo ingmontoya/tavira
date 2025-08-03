@@ -1,3 +1,313 @@
+# MÓDULO CONTABLE - HABITTA
+## Sistema de Contabilidad por Partida Doble para Propiedad Horizontal
+
+---
+
+## 🏢 FLUJO CONTABLE EN PROPIEDAD HORIZONTAL
+
+### 1. CONFIGURACIÓN INICIAL DEL CONJUNTO RESIDENCIAL
+
+#### 1.1 Plan de Cuentas Implementado (Decreto 2650)
+```
+├── 1000 - ACTIVOS
+│   ├── 1100 - Efectivo y Equivalentes
+│   │   ├── 1105 - Caja General (Recaudos diarios)
+│   │   └── 1110 - Bancos (Cuenta corriente y ahorros)
+│   ├── 1200 - Cuentas por Cobrar
+│   │   ├── 1305 - Cartera Administración (Cuotas pendientes)
+│   │   └── 1306 - Cartera Extraordinarias (Proyectos especiales)
+│   └── 1400 - Propiedades y Equipos
+├── 2000 - PASIVOS
+│   ├── 2100 - Cuentas por Pagar (Proveedores)
+│   └── 2200 - Obligaciones Laborales (Nómina)
+├── 3000 - PATRIMONIO
+│   └── 3100 - Patrimonio del Conjunto (Fondo de reserva)
+├── 4000 - INGRESOS
+│   ├── 4135 - Cuotas de Administración
+│   ├── 4136 - Cuotas Extraordinarias
+│   └── 4137 - Multas e Intereses de Mora
+└── 5000 - GASTOS
+    ├── 5100 - Gastos de Administración (Nómina, seguros)
+    └── 5135 - Servicios Públicos (Energía, agua, aseo)
+```
+
+#### 1.2 Configuración Presupuestal Anual
+**Ejemplo Conjunto "Las Flores" - 120 Apartamentos:**
+- **Ingresos Proyectados**: $504.000.000 año (cuotas $350.000/mes)
+- **Gastos Operacionales**: $360.000.000 año
+- **Fondo de Reserva**: $144.000.000 (30% del presupuesto)
+- **Resultado Esperado**: Superávit de $144.000.000
+
+---
+
+### 2. CICLO OPERACIONAL MENSUAL
+
+#### 2.1 SEMANA 1: FACTURACIÓN AUTOMÁTICA
+
+**Proceso:** Sistema genera facturas automáticamente cada 1º del mes
+
+**Registro Contable Automático:**
+```
+DÉBITO:  130501 - Cartera Administración         $42.000.000
+CRÉDITO: 413501 - Cuotas de Administración       $42.000.000
+Concepto: Facturación mensual enero 2025
+```
+
+**Detalle por Apartamento:**
+- Tipo A (40 apts): $300.000 c/u = $12.000.000
+- Tipo B (60 apts): $350.000 c/u = $21.000.000  
+- Tipo C (20 apts): $450.000 c/u = $9.000.000
+
+#### 2.2 SEMANA 2-3: RECAUDO DE CUOTAS
+
+**Ejemplo: Pago Apartamento 301B**
+```
+DÉBITO:  110501 - Caja General                   $350.000
+CRÉDITO: 130501 - Cartera Administración         $350.000
+Concepto: Pago cuota administración Apt 301B
+```
+
+**Al Depositar en el Banco:**
+```
+DÉBITO:  111001 - Banco Cuenta Corriente         $8.750.000
+CRÉDITO: 110501 - Caja General                   $8.750.000
+Concepto: Depósito recaudos del día (25 pagos)
+```
+
+#### 2.3 SEMANA 4: GASTOS OPERACIONALES
+
+**Pago Servicios Públicos:**
+```
+DÉBITO:  513501 - Energía Eléctrica              $3.200.000
+DÉBITO:  513502 - Acueducto y Alcantarillado     $1.800.000
+CRÉDITO: 111001 - Banco Cuenta Corriente         $5.000.000
+Concepto: Pago servicios públicos enero 2025
+```
+
+**Pago Nómina Administración:**
+```
+DÉBITO:  510501 - Sueldos y Salarios             $6.500.000
+DÉBITO:  510502 - Prestaciones Sociales          $1.500.000
+CRÉDITO: 111001 - Banco Cuenta Corriente         $6.240.000
+CRÉDITO: 220501 - Retenciones por Pagar          $1.760.000
+Concepto: Nómina enero 2025 (4 empleados)
+```
+
+#### 2.4 FIN DE MES: CIERRE Y REPORTES
+
+**Actualización Automática de Presupuesto:**
+- Sistema calcula ejecución real vs presupuesto
+- Genera alertas si hay sobreejecución >10%
+- Actualiza indicadores financieros
+
+---
+
+### 3. TRANSACCIONES ESPECIALES DE PROPIEDAD HORIZONTAL
+
+#### 3.1 CUOTAS EXTRAORDINARIAS (Proyecto Mejoras)
+
+**Aprobación de $240.000.000 para renovación de ascensores:**
+```
+DÉBITO:  130502 - Cartera Cuotas Extraordinarias  $240.000.000
+CRÉDITO: 413502 - Cuotas Extraordinarias          $240.000.000
+Concepto: Facturación cuota extra - Proyecto ascensores
+```
+
+**Pago a Contratista:**
+```
+DÉBITO:  160501 - Construcciones en Curso         $200.000.000
+DÉBITO:  240801 - Retención en la Fuente          $8.000.000
+CRÉDITO: 111001 - Banco Cuenta Corriente          $200.000.000
+CRÉDITO: 240801 - Retención por Pagar             $8.000.000
+Concepto: 80% avance proyecto ascensores
+```
+
+#### 3.2 MANEJO DE CARTERA MOROSA
+
+**Intereses de Mora (3% mensual sobre saldo vencido):**
+```
+DÉBITO:  130503 - Cartera Intereses Mora          $420.000
+CRÉDITO: 413506 - Intereses de Mora               $420.000
+Concepto: Intereses mora apartamentos 205A, 301C, 450B
+```
+
+**Provisión de Cartera Incobrable:**
+```
+DÉBITO:  530501 - Provisión Cartera Dudoso Recaudo $1.260.000
+CRÉDITO: 139901 - Provisión Cartera                $1.260.000
+Concepto: Provisión 30% cartera > 90 días
+```
+
+#### 3.3 FONDO DE RESERVA (Obligatorio por Ley)
+
+**Constitución Mensual del Fondo (30% de ingresos):**
+```
+DÉBITO:  530502 - Apropiación Fondo Reserva       $12.600.000
+CRÉDITO: 310501 - Fondo de Reserva                $12.600.000
+Concepto: Apropiación mensual fondo de reserva
+```
+
+**Traslado a Cuenta de Ahorros Restringida:**
+```
+DÉBITO:  111002 - Banco Ahorros Fondo Reserva     $12.600.000
+CRÉDITO: 111001 - Banco Cuenta Corriente          $12.600.000
+Concepto: Traslado fondo reserva a cuenta restringida
+```
+
+---
+
+### 4. REPORTES FINANCIEROS AUTOMÁTICOS
+
+#### 4.1 Estado de Resultados Mensual
+```
+CONJUNTO RESIDENCIAL "LAS FLORES"
+ESTADO DE RESULTADOS - ENERO 2025
+
+INGRESOS OPERACIONALES:
+Cuotas de Administración                     $42.000.000
+Cuotas Extraordinarias                       $20.000.000
+Multas e Intereses                          $   800.000
+Otros Ingresos                              $   200.000
+    TOTAL INGRESOS                          $63.000.000
+
+GASTOS OPERACIONALES:
+Servicios Públicos                          $ 8.500.000
+Nómina y Prestaciones                       $12.000.000
+Mantenimiento y Reparaciones                $ 4.500.000
+Vigilancia y Seguridad                      $ 8.200.000
+Seguros                                     $ 1.800.000
+Administración y Papelería                  $ 1.200.000
+Aseo y Jardinería                          $ 3.800.000
+    TOTAL GASTOS                           $40.000.000
+
+UTILIDAD ANTES DE APROPIACIONES            $23.000.000
+Apropiación Fondo de Reserva               $12.600.000
+    UTILIDAD NETA                          $10.400.000
+```
+
+#### 4.2 Balance General (Posición Financiera)
+```
+ACTIVOS:
+CORRIENTES:
+  Caja y Bancos                             $35.400.000
+  Cartera (Neto de provisión)               $8.600.000
+  TOTAL ACTIVOS CORRIENTES                  $44.000.000
+
+NO CORRIENTES:
+  Propiedades y Equipos (Neto)             $850.000.000
+  TOTAL ACTIVOS                            $894.000.000
+
+PASIVOS:
+CORRIENTES:
+  Cuentas por Pagar                         $5.200.000
+  Obligaciones Laborales                    $2.800.000
+  TOTAL PASIVOS                             $8.000.000
+
+PATRIMONIO:
+  Fondo de Reserva                         $756.000.000
+  Resultados Acumulados                    $130.000.000
+  TOTAL PATRIMONIO                         $886.000.000
+
+TOTAL PASIVO + PATRIMONIO                  $894.000.000
+```
+
+#### 4.3 Análisis de Cartera por Edades
+```
+ANÁLISIS DE CARTERA - ENERO 2025
+
+Al día (0-30 días):           $7.300.000    85%
+Vencida 31-60 días:          $   860.000    10%
+Vencida 61-90 días:          $   258.000     3%
+Vencida >90 días:            $   172.000     2%
+TOTAL CARTERA BRUTA:         $8.590.000   100%
+
+Provisión cartera dudosa:    $   129.000
+CARTERA NETA:               $8.461.000
+
+Apartamentos al día: 102/120 (85%)
+Apartamentos morosos: 18/120 (15%)
+```
+
+---
+
+### 5. CARACTERÍSTICAS ESPECIALES DEL SISTEMA
+
+#### 5.1 Automatización Completa
+- **Facturación Automática**: Cada 1º del mes según configuración
+- **Asientos Contables**: Se generan automáticamente con cada transacción
+- **Alertas de Sobrepresupuesto**: Notificaciones automáticas >5%
+- **Cálculo de Intereses**: Aplicación automática según configuración
+- **Conciliación Bancaria**: Proceso semi-automático con importación
+
+#### 5.2 Integración con Módulos Existentes
+- **Apartamentos**: Cada apartamento tiene coeficiente de participación
+- **Residentes**: Vinculación automática con cartera y pagos
+- **Invitaciones**: Sistema de acceso para propietarios y arrendatarios
+- **Reportes**: Exportación automática a PDF y Excel
+
+#### 5.3 Validaciones Contables Automáticas
+- **Partida Doble Obligatoria**: Débitos = Créditos en cada transacción
+- **Cuadre de Caja**: Validación diaria de movimientos de efectivo
+- **Presupuesto vs Real**: Control automático de sobreejecución
+- **Consistencia de Saldos**: Validación de saldos contables vs auxiliares
+
+---
+
+### 6. FLUJOS ESPECIALES
+
+#### 6.1 Proceso de Cobranza Automatizada
+1. **Día 5**: Sistema envía recordatorio de pago por email/SMS
+2. **Día 15**: Aplicación automática de intereses de mora
+3. **Día 30**: Generación de reporte de cartera vencida
+4. **Día 45**: Envío de carta de cobro pre-jurídico
+5. **Día 60**: Escalamiento a cobranza jurídica
+
+#### 6.2 Manejo de Proyectos de Mejoras
+1. **Aprobación en Asamblea**: Registro del proyecto y presupuesto
+2. **Facturación Cuotas Extra**: Distribución según coeficientes
+3. **Control de Obra**: Seguimiento de avances y pagos
+4. **Capitalización**: Traslado a activos una vez terminado
+5. **Depreciación**: Inicio del proceso de depreciación automática
+
+#### 6.3 Cierre Mensual Automatizado
+1. **Validación de Transacciones**: Verificación de cuadre contable
+2. **Cálculo de Provisiones**: Cartera, prestaciones, impuestos
+3. **Generación de Reportes**: Estados financieros automáticos
+4. **Backup de Seguridad**: Respaldo completo de datos
+5. **Notificación a Usuarios**: Envío de reportes a administración
+
+---
+
+### 7. BENEFICIOS ESPECÍFICOS PARA PROPIEDAD HORIZONTAL
+
+#### 7.1 Transparencia Total
+- **Estados Financieros Mensuales**: Disponibles para todos los propietarios
+- **Portal de Consultas**: Acceso 24/7 a estado de cuenta y pagos
+- **Trazabilidad Completa**: Cada peso invertido es rastreable
+- **Reportes Comparativos**: Análisis de tendencias y variaciones
+
+#### 7.2 Eficiencia Operativa
+- **Automatización del 90%**: Reduce trabajo manual del administrador
+- **Alertas Preventivas**: Evita problemas antes de que ocurran
+- **Control Presupuestal**: Evita gastos no autorizados
+- **Optimización de Recursos**: Mejora la gestión del efectivo
+
+#### 7.3 Cumplimiento Legal
+- **Decreto 2650**: Plan de cuentas oficial de Colombia
+- **Ley 675 de 2001**: Normas de propiedad horizontal
+- **Reserva Obligatoria**: Cálculo automático del fondo
+- **Auditorías**: Facilita las revisiones contables externas
+
+---
+
+## 🎯 CONCLUSIÓN DEL FLUJO
+
+El módulo contable de Habitta revoluciona la gestión financiera de conjuntos residenciales al automatizar completamente el ciclo contable desde la facturación hasta los reportes financieros. Su integración nativa con los procesos de propiedad horizontal elimina errores manuales, mejora la transparencia hacia los propietarios y garantiza el cumplimiento de todas las obligaciones legales y contables.
+
+El sistema no solo registra transacciones, sino que proporciona inteligencia financiera que permite a los administradores tomar decisiones informadas, optimizar recursos y mantener la confianza de la comunidad de propietarios.
+
+---
+
 # Módulo Contable - Plan de Implementación
 
 ## 📋 Estado del Proyecto

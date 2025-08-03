@@ -24,7 +24,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { Building, Calendar, Edit, Eye, Filter, Home, Info, Plus, RefreshCw, Search } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
-import type { ConjuntoConfig, ApartmentType } from '@/types';
+import type { ConjuntoConfig } from '@/types';
 
 const props = defineProps<{
     conjunto: ConjuntoConfig | null;

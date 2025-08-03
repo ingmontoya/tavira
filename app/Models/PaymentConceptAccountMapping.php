@@ -71,6 +71,10 @@ class PaymentConceptAccountMapping extends Model
 
         // Default account mappings based on payment concept type
         $defaultMappings = [
+            'monthly_administration' => [
+                'income_code' => '413501', // Cuotas de Administración
+                'receivable_code' => '130501', // Cartera Administración
+            ],
             'common_expense' => [
                 'income_code' => '413501', // Cuotas de Administración
                 'receivable_code' => '130501', // Cartera Administración

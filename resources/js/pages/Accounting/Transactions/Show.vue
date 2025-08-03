@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Edit, FileText, Calendar, User, Hash, DollarSign, CheckCircle, AlertCircle, XCircle } from 'lucide-vue-next';
-import { computed } from 'vue';
 import { formatCurrency } from '@/utils';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle, DollarSign, Edit, FileText, Hash, XCircle } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface TransactionEntry {
     id: number;
@@ -53,31 +53,33 @@ const props = defineProps<{
 // Computed properties
 const statusInfo = computed(() => {
     const statusMap = {
-        Draft: { 
-            label: 'Borrador', 
+        Draft: {
+            label: 'Borrador',
             color: 'bg-gray-100 text-gray-800',
             icon: Edit,
-            description: 'Transacción en proceso de creación'
+            description: 'Transacción en proceso de creación',
         },
-        Posted: { 
-            label: 'Contabilizada', 
+        Posted: {
+            label: 'Contabilizada',
             color: 'bg-green-100 text-green-800',
             icon: CheckCircle,
-            description: 'Transacción confirmada y registrada'
+            description: 'Transacción confirmada y registrada',
         },
-        Reversed: { 
-            label: 'Reversada', 
+        Reversed: {
+            label: 'Reversada',
             color: 'bg-red-100 text-red-800',
             icon: XCircle,
-            description: 'Transacción anulada o reversada'
+            description: 'Transacción anulada o reversada',
         },
     };
-    return statusMap[props.transaction.status] || {
-        label: 'Desconocido',
-        color: 'bg-gray-100 text-gray-800',
-        icon: AlertCircle,
-        description: 'Estado no reconocido'
-    };
+    return (
+        statusMap[props.transaction.status] || {
+            label: 'Desconocido',
+            color: 'bg-gray-100 text-gray-800',
+            icon: AlertCircle,
+            description: 'Estado no reconocido',
+        }
+    );
 });
 
 const totalDebits = computed(() => {
@@ -95,7 +97,6 @@ const isBalanced = computed(() => {
 const canEdit = computed(() => {
     return props.transaction.status === 'Draft';
 });
-
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
@@ -159,7 +160,7 @@ const breadcrumbs = [
 
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <!-- Main Content -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Transaction Details -->
                     <Card>
                         <CardHeader>
@@ -192,13 +193,15 @@ const breadcrumbs = [
                                             {{ statusInfo.label }}
                                         </Badge>
                                     </div>
-                                    <p class="text-xs text-muted-foreground mt-1">{{ statusInfo.description }}</p>
+                                    <p class="mt-1 text-xs text-muted-foreground">{{ statusInfo.description }}</p>
                                 </div>
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Balance</Label>
                                     <div class="flex items-center gap-2">
-                                        <component :is="isBalanced ? CheckCircle : AlertCircle" 
-                                                   :class="['h-4 w-4', isBalanced ? 'text-green-600' : 'text-red-600']" />
+                                        <component
+                                            :is="isBalanced ? CheckCircle : AlertCircle"
+                                            :class="['h-4 w-4', isBalanced ? 'text-green-600' : 'text-red-600']"
+                                        />
                                         <span :class="isBalanced ? 'text-green-600' : 'text-red-600'">
                                             {{ isBalanced ? 'Balanceado' : 'No Balanceado' }}
                                         </span>
@@ -211,12 +214,12 @@ const breadcrumbs = [
                             <div class="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <Label class="text-muted-foreground">Creada por</Label>
-                                    <p>{{ transaction.created_by.name }}</p>
+                                    <p>{{ transaction.created_by?.name || 'Sistema' }}</p>
                                     <p class="text-xs text-muted-foreground">{{ formatDateTime(transaction.created_at) }}</p>
                                 </div>
                                 <div v-if="transaction.posted_by && transaction.posted_at">
                                     <Label class="text-muted-foreground">Contabilizada por</Label>
-                                    <p>{{ transaction.posted_by.name }}</p>
+                                    <p>{{ transaction.posted_by?.name || 'Sistema' }}</p>
                                     <p class="text-xs text-muted-foreground">{{ formatDateTime(transaction.posted_at) }}</p>
                                 </div>
                             </div>
@@ -246,18 +249,11 @@ const breadcrumbs = [
                                 </div>
                                 <div class="text-center">
                                     <p class="text-sm text-muted-foreground">Diferencia</p>
-                                    <p :class="[
-                                        'text-xl font-bold',
-                                        isBalanced ? 'text-green-600' : 'text-red-600'
-                                    ]">
+                                    <p :class="['text-xl font-bold', isBalanced ? 'text-green-600' : 'text-red-600']">
                                         {{ formatCurrency(Math.abs(totalDebits - totalCredits)) }}
                                     </p>
-                                    <p v-if="!isBalanced" class="text-xs text-red-600">
-                                        No balanceado
-                                    </p>
-                                    <p v-else class="text-xs text-green-600">
-                                        ✓ Balanceado
-                                    </p>
+                                    <p v-if="!isBalanced" class="text-xs text-red-600">No balanceado</p>
+                                    <p v-else class="text-xs text-green-600">✓ Balanceado</p>
                                 </div>
                             </div>
 
@@ -273,8 +269,8 @@ const breadcrumbs = [
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow 
-                                            v-for="entry in transaction.entries" 
+                                        <TableRow
+                                            v-for="entry in transaction.entries"
                                             :key="entry.id"
                                             class="cursor-pointer hover:bg-muted/50"
                                             @click="router.visit(`/accounting/chart-of-accounts/${entry.account.id}`)"
@@ -324,9 +320,9 @@ const breadcrumbs = [
                                 <p class="text-sm text-muted-foreground">Monto Total</p>
                                 <p class="text-2xl font-bold">{{ formatCurrency(transaction.total_amount) }}</p>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div class="space-y-2 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Número de asientos:</span>
@@ -334,7 +330,7 @@ const breadcrumbs = [
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Cuentas afectadas:</span>
-                                    <span>{{ new Set(transaction.entries.map(e => e.account.id)).size }}</span>
+                                    <span>{{ new Set(transaction.entries.map((e) => e.account.id)).size }}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -352,17 +348,17 @@ const breadcrumbs = [
                             <div class="space-y-3">
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Estado Actual</Label>
-                                    <div class="flex items-center gap-2 mt-1">
+                                    <div class="mt-1 flex items-center gap-2">
                                         <component :is="statusInfo.icon" class="h-4 w-4" />
                                         <span class="font-medium">{{ statusInfo.label }}</span>
                                     </div>
                                 </div>
-                                
+
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Fecha de Transacción</Label>
                                     <p class="text-sm">{{ formatDate(transaction.transaction_date) }}</p>
                                 </div>
-                                
+
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Última Modificación</Label>
                                     <p class="text-sm">{{ formatDateTime(transaction.updated_at) }}</p>
@@ -377,30 +373,26 @@ const breadcrumbs = [
                             <CardTitle>Acciones Rápidas</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-2">
-                            <Button 
+                            <Button
                                 v-if="canEdit"
-                                variant="outline" 
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/transactions/${transaction.id}/edit`)"
                             >
                                 <Edit class="h-4 w-4" />
                                 Editar Transacción
                             </Button>
-                            
-                            <Button 
-                                variant="outline" 
+
+                            <Button
+                                variant="outline"
                                 class="w-full justify-start gap-2"
                                 @click="router.visit(`/accounting/transactions/${transaction.id}/duplicate`)"
                             >
                                 <FileText class="h-4 w-4" />
                                 Duplicar Transacción
                             </Button>
-                            
-                            <Button 
-                                variant="outline" 
-                                class="w-full justify-start gap-2"
-                                @click="window.print()"
-                            >
+
+                            <Button variant="outline" class="w-full justify-start gap-2" @click="window.print()">
                                 <Calendar class="h-4 w-4" />
                                 Imprimir Comprobante
                             </Button>
