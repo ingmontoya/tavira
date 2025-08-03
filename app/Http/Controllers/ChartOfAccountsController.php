@@ -122,7 +122,7 @@ class ChartOfAccountsController extends Controller
             $account = ChartOfAccounts::create($validated);
 
             return redirect()
-                ->route('chart-of-accounts.show', $account)
+                ->route('accounting.chart-of-accounts.show', $account)
                 ->with('success', 'Cuenta creada exitosamente.');
         } catch (\InvalidArgumentException $e) {
             return back()
@@ -213,7 +213,7 @@ class ChartOfAccountsController extends Controller
             $chartOfAccount->update($validated);
 
             return redirect()
-                ->route('chart-of-accounts.show', $chartOfAccount)
+                ->route('accounting.chart-of-accounts.show', $chartOfAccount)
                 ->with('success', 'Cuenta actualizada exitosamente.');
         } catch (\InvalidArgumentException $e) {
             return back()
@@ -235,7 +235,7 @@ class ChartOfAccountsController extends Controller
         $chartOfAccount->delete();
 
         return redirect()
-            ->route('chart-of-accounts.index')
+            ->route('accounting.chart-of-accounts.index')
             ->with('success', 'Cuenta eliminada exitosamente.');
     }
 

@@ -33,6 +33,7 @@ class ChartOfAccounts extends Model
         'nature_label',
         'full_name',
         'has_children',
+        'balance',
     ];
 
     public function conjuntoConfig(): BelongsTo
@@ -114,6 +115,11 @@ class ChartOfAccounts extends Model
     public function getHasChildrenAttribute(): bool
     {
         return $this->children()->exists();
+    }
+
+    public function getBalanceAttribute(): float
+    {
+        return $this->getBalance();
     }
 
     public function getBalance(string $startDate = null, string $endDate = null): float

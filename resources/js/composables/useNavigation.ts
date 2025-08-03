@@ -5,6 +5,7 @@ import {
     BarChart3,
     BookOpen,
     Building2,
+    Calculator,
     CreditCard,
     FileText,
     Home,
@@ -16,12 +17,14 @@ import {
     Send,
     Settings,
     Shield,
+    TrendingUp,
     UserCheck,
     UserCog,
     Users,
     Bell,
     FileQuestion,
     Truck,
+    Wallet,
 } from 'lucide-vue-next';
 
 export function useNavigation() {
@@ -137,6 +140,37 @@ export function useNavigation() {
             icon: Settings,
             tourId: 'nav-payment-settings',
             visible: hasPermission('view_payments'),
+        },
+    ]);
+
+    const accountingNavItems = computed((): NavItem[] => [
+        {
+            title: 'Plan de Cuentas',
+            href: '/accounting/chart-of-accounts',
+            icon: Calculator,
+            tourId: 'nav-chart-of-accounts',
+            visible: hasPermission('view_accounting'),
+        },
+        {
+            title: 'Transacciones',
+            href: '/accounting/transactions',
+            icon: FileText,
+            tourId: 'nav-accounting-transactions',
+            visible: hasPermission('view_accounting'),
+        },
+        {
+            title: 'Presupuestos',
+            href: '/accounting/budgets',
+            icon: Wallet,
+            tourId: 'nav-budgets',
+            visible: hasPermission('view_accounting'),
+        },
+        {
+            title: 'Reportes Contables',
+            href: '/accounting/reports',
+            icon: TrendingUp,
+            tourId: 'nav-accounting-reports',
+            visible: hasPermission('view_accounting'),
         },
     ]);
 
@@ -260,6 +294,7 @@ export function useNavigation() {
         mainNavItems: computed(() => filterVisibleItems(mainNavItems.value)),
         residentsNavItems: computed(() => filterVisibleItems(residentsNavItems.value)),
         financeNavItems: computed(() => filterVisibleItems(financeNavItems.value)),
+        accountingNavItems: computed(() => filterVisibleItems(accountingNavItems.value)),
         communicationNavItems: computed(() => filterVisibleItems(communicationNavItems.value)),
         documentsNavItems: computed(() => filterVisibleItems(documentsNavItems.value)),
         systemNavItems: computed(() => filterVisibleItems(systemNavItems.value)),
