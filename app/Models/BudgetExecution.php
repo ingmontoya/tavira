@@ -147,4 +147,97 @@ class BudgetExecution extends Model
             'net_actual' => $executions->where('budgetItem.category', 'income')->sum('actual_amount') - $executions->where('budgetItem.category', 'expense')->sum('actual_amount'),
         ];
     }
+
+    public function calculateActualAmountFromAccountingEntries(): void
+    {
+        $accountId = $this->budgetItem->account_id;
+        $category = $this->budgetItem->category;
+        
+        $entries = AccountingTransactionEntry::whereHas('transaction', function ($query) {
+            $query->where('status', 'posted')
+                  ->whereMonth('transaction_date', $this->period_month)
+                  ->whereYear('transaction_date', $this->period_year);
+        })
+        ->where('account_id', $accountId)
+        ->get();
+
+        if ($category === 'income') {
+            // For income accounts, credit increases the balance
+            $actualAmount = $entries->sum('credit_amount') - $entries->sum('debit_amount');
+        } else {
+            // For expense accounts, debit increases the balance
+            $actualAmount = $entries->sum('debit_amount') - $entries->sum('credit_amount');
+        }
+
+        $this->updateWithCalculations(max(0, $actualAmount));
+    }
+
+    public function updateWithCalculations(float $actualAmount): void
+    {
+        $varianceAmount = $actualAmount - $this->budgeted_amount;
+        $variancePercentage = $this->budgeted_amount > 0 
+            ? ($varianceAmount / $this->budgeted_amount) * 100 
+            : 0;
+
+        $this->update([
+            'actual_amount' => $actualAmount,
+            'variance_amount' => $varianceAmount,
+            'variance_percentage' => round($variancePercentage, 2),
+        ]);
+    }
+
+    public static function refreshAllExecutionsForPeriod(int $conjuntoConfigId, int $month, int $year): void
+    {
+        $executions = self::whereHas('budgetItem.budget', function ($query) use ($conjuntoConfigId) {
+            $query->where('conjunto_config_id', $conjuntoConfigId)
+                  ->where('status', 'active');
+        })
+        ->byPeriod($month, $year)
+        ->get();
+
+        foreach ($executions as $execution) {
+            $execution->calculateActualAmountFromAccountingEntries();
+        }
+    }
+
+    public static function refreshExecutionsForAccount(int $accountId, int $month, int $year): void
+    {
+        $executions = self::whereHas('budgetItem', function ($query) use ($accountId) {
+            $query->where('account_id', $accountId);
+        })
+        ->byPeriod($month, $year)
+        ->get();
+
+        foreach ($executions as $execution) {
+            $execution->calculateActualAmountFromAccountingEntries();
+        }
+    }
+
+    public function isOverBudgetByThreshold(float $thresholdPercentage = 10.0): bool
+    {
+        return $this->variance_percentage > $thresholdPercentage;
+    }
+
+    public function getVarianceAlert(): ?array
+    {
+        if ($this->isOverBudgetByThreshold(10)) {
+            return [
+                'type' => 'danger',
+                'message' => "Sobrepresupuesto de {$this->variance_percentage}% en {$this->period_name}",
+                'variance_amount' => $this->variance_amount,
+                'variance_percentage' => $this->variance_percentage,
+            ];
+        }
+
+        if ($this->isOverBudgetByThreshold(5)) {
+            return [
+                'type' => 'warning',
+                'message' => "Cerca del límite presupuestal ({$this->variance_percentage}%) en {$this->period_name}",
+                'variance_amount' => $this->variance_amount,
+                'variance_percentage' => $this->variance_percentage,
+            ];
+        }
+
+        return null;
+    }
 }

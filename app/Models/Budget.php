@@ -229,4 +229,46 @@ class Budget extends Model
 
         return $newBudget;
     }
+
+    public function getBudgetAlerts(int $month = null, int $year = null): array
+    {
+        $month = $month ?? now()->month;
+        $year = $year ?? $this->fiscal_year;
+
+        $executions = BudgetExecution::whereHas('budgetItem', function ($query) {
+            $query->where('budget_id', $this->id);
+        })
+        ->byPeriod($month, $year)
+        ->with(['budgetItem.account'])
+        ->get();
+
+        $alerts = [];
+        foreach ($executions as $execution) {
+            $alert = $execution->getVarianceAlert();
+            if ($alert) {
+                $alerts[] = array_merge($alert, [
+                    'account' => $execution->budgetItem->account,
+                    'execution' => $execution,
+                ]);
+            }
+        }
+
+        return $alerts;
+    }
+
+    public function hasActiveAlerts(int $month = null, int $year = null): bool
+    {
+        return !empty($this->getBudgetAlerts($month, $year));
+    }
+
+    public function getAlertsCount(int $month = null, int $year = null): array
+    {
+        $alerts = $this->getBudgetAlerts($month, $year);
+        
+        return [
+            'total' => count($alerts),
+            'danger' => count(array_filter($alerts, fn($alert) => $alert['type'] === 'danger')),
+            'warning' => count(array_filter($alerts, fn($alert) => $alert['type'] === 'warning')),
+        ];
+    }
 }

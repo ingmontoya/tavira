@@ -413,4 +413,42 @@ class BudgetController extends Controller
             12 => 'Diciembre',
         ];
     }
+
+    public function alerts(Request $request, Budget $budget)
+    {
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', $budget->fiscal_year);
+
+        $alerts = $budget->getBudgetAlerts((int) $month, (int) $year);
+        $alertsCount = $budget->getAlertsCount((int) $month, (int) $year);
+
+        return response()->json([
+            'alerts' => $alerts,
+            'count' => $alertsCount,
+            'has_active_alerts' => $budget->hasActiveAlerts((int) $month, (int) $year),
+            'period' => [
+                'month' => $month,
+                'year' => $year,
+                'name' => $this->getAvailableMonths()[$month] . ' ' . $year,
+            ],
+        ]);
+    }
+
+    public function refreshExecution(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+        $month = $request->get('month', now()->month);
+        $year = $request->get('year', now()->year);
+
+        BudgetExecution::refreshAllExecutionsForPeriod($conjunto->id, (int) $month, (int) $year);
+
+        return response()->json([
+            'message' => 'Ejecución presupuestal actualizada exitosamente.',
+            'period' => [
+                'month' => $month,
+                'year' => $year,
+                'name' => $this->getAvailableMonths()[$month] . ' ' . $year,
+            ],
+        ]);
+    }
 }

@@ -160,6 +160,9 @@ class AccountingTransaction extends Model
             'posted_by' => auth()->id(),
             'posted_at' => now(),
         ]);
+
+        // Fire event to update budget executions
+        event(new \App\Events\AccountingTransactionPosted($this));
     }
 
     public function cancel(): void

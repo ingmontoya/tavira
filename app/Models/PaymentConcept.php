@@ -36,6 +36,11 @@ class PaymentConcept extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function accountMapping(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PaymentConceptAccountMapping::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

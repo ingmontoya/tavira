@@ -2,8 +2,8 @@
 
 ## 📋 Estado del Proyecto
 **Fecha de inicio:** 2025-08-01  
-**Estado actual:** Backend Core Completado  
-**Progreso general:** 45%
+**Estado actual:** Backend Core y APIs Completados  
+**Progreso general:** 65%
 
 ### 🎯 Hitos Completados
 - ✅ Análisis y diseño del sistema contable
@@ -11,12 +11,16 @@
 - ✅ Plan de cuentas colombiano configurado
 - ✅ Integración automática con sistema existente
 - ✅ Validaciones de partida doble implementadas
+- ✅ Sistema de presupuesto con ejecución automática
+- ✅ Alertas de sobrepresupuesto implementadas
+- ✅ Controladores y APIs REST completados
+- ✅ Sistema de reportes financieros
 
 ### 🔥 Próximos Pasos
-- 🚧 Controladores y APIs REST
-- 📋 Sistema de presupuesto completo
-- 🎨 Frontend Vue.js
-- 📊 Reportes financieros
+- 🎨 Frontend Vue.js (Interfaces de usuario)
+- 📊 Reportes avanzados y dashboards
+- 🔧 Testing integral del módulo
+- 📱 Optimizaciones de rendimiento
 
 ---
 
@@ -64,8 +68,8 @@
 - [x] **BudgetExecution** - Seguimiento de ejecución
   - [x] Estructura para cálculos de variaciones
   - [x] Comparación presupuesto vs real
-  - [ ] Cálculos automáticos implementados
-  - [ ] Alertas de sobrepresupuesto
+  - [x] Cálculos automáticos implementados
+  - [x] Alertas de sobrepresupuesto
 
 ### Integración con Sistema Existente
 - [x] **Invoice → JournalEntry** - Automatización contable
@@ -76,16 +80,16 @@
   - [x] Eventos para pagos recibidos
   - [x] Asientos automáticos de pago
   - [x] Integración con cuentas de caja/bancos
-- [ ] **PaymentConcept → Account** - Mapeo a cuentas
-  - [ ] Tabla de mapeo concept_account_mapping
-  - [ ] Configuración por tipo de concepto
+- [x] **PaymentConcept → Account** - Mapeo a cuentas
+  - [x] Tabla de mapeo concept_account_mapping
+  - [x] Configuración por tipo de concepto
 
 ### Controladores y APIs
-- [ ] **ChartOfAccountsController** - Gestión del plan de cuentas
-- [ ] **AccountingTransactionController** - Consulta de movimientos
-- [ ] **BudgetController** - Gestión presupuestal
-- [ ] **FinancialReportController** - Generación de reportes
-- [ ] **ReconciliationController** - Conciliación bancaria
+- [x] **ChartOfAccountsController** - Gestión del plan de cuentas
+- [x] **AccountingTransactionController** - Consulta de movimientos
+- [x] **BudgetController** - Gestión presupuestal
+- [x] **FinancialReportController** - Generación de reportes
+- [x] **ReconciliationController** - Conciliación bancaria
 
 ---
 
@@ -311,6 +315,9 @@
 - ✅ Validación partida doble automática
 - ✅ Logs de auditoría implementados
 - ✅ Queue support para procesamiento asíncrono
+- ✅ Actualización automática de ejecución presupuestal
+- ✅ Alertas automáticas de sobrepresupuesto
+- ✅ Mapeo automático de conceptos a cuentas contables
 
 ---
 
@@ -326,7 +333,7 @@
 
 ## 👥 Equipo y Responsabilidades
 
-- **Desarrollador Backend:** ✅ Modelos y lógica contable COMPLETADO
+- **Desarrollador Backend:** ✅ Modelos, lógica contable y APIs COMPLETADO
 - **Desarrollador Frontend:** 🚧 Interfaces y reportes EN PROGRESO
 - **Contador/Auditor:** 📋 Validación y testing PENDIENTE  
 - **Product Owner:** 📋 Priorización y feedback CONTINUO
@@ -336,12 +343,51 @@
 
 ## 📊 Métricas de Implementación
 
-- **Líneas de código:** ~2,000 LOC
-- **Tablas de BD:** 6 tablas nuevas
+- **Líneas de código:** ~4,500 LOC
+- **Tablas de BD:** 7 tablas nuevas
 - **Cuentas contables:** 60+ cuentas implementadas
-- **Eventos:** 2 eventos + 2 listeners
-- **Validaciones:** 15+ reglas de negocio
+- **Eventos:** 3 eventos + 3 listeners
+- **Controladores:** 5 controladores completos
+- **Comandos:** 1 comando de alertas
+- **Notificaciones:** 1 sistema de alertas
+- **Validaciones:** 20+ reglas de negocio
 - **Cobertura normativa:** Decreto 2650 Colombia ✅
+
+---
+
+## 🆕 Nuevas Funcionalidades Implementadas (2025-08-01)
+
+### Sistema de Ejecución Presupuestal Automática
+- **Cálculo automático de montos ejecutados** desde entradas contables
+- **Actualización en tiempo real** al contabilizar transacciones  
+- **Métodos de actualización masiva** por período o cuenta
+- **Integración completa** con el sistema de transacciones
+
+### Sistema de Alertas de Sobrepresupuesto
+- **Comando programable** para verificación automática (`budget:check-overspend`)
+- **Notificaciones por email y base de datos** con detalles de variaciones
+- **Umbrales configurables** (5% advertencia, 10% crítico)
+- **Dirigidas a roles específicos** (admin, finance, manager)
+
+### Mapeo Automático de Conceptos de Pago
+- **Tabla de mapeo** `payment_concept_account_mappings`
+- **Configuración automática** basada en tipos de concepto
+- **Mapeo por defecto** siguiendo el plan de cuentas colombiano
+- **Relaciones completas** entre conceptos y cuentas
+
+### Controladores y APIs REST Completos
+- **ChartOfAccountsController**: CRUD, jerarquía, balances
+- **AccountingTransactionController**: Transacciones, validaciones, asientos
+- **BudgetController**: Presupuestos, ejecución, alertas
+- **FinancialReportController**: 5 tipos de reportes financieros
+- **ReconciliationController**: Conciliación bancaria completa
+
+### Sistema de Reportes Financieros
+- **Balance General** con clasificación por tipo de cuenta
+- **Estado de Resultados** con análisis de períodos
+- **Libro Mayor** con consultas detalladas por cuenta
+- **Ejecución Presupuestal** con variaciones y alertas
+- **Cartera por Edades** para análisis de cobros
 
 ---
 
