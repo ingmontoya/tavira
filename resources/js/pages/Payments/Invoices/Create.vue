@@ -10,6 +10,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { Plus, Save, Trash2 } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
+import { formatCurrency } from '@/utils';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -125,13 +126,6 @@ const submit = () => {
     });
 };
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
 
 // Watch for type changes to set appropriate defaults
 watch(

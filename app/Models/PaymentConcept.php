@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentConcept extends Model
@@ -68,7 +67,7 @@ class PaymentConcept extends Model
     /**
      * Sync payment concepts with current apartment types for the conjunto
      */
-    public static function syncWithApartmentTypes(int $conjuntoConfigId = null): void
+    public static function syncWithApartmentTypes(?int $conjuntoConfigId = null): void
     {
         $apartmentTypes = \App\Models\ApartmentType::all();
 

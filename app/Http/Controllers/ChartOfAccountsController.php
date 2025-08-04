@@ -64,7 +64,7 @@ class ChartOfAccountsController extends Controller
     public function create(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $parentAccounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->active()
             ->where('level', '<', 4)
@@ -145,7 +145,7 @@ class ChartOfAccountsController extends Controller
             'account' => $chartOfAccount,
             'balance' => $balance,
             'monthlyBalance' => $monthlyBalance,
-            'canEdit' => !$chartOfAccount->transactionEntries()->exists(),
+            'canEdit' => ! $chartOfAccount->transactionEntries()->exists(),
         ]);
     }
 
@@ -242,7 +242,7 @@ class ChartOfAccountsController extends Controller
     public function getByType(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $request->validate([
             'type' => 'required|in:asset,liability,equity,income,expense',
             'postable_only' => 'boolean',
@@ -265,7 +265,7 @@ class ChartOfAccountsController extends Controller
     public function getHierarchical()
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         return response()->json([
             'tree' => ChartOfAccounts::buildHierarchicalTree($conjunto->id),
         ]);

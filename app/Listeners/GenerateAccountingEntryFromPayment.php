@@ -19,7 +19,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             $invoice = $event->invoice;
             $paymentAmount = $event->paymentAmount;
             $paymentMethod = $event->paymentMethod ?? 'bank_transfer';
-            
+
             // Obtener el conjunto_config_id desde la relación del apartamento
             $conjuntoConfigId = $invoice->apartment->apartmentType->conjunto_config_id;
 
@@ -29,6 +29,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             // Si la factura no tiene items, usar el método anterior
             if ($invoice->items->isEmpty()) {
                 $this->createSinglePaymentTransaction($invoice, $conjuntoConfigId, $paymentAmount, $paymentMethod);
+
                 return;
             }
 
@@ -40,33 +41,33 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             foreach ($itemsByConceptType as $conceptType => $items) {
                 $conceptTotal = $items->sum('total_price');
                 $conceptPayment = ($paymentAmount * $conceptTotal) / $invoice->total_amount;
-                
+
                 if ($conceptPayment > 0) {
                     $this->createPaymentTransactionForConcept(
-                        $invoice, 
-                        $conjuntoConfigId, 
-                        $conceptType, 
-                        $conceptPayment, 
+                        $invoice,
+                        $conjuntoConfigId,
+                        $conceptType,
+                        $conceptPayment,
                         $paymentMethod,
                         $items
                     );
                 }
             }
 
-            Log::info("Asientos contables de pago generados por concepto", [
+            Log::info('Asientos contables de pago generados por concepto', [
                 'invoice_id' => $invoice->id,
                 'payment_amount' => $paymentAmount,
                 'payment_method' => $paymentMethod,
-                'concepts_count' => $itemsByConceptType->count()
+                'concepts_count' => $itemsByConceptType->count(),
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Error generando asiento contable desde pago", [
+            Log::error('Error generando asiento contable desde pago', [
                 'invoice_id' => $invoice->id,
                 'payment_amount' => $paymentAmount,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             // Re-lanzar la excepción para que Laravel maneje el retry
             throw $e;
         }
@@ -75,15 +76,16 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
     private function createPaymentTransactionForConcept($invoice, $conjuntoConfigId, $conceptType, $paymentAmount, $paymentMethod, $items)
     {
         $firstItem = $items->first();
-        
+
         // Obtener las cuentas contables según el concepto
         $accounts = $this->getAccountsForConceptType($conjuntoConfigId, $conceptType, $firstItem->payment_concept_id ?? null);
-        
-        if (!$accounts) {
-            Log::warning("No se encontraron cuentas para el pago del concepto", [
+
+        if (! $accounts) {
+            Log::warning('No se encontraron cuentas para el pago del concepto', [
                 'concept_type' => $conceptType,
-                'invoice_id' => $invoice->id
+                'invoice_id' => $invoice->id,
             ]);
+
             return;
         }
 
@@ -167,7 +169,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
         ];
 
         $accountCode = $cashAccountCodes[$paymentMethod] ?? $cashAccountCodes['bank_transfer'];
-        
+
         return $this->getAccountByCode($conjuntoConfigId, $accountCode);
     }
 
@@ -226,7 +228,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             ->where('code', $code)
             ->first();
 
-        if (!$account) {
+        if (! $account) {
             throw new \Exception("No se encontró la cuenta contable con código: {$code}");
         }
 

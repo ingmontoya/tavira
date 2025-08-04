@@ -22,9 +22,9 @@ class Invoice extends Model
         'late_fees',
         'total_amount',
         'paid_amount',
-        'balance_due',
+        'balance_amount',
         'status',
-        'paid_date',
+        'last_payment_date',
         'payment_method',
         'payment_reference',
         'notes',
@@ -33,13 +33,13 @@ class Invoice extends Model
     protected $casts = [
         'billing_date' => 'date',
         'due_date' => 'date',
-        'paid_date' => 'date',
+        'last_payment_date' => 'date',
         'subtotal' => 'decimal:2',
         'early_discount' => 'decimal:2',
         'late_fees' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
-        'balance_due' => 'decimal:2',
+        'balance_amount' => 'decimal:2',
     ];
 
     protected $appends = [
@@ -48,6 +48,7 @@ class Invoice extends Model
         'type_label',
         'billing_period_label',
         'days_overdue',
+        'balance_due',
     ];
 
     protected $dispatchesEvents = [
@@ -64,6 +65,11 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function paymentApplications(): HasMany
+    {
+        return $this->hasMany(PaymentApplication::class);
+    }
+
     public function scopeForPeriod($query, int $year, int $month)
     {
         return $query->where('billing_period_year', $year)
@@ -77,9 +83,9 @@ class Invoice extends Model
 
     public function scopeOverdue($query)
     {
-        return $query->where('status', 'overdue')
+        return $query->where('status', 'vencido')
             ->orWhere(function ($q) {
-                $q->where('status', 'pending')
+                $q->where('status', 'pendiente')
                     ->where('due_date', '<', now());
             });
     }
@@ -93,25 +99,42 @@ class Invoice extends Model
     {
         $this->subtotal = $this->items()->sum('total_price');
         $this->total_amount = $this->subtotal - $this->early_discount + $this->late_fees;
-        $this->balance_due = $this->total_amount - $this->paid_amount;
+        $this->balance_amount = $this->total_amount - $this->paid_amount;
+        $this->save();
+    }
+
+    public function updateStatus(): void
+    {
+        // Calculate balance_amount correctly
+        $this->balance_amount = $this->total_amount - $this->paid_amount;
+
+        if ($this->paid_amount <= 0) {
+            // Check if overdue
+            if ($this->due_date < now()->toDateString()) {
+                $this->status = 'vencido';
+            } else {
+                $this->status = 'pendiente';
+            }
+        } elseif ($this->balance_amount <= 0) {
+            // Only mark as paid when balance is zero or negative
+            $this->status = 'pagado';
+            $this->balance_amount = 0; // Ensure balance doesn't go negative
+        } else {
+            // There's still a balance, so it's a partial payment
+            $this->status = 'pago_parcial';
+        }
+
         $this->save();
     }
 
     public function markAsPaid(float $amount, ?string $method = null, ?string $reference = null): void
     {
-        if ($this->status === 'pending') {
+        if ($this->status === 'pendiente') {
             $this->applyEarlyDiscount();
         }
 
         $this->paid_amount += $amount;
-        $this->balance_due = $this->total_amount - $this->paid_amount;
-
-        if ($this->balance_due <= 0) {
-            $this->status = 'paid';
-            $this->paid_date = now();
-        } else {
-            $this->status = 'partial';
-        }
+        $this->last_payment_date = now();
 
         if ($method) {
             $this->payment_method = $method;
@@ -121,7 +144,7 @@ class Invoice extends Model
             $this->payment_reference = $reference;
         }
 
-        $this->save();
+        $this->updateStatus();
 
         // Update apartment payment status after payment
         $this->apartment->updatePaymentStatus();
@@ -129,8 +152,8 @@ class Invoice extends Model
 
     public function isOverdue(): bool
     {
-        return $this->status === 'overdue' ||
-               ($this->status === 'pending' && $this->due_date->isPast());
+        return $this->status === 'vencido' ||
+               ($this->status === 'pendiente' && $this->due_date->isPast());
     }
 
     public function getDaysOverdueAttribute(): int
@@ -146,7 +169,7 @@ class Invoice extends Model
     {
         $paymentSettings = app(\App\Settings\PaymentSettings::class);
 
-        if (! $paymentSettings->early_discount_enabled || $this->status !== 'pending') {
+        if (! $paymentSettings->early_discount_enabled || $this->status !== 'pendiente') {
             return 0;
         }
 
@@ -198,8 +221,8 @@ class Invoice extends Model
         $this->late_fees = $this->calculateLateFees();
         $this->calculateTotals();
 
-        if ($this->isOverdue() && $this->status === 'pending') {
-            $this->status = 'overdue';
+        if ($this->isOverdue() && $this->status === 'pendiente') {
+            $this->status = 'vencido';
             $this->save();
         }
     }
@@ -207,11 +230,11 @@ class Invoice extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending' => 'Pendiente',
-            'partial' => 'Pago parcial',
-            'paid' => 'Pagado',
-            'overdue' => 'Vencido',
-            'cancelled' => 'Cancelado',
+            'pendiente' => 'Pendiente',
+            'pago_parcial' => 'Pago Parcial',
+            'pagado' => 'Pagado',
+            'vencido' => 'Vencido',
+            'cancelado' => 'Cancelado',
             default => 'Sin estado',
         };
     }
@@ -219,11 +242,11 @@ class Invoice extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'pending' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
-            'partial' => ['text' => 'Pago parcial', 'class' => 'bg-blue-100 text-blue-800'],
-            'paid' => ['text' => 'Pagado', 'class' => 'bg-green-100 text-green-800'],
-            'overdue' => ['text' => 'Vencido', 'class' => 'bg-red-100 text-red-800'],
-            'cancelled' => ['text' => 'Cancelado', 'class' => 'bg-gray-100 text-gray-800'],
+            'pendiente' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'pago_parcial' => ['text' => 'Pago Parcial', 'class' => 'bg-blue-100 text-blue-800'],
+            'pagado' => ['text' => 'Pagado', 'class' => 'bg-green-100 text-green-800'],
+            'vencido' => ['text' => 'Vencido', 'class' => 'bg-red-100 text-red-800'],
+            'cancelado' => ['text' => 'Cancelado', 'class' => 'bg-gray-100 text-gray-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
         };
     }
@@ -247,6 +270,11 @@ class Invoice extends Model
         ];
 
         return $monthNames[$this->billing_period_month].' '.$this->billing_period_year;
+    }
+
+    public function getBalanceDueAttribute(): float
+    {
+        return (float) $this->balance_amount;
     }
 
     protected static function boot()

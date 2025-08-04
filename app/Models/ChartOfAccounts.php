@@ -109,7 +109,7 @@ class ChartOfAccounts extends Model
 
     public function getFullNameAttribute(): string
     {
-        return $this->code . ' - ' . $this->name;
+        return $this->code.' - '.$this->name;
     }
 
     public function getHasChildrenAttribute(): bool
@@ -122,7 +122,7 @@ class ChartOfAccounts extends Model
         return $this->getBalance();
     }
 
-    public function getBalance(string $startDate = null, string $endDate = null): float
+    public function getBalance(?string $startDate = null, ?string $endDate = null): float
     {
         $query = $this->transactionEntries()
             ->whereHas('transaction', function ($q) {
@@ -169,7 +169,7 @@ class ChartOfAccounts extends Model
             ->get();
     }
 
-    public static function buildHierarchicalTree(int $conjuntoConfigId, int $parentId = null): array
+    public static function buildHierarchicalTree(int $conjuntoConfigId, ?int $parentId = null): array
     {
         $accounts = self::forConjunto($conjuntoConfigId)
             ->where('parent_id', $parentId)
@@ -181,7 +181,7 @@ class ChartOfAccounts extends Model
         foreach ($accounts as $account) {
             $tree[] = [
                 'account' => $account,
-                'children' => self::buildHierarchicalTree($conjuntoConfigId, $account->id)
+                'children' => self::buildHierarchicalTree($conjuntoConfigId, $account->id),
             ];
         }
 
@@ -191,7 +191,7 @@ class ChartOfAccounts extends Model
     public function validateAccountCode(): bool
     {
         $codeLength = strlen($this->code);
-        
+
         return match ($this->level) {
             1 => $codeLength === 1 && is_numeric($this->code),
             2 => $codeLength === 2 && is_numeric($this->code),
@@ -206,13 +206,13 @@ class ChartOfAccounts extends Model
         parent::boot();
 
         static::creating(function ($account) {
-            if (!$account->validateAccountCode()) {
+            if (! $account->validateAccountCode()) {
                 throw new \InvalidArgumentException('Código de cuenta inválido para el nivel especificado');
             }
         });
 
         static::updating(function ($account) {
-            if (!$account->validateAccountCode()) {
+            if (! $account->validateAccountCode()) {
                 throw new \InvalidArgumentException('Código de cuenta inválido para el nivel especificado');
             }
         });

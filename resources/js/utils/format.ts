@@ -1,5 +1,5 @@
-export const formatCurrency = (amount: number | string): string => {
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+export const formatCurrency = (amount: number | string | null | undefined): string => {
+    const numAmount = amount ? (typeof amount === 'string' ? parseFloat(amount) : amount) : 0;
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
         currency: 'COP',
@@ -30,8 +30,8 @@ export const formatDateTime = (date: string | Date): string => {
     }).format(dateObj);
 };
 
-export const formatNumber = (num: number | string): string => {
-    const numValue = typeof num === 'string' ? parseFloat(num) : num;
+export const formatNumber = (num: number | string | null | undefined): string => {
+    const numValue = num ? (typeof num === 'string' ? parseFloat(num) : num) : 0;
     return new Intl.NumberFormat('es-CO').format(numValue);
 };
 

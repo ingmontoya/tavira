@@ -92,7 +92,7 @@ export function useNavigation() {
         },
         {
             title: 'Pagos',
-            href: '/payments',
+            href: '/finance/payments',
             icon: CreditCard,
             tourId: 'nav-payments',
             visible: hasPermission('view_payments'),

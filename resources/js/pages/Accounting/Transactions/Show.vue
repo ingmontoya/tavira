@@ -19,8 +19,8 @@ interface TransactionEntry {
         account_type: string;
     };
     description: string;
-    debit_amount: number;
-    credit_amount: number;
+    debit_amount: number | string;
+    credit_amount: number | string;
 }
 
 interface AccountingTransaction {
@@ -28,8 +28,8 @@ interface AccountingTransaction {
     reference: string;
     description: string;
     transaction_date: string;
-    total_amount: number;
-    status: 'Draft' | 'Posted' | 'Reversed';
+    total_amount: number | string;
+    status: 'draft' | 'posted' | 'cancelled';
     created_by: {
         id: number;
         name: string;
@@ -53,23 +53,23 @@ const props = defineProps<{
 // Computed properties
 const statusInfo = computed(() => {
     const statusMap = {
-        Draft: {
+        draft: {
             label: 'Borrador',
             color: 'bg-gray-100 text-gray-800',
             icon: Edit,
             description: 'Transacción en proceso de creación',
         },
-        Posted: {
+        posted: {
             label: 'Contabilizada',
             color: 'bg-green-100 text-green-800',
             icon: CheckCircle,
             description: 'Transacción confirmada y registrada',
         },
-        Reversed: {
-            label: 'Reversada',
+        cancelled: {
+            label: 'Cancelada',
             color: 'bg-red-100 text-red-800',
             icon: XCircle,
-            description: 'Transacción anulada o reversada',
+            description: 'Transacción cancelada o anulada',
         },
     };
     return (
@@ -83,11 +83,11 @@ const statusInfo = computed(() => {
 });
 
 const totalDebits = computed(() => {
-    return props.transaction.entries.reduce((sum, entry) => sum + entry.debit_amount, 0);
+    return props.transaction.entries.reduce((sum, entry) => sum + parseFloat(entry.debit_amount || 0), 0);
 });
 
 const totalCredits = computed(() => {
-    return props.transaction.entries.reduce((sum, entry) => sum + entry.credit_amount, 0);
+    return props.transaction.entries.reduce((sum, entry) => sum + parseFloat(entry.credit_amount || 0), 0);
 });
 
 const isBalanced = computed(() => {
@@ -95,7 +95,24 @@ const isBalanced = computed(() => {
 });
 
 const canEdit = computed(() => {
-    return props.transaction.status === 'Draft';
+    return props.transaction.status === 'draft';
+});
+
+const referenceDisplay = computed(() => {
+    if (!props.transaction.reference || !props.transaction.reference_type) {
+        return props.transaction.transaction_number || 'Manual';
+    }
+    
+    const reference = props.transaction.reference;
+    const referenceType = props.transaction.reference_type;
+    
+    if (referenceType === 'invoice' && reference.invoice_number) {
+        return reference.invoice_number;
+    } else if (referenceType === 'payment' && reference.payment_number) {
+        return reference.payment_number;
+    } else {
+        return `${referenceType.charAt(0).toUpperCase() + referenceType.slice(1)} #${reference.id}`;
+    }
 });
 
 const formatDate = (dateString: string) => {
@@ -121,12 +138,12 @@ const breadcrumbs = [
     { title: 'Escritorio', href: '/dashboard' },
     { title: 'Contabilidad', href: '/accounting' },
     { title: 'Transacciones', href: '/accounting/transactions' },
-    { title: props.transaction.reference, href: `/accounting/transactions/${props.transaction.id}` },
+    { title: referenceDisplay.value, href: `/accounting/transactions/${props.transaction.id}` },
 ];
 </script>
 
 <template>
-    <Head :title="transaction.reference" />
+    <Head :title="referenceDisplay" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="container mx-auto max-w-6xl px-4 py-8">
@@ -134,7 +151,7 @@ const breadcrumbs = [
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
                     <div class="flex items-center gap-3">
-                        <h1 class="text-3xl font-bold tracking-tight">{{ transaction.reference }}</h1>
+                        <h1 class="text-3xl font-bold tracking-tight">{{ referenceDisplay }}</h1>
                         <Badge :class="statusInfo.color">
                             <component :is="statusInfo.icon" class="mr-1 h-3 w-3" />
                             {{ statusInfo.label }}
@@ -171,7 +188,7 @@ const breadcrumbs = [
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Referencia</Label>
-                                    <p class="font-mono text-lg">{{ transaction.reference }}</p>
+                                    <p class="font-mono text-lg">{{ referenceDisplay }}</p>
                                 </div>
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Fecha de Transacción</Label>
@@ -318,7 +335,7 @@ const breadcrumbs = [
                         <CardContent class="space-y-4">
                             <div class="text-center">
                                 <p class="text-sm text-muted-foreground">Monto Total</p>
-                                <p class="text-2xl font-bold">{{ formatCurrency(transaction.total_amount) }}</p>
+                                <p class="text-2xl font-bold">{{ formatCurrency(parseFloat(transaction.total_amount || 0)) }}</p>
                             </div>
 
                             <Separator />

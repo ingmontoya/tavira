@@ -7,11 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { AlertTriangle, Building, CheckCircle, CreditCard, Download, Edit, Mail, Printer, Receipt, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, Building, CheckCircle, CreditCard, Download, Edit, ExternalLink, Mail, Printer, Receipt, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { formatCurrency } from '@/utils';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -44,6 +46,27 @@ interface InvoiceItem {
         type: string;
         type_label: string;
     } | null;
+}
+
+interface PaymentApplication {
+    id: number;
+    amount_applied: number;
+    applied_date: string;
+    status: 'activo' | 'reversado';
+    status_label: string;
+    payment: {
+        id: number;
+        payment_number: string;
+        total_amount: number;
+        payment_date: string;
+        payment_method: string;
+        payment_method_label: string;
+        reference_number?: string;
+        created_by?: {
+            id: number;
+            name: string;
+        };
+    };
 }
 
 interface Invoice {
@@ -83,6 +106,7 @@ interface Invoice {
         };
     };
     items: InvoiceItem[];
+    payment_applications: PaymentApplication[];
 }
 
 const props = defineProps<{
@@ -143,13 +167,6 @@ const sendByEmail = () => {
     );
 };
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
@@ -202,6 +219,13 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                     <Button v-if="canDelete" @click="deleteInvoice" variant="outline" size="sm">
                         <Trash2 class="mr-2 h-4 w-4" />
                         Eliminar
+                    </Button>
+
+                    <Button asChild variant="outline" size="sm">
+                        <Link :href="`/finance/payments/create?apartment_id=${invoice.apartment.id}`">
+                            <CreditCard class="mr-2 h-4 w-4" />
+                            Registrar Pago
+                        </Link>
                     </Button>
                 </div>
             </div>
@@ -361,7 +385,7 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                                 <span>{{ formatCurrency(invoice.balance_due) }}</span>
                             </div>
 
-                            <div v-else class="flex justify-between font-medium text-green-600">
+                            <div v-else-if="invoice.status === 'paid'" class="flex justify-between font-medium text-green-600">
                                 <span>Estado:</span>
                                 <span class="flex items-center space-x-1">
                                     <CheckCircle class="h-4 w-4" />
@@ -388,6 +412,126 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                             <div v-if="invoice.payment_reference">
                                 <Label class="text-sm font-medium text-muted-foreground">Referencia</Label>
                                 <p class="font-mono text-sm">{{ invoice.payment_reference }}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Payment History -->
+                    <Card v-if="invoice.payment_applications && invoice.payment_applications.length > 0">
+                        <CardHeader>
+                            <CardTitle>Historial de Pagos</CardTitle>
+                            <CardDescription>
+                                Pagos aplicados a esta factura
+                                ({{ invoice.payment_applications.filter(app => app.status === 'active').length }} activos)
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-4">
+                                <!-- Payment Applications Summary -->
+                                <div class="grid grid-cols-2 gap-4 rounded-lg bg-muted p-4">
+                                    <div class="text-center">
+                                        <p class="text-sm text-muted-foreground">Total Aplicado</p>
+                                        <p class="text-xl font-bold text-green-600">
+                                            {{ formatCurrency(invoice.payment_applications
+                                                .filter(app => app.status === 'activo')
+                                                .reduce((sum, app) => sum + app.amount_applied, 0)) }}
+                                        </p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-sm text-muted-foreground">Aplicaciones</p>
+                                        <p class="text-xl font-bold">
+                                            {{ invoice.payment_applications.filter(app => app.status === 'activo').length }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Payment Applications Table -->
+                                <div class="rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Pago</TableHead>
+                                                <TableHead>Fecha</TableHead>
+                                                <TableHead class="text-right">Monto</TableHead>
+                                                <TableHead>Método</TableHead>
+                                                <TableHead>Estado</TableHead>
+                                                <TableHead class="text-center">Acciones</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            <TableRow
+                                                v-for="application in invoice.payment_applications"
+                                                :key="application.id"
+                                                class="hover:bg-muted/50"
+                                            >
+                                                <TableCell>
+                                                    <div class="space-y-1">
+                                                        <div class="font-mono text-sm font-medium">
+                                                            {{ application.payment.payment_number }}
+                                                        </div>
+                                                        <div class="text-xs text-muted-foreground">
+                                                            Total: {{ formatCurrency(application.payment.total_amount) }}
+                                                        </div>
+                                                        <div v-if="application.payment.reference_number" class="text-xs text-muted-foreground">
+                                                            Ref: {{ application.payment.reference_number }}
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div class="text-sm">
+                                                        {{ new Date(application.applied_date).toLocaleDateString('es-CO', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric'
+                                                        }) }}
+                                                    </div>
+                                                    <div class="text-xs text-muted-foreground">
+                                                        Pago: {{ new Date(application.payment.payment_date).toLocaleDateString('es-CO', {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric'
+                                                        }) }}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell class="text-right">
+                                                    <div :class="[
+                                                        'font-mono text-sm font-medium',
+                                                        application.status === 'activo' ? 'text-green-600' : 'text-red-600 line-through'
+                                                    ]">
+                                                        {{ formatCurrency(application.amount_applied) }}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div class="flex items-center gap-2">
+                                                        <CreditCard class="h-4 w-4" />
+                                                        <span class="text-sm">{{ application.payment.payment_method_label }}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge :class="application.status === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                        {{ application.status_label }}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell class="text-center">
+                                                    <Link 
+                                                        :href="`/finance/payments/${application.payment.id}`"
+                                                        class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        <ExternalLink class="h-3 w-3" />
+                                                        Ver
+                                                    </Link>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </div>
+
+                                <!-- Created By Info -->
+                                <div v-if="invoice.payment_applications.length > 0" class="text-xs text-muted-foreground">
+                                    <div v-for="application in invoice.payment_applications.slice(0, 1)" :key="application.id">
+                                        Aplicado por: {{ application.payment.created_by?.name || 'Sistema' }}
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

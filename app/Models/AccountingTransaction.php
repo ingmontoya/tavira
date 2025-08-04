@@ -24,6 +24,11 @@ class AccountingTransaction extends Model
         'posted_at',
     ];
 
+    protected $attributes = [
+        'total_debit' => 0,
+        'total_credit' => 0,
+    ];
+
     protected $casts = [
         'transaction_date' => 'date',
         'total_debit' => 'decimal:2',
@@ -93,7 +98,7 @@ class AccountingTransaction extends Model
     public function scopeByReference($query, string $referenceType, int $referenceId)
     {
         return $query->where('reference_type', $referenceType)
-                    ->where('reference_id', $referenceId);
+            ->where('reference_id', $referenceId);
     }
 
     public function getStatusLabelAttribute(): string
@@ -123,8 +128,8 @@ class AccountingTransaction extends Model
 
     public function getCanBePostedAttribute(): bool
     {
-        return $this->status === 'draft' && 
-               $this->is_balanced && 
+        return $this->status === 'draft' &&
+               $this->is_balanced &&
                $this->entries()->count() > 0;
     }
 
@@ -150,16 +155,17 @@ class AccountingTransaction extends Model
     public function validateDoubleEntry(): bool
     {
         $this->calculateTotals();
+
         return $this->is_balanced && $this->total_debit > 0;
     }
 
     public function post(): void
     {
-        if (!$this->can_be_posted) {
+        if (! $this->can_be_posted) {
             throw new \Exception('La transacción no puede ser contabilizada');
         }
 
-        if (!$this->validateDoubleEntry()) {
+        if (! $this->validateDoubleEntry()) {
             throw new \Exception('La transacción no cumple con la partida doble');
         }
 
@@ -175,7 +181,7 @@ class AccountingTransaction extends Model
 
     public function cancel(): void
     {
-        if (!$this->can_be_cancelled) {
+        if (! $this->can_be_cancelled) {
             throw new \Exception('La transacción no puede ser cancelada');
         }
 
@@ -268,7 +274,7 @@ class AccountingTransaction extends Model
             ->where('code', $code)
             ->first();
 
-        if (!$account) {
+        if (! $account) {
             throw new \Exception("No se encontró la cuenta contable con código: {$code}");
         }
 

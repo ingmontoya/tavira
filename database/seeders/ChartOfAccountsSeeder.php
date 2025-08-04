@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ChartOfAccountsSeeder extends Seeder
@@ -27,7 +26,7 @@ class ChartOfAccountsSeeder extends Seeder
 
         foreach ($accounts as $accountData) {
             $parentId = null;
-            
+
             if ($accountData['parent_code']) {
                 $parent = ChartOfAccounts::where('conjunto_config_id', $conjuntoConfigId)
                     ->where('code', $accountData['parent_code'])

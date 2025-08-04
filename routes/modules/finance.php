@@ -4,6 +4,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PaymentAgreementController;
 use App\Http\Controllers\PaymentConceptController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentManagementController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -29,6 +30,14 @@ Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByE
 // Payment Concepts Management
 Route::resource('payment-concepts', PaymentConceptController::class)->middleware('can:view_payments');
 Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptController::class, 'toggle'])->name('payment-concepts.toggle')->middleware('can:edit_payments');
+
+// Payment Management (New System)
+Route::prefix('finance')->name('finance.')->group(function () {
+    Route::resource('payments', PaymentManagementController::class)->middleware('can:view_payments');
+    Route::post('payments/{payment}/apply', [PaymentManagementController::class, 'apply'])->name('payments.apply')->middleware('can:edit_payments');
+    Route::post('payments/{payment}/reverse', [PaymentManagementController::class, 'reverse'])->name('payments.reverse')->middleware('can:edit_payments');
+    Route::get('payments/pending-invoices', [PaymentManagementController::class, 'getPendingInvoices'])->name('payments.pending-invoices')->middleware('can:view_payments');
+});
 
 // Payment Agreements Management
 Route::resource('payment-agreements', PaymentAgreementController::class)->middleware('can:view_payments');

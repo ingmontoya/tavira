@@ -22,15 +22,14 @@ class SharePermissions
                 // Also clear Laravel's permission cache
                 app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
             }
-            
+
             // Always get fresh permissions to avoid caching issues
             $user = $request->user()->fresh(['roles.permissions', 'permissions']);
             $permissions = $user->getAllPermissions()->pluck('name')->toArray();
-            
+
             // Also get user roles
             $roles = $user->roles->pluck('name')->toArray();
-            
-            
+
             Inertia::share([
                 'auth.permissions' => $permissions,
                 'auth.roles' => $roles,

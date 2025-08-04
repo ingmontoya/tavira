@@ -17,38 +17,38 @@ class PaymentConceptMappingController extends Controller
         $mappings = PaymentConceptAccountMapping::with([
             'paymentConcept',
             'incomeAccount',
-            'receivableAccount'
+            'receivableAccount',
         ])
-        ->orderBy('payment_concept_id')
-        ->get()
-        ->map(function ($mapping) {
-            return [
-                'id' => $mapping->id,
-                'payment_concept' => [
-                    'id' => $mapping->paymentConcept->id,
-                    'name' => $mapping->paymentConcept->name,
-                    'type' => $mapping->paymentConcept->type,
-                    'type_label' => $mapping->paymentConcept->type_label,
-                ],
-                'income_account' => $mapping->incomeAccount ? [
-                    'id' => $mapping->incomeAccount->id,
-                    'code' => $mapping->incomeAccount->code,
-                    'name' => $mapping->incomeAccount->name,
-                    'full_name' => $mapping->incomeAccount->code . ' - ' . $mapping->incomeAccount->name,
-                ] : null,
-                'receivable_account' => $mapping->receivableAccount ? [
-                    'id' => $mapping->receivableAccount->id,
-                    'code' => $mapping->receivableAccount->code,
-                    'name' => $mapping->receivableAccount->name,
-                    'full_name' => $mapping->receivableAccount->code . ' - ' . $mapping->receivableAccount->name,
-                ] : null,
-                'is_active' => $mapping->is_active,
-                'notes' => $mapping->notes,
-            ];
-        });
+            ->orderBy('payment_concept_id')
+            ->get()
+            ->map(function ($mapping) {
+                return [
+                    'id' => $mapping->id,
+                    'payment_concept' => [
+                        'id' => $mapping->paymentConcept->id,
+                        'name' => $mapping->paymentConcept->name,
+                        'type' => $mapping->paymentConcept->type,
+                        'type_label' => $mapping->paymentConcept->type_label,
+                    ],
+                    'income_account' => $mapping->incomeAccount ? [
+                        'id' => $mapping->incomeAccount->id,
+                        'code' => $mapping->incomeAccount->code,
+                        'name' => $mapping->incomeAccount->name,
+                        'full_name' => $mapping->incomeAccount->code.' - '.$mapping->incomeAccount->name,
+                    ] : null,
+                    'receivable_account' => $mapping->receivableAccount ? [
+                        'id' => $mapping->receivableAccount->id,
+                        'code' => $mapping->receivableAccount->code,
+                        'name' => $mapping->receivableAccount->name,
+                        'full_name' => $mapping->receivableAccount->code.' - '.$mapping->receivableAccount->name,
+                    ] : null,
+                    'is_active' => $mapping->is_active,
+                    'notes' => $mapping->notes,
+                ];
+            });
 
         // Obtener conceptos sin mapeo
-        $conceptsWithoutMapping = PaymentConcept::whereNotIn('id', 
+        $conceptsWithoutMapping = PaymentConcept::whereNotIn('id',
             PaymentConceptAccountMapping::pluck('payment_concept_id')
         )->get()->map(function ($concept) {
             return [
@@ -63,22 +63,22 @@ class PaymentConceptMappingController extends Controller
         $incomeAccounts = ChartOfAccounts::where('account_type', 'income')
             ->orderBy('code')
             ->get()
-            ->map(fn($account) => [
+            ->map(fn ($account) => [
                 'id' => $account->id,
                 'code' => $account->code,
                 'name' => $account->name,
-                'full_name' => $account->code . ' - ' . $account->name,
+                'full_name' => $account->code.' - '.$account->name,
             ]);
 
         $assetAccounts = ChartOfAccounts::where('account_type', 'asset')
             ->where('code', 'LIKE', '13%') // Cuentas por cobrar
             ->orderBy('code')
             ->get()
-            ->map(fn($account) => [
+            ->map(fn ($account) => [
                 'id' => $account->id,
                 'code' => $account->code,
                 'name' => $account->name,
-                'full_name' => $account->code . ' - ' . $account->name,
+                'full_name' => $account->code.' - '.$account->name,
             ]);
 
         return Inertia::render('settings/PaymentConceptMapping/Index', [
@@ -100,10 +100,10 @@ class PaymentConceptMappingController extends Controller
 
         // Verificar que no exista ya un mapeo para este concepto
         $existingMapping = PaymentConceptAccountMapping::where('payment_concept_id', $validated['payment_concept_id'])->first();
-        
+
         if ($existingMapping) {
             return back()->withErrors([
-                'payment_concept_id' => 'Ya existe un mapeo para este concepto de pago.'
+                'payment_concept_id' => 'Ya existe un mapeo para este concepto de pago.',
             ]);
         }
 
@@ -138,7 +138,7 @@ class PaymentConceptMappingController extends Controller
 
         if ($hasInvoices) {
             return back()->withErrors([
-                'delete' => 'No se puede eliminar este mapeo porque existen facturas que lo utilizan.'
+                'delete' => 'No se puede eliminar este mapeo porque existen facturas que lo utilizan.',
             ]);
         }
 
@@ -151,21 +151,21 @@ class PaymentConceptMappingController extends Controller
     {
         try {
             PaymentConceptAccountMapping::createDefaultMappings();
-            
+
             return back()->with('success', 'Mapeos por defecto creados exitosamente.');
         } catch (\Exception $e) {
             return back()->withErrors([
-                'default_mappings' => 'Error al crear mapeos por defecto: ' . $e->getMessage()
+                'default_mappings' => 'Error al crear mapeos por defecto: '.$e->getMessage(),
             ]);
         }
     }
 
     public function toggleActive(PaymentConceptAccountMapping $mapping)
     {
-        $mapping->update(['is_active' => !$mapping->is_active]);
+        $mapping->update(['is_active' => ! $mapping->is_active]);
 
         $status = $mapping->is_active ? 'activado' : 'desactivado';
-        
+
         return back()->with('success', "Mapeo {$status} exitosamente.");
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccountingTransactionEntry;
 use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
-use App\Models\AccountingTransactionEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -14,7 +14,7 @@ class ReconciliationController extends Controller
     public function index()
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $bankAccounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->where('code', 'LIKE', '111%') // Bank accounts
             ->active()
@@ -43,7 +43,7 @@ class ReconciliationController extends Controller
         $transactions = AccountingTransactionEntry::with(['transaction'])
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                 $query->where('status', 'posted')
-                      ->whereBetween('transaction_date', [$startDate, $endDate]);
+                    ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
             ->where('account_id', $account->id)
             ->orderBy('created_at')
@@ -155,10 +155,10 @@ class ReconciliationController extends Controller
         foreach ($bankAccounts as $account) {
             $entries = AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
                 $query->where('status', 'posted')
-                      ->whereBetween('transaction_date', [$startDate, $endDate]);
+                    ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
-            ->where('account_id', $account->id)
-            ->get();
+                ->where('account_id', $account->id)
+                ->get();
 
             if ($entries->isNotEmpty()) {
                 $reconciliationData[] = [
@@ -201,7 +201,7 @@ class ReconciliationController extends Controller
             $transaction = \App\Models\AccountingTransaction::create([
                 'conjunto_config_id' => $conjunto->id,
                 'transaction_date' => $validated['transaction_date'],
-                'description' => 'Ajuste de conciliación bancaria - ' . $validated['description'],
+                'description' => 'Ajuste de conciliación bancaria - '.$validated['description'],
                 'reference_type' => 'bank_reconciliation',
                 'status' => 'draft',
                 'created_by' => auth()->id(),
@@ -223,7 +223,7 @@ class ReconciliationController extends Controller
             if ($adjustmentAccount) {
                 $transaction->addEntry([
                     'account_id' => $adjustmentAccount->id,
-                    'description' => 'Contrapartida - ' . $validated['description'],
+                    'description' => 'Contrapartida - '.$validated['description'],
                     'debit_amount' => $validated['type'] === 'credit' ? $validated['amount'] : 0,
                     'credit_amount' => $validated['type'] === 'debit' ? $validated['amount'] : 0,
                 ]);

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ChartOfAccounts;
-use App\Models\ConjuntoConfig;
 use App\Models\AccountingTransactionEntry;
 use App\Models\Budget;
+use App\Models\ChartOfAccounts;
+use App\Models\ConjuntoConfig;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class FinancialReportController extends Controller
@@ -140,7 +139,7 @@ class FinancialReportController extends Controller
             $entries = AccountingTransactionEntry::with(['transaction'])
                 ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                     $query->where('status', 'posted')
-                          ->whereBetween('transaction_date', [$startDate, $endDate]);
+                        ->whereBetween('transaction_date', [$startDate, $endDate]);
                 })
                 ->where('account_id', $account->id)
                 ->orderBy('created_at')
@@ -197,7 +196,7 @@ class FinancialReportController extends Controller
         $month = (int) $request->get('month', now()->month);
         $year = (int) $request->get('year', now()->year);
 
-        if (!$budgetId) {
+        if (! $budgetId) {
             $budget = Budget::forConjunto($conjunto->id)
                 ->where('status', 'active')
                 ->byYear($year)
@@ -206,7 +205,7 @@ class FinancialReportController extends Controller
             $budget = Budget::find($budgetId);
         }
 
-        if (!$budget) {
+        if (! $budget) {
             return back()->with('error', 'No se encontró un presupuesto activo para el año seleccionado.');
         }
 
@@ -220,7 +219,7 @@ class FinancialReportController extends Controller
             'period' => [
                 'month' => $month,
                 'year' => $year,
-                'name' => $this->getMonthName($month) . ' ' . $year,
+                'name' => $this->getMonthName($month).' '.$year,
             ],
             'available_budgets' => Budget::forConjunto($conjunto->id)->orderBy('fiscal_year', 'desc')->get(),
         ]);
@@ -244,7 +243,7 @@ class FinancialReportController extends Controller
         $agingData = [];
         foreach ($receivableAccounts as $account) {
             $balance = $account->getBalance(null, $date);
-            
+
             if ($balance > 0) {
                 // Simple aging calculation - in a real scenario, you'd track invoice dates
                 $agingData[] = [
@@ -273,7 +272,7 @@ class FinancialReportController extends Controller
         ]);
     }
 
-    private function getAccountBalances(int $conjuntoId, string $accountType, string $endDate, string $startDate = null): array
+    private function getAccountBalances(int $conjuntoId, string $accountType, string $endDate, ?string $startDate = null): array
     {
         $accounts = ChartOfAccounts::forConjunto($conjuntoId)
             ->byType($accountType)
@@ -300,7 +299,7 @@ class FinancialReportController extends Controller
         $months = [
             1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
             5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
         ];
 
         return $months[$month] ?? 'Mes desconocido';

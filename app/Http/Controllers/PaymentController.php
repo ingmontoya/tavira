@@ -48,8 +48,8 @@ class PaymentController extends Controller
     {
         // Contar apartamentos con facturas pendientes dinámicamente
         return Apartment::whereHas('invoices', function ($query) {
-                $query->whereIn('status', ['pending', 'overdue', 'partial']);
-            })
+            $query->whereIn('status', ['pending', 'overdue', 'partial']);
+        })
             ->count();
     }
 
@@ -68,9 +68,9 @@ class PaymentController extends Controller
     {
         // Calcular apartamentos en mora dinámicamente basado en facturas reales
         $apartments = Apartment::with(['invoices' => function ($query) {
-                $query->whereIn('status', ['pending', 'overdue', 'partial'])
-                    ->orderBy('due_date', 'asc');
-            }])
+            $query->whereIn('status', ['pending', 'overdue', 'partial'])
+                ->orderBy('due_date', 'asc');
+        }])
             ->get();
 
         $delinquentCount = 0;
@@ -109,9 +109,9 @@ class PaymentController extends Controller
     {
         // Same logic as Dashboard - calcular dinámicamente basado en facturas reales
         $apartments = Apartment::with(['invoices' => function ($query) {
-                $query->whereIn('status', ['pending', 'overdue', 'partial'])
-                    ->orderBy('due_date', 'asc');
-            }])->get();
+            $query->whereIn('status', ['pending', 'overdue', 'partial'])
+                ->orderBy('due_date', 'asc');
+        }])->get();
 
         $alDia = 0;
         $overdue30 = 0;

@@ -17,7 +17,7 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
     {
         try {
             $invoice = $event->invoice;
-            
+
             // Obtener el conjunto_config_id desde la relación del apartamento
             $conjuntoConfigId = $invoice->apartment->apartmentType->conjunto_config_id;
 
@@ -27,6 +27,7 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
             // Si la factura no tiene items, usar el método anterior (compatibilidad)
             if ($invoice->items->isEmpty()) {
                 $this->createSingleTransaction($invoice, $conjuntoConfigId);
+
                 return;
             }
 
@@ -39,18 +40,18 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
                 $this->createTransactionForConcept($invoice, $conjuntoConfigId, $conceptType, $items);
             }
 
-            Log::info("Asientos contables generados automáticamente por concepto", [
+            Log::info('Asientos contables generados automáticamente por concepto', [
                 'invoice_id' => $invoice->id,
                 'total_amount' => $invoice->total_amount,
-                'concepts_count' => $itemsByConceptType->count()
+                'concepts_count' => $itemsByConceptType->count(),
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Error generando asiento contable desde factura", [
+            Log::error('Error generando asiento contable desde factura', [
                 'invoice_id' => $invoice->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             // Re-lanzar la excepción para que Laravel maneje el retry
             throw $e;
         }
@@ -60,15 +61,16 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
     {
         $totalAmount = $items->sum('total_price');
         $firstItem = $items->first();
-        
+
         // Obtener las cuentas contables según el concepto
         $accounts = $this->getAccountsForConceptType($conjuntoConfigId, $conceptType, $firstItem->payment_concept_id ?? null);
-        
-        if (!$accounts) {
-            Log::warning("No se encontraron cuentas para el concepto", [
+
+        if (! $accounts) {
+            Log::warning('No se encontraron cuentas para el concepto', [
                 'concept_type' => $conceptType,
-                'invoice_id' => $invoice->id
+                'invoice_id' => $invoice->id,
             ]);
+
             return;
         }
 
@@ -210,7 +212,7 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
             ->where('code', $code)
             ->first();
 
-        if (!$account) {
+        if (! $account) {
             throw new \Exception("No se encontró la cuenta contable con código: {$code}");
         }
 

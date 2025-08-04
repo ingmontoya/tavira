@@ -134,9 +134,9 @@ class AccountingTransactionController extends Controller
             ->with('success', 'Transacción contable creada exitosamente.');
     }
 
-    public function show(AccountingTransaction $accountingTransaction)
+    public function show(AccountingTransaction $transaction)
     {
-        $accountingTransaction->load([
+        $transaction->load([
             'entries.account',
             'createdBy',
             'postedBy',
@@ -144,13 +144,13 @@ class AccountingTransactionController extends Controller
         ]);
 
         return Inertia::render('Accounting/Transactions/Show', [
-            'transaction' => $accountingTransaction,
+            'transaction' => $transaction,
         ]);
     }
 
-    public function edit(AccountingTransaction $accountingTransaction)
+    public function edit(AccountingTransaction $transaction)
     {
-        if ($accountingTransaction->status !== 'draft') {
+        if ($transaction->status !== 'draft') {
             return back()->withErrors(['transaction' => 'Solo se pueden editar transacciones en borrador.']);
         }
 
@@ -162,10 +162,10 @@ class AccountingTransactionController extends Controller
             ->orderBy('code')
             ->get();
 
-        $accountingTransaction->load('entries.account');
+        $transaction->load('entries.account');
 
         return Inertia::render('Accounting/Transactions/Edit', [
-            'transaction' => $accountingTransaction,
+            'transaction' => $transaction,
             'accounts' => $accounts,
             'referenceTypes' => [
                 'manual' => 'Manual',
@@ -176,9 +176,9 @@ class AccountingTransactionController extends Controller
         ]);
     }
 
-    public function update(Request $request, AccountingTransaction $accountingTransaction)
+    public function update(Request $request, AccountingTransaction $transaction)
     {
-        if ($accountingTransaction->status !== 'draft') {
+        if ($transaction->status !== 'draft') {
             return back()->withErrors(['transaction' => 'Solo se pueden editar transacciones en borrador.']);
         }
 
@@ -211,46 +211,46 @@ class AccountingTransactionController extends Controller
                 ->withErrors(['entries' => 'Debe haber al menos un movimiento con valor mayor a cero.']);
         }
 
-        DB::transaction(function () use ($validated, $accountingTransaction) {
+        DB::transaction(function () use ($validated, $transaction) {
             // Update transaction
-            $accountingTransaction->update([
+            $transaction->update([
                 'transaction_date' => $validated['transaction_date'],
                 'description' => $validated['description'],
                 'reference_type' => $validated['reference_type'] ?? 'manual',
             ]);
 
             // Delete existing entries
-            $accountingTransaction->entries()->delete();
+            $transaction->entries()->delete();
 
             // Create new entries
             foreach ($validated['entries'] as $entryData) {
-                $accountingTransaction->addEntry($entryData);
+                $transaction->addEntry($entryData);
             }
         });
 
         return redirect()
-            ->route('accounting-transactions.show', $accountingTransaction)
+            ->route('accounting-transactions.show', $transaction)
             ->with('success', 'Transacción contable actualizada exitosamente.');
     }
 
-    public function destroy(AccountingTransaction $accountingTransaction)
+    public function destroy(AccountingTransaction $transaction)
     {
-        if ($accountingTransaction->status === 'posted') {
+        if ($transaction->status === 'posted') {
             return back()->withErrors(['transaction' => 'No se pueden eliminar transacciones contabilizadas.']);
         }
 
-        $accountingTransaction->entries()->delete();
-        $accountingTransaction->delete();
+        $transaction->entries()->delete();
+        $transaction->delete();
 
         return redirect()
             ->route('accounting-transactions.index')
             ->with('success', 'Transacción contable eliminada exitosamente.');
     }
 
-    public function post(AccountingTransaction $accountingTransaction)
+    public function post(AccountingTransaction $transaction)
     {
         try {
-            $accountingTransaction->post();
+            $transaction->post();
 
             return back()->with('success', 'Transacción contabilizada exitosamente.');
         } catch (\Exception $e) {
@@ -258,10 +258,10 @@ class AccountingTransactionController extends Controller
         }
     }
 
-    public function cancel(AccountingTransaction $accountingTransaction)
+    public function cancel(AccountingTransaction $transaction)
     {
         try {
-            $accountingTransaction->cancel();
+            $transaction->cancel();
 
             return back()->with('success', 'Transacción cancelada exitosamente.');
         } catch (\Exception $e) {
@@ -269,9 +269,9 @@ class AccountingTransactionController extends Controller
         }
     }
 
-    public function addEntry(Request $request, AccountingTransaction $accountingTransaction)
+    public function addEntry(Request $request, AccountingTransaction $transaction)
     {
-        if ($accountingTransaction->status !== 'draft') {
+        if ($transaction->status !== 'draft') {
             return response()->json(['error' => 'Solo se pueden agregar movimientos a transacciones en borrador.'], 422);
         }
 
@@ -285,33 +285,33 @@ class AccountingTransactionController extends Controller
         ]);
 
         try {
-            $entry = $accountingTransaction->addEntry($validated);
+            $entry = $transaction->addEntry($validated);
             $entry->load('account');
 
             return response()->json([
                 'entry' => $entry,
-                'transaction' => $accountingTransaction->fresh(),
+                'transaction' => $transaction->fresh(),
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 
-    public function removeEntry(AccountingTransaction $accountingTransaction, AccountingTransactionEntry $entry)
+    public function removeEntry(AccountingTransaction $transaction, AccountingTransactionEntry $entry)
     {
-        if ($accountingTransaction->status !== 'draft') {
+        if ($transaction->status !== 'draft') {
             return response()->json(['error' => 'Solo se pueden eliminar movimientos de transacciones en borrador.'], 422);
         }
 
-        if ($entry->accounting_transaction_id !== $accountingTransaction->id) {
+        if ($entry->accounting_transaction_id !== $transaction->id) {
             return response()->json(['error' => 'El movimiento no pertenece a esta transacción.'], 422);
         }
 
         $entry->delete();
-        $accountingTransaction->calculateTotals();
+        $transaction->calculateTotals();
 
         return response()->json([
-            'transaction' => $accountingTransaction->fresh(),
+            'transaction' => $transaction->fresh(),
         ]);
     }
 

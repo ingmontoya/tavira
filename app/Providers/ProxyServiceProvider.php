@@ -36,12 +36,12 @@ class ProxyServiceProvider extends ServiceProvider
     private function configureTrustedProxies(): void
     {
         // Get trusted proxies from environment or use defaults
-        $trustedProxies = env('TRUSTED_PROXIES') ? 
-            explode(',', env('TRUSTED_PROXIES')) : 
+        $trustedProxies = env('TRUSTED_PROXIES') ?
+            explode(',', env('TRUSTED_PROXIES')) :
             [
                 // Cloudflare IPv4 ranges
                 '103.21.244.0/22',
-                '103.22.200.0/22', 
+                '103.22.200.0/22',
                 '103.31.4.0/22',
                 '104.16.0.0/13',
                 '104.24.0.0/14',

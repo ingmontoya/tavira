@@ -195,8 +195,8 @@ class BudgetItem extends Model
 
         if ($execution) {
             $varianceAmount = $actualAmount - $execution->budgeted_amount;
-            $variancePercentage = $execution->budgeted_amount > 0 
-                ? ($varianceAmount / $execution->budgeted_amount) * 100 
+            $variancePercentage = $execution->budgeted_amount > 0
+                ? ($varianceAmount / $execution->budgeted_amount) * 100
                 : 0;
 
             $execution->update([

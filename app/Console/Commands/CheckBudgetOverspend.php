@@ -22,9 +22,10 @@ class CheckBudgetOverspend extends Command
         $threshold = (float) $this->option('threshold');
 
         $conjuntoConfig = ConjuntoConfig::where('is_active', true)->first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             $this->error('No active conjunto configuration found.');
+
             return 1;
         }
 
@@ -32,16 +33,17 @@ class CheckBudgetOverspend extends Command
 
         $overspendExecutions = BudgetExecution::whereHas('budgetItem.budget', function ($query) use ($conjuntoConfig) {
             $query->where('conjunto_config_id', $conjuntoConfig->id)
-                  ->where('status', 'active');
+                ->where('status', 'active');
         })
-        ->byPeriod($month, $year)
-        ->get()
-        ->filter(function ($execution) use ($threshold) {
-            return $execution->isOverBudgetByThreshold($threshold);
-        });
+            ->byPeriod($month, $year)
+            ->get()
+            ->filter(function ($execution) use ($threshold) {
+                return $execution->isOverBudgetByThreshold($threshold);
+            });
 
         if ($overspendExecutions->isEmpty()) {
             $this->info('No budget overspend found.');
+
             return 0;
         }
 
@@ -53,7 +55,7 @@ class CheckBudgetOverspend extends Command
         });
 
         $warningAlerts = $overspendExecutions->filter(function ($execution) {
-            return $execution->isOverBudgetByThreshold(5) && !$execution->isOverBudgetByThreshold(10);
+            return $execution->isOverBudgetByThreshold(5) && ! $execution->isOverBudgetByThreshold(10);
         });
 
         // Get users to notify (administrators and finance users)
@@ -63,6 +65,7 @@ class CheckBudgetOverspend extends Command
 
         if ($usersToNotify->isEmpty()) {
             $this->warn('No users found to notify.');
+
             return 0;
         }
 
@@ -76,6 +79,7 @@ class CheckBudgetOverspend extends Command
         }
 
         $this->info('Budget overspend alerts sent successfully.');
+
         return 0;
     }
 
@@ -97,7 +101,7 @@ class CheckBudgetOverspend extends Command
         ];
 
         Notification::send($users, new BudgetOverspendAlert($alertData));
-        
+
         $this->info("Sent {$type} alerts to {$users->count()} users for {$executions->count()} executions.");
     }
 }

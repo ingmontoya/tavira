@@ -209,14 +209,14 @@ const columns = [
             );
         },
         cell: ({ row }) => {
-            const amount = row.original.total_amount;
+            const amount = parseFloat(row.original.total_amount || 0);
             return h('div', { class: 'font-medium' }, `$${amount.toLocaleString()}`);
         },
     }),
     columnHelper.accessor('balance_due', {
         header: 'Saldo',
         cell: ({ row }) => {
-            const balance = row.original.balance_due;
+            const balance = parseFloat(row.original.balance_due || 0);
             const isZero = balance <= 0;
             return h(
                 'div',

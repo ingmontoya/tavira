@@ -66,7 +66,7 @@ class PaymentConceptController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'type' => ['required', Rule::in(['common_expense', 'sanction', 'parking', 'special', 'late_fee', 'other'])],
+            'type' => ['required', Rule::in(['monthly_administration', 'common_expense', 'sanction', 'parking', 'special', 'late_fee', 'other'])],
             'default_amount' => 'required|numeric|min:0',
             'is_recurring' => 'boolean',
             'is_active' => 'boolean',
@@ -116,7 +116,7 @@ class PaymentConceptController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'type' => ['required', Rule::in(['common_expense', 'sanction', 'parking', 'special', 'late_fee', 'other'])],
+            'type' => ['required', Rule::in(['monthly_administration', 'common_expense', 'sanction', 'parking', 'special', 'late_fee', 'other'])],
             'default_amount' => 'required|numeric|min:0',
             'is_recurring' => 'boolean',
             'is_active' => 'boolean',

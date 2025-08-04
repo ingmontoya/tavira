@@ -14,7 +14,7 @@ class PaymentConceptAccountMappingSeeder extends Seeder
     {
         // Create default mappings for all existing payment concepts
         PaymentConceptAccountMapping::createDefaultMappings();
-        
+
         $this->command->info('✅ Mapeos por defecto de conceptos de pago creados exitosamente.');
     }
 }

@@ -63,7 +63,7 @@ class AccountingTransactionEntry extends Model
     public function scopeByThirdParty($query, string $type, int $id)
     {
         return $query->where('third_party_type', $type)
-                    ->where('third_party_id', $id);
+            ->where('third_party_id', $id);
     }
 
     public function getIsDebitAttribute(): bool
@@ -83,7 +83,7 @@ class AccountingTransactionEntry extends Model
 
     public function getThirdPartyName(): ?string
     {
-        if (!$this->third_party_type || !$this->third_party_id) {
+        if (! $this->third_party_type || ! $this->third_party_id) {
             return null;
         }
 

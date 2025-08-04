@@ -6,10 +6,7 @@ use App\Models\Apartment;
 use App\Models\ApartmentType;
 use App\Models\ConjuntoConfig;
 use App\Models\Resident;
-use App\Models\User;
-use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class MockDataSeeder extends Seeder
 {
@@ -17,6 +14,7 @@ class MockDataSeeder extends Seeder
     {
         $this->command->info('MockDataSeeder disabled - no default examples created.');
         $this->command->info('Users must create their own conjunto configurations first.');
+
         return;
 
         // Crear tipos de apartamento para el conjunto único

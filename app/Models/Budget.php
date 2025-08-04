@@ -128,7 +128,7 @@ class Budget extends Model
 
     public function approve(): void
     {
-        if (!$this->can_be_approved) {
+        if (! $this->can_be_approved) {
             throw new \Exception('El presupuesto no puede ser aprobado');
         }
 
@@ -141,7 +141,7 @@ class Budget extends Model
 
     public function activate(): void
     {
-        if (!$this->can_be_activated) {
+        if (! $this->can_be_activated) {
             throw new \Exception('El presupuesto no puede ser activado');
         }
 
@@ -173,7 +173,7 @@ class Budget extends Model
         }
     }
 
-    public function getExecutionSummary(int $month = null, int $year = null): array
+    public function getExecutionSummary(?int $month = null, ?int $year = null): array
     {
         $year = $year ?? $this->fiscal_year;
         $month = $month ?? now()->month;
@@ -181,10 +181,10 @@ class Budget extends Model
         $executions = BudgetExecution::whereHas('budgetItem', function ($query) {
             $query->where('budget_id', $this->id);
         })
-        ->when($month, fn($q) => $q->where('period_month', $month))
-        ->where('period_year', $year)
-        ->with('budgetItem.account')
-        ->get();
+            ->when($month, fn ($q) => $q->where('period_month', $month))
+            ->where('period_year', $year)
+            ->with('budgetItem.account')
+            ->get();
 
         return [
             'income' => $executions->where('budgetItem.category', 'income'),
@@ -203,7 +203,7 @@ class Budget extends Model
             ->with('items.account')
             ->first();
 
-        if (!$previousBudget) {
+        if (! $previousBudget) {
             throw new \Exception('No se encontró presupuesto del año anterior');
         }
 
@@ -230,7 +230,7 @@ class Budget extends Model
         return $newBudget;
     }
 
-    public function getBudgetAlerts(int $month = null, int $year = null): array
+    public function getBudgetAlerts(?int $month = null, ?int $year = null): array
     {
         $month = $month ?? now()->month;
         $year = $year ?? $this->fiscal_year;
@@ -238,9 +238,9 @@ class Budget extends Model
         $executions = BudgetExecution::whereHas('budgetItem', function ($query) {
             $query->where('budget_id', $this->id);
         })
-        ->byPeriod($month, $year)
-        ->with(['budgetItem.account'])
-        ->get();
+            ->byPeriod($month, $year)
+            ->with(['budgetItem.account'])
+            ->get();
 
         $alerts = [];
         foreach ($executions as $execution) {
@@ -256,19 +256,19 @@ class Budget extends Model
         return $alerts;
     }
 
-    public function hasActiveAlerts(int $month = null, int $year = null): bool
+    public function hasActiveAlerts(?int $month = null, ?int $year = null): bool
     {
-        return !empty($this->getBudgetAlerts($month, $year));
+        return ! empty($this->getBudgetAlerts($month, $year));
     }
 
-    public function getAlertsCount(int $month = null, int $year = null): array
+    public function getAlertsCount(?int $month = null, ?int $year = null): array
     {
         $alerts = $this->getBudgetAlerts($month, $year);
-        
+
         return [
             'total' => count($alerts),
-            'danger' => count(array_filter($alerts, fn($alert) => $alert['type'] === 'danger')),
-            'warning' => count(array_filter($alerts, fn($alert) => $alert['type'] === 'warning')),
+            'danger' => count(array_filter($alerts, fn ($alert) => $alert['type'] === 'danger')),
+            'warning' => count(array_filter($alerts, fn ($alert) => $alert['type'] === 'warning')),
         ];
     }
 }

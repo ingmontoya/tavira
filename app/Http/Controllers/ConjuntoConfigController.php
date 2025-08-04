@@ -35,7 +35,7 @@ class ConjuntoConfigController extends Controller
     {
         // Check if a conjunto already exists (single conjunto system)
         $existingConjunto = ConjuntoConfig::first();
-        
+
         if ($existingConjunto) {
             return redirect()->route('conjunto-config.index')
                 ->with('error', 'Ya existe una configuración de conjunto. Solo se permite una configuración por sistema.');
@@ -51,7 +51,7 @@ class ConjuntoConfigController extends Controller
     {
         // Check if a conjunto already exists (single conjunto system)
         $existingConjunto = ConjuntoConfig::first();
-        
+
         if ($existingConjunto) {
             return redirect()->route('conjunto-config.index')
                 ->with('error', 'Ya existe una configuración de conjunto. Solo se permite una configuración por sistema.');
@@ -87,7 +87,7 @@ class ConjuntoConfigController extends Controller
             // Create conjunto configuration (excluding apartment_types)
             $configData = collect($validated)->except(['apartment_types'])->toArray();
             $configData['is_active'] = true; // New conjuntos are active by default
-            
+
             $conjunto = ConjuntoConfig::create($configData);
 
             // Create apartment types
@@ -101,11 +101,11 @@ class ConjuntoConfigController extends Controller
             DB::commit();
 
             return redirect()->route('conjunto-config.index')
-                ->with('success', 'Conjunto creado exitosamente con ' . $conjunto->estimated_apartments_count . ' apartamentos generados.');
+                ->with('success', 'Conjunto creado exitosamente con '.$conjunto->estimated_apartments_count.' apartamentos generados.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            
+
             return back()->withErrors(['error' => 'Error al crear el conjunto: '.$e->getMessage()])
                 ->withInput();
         }

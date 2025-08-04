@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AccountingTransaction;
 use App\Models\Budget;
 use App\Models\BudgetExecution;
 use App\Models\ChartOfAccounts;
@@ -53,7 +52,7 @@ class AccountingReportsController extends Controller
     public function balanceSheet(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $validated = $request->validate([
             'as_of_date' => 'required|date',
         ]);
@@ -93,7 +92,7 @@ class AccountingReportsController extends Controller
     public function incomeStatement(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -117,7 +116,7 @@ class AccountingReportsController extends Controller
                 'period' => [
                     'start_date' => $startDate,
                     'end_date' => $endDate,
-                    'description' => 'Del ' . date('d/m/Y', strtotime($startDate)) . ' al ' . date('d/m/Y', strtotime($endDate)),
+                    'description' => 'Del '.date('d/m/Y', strtotime($startDate)).' al '.date('d/m/Y', strtotime($endDate)),
                 ],
                 'income' => $income,
                 'expenses' => $expenses,
@@ -135,7 +134,7 @@ class AccountingReportsController extends Controller
     public function trialBalance(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $validated = $request->validate([
             'as_of_date' => 'required|date',
         ]);
@@ -147,14 +146,14 @@ class AccountingReportsController extends Controller
             ->with(['transactionEntries' => function ($query) use ($asOfDate) {
                 $query->whereHas('transaction', function ($q) use ($asOfDate) {
                     $q->where('status', 'posted')
-                      ->where('transaction_date', '<=', $asOfDate);
+                        ->where('transaction_date', '<=', $asOfDate);
                 });
             }])
             ->orderBy('code')
             ->get()
             ->map(function ($account) use ($asOfDate) {
                 $balance = $account->getBalance(null, $asOfDate);
-                
+
                 return [
                     'code' => $account->code,
                     'name' => $account->name,
@@ -165,7 +164,7 @@ class AccountingReportsController extends Controller
                     'balance' => $balance,
                 ];
             })
-            ->filter(fn($account) => $account['balance'] != 0);
+            ->filter(fn ($account) => $account['balance'] != 0);
 
         $totalDebits = $accounts->sum('debit_balance');
         $totalCredits = $accounts->sum('credit_balance');
@@ -187,7 +186,7 @@ class AccountingReportsController extends Controller
     public function generalLedger(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $validated = $request->validate([
             'account_id' => 'required|exists:chart_of_accounts,id',
             'start_date' => 'required|date',
@@ -199,13 +198,13 @@ class AccountingReportsController extends Controller
         $endDate = $validated['end_date'];
 
         // Get opening balance
-        $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate . ' -1 day')));
+        $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate.' -1 day')));
 
         // Get transactions for the period
         $entries = $account->transactionEntries()
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                 $query->where('status', 'posted')
-                      ->whereBetween('transaction_date', [$startDate, $endDate]);
+                    ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
             ->with(['transaction'])
             ->orderBy('created_at')
@@ -213,10 +212,10 @@ class AccountingReportsController extends Controller
 
         $runningBalance = $openingBalance;
         $ledgerEntries = $entries->map(function ($entry) use (&$runningBalance, $account) {
-            $movement = $account->nature === 'debit' 
+            $movement = $account->nature === 'debit'
                 ? $entry->debit_amount - $entry->credit_amount
                 : $entry->credit_amount - $entry->debit_amount;
-            
+
             $runningBalance += $movement;
 
             return [
@@ -257,7 +256,7 @@ class AccountingReportsController extends Controller
     public function budgetExecution(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $validated = $request->validate([
             'budget_id' => 'nullable|exists:budgets,id',
             'period_month' => 'nullable|integer|min:1|max:12',
@@ -271,7 +270,7 @@ class AccountingReportsController extends Controller
             $budget = Budget::forConjunto($conjunto->id)->active()->first();
         }
 
-        if (!$budget) {
+        if (! $budget) {
             return back()->withErrors(['budget' => 'No hay presupuesto activo disponible.']);
         }
 
@@ -287,7 +286,7 @@ class AccountingReportsController extends Controller
                 'period' => [
                     'month' => $month,
                     'year' => $year,
-                    'name' => $this->getMonthName($month) . ' ' . $year,
+                    'name' => $this->getMonthName($month).' '.$year,
                 ],
                 'monthly_execution' => $executionSummary,
                 'ytd_execution' => $ytdSummary,
@@ -307,7 +306,7 @@ class AccountingReportsController extends Controller
     public function cashFlow(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $validated = $request->validate([
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
@@ -323,14 +322,14 @@ class AccountingReportsController extends Controller
             ->get();
 
         $cashFlow = $cashAccounts->map(function ($account) use ($startDate, $endDate) {
-            $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate . ' -1 day')));
+            $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate.' -1 day')));
             $closingBalance = $account->getBalance(null, $endDate);
             $netChange = $closingBalance - $openingBalance;
 
             $entries = $account->transactionEntries()
                 ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                     $query->where('status', 'posted')
-                          ->whereBetween('transaction_date', [$startDate, $endDate]);
+                        ->whereBetween('transaction_date', [$startDate, $endDate]);
                 })
                 ->with('transaction')
                 ->get();
@@ -369,7 +368,7 @@ class AccountingReportsController extends Controller
         ]);
     }
 
-    private function getAccountBalances(int $conjuntoConfigId, string $accountType, string $startDate = null, string $endDate = null)
+    private function getAccountBalances(int $conjuntoConfigId, string $accountType, ?string $startDate = null, ?string $endDate = null)
     {
         return ChartOfAccounts::forConjunto($conjuntoConfigId)
             ->byType($accountType)
@@ -377,11 +376,11 @@ class AccountingReportsController extends Controller
             ->with(['transactionEntries' => function ($query) use ($startDate, $endDate) {
                 $query->whereHas('transaction', function ($q) use ($startDate, $endDate) {
                     $q->where('status', 'posted');
-                    
+
                     if ($startDate) {
                         $q->where('transaction_date', '>=', $startDate);
                     }
-                    
+
                     if ($endDate) {
                         $q->where('transaction_date', '<=', $endDate);
                     }
@@ -391,7 +390,7 @@ class AccountingReportsController extends Controller
             ->get()
             ->map(function ($account) use ($startDate, $endDate) {
                 $balance = $account->getBalance($startDate, $endDate);
-                
+
                 return [
                     'id' => $account->id,
                     'code' => $account->code,
@@ -402,7 +401,7 @@ class AccountingReportsController extends Controller
                     'balance' => $balance,
                 ];
             })
-            ->filter(fn($account) => $account['balance'] != 0);
+            ->filter(fn ($account) => $account['balance'] != 0);
     }
 
     private function getMonthName(int $month): string

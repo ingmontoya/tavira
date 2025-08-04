@@ -124,7 +124,7 @@ class InvoiceController extends Controller
                 }
             }
 
-            return DB::transaction(function () use ($conjunto, $validated) {
+            return DB::transaction(function () use ($validated) {
                 $invoice = Invoice::create([
                     'apartment_id' => $validated['apartment_id'],
                     'type' => $validated['type'],
@@ -160,7 +160,14 @@ class InvoiceController extends Controller
 
     public function show(Invoice $invoice)
     {
-        $invoice->load(['apartment.apartmentType', 'items.paymentConcept']);
+        $invoice->load([
+            'apartment.apartmentType',
+            'items.paymentConcept',
+            'paymentApplications.payment.createdBy',
+            'paymentApplications' => function ($query) {
+                $query->orderBy('applied_date', 'desc');
+            },
+        ]);
 
         return Inertia::render('Payments/Invoices/Show', [
             'invoice' => $invoice,
@@ -305,7 +312,7 @@ class InvoiceController extends Controller
 
                 $commonExpenseConcepts = PaymentConcept::where('type', 'common_expense')
                     ->where('is_active', true)
-                    ->where('is_recurring', true)  
+                    ->where('is_recurring', true)
                     ->where('billing_cycle', 'monthly')
                     ->get();
 

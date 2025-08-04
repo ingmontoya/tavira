@@ -51,7 +51,7 @@ class PaymentConceptAccountMapping extends Model
             ->with(['incomeAccount', 'receivableAccount'])
             ->first();
 
-        if (!$mapping) {
+        if (! $mapping) {
             return self::getDefaultAccountsForConceptType($conceptId);
         }
 
@@ -64,8 +64,8 @@ class PaymentConceptAccountMapping extends Model
     private static function getDefaultAccountsForConceptType(int $conceptId): ?array
     {
         $concept = PaymentConcept::find($conceptId);
-        
-        if (!$concept) {
+
+        if (! $concept) {
             return null;
         }
 
@@ -115,7 +115,7 @@ class PaymentConceptAccountMapping extends Model
             }
 
             $defaultAccounts = self::getDefaultAccountsForConceptType($concept->id);
-            
+
             if ($defaultAccounts && $defaultAccounts['income_account']) {
                 self::create([
                     'payment_concept_id' => $concept->id,

@@ -38,7 +38,7 @@ class BudgetExecution extends Model
     public function scopeByPeriod($query, int $month, int $year)
     {
         return $query->where('period_month', $month)
-                    ->where('period_year', $year);
+            ->where('period_year', $year);
     }
 
     public function scopeByYear($query, int $year)
@@ -68,7 +68,7 @@ class BudgetExecution extends Model
             12 => 'Diciembre',
         ];
 
-        return $months[$this->period_month] . ' ' . $this->period_year;
+        return $months[$this->period_month].' '.$this->period_year;
     }
 
     public function getVarianceStatusAttribute(): string
@@ -108,11 +108,11 @@ class BudgetExecution extends Model
     {
         $executions = self::whereHas('budgetItem.budget', function ($query) use ($conjuntoConfigId) {
             $query->where('conjunto_config_id', $conjuntoConfigId)
-                  ->where('status', 'active');
+                ->where('status', 'active');
         })
-        ->byPeriod($month, $year)
-        ->with('budgetItem.account')
-        ->get();
+            ->byPeriod($month, $year)
+            ->with('budgetItem.account')
+            ->get();
 
         return [
             'income' => $executions->where('budgetItem.category', 'income'),
@@ -130,11 +130,11 @@ class BudgetExecution extends Model
     {
         $executions = self::whereHas('budgetItem.budget', function ($query) use ($conjuntoConfigId) {
             $query->where('conjunto_config_id', $conjuntoConfigId)
-                  ->where('status', 'active');
+                ->where('status', 'active');
         })
-        ->byYear($year)
-        ->with('budgetItem.account')
-        ->get();
+            ->byYear($year)
+            ->with('budgetItem.account')
+            ->get();
 
         return [
             'income' => $executions->where('budgetItem.category', 'income'),
@@ -152,14 +152,14 @@ class BudgetExecution extends Model
     {
         $accountId = $this->budgetItem->account_id;
         $category = $this->budgetItem->category;
-        
+
         $entries = AccountingTransactionEntry::whereHas('transaction', function ($query) {
             $query->where('status', 'posted')
-                  ->whereMonth('transaction_date', $this->period_month)
-                  ->whereYear('transaction_date', $this->period_year);
+                ->whereMonth('transaction_date', $this->period_month)
+                ->whereYear('transaction_date', $this->period_year);
         })
-        ->where('account_id', $accountId)
-        ->get();
+            ->where('account_id', $accountId)
+            ->get();
 
         if ($category === 'income') {
             // For income accounts, credit increases the balance
@@ -175,8 +175,8 @@ class BudgetExecution extends Model
     public function updateWithCalculations(float $actualAmount): void
     {
         $varianceAmount = $actualAmount - $this->budgeted_amount;
-        $variancePercentage = $this->budgeted_amount > 0 
-            ? ($varianceAmount / $this->budgeted_amount) * 100 
+        $variancePercentage = $this->budgeted_amount > 0
+            ? ($varianceAmount / $this->budgeted_amount) * 100
             : 0;
 
         $this->update([
@@ -190,10 +190,10 @@ class BudgetExecution extends Model
     {
         $executions = self::whereHas('budgetItem.budget', function ($query) use ($conjuntoConfigId) {
             $query->where('conjunto_config_id', $conjuntoConfigId)
-                  ->where('status', 'active');
+                ->where('status', 'active');
         })
-        ->byPeriod($month, $year)
-        ->get();
+            ->byPeriod($month, $year)
+            ->get();
 
         foreach ($executions as $execution) {
             $execution->calculateActualAmountFromAccountingEntries();
@@ -205,8 +205,8 @@ class BudgetExecution extends Model
         $executions = self::whereHas('budgetItem', function ($query) use ($accountId) {
             $query->where('account_id', $accountId);
         })
-        ->byPeriod($month, $year)
-        ->get();
+            ->byPeriod($month, $year)
+            ->get();
 
         foreach ($executions as $execution) {
             $execution->calculateActualAmountFromAccountingEntries();

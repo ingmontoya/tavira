@@ -53,7 +53,7 @@ class BudgetController extends Controller
     public function create(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $incomeAccounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->byType('income')
             ->postable()
@@ -92,7 +92,7 @@ class BudgetController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:200',
-            'fiscal_year' => 'required|integer|min:2020|max:2050|unique:budgets,fiscal_year,NULL,id,conjunto_config_id,' . $conjunto->id,
+            'fiscal_year' => 'required|integer|min:2020|max:2050|unique:budgets,fiscal_year,NULL,id,conjunto_config_id,'.$conjunto->id,
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'items' => 'required|array|min:1',
@@ -112,7 +112,7 @@ class BudgetController extends Controller
                     $validated['previous_year'],
                     $validated['fiscal_year']
                 );
-                
+
                 $budget->update([
                     'name' => $validated['name'],
                     'start_date' => $validated['start_date'],
@@ -183,7 +183,7 @@ class BudgetController extends Controller
         }
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
+
         $incomeAccounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->byType('income')
             ->postable()
@@ -357,7 +357,7 @@ class BudgetController extends Controller
 
         $validated = $request->validate([
             'previous_year' => 'required|integer|exists:budgets,fiscal_year',
-            'new_year' => 'required|integer|min:2020|max:2050|unique:budgets,fiscal_year,NULL,id,conjunto_config_id,' . $conjunto->id,
+            'new_year' => 'required|integer|min:2020|max:2050|unique:budgets,fiscal_year,NULL,id,conjunto_config_id,'.$conjunto->id,
         ]);
 
         try {
@@ -385,14 +385,15 @@ class BudgetController extends Controller
 
         // Add current and next year if not present
         $currentYear = now()->year;
-        if (!in_array($currentYear, $years)) {
+        if (! in_array($currentYear, $years)) {
             $years[] = $currentYear;
         }
-        if (!in_array($currentYear + 1, $years)) {
+        if (! in_array($currentYear + 1, $years)) {
             $years[] = $currentYear + 1;
         }
 
         rsort($years);
+
         return $years;
     }
 
@@ -429,7 +430,7 @@ class BudgetController extends Controller
             'period' => [
                 'month' => $month,
                 'year' => $year,
-                'name' => $this->getAvailableMonths()[$month] . ' ' . $year,
+                'name' => $this->getAvailableMonths()[$month].' '.$year,
             ],
         ]);
     }
@@ -447,7 +448,7 @@ class BudgetController extends Controller
             'period' => [
                 'month' => $month,
                 'year' => $year,
-                'name' => $this->getAvailableMonths()[$month] . ' ' . $year,
+                'name' => $this->getAvailableMonths()[$month].' '.$year,
             ],
         ]);
     }

@@ -4,8 +4,8 @@ namespace App\Listeners;
 
 use App\Events\AccountingTransactionPosted;
 use App\Models\BudgetExecution;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 
 class UpdateBudgetExecutionFromTransaction implements ShouldQueue
 {

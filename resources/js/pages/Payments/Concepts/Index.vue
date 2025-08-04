@@ -68,11 +68,7 @@ const customFilters = ref({
 // Watch for changes in props.filters to sync with server state
 watch(
     () => props.filters,
-    (newFilters, oldFilters) => {
-        console.log('👁️ Watcher triggered!');
-        console.log('👁️ Old filters:', JSON.stringify(oldFilters));
-        console.log('👁️ New filters:', JSON.stringify(newFilters));
-
+    (newFilters) => {
         let newCustomFilters;
 
         if (newFilters && Object.keys(newFilters).length > 0) {
@@ -81,7 +77,6 @@ watch(
                 type: newFilters.type || 'all',
                 is_active: newFilters.is_active !== undefined ? newFilters.is_active.toString() : 'all',
             };
-            console.log('👁️ Setting filters from server:', JSON.stringify(newCustomFilters));
         } else {
             // No filters from server, reset to defaults
             newCustomFilters = {
@@ -89,11 +84,9 @@ watch(
                 type: 'all',
                 is_active: 'all',
             };
-            console.log('👁️ Resetting to default filters:', JSON.stringify(newCustomFilters));
         }
 
         customFilters.value = newCustomFilters;
-        console.log('👁️ CustomFilters after update:', JSON.stringify(customFilters.value));
     },
     { immediate: true, deep: true },
 );

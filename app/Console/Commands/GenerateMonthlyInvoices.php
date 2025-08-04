@@ -122,7 +122,7 @@ class GenerateMonthlyInvoices extends Command
             ->where('is_active', true)
             ->first();
 
-        if (!$monthlyAdminConcept) {
+        if (! $monthlyAdminConcept) {
             throw new InvoiceGenerationException('No se encontró el concepto de Administración Mensual activo. Ejecute el seeder PaymentConceptSeeder.');
         }
 

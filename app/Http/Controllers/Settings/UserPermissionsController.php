@@ -23,7 +23,7 @@ class UserPermissionsController extends Controller
                 'all_permissions' => $user->getAllPermissions()->pluck('name')->toArray(), // All permissions (role + direct)
             ];
         });
-        
+
         $roles = Role::with('permissions')->get();
         $permissions = Permission::all()->groupBy(function ($permission) {
             $parts = explode('_', $permission->name);
@@ -44,14 +44,13 @@ class UserPermissionsController extends Controller
             'role' => 'required|string|exists:roles,name',
         ]);
 
-
         $user->syncRoles([$request->role]);
 
         $user->refresh();
 
         // Clear permission cache for the user
         $user->forgetCachedPermissions();
-        
+
         // Clear global permission cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
@@ -72,7 +71,6 @@ class UserPermissionsController extends Controller
             'permissions.*' => 'string|exists:permissions,name',
         ]);
 
-
         $user->syncPermissions($request->permissions ?? []);
 
         // Verify the permissions were assigned
@@ -80,7 +78,7 @@ class UserPermissionsController extends Controller
 
         // Clear permission cache for the user
         $user->forgetCachedPermissions();
-        
+
         // Clear global permission cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
@@ -108,7 +106,7 @@ class UserPermissionsController extends Controller
         foreach ($usersWithRole as $user) {
             $user->forgetCachedPermissions();
         }
-        
+
         // Clear global permission cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
