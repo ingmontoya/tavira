@@ -8,12 +8,11 @@ use App\Models\ConjuntoConfig;
 use App\Services\ReserveFundService;
 use App\Settings\PaymentSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 /**
  * Tests unitarios para ReserveFundService
- * 
+ *
  * Valida el funcionamiento correcto de:
  * - Cálculo del fondo de reserva
  * - Apropiación automática
@@ -25,18 +24,19 @@ class ReserveFundServiceTest extends TestCase
     use RefreshDatabase;
 
     private ConjuntoConfig $conjunto;
+
     private ReserveFundService $service;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Crear conjunto de prueba
         $this->conjunto = ConjuntoConfig::factory()->create();
-        
+
         // Crear plan de cuentas necesario
         $this->createRequiredAccounts();
-        
+
         // Instanciar servicio
         $this->service = new ReserveFundService($this->conjunto->id);
     }
@@ -46,10 +46,10 @@ class ReserveFundServiceTest extends TestCase
     {
         // Arrange: Crear ingresos operacionales de $1,000,000
         $this->createOperationalIncomeTransactions(1000000, 5, 2024);
-        
+
         // Act: Calcular reserva para mayo 2024
         $reserveAmount = $this->service->calculateMonthlyReserve(5, 2024);
-        
+
         // Assert: Debe ser el 30% de los ingresos
         $this->assertEquals(300000, $reserveAmount, 'El fondo de reserva debe ser el 30% de los ingresos operacionales');
     }
@@ -59,22 +59,22 @@ class ReserveFundServiceTest extends TestCase
     {
         // Arrange: Crear ingresos operacionales
         $this->createOperationalIncomeTransactions(1500000, 5, 2024);
-        
+
         // Act: Ejecutar apropiación
         $transaction = $this->service->executeMonthlyAppropriation(5, 2024);
-        
+
         // Assert: Verificar que se creó la transacción
         $this->assertNotNull($transaction, 'Debe crear una transacción de apropiación');
         $this->assertEquals('contabilizado', $transaction->status, 'La transacción debe estar contabilizada');
         $this->assertEquals(450000, $transaction->total_debit, 'Debe apropiar $450,000 (30% de $1,500,000)');
         $this->assertEquals(450000, $transaction->total_credit, 'Debe cumplir con partida doble');
-        
+
         // Verificar que tiene las entradas correctas
         $this->assertCount(2, $transaction->entries, 'Debe tener exactamente 2 movimientos');
-        
+
         $debitEntry = $transaction->entries->where('debit_amount', '>', 0)->first();
         $creditEntry = $transaction->entries->where('credit_amount', '>', 0)->first();
-        
+
         $this->assertEquals('530502', $debitEntry->account->code, 'Débito debe ser en cuenta de gasto de reserva');
         $this->assertEquals('320501', $creditEntry->account->code, 'Crédito debe ser en cuenta de fondo de reserva');
     }
@@ -85,10 +85,10 @@ class ReserveFundServiceTest extends TestCase
         // Arrange: Crear apropiación previa
         $this->createOperationalIncomeTransactions(1000000, 5, 2024);
         $firstTransaction = $this->service->executeMonthlyAppropriation(5, 2024);
-        
+
         // Act: Intentar crear otra apropiación para el mismo período
         $secondTransaction = $this->service->executeMonthlyAppropriation(5, 2024);
-        
+
         // Assert: No debe crear segunda transacción
         $this->assertNotNull($firstTransaction, 'Primera apropiación debe crearse');
         $this->assertNull($secondTransaction, 'Segunda apropiación no debe crearse');
@@ -98,10 +98,10 @@ class ReserveFundServiceTest extends TestCase
     public function no_crea_apropiacion_si_no_hay_ingresos()
     {
         // Arrange: Sin ingresos para el período
-        
+
         // Act: Intentar ejecutar apropiación
         $transaction = $this->service->executeMonthlyAppropriation(5, 2024);
-        
+
         // Assert: No debe crear transacción
         $this->assertNull($transaction, 'No debe crear apropiación sin ingresos');
     }
@@ -112,13 +112,13 @@ class ReserveFundServiceTest extends TestCase
         // Arrange: Crear apropiaciones previas
         $this->createOperationalIncomeTransactions(1000000, 4, 2024);
         $this->createOperationalIncomeTransactions(1200000, 5, 2024);
-        
+
         $this->service->executeMonthlyAppropriation(4, 2024); // $300,000
         $this->service->executeMonthlyAppropriation(5, 2024); // $360,000
-        
+
         // Act: Obtener balance
         $balance = $this->service->getReserveFundBalance();
-        
+
         // Assert: Debe sumar todas las apropiaciones
         $this->assertEquals(660000, $balance, 'Balance debe ser $660,000 ($300,000 + $360,000)');
     }
@@ -129,19 +129,19 @@ class ReserveFundServiceTest extends TestCase
         // Arrange: Crear ingresos anuales y apropiaciones
         $totalIncome = 0;
         $totalAppropriated = 0;
-        
+
         for ($month = 1; $month <= 6; $month++) {
             $monthlyIncome = 1000000 + ($month * 50000); // Ingresos crecientes
             $this->createOperationalIncomeTransactions($monthlyIncome, $month, 2024);
             $transaction = $this->service->executeMonthlyAppropriation($month, 2024);
-            
+
             $totalIncome += $monthlyIncome;
             $totalAppropriated += $transaction->total_debit;
         }
-        
+
         // Act: Validar cumplimiento
         $compliance = $this->service->validateLegalCompliance(2024);
-        
+
         // Assert: Verificar cumplimiento
         $this->assertTrue($compliance['is_compliant'], 'Debe cumplir con el porcentaje legal');
         $this->assertEquals($totalIncome, $compliance['total_income'], 'Ingresos totales deben coincidir');
@@ -155,11 +155,11 @@ class ReserveFundServiceTest extends TestCase
         // Arrange: Eliminar cuenta de gasto de reserva
         ChartOfAccounts::where('code', '530502')->delete();
         $this->createOperationalIncomeTransactions(1000000, 5, 2024);
-        
+
         // Act & Assert: Debe lanzar excepción
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('No se encontró la cuenta 530502');
-        
+
         $this->service->executeMonthlyAppropriation(5, 2024);
     }
 
@@ -169,11 +169,11 @@ class ReserveFundServiceTest extends TestCase
         // Arrange: Eliminar cuenta de fondo de reserva
         ChartOfAccounts::where('code', '320501')->delete();
         $this->createOperationalIncomeTransactions(1000000, 5, 2024);
-        
+
         // Act & Assert: Debe lanzar excepción
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('No se encontró la cuenta 320501');
-        
+
         $this->service->executeMonthlyAppropriation(5, 2024);
     }
 
@@ -183,12 +183,12 @@ class ReserveFundServiceTest extends TestCase
         // Arrange: Configurar porcentaje personalizado (35%)
         $paymentSettings = app(PaymentSettings::class);
         $paymentSettings->set('reserve_fund_percentage', 35);
-        
+
         $this->createOperationalIncomeTransactions(1000000, 5, 2024);
-        
+
         // Act: Calcular reserva
         $reserveAmount = $this->service->calculateMonthlyReserve(5, 2024);
-        
+
         // Assert: Debe usar el 35%
         $this->assertEquals(350000, $reserveAmount, 'Debe usar el porcentaje personalizado del 35%');
     }
@@ -249,10 +249,10 @@ class ReserveFundServiceTest extends TestCase
     private function createOperationalIncomeTransactions(float $amount, int $month, int $year): void
     {
         $incomeAccount = ChartOfAccounts::where('code', '413501')->first();
-        
+
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $this->conjunto->id,
-            'transaction_date' => sprintf("%d-%02d-15", $year, $month), // Medio del mes
+            'transaction_date' => sprintf('%d-%02d-15', $year, $month), // Medio del mes
             'description' => "Ingresos operacionales - {$month}/{$year}",
             'reference_type' => 'test',
             'reference_id' => 1,

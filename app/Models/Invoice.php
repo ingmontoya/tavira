@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Events\InvoiceCreated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -50,7 +49,6 @@ class Invoice extends Model
         'days_overdue',
         'balance_due',
     ];
-
 
     public function apartment(): BelongsTo
     {

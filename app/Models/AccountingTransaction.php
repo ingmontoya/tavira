@@ -170,16 +170,16 @@ class AccountingTransaction extends Model
         }
 
         // Ejecutar validaciones adicionales de integridad
-        $validationService = new \App\Services\AccountingValidationService();
+        $validationService = new \App\Services\AccountingValidationService;
         $validation = $validationService->validateTransactionIntegrity($this);
-        
-        if (!$validation['is_valid']) {
+
+        if (! $validation['is_valid']) {
             $errors = implode('; ', $validation['errors']);
             throw new \Exception("La transacción no pasa las validaciones de integridad: {$errors}");
         }
 
         // Log warnings if any
-        if (!empty($validation['warnings'])) {
+        if (! empty($validation['warnings'])) {
             \Illuminate\Support\Facades\Log::warning('Transacción contabilizada con advertencias', [
                 'transaction_id' => $this->id,
                 'transaction_number' => $this->transaction_number,
@@ -326,12 +326,12 @@ class AccountingTransaction extends Model
         if ($transaction && $transaction->reference_type === 'invoice' && $transaction->reference_id) {
             $invoice = \App\Models\Invoice::find($transaction->reference_id);
             if ($invoice && $invoice->apartment) {
-                $apartmentCode = $invoice->apartment->number . '-';
+                $apartmentCode = $invoice->apartment->number.'-';
             }
         } elseif ($transaction && $transaction->reference_type === 'payment' && $transaction->reference_id) {
             $invoice = \App\Models\Invoice::find($transaction->reference_id);
             if ($invoice && $invoice->apartment) {
-                $apartmentCode = $invoice->apartment->number . '-';
+                $apartmentCode = $invoice->apartment->number.'-';
             }
         }
 

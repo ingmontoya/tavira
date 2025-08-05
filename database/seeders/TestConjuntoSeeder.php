@@ -26,7 +26,7 @@ class TestConjuntoSeeder extends Seeder
 
         $this->command->info('✅ Test conjunto created successfully!');
         $this->command->info("🏢 Conjunto: {$conjunto->name}");
-        $this->command->info("🏠 Total apartamentos: " . count($apartments));
+        $this->command->info('🏠 Total apartamentos: '.count($apartments));
     }
 
     private function createConjuntoConfig(): ConjuntoConfig
@@ -42,9 +42,9 @@ class TestConjuntoSeeder extends Seeder
             'configuration_metadata' => [
                 'floor_configuration' => [
                     1 => ['apartments_count' => 5, 'apartment_type' => 'Tipo A'],
-                    2 => ['apartments_count' => 5, 'apartment_type' => 'Tipo B']
-                ]
-            ]
+                    2 => ['apartments_count' => 5, 'apartment_type' => 'Tipo B'],
+                ],
+            ],
         ]);
     }
 
@@ -57,7 +57,7 @@ class TestConjuntoSeeder extends Seeder
                 'bathrooms' => 1,
                 'area_sqm' => 45.0,
                 'administration_fee' => 180000.00,
-                'description' => 'Apartamento de 1 habitación'
+                'description' => 'Apartamento de 1 habitación',
             ],
             [
                 'name' => 'Tipo B',
@@ -65,8 +65,8 @@ class TestConjuntoSeeder extends Seeder
                 'bathrooms' => 2,
                 'area_sqm' => 65.0,
                 'administration_fee' => 250000.00,
-                'description' => 'Apartamento de 2 habitaciones'
-            ]
+                'description' => 'Apartamento de 2 habitaciones',
+            ],
         ];
 
         $apartmentTypes = [];
@@ -84,7 +84,7 @@ class TestConjuntoSeeder extends Seeder
                 'coefficient' => round(($type['area_sqm'] / 1100) * 100, 6), // Simple coefficient
                 'administration_fee' => $type['administration_fee'],
                 'floor_positions' => [1, 2, 3, 4, 5],
-                'features' => []
+                'features' => [],
             ]);
         }
 
@@ -116,7 +116,7 @@ class TestConjuntoSeeder extends Seeder
                         'features' => [],
                         'payment_status' => 'current',
                         'last_payment_date' => now()->subMonths(1),
-                        'outstanding_balance' => 0.00
+                        'outstanding_balance' => 0.00,
                     ]);
 
                     $apartmentNumber++;
@@ -135,19 +135,19 @@ class TestConjuntoSeeder extends Seeder
         foreach ($apartments as $index => $apartment) {
             $firstName = $firstNames[$index % 5];
             $lastName = $lastNames[$index % 5];
-            
+
             Resident::create([
                 'apartment_id' => $apartment->id,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'document_type' => 'CC',
-                'document_number' => (string)(10000000 + $index),
-                'phone' => '+57 3' . rand(10, 99) . ' ' . rand(100, 999) . ' ' . rand(1000, 9999),
-                'email' => strtolower($firstName . '.' . $lastName . '.' . $apartment->number) . '@test.com',
+                'document_number' => (string) (10000000 + $index),
+                'phone' => '+57 3'.rand(10, 99).' '.rand(100, 999).' '.rand(1000, 9999),
+                'email' => strtolower($firstName.'.'.$lastName.'.'.$apartment->number).'@test.com',
                 'resident_type' => 'Owner',
                 'status' => 'Active',
                 'start_date' => now()->subYears(1),
-                'documents' => []
+                'documents' => [],
             ]);
         }
     }

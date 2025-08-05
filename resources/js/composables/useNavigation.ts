@@ -12,6 +12,7 @@ import {
     Home,
     LayoutGrid,
     Mail,
+    MapPin,
     MessageSquare,
     Phone,
     Receipt,
@@ -109,6 +110,13 @@ export function useNavigation() {
             href: '/payment-concepts',
             icon: Settings,
             tourId: 'nav-payment-concepts',
+            visible: hasPermission('view_payments'),
+        },
+        {
+            title: 'Mapeo de Cuentas',
+            href: '/payment-method-account-mappings',
+            icon: MapPin,
+            tourId: 'nav-payment-method-account-mappings',
             visible: hasPermission('view_payments'),
         },
         {

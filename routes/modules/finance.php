@@ -5,6 +5,7 @@ use App\Http\Controllers\PaymentAgreementController;
 use App\Http\Controllers\PaymentConceptController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentManagementController;
+use App\Http\Controllers\PaymentMethodAccountMappingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -30,6 +31,10 @@ Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByE
 // Payment Concepts Management
 Route::resource('payment-concepts', PaymentConceptController::class)->middleware('can:view_payments');
 Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptController::class, 'toggle'])->name('payment-concepts.toggle')->middleware('can:edit_payments');
+
+// Payment Method Account Mappings Management
+Route::resource('payment-method-account-mappings', PaymentMethodAccountMappingController::class)->middleware('can:view_payments');
+Route::post('payment-method-account-mappings/{paymentMethodAccountMapping}/toggle', [PaymentMethodAccountMappingController::class, 'toggle'])->name('payment-method-account-mappings.toggle')->middleware('can:edit_payments');
 
 // Payment Management (New System)
 Route::prefix('finance')->name('finance.')->group(function () {

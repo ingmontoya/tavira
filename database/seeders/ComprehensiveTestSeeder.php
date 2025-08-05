@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Apartment;
-use App\Models\ApartmentType;
 use App\Models\AccountingTransaction;
 use App\Models\AccountingTransactionEntry;
+use App\Models\Apartment;
+use App\Models\ApartmentType;
 use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
@@ -14,8 +14,6 @@ use App\Models\Payment;
 use App\Models\PaymentApplication;
 use App\Models\PaymentConcept;
 use App\Models\Resident;
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -35,6 +33,9 @@ class ComprehensiveTestSeeder extends Seeder
             $this->command->info('🏢 Creating conjunto configuration...');
             $conjunto = $this->createConjuntoConfig();
 
+            $this->command->info('📊 Creating chart of accounts...');
+            $this->call(ChartOfAccountsSeeder::class);
+
             $this->command->info('🏠 Creating apartment types...');
             $apartmentTypes = $this->createApartmentTypes($conjunto);
 
@@ -46,6 +47,9 @@ class ComprehensiveTestSeeder extends Seeder
 
             $this->command->info('💰 Creating payment concepts...');
             $paymentConcepts = $this->createPaymentConcepts($conjunto);
+
+            $this->command->info('🏦 Creating payment method account mappings...');
+            $this->createPaymentMethodMappings($conjunto);
 
             $this->command->info('📋 Generating invoices for all apartments...');
             $invoices = $this->generateInvoices($apartments, $paymentConcepts);
@@ -67,7 +71,7 @@ class ComprehensiveTestSeeder extends Seeder
 
         } catch (\Exception $e) {
             DB::rollback();
-            $this->command->error('❌ Error creating test scenario: ' . $e->getMessage());
+            $this->command->error('❌ Error creating test scenario: '.$e->getMessage());
             throw $e;
         }
     }
@@ -77,7 +81,7 @@ class ComprehensiveTestSeeder extends Seeder
         // Clear in correct order due to foreign key constraints
         // PostgreSQL doesn't have FOREIGN_KEY_CHECKS, so we delete in proper order
         // DON'T delete ChartOfAccounts as they are needed for accounting transactions
-        
+
         AccountingTransactionEntry::query()->delete();
         AccountingTransaction::query()->delete();
         PaymentApplication::query()->delete();
@@ -88,7 +92,7 @@ class ComprehensiveTestSeeder extends Seeder
         Apartment::query()->delete();
         ApartmentType::query()->delete();
         ConjuntoConfig::query()->delete();
-        
+
         // Keep PaymentConcepts too as they might be referenced
         PaymentConcept::query()->delete();
     }
@@ -108,20 +112,20 @@ class ComprehensiveTestSeeder extends Seeder
                     1 => ['apartments_count' => 5, 'apartment_type' => 'Tipo A'],
                     2 => ['apartments_count' => 5, 'apartment_type' => 'Tipo B'],
                     3 => ['apartments_count' => 5, 'apartment_type' => 'Tipo C'],
-                    4 => ['apartments_count' => 5, 'apartment_type' => 'Penthouse']
+                    4 => ['apartments_count' => 5, 'apartment_type' => 'Penthouse'],
                 ],
                 'building_configuration' => [
                     'has_elevator' => true,
                     'has_parking' => true,
-                    'common_areas' => ['pool', 'gym', 'playground', 'social_room']
+                    'common_areas' => ['pool', 'gym', 'playground', 'social_room'],
                 ],
                 'contact_info' => [
                     'address' => 'Calle 123 #45-67, Bogotá, Colombia',
                     'phone' => '+57 1 234-5678',
                     'email' => 'admin@habittatest.com',
-                    'nit' => '900123456-7'
-                ]
-            ]
+                    'nit' => '900123456-7',
+                ],
+            ],
         ]);
     }
 
@@ -135,7 +139,7 @@ class ComprehensiveTestSeeder extends Seeder
                 'area_sqm' => 45.0,
                 'administration_fee' => 180000.00,
                 'description' => 'Apartamento de 1 habitación, ideal para personas solteras o parejas jóvenes',
-                'floor_positions' => [1, 2, 3, 4, 5]
+                'floor_positions' => [1, 2, 3, 4, 5],
             ],
             [
                 'name' => 'Tipo B',
@@ -144,7 +148,7 @@ class ComprehensiveTestSeeder extends Seeder
                 'area_sqm' => 65.0,
                 'administration_fee' => 250000.00,
                 'description' => 'Apartamento de 2 habitaciones, perfecto para familias pequeñas',
-                'floor_positions' => [1, 2, 3, 4, 5]
+                'floor_positions' => [1, 2, 3, 4, 5],
             ],
             [
                 'name' => 'Tipo C',
@@ -153,7 +157,7 @@ class ComprehensiveTestSeeder extends Seeder
                 'area_sqm' => 85.0,
                 'administration_fee' => 320000.00,
                 'description' => 'Apartamento espacioso de 3 habitaciones para familias grandes',
-                'floor_positions' => [1, 2, 3, 4, 5]
+                'floor_positions' => [1, 2, 3, 4, 5],
             ],
             [
                 'name' => 'Penthouse',
@@ -162,8 +166,8 @@ class ComprehensiveTestSeeder extends Seeder
                 'area_sqm' => 120.0,
                 'administration_fee' => 480000.00,
                 'description' => 'Penthouse de lujo con terraza privada y acabados premium',
-                'floor_positions' => [1, 2, 3, 4, 5]
-            ]
+                'floor_positions' => [1, 2, 3, 4, 5],
+            ],
         ];
 
         $apartmentTypes = [];
@@ -181,7 +185,7 @@ class ComprehensiveTestSeeder extends Seeder
                 'coefficient' => $this->calculateCoefficient($type['area_sqm']),
                 'administration_fee' => $type['administration_fee'],
                 'floor_positions' => $type['floor_positions'],
-                'features' => []
+                'features' => [],
             ]);
         }
 
@@ -195,14 +199,14 @@ class ComprehensiveTestSeeder extends Seeder
 
         for ($towerIndex = 0; $towerIndex < 5; $towerIndex++) {
             $towerName = $towerNames[$towerIndex];
-            
+
             for ($floor = 1; $floor <= 4; $floor++) {
                 for ($position = 1; $position <= 5; $position++) {
                     // Assign apartment type based on floor
                     $typeIndex = $floor - 1; // Floor 1 = Tipo A (index 0), etc.
                     $apartmentType = $apartmentTypes[$typeIndex];
 
-                    $apartmentNumber = $towerName[0] . $floor . sprintf('%02d', $position);
+                    $apartmentNumber = $towerName[0].$floor.sprintf('%02d', $position);
 
                     $apartments[] = Apartment::create([
                         'conjunto_config_id' => $conjunto->id,
@@ -217,7 +221,7 @@ class ComprehensiveTestSeeder extends Seeder
                         'features' => [],
                         'payment_status' => 'current', // Will be updated later
                         'last_payment_date' => now()->subMonths(1),
-                        'outstanding_balance' => 0.00
+                        'outstanding_balance' => 0.00,
                     ]);
                 }
             }
@@ -230,6 +234,7 @@ class ComprehensiveTestSeeder extends Seeder
     {
         // Simple coefficient calculation based on area
         $totalArea = 100 * 73.75; // 100 apartments * average area
+
         return round(($area / $totalArea) * 100, 6);
     }
 
@@ -242,20 +247,20 @@ class ComprehensiveTestSeeder extends Seeder
             // 85% of apartments have residents
             if (rand(1, 100) <= 85) {
                 $firstName = $firstNames[array_rand($firstNames)];
-                $lastName = $lastNames[array_rand($lastNames)] . ' ' . $lastNames[array_rand($lastNames)];
-                
+                $lastName = $lastNames[array_rand($lastNames)].' '.$lastNames[array_rand($lastNames)];
+
                 Resident::create([
                     'apartment_id' => $apartment->id,
                     'first_name' => $firstName,
                     'last_name' => $lastName,
                     'document_type' => 'CC',
-                    'document_number' => (string)rand(10000000, 99999999),
-                    'phone' => '+57 3' . rand(10, 99) . ' ' . rand(100, 999) . ' ' . rand(1000, 9999),
-                    'email' => strtolower($firstName . '.' . explode(' ', $lastName)[0] . '.' . $apartment->number . '.' . rand(1000, 9999)) . '@example.com',
+                    'document_number' => (string) rand(10000000, 99999999),
+                    'phone' => '+57 3'.rand(10, 99).' '.rand(100, 999).' '.rand(1000, 9999),
+                    'email' => strtolower($firstName.'.'.explode(' ', $lastName)[0].'.'.$apartment->number.'.'.rand(1000, 9999)).'@example.com',
                     'resident_type' => rand(1, 100) <= 70 ? 'Owner' : 'Tenant', // 70% owners, 30% tenants
                     'status' => 'Active',
                     'start_date' => now()->subYears(rand(1, 5))->subMonths(rand(1, 11)),
-                    'documents' => []
+                    'documents' => [],
                 ]);
             }
         }
@@ -269,23 +274,51 @@ class ComprehensiveTestSeeder extends Seeder
             ['name' => 'Multa por mascota', 'type' => 'sanction', 'is_recurring' => false],
             ['name' => 'Multa por parqueadero', 'type' => 'parking', 'is_recurring' => false],
             ['name' => 'Cuota extraordinaria', 'type' => 'special', 'is_recurring' => false],
-            ['name' => 'Intereses de mora', 'type' => 'late_fee', 'is_recurring' => false]
+            ['name' => 'Intereses de mora', 'type' => 'late_fee', 'is_recurring' => false],
         ];
 
         $paymentConcepts = [];
         foreach ($concepts as $concept) {
             $paymentConcepts[] = PaymentConcept::firstOrCreate([
                 'name' => $concept['name'],
-                'type' => $concept['type']
+                'type' => $concept['type'],
             ], [
                 'description' => $concept['name'],
                 'is_recurring' => $concept['is_recurring'],
                 'is_active' => true,
-                'billing_cycle' => $concept['is_recurring'] ? 'monthly' : 'one_time'
+                'billing_cycle' => $concept['is_recurring'] ? 'monthly' : 'one_time',
             ]);
         }
 
         return $paymentConcepts;
+    }
+
+    private function createPaymentMethodMappings(ConjuntoConfig $conjunto): void
+    {
+        $paymentMethods = [
+            'cash' => '110501', // Caja General
+            'bank_transfer' => '111001', // Banco Principal - Cuenta Corriente
+            'check' => '111001', // Banco Principal - Cuenta Corriente
+            'credit_card' => '111001', // Banco Principal - Cuenta Corriente
+            'debit_card' => '111001', // Banco Principal - Cuenta Corriente
+            'online' => '111001', // Banco Principal - Cuenta Corriente
+            'pse' => '111001', // Banco Principal - Cuenta Corriente
+            'other' => '111001', // Banco Principal - Cuenta Corriente (default)
+        ];
+
+        foreach ($paymentMethods as $method => $accountCode) {
+            $account = $this->getAccountByCode($accountCode, $conjunto->id);
+
+            if ($account) {
+                \App\Models\PaymentMethodAccountMapping::firstOrCreate([
+                    'conjunto_config_id' => $conjunto->id,
+                    'payment_method' => $method,
+                ], [
+                    'cash_account_id' => $account,
+                    'is_active' => true,
+                ]);
+            }
+        }
     }
 
     private function generateInvoices(array $apartments, array $paymentConcepts): array
@@ -314,17 +347,17 @@ class ComprehensiveTestSeeder extends Seeder
                     'total_amount' => 0,
                     'paid_amount' => 0,
                     'balance_amount' => 0,
-                    'status' => 'pending'
+                    'status' => 'pending',
                 ]);
 
                 // Add administration fee
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'payment_concept_id' => $administrationConcept->id,
-                    'description' => 'Administración ' . $billingDate->format('F Y'),
+                    'description' => 'Administración '.$billingDate->format('F Y'),
                     'quantity' => 1,
                     'unit_price' => $apartment->monthly_fee,
-                    'total_price' => $apartment->monthly_fee
+                    'total_price' => $apartment->monthly_fee,
                 ]);
 
                 // 10% chance of penalties for current month only
@@ -340,7 +373,7 @@ class ComprehensiveTestSeeder extends Seeder
                             'description' => $penaltyConcept->name,
                             'quantity' => 1,
                             'unit_price' => $penaltyAmount,
-                            'total_price' => $penaltyAmount
+                            'total_price' => $penaltyAmount,
                         ]);
                     }
                 }
@@ -361,11 +394,11 @@ class ComprehensiveTestSeeder extends Seeder
         shuffle($apartmentIds);
 
         // 70% current (paid up) - pay all invoices
-        $currentCount = (int)(count($apartmentIds) * 0.7);
+        $currentCount = (int) (count($apartmentIds) * 0.7);
         $currentApartments = array_slice($apartmentIds, 0, $currentCount);
 
         // 20% delinquent (random aging)
-        $delinquentCount = (int)(count($apartmentIds) * 0.2);
+        $delinquentCount = (int) (count($apartmentIds) * 0.2);
         $delinquentApartments = array_slice($apartmentIds, $currentCount, $delinquentCount);
 
         // 10% with penalties (paid some, have penalties)
@@ -432,10 +465,10 @@ class ComprehensiveTestSeeder extends Seeder
             'remaining_amount' => $amount,
             'payment_date' => now()->subDays(rand(0, 30)),
             'payment_method' => $method,
-            'reference_number' => 'REF-' . strtoupper(uniqid()),
+            'reference_number' => 'REF-'.strtoupper(uniqid()),
             'notes' => 'Pago generado automáticamente para pruebas',
             'status' => 'pending',
-            'created_by' => 1
+            'created_by' => 1,
         ]);
 
         PaymentApplication::create([
@@ -444,7 +477,7 @@ class ComprehensiveTestSeeder extends Seeder
             'amount_applied' => $amount,
             'applied_date' => now(),
             'created_by' => 1,
-            'status' => 'active'
+            'status' => 'active',
         ]);
 
         // Update invoice manually to avoid status issues
@@ -453,14 +486,14 @@ class ComprehensiveTestSeeder extends Seeder
         $invoice->last_payment_date = now();
         $invoice->payment_method = $method;
         $invoice->payment_reference = $payment->reference_number;
-        
+
         if ($invoice->balance_amount <= 0) {
             $invoice->status = 'paid';
             $invoice->balance_amount = 0;
         } elseif ($invoice->paid_amount > 0) {
             $invoice->status = 'partial';
         }
-        
+
         $invoice->save();
     }
 
@@ -468,22 +501,22 @@ class ComprehensiveTestSeeder extends Seeder
     {
         foreach ($invoices as $invoice) {
             $invoice->refresh();
-            
+
             // Update apartment payment status based on current status
             $apartment = $invoice->apartment;
-            
+
             // Set payment status based on most recent unpaid invoice
             $unpaidInvoices = Invoice::where('apartment_id', $apartment->id)
                 ->whereIn('status', ['pending', 'overdue', 'partial'])
                 ->orderBy('due_date', 'desc')
                 ->get();
-            
+
             if ($unpaidInvoices->isEmpty()) {
                 $apartment->payment_status = 'current';
             } else {
                 $mostRecentUnpaid = $unpaidInvoices->first();
                 $daysOverdue = now()->diffInDays($mostRecentUnpaid->due_date);
-                
+
                 if ($daysOverdue <= 30) {
                     $apartment->payment_status = 'overdue_30';
                 } elseif ($daysOverdue <= 60) {
@@ -494,7 +527,7 @@ class ComprehensiveTestSeeder extends Seeder
                     $apartment->payment_status = 'overdue_90_plus';
                 }
             }
-            
+
             $apartment->save();
         }
     }
@@ -512,22 +545,22 @@ class ComprehensiveTestSeeder extends Seeder
         $balanceAmount = collect($invoices)->sum('balance_amount');
 
         $this->command->info("\n📊 RESUMEN DEL ESCENARIO DE PRUEBAS");
-        $this->command->info("================================");
+        $this->command->info('================================');
         $this->command->info("🏢 Conjunto: {$conjunto->name}");
-        $this->command->info("🏠 Total apartamentos: " . count($apartments));
+        $this->command->info('🏠 Total apartamentos: '.count($apartments));
         $this->command->info("📋 Total facturas: {$totalInvoices}");
-        $this->command->info("");
-        $this->command->info("💰 Estados de facturación:");
-        $this->command->info("  ✅ Pagadas: {$paidInvoices} (" . round(($paidInvoices/$totalInvoices)*100, 1) . "%)");
-        $this->command->info("  🔶 Pago parcial: {$partialInvoices} (" . round(($partialInvoices/$totalInvoices)*100, 1) . "%)");
-        $this->command->info("  ❌ Vencidas: {$overdueInvoices} (" . round(($overdueInvoices/$totalInvoices)*100, 1) . "%)");
-        $this->command->info("  ⏳ Pendientes: {$pendingInvoices} (" . round(($pendingInvoices/$totalInvoices)*100, 1) . "%)");
-        $this->command->info("");
-        $this->command->info("💵 Montos:");
-        $this->command->info("  Total facturado: $" . number_format($totalAmount, 0));
-        $this->command->info("  Total pagado: $" . number_format($paidAmount, 0));
-        $this->command->info("  Saldo pendiente: $" . number_format($balanceAmount, 0));
-        $this->command->info("");
+        $this->command->info('');
+        $this->command->info('💰 Estados de facturación:');
+        $this->command->info("  ✅ Pagadas: {$paidInvoices} (".round(($paidInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info("  🔶 Pago parcial: {$partialInvoices} (".round(($partialInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info("  ❌ Vencidas: {$overdueInvoices} (".round(($overdueInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info("  ⏳ Pendientes: {$pendingInvoices} (".round(($pendingInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info('');
+        $this->command->info('💵 Montos:');
+        $this->command->info('  Total facturado: $'.number_format($totalAmount, 0));
+        $this->command->info('  Total pagado: $'.number_format($paidAmount, 0));
+        $this->command->info('  Saldo pendiente: $'.number_format($balanceAmount, 0));
+        $this->command->info('');
     }
 
     private function createBasicChartOfAccounts(ConjuntoConfig $conjunto): void
@@ -536,12 +569,12 @@ class ComprehensiveTestSeeder extends Seeder
             // Caja y Bancos
             ['code' => '110505', 'name' => 'CAJA GENERAL', 'account_type' => 'asset', 'nature' => 'debit'],
             ['code' => '111005', 'name' => 'BANCOS', 'account_type' => 'asset', 'nature' => 'debit'],
-            
+
             // Cartera
             ['code' => '130501', 'name' => 'CARTERA ADMINISTRACIÓN', 'account_type' => 'asset', 'nature' => 'debit'],
             ['code' => '130502', 'name' => 'CARTERA CUOTAS EXTRAORDINARIAS', 'account_type' => 'asset', 'nature' => 'debit'],
             ['code' => '130503', 'name' => 'CARTERA INTERESES MORA', 'account_type' => 'asset', 'nature' => 'debit'],
-            
+
             // Ingresos
             ['code' => '413501', 'name' => 'CUOTAS DE ADMINISTRACIÓN', 'account_type' => 'income', 'nature' => 'credit'],
             ['code' => '413502', 'name' => 'CUOTAS EXTRAORDINARIAS', 'account_type' => 'income', 'nature' => 'credit'],
@@ -571,10 +604,10 @@ class ComprehensiveTestSeeder extends Seeder
     {
         foreach ($invoices as $invoice) {
             $invoice = Invoice::with(['items.paymentConcept', 'apartment'])->find($invoice->id);
-            
+
             // Crear transacciones contables para facturación
             $this->createInvoiceAccountingTransaction($conjunto, $invoice);
-            
+
             // Si la factura está pagada, crear transacciones de pago
             if ($invoice->status === 'paid') {
                 $this->createPaymentAccountingTransactions($conjunto, $invoice);
@@ -591,7 +624,7 @@ class ComprehensiveTestSeeder extends Seeder
 
         foreach ($itemsByConceptType as $conceptType => $items) {
             $totalAmount = $items->sum('total_price');
-            
+
             $transaction = AccountingTransaction::create([
                 'conjunto_config_id' => $conjunto->id,
                 'transaction_date' => $invoice->billing_date,
@@ -632,10 +665,10 @@ class ComprehensiveTestSeeder extends Seeder
     private function createPaymentAccountingTransactions(ConjuntoConfig $conjunto, Invoice $invoice): void
     {
         $paymentApplications = PaymentApplication::where('invoice_id', $invoice->id)->with('payment')->get();
-        
+
         foreach ($paymentApplications as $application) {
             $payment = $application->payment;
-            
+
             $transaction = AccountingTransaction::create([
                 'conjunto_config_id' => $conjunto->id,
                 'transaction_date' => $payment->payment_date,
@@ -648,11 +681,12 @@ class ComprehensiveTestSeeder extends Seeder
                 'created_by' => 1,
             ]);
 
-            $accounts = $this->getPaymentAccounts($payment->payment_method, $conjunto->id);
+            $cashAccount = \App\Models\PaymentMethodAccountMapping::getCashAccountForPaymentMethod($conjunto->id, $payment->payment_method);
+            $receivableAccount = $this->getAccountByCode('130501', $conjunto->id); // Cartera Administración
 
             // Débito: Efectivo/Banco
             $transaction->addEntry([
-                'account_id' => $accounts['cash_account'],
+                'account_id' => $cashAccount->id,
                 'description' => "Pago {$payment->payment_method} - {$payment->reference_number}",
                 'debit_amount' => $application->amount_applied,
                 'credit_amount' => 0,
@@ -660,7 +694,7 @@ class ComprehensiveTestSeeder extends Seeder
 
             // Crédito: Cartera
             $transaction->addEntry([
-                'account_id' => $accounts['receivable_account'],
+                'account_id' => $receivableAccount,
                 'description' => "Abono cartera Apto {$invoice->apartment->number}",
                 'debit_amount' => 0,
                 'credit_amount' => $application->amount_applied,
@@ -701,41 +735,21 @@ class ComprehensiveTestSeeder extends Seeder
         return $mappings[$conceptType] ?? $mappings['monthly_administration'];
     }
 
-    private function getPaymentAccounts(string $paymentMethod, int $conjuntoConfigId): array
-    {
-        $mappings = [
-            'bank_transfer' => [
-                'cash_account' => $this->getAccountByCode('111005', $conjuntoConfigId), // Bancos
-                'receivable_account' => $this->getAccountByCode('130501', $conjuntoConfigId), // Cartera Administración
-            ],
-            'cash' => [
-                'cash_account' => $this->getAccountByCode('110505', $conjuntoConfigId), // Caja General
-                'receivable_account' => $this->getAccountByCode('130501', $conjuntoConfigId), // Cartera Administración
-            ],
-            'online' => [
-                'cash_account' => $this->getAccountByCode('111005', $conjuntoConfigId), // Bancos
-                'receivable_account' => $this->getAccountByCode('130501', $conjuntoConfigId), // Cartera Administración
-            ],
-        ];
-
-        return $mappings[$paymentMethod] ?? $mappings['bank_transfer'];
-    }
-
-    private function getAccountByCode(string $code, int $conjuntoConfigId = null): int
+    private function getAccountByCode(string $code, ?int $conjuntoConfigId = null): int
     {
         $query = ChartOfAccounts::where('code', $code);
-        
+
         // Filter by conjunto if provided
         if ($conjuntoConfigId) {
             $query->where('conjunto_config_id', $conjuntoConfigId);
         }
-        
+
         $account = $query->first();
-        
-        if (!$account) {
+
+        if (! $account) {
             throw new \Exception("No se encontró la cuenta contable con código: {$code} para conjunto {$conjuntoConfigId}");
         }
-        
+
         return $account->id;
     }
 

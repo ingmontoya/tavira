@@ -10,7 +10,7 @@ import ValidationErrors from '@/components/ValidationErrors.vue';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { AlertTriangle, CheckCircle, CreditCard, Receipt, Settings, TrendingUp, XCircle } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle, CreditCard, Receipt, Settings, TrendingUp, XCircle, MapPin } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface Stats {
@@ -265,7 +265,7 @@ const generateMonthlyInvoices = async () => {
             </div>
 
             <!-- Main Actions -->
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Facturas -->
                 <Card class="cursor-pointer transition-all hover:shadow-md">
                     <CardHeader>
@@ -312,6 +312,32 @@ const generateMonthlyInvoices = async () => {
                                 </Button>
                                 <Button asChild class="flex-1" variant="outline" size="sm">
                                     <Link href="/payment-concepts?type=common_expense">Administración</Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Mapeo de Cuentas -->
+                <Card class="cursor-pointer transition-all hover:shadow-md">
+                    <CardHeader>
+                        <div class="flex items-center space-x-2">
+                            <MapPin class="h-5 w-5 text-indigo-600" />
+                            <CardTitle class="text-lg">Mapeo de Cuentas</CardTitle>
+                        </div>
+                        <CardDescription> Configura qué cuenta contable se usa para cada método de pago recibido </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="space-y-3">
+                            <Button asChild class="w-full" variant="default">
+                                <Link href="/payment-method-account-mappings">Ver Mapeos</Link>
+                            </Button>
+                            <div class="flex space-x-2">
+                                <Button asChild class="flex-1" variant="outline" size="sm">
+                                    <Link href="/payment-method-account-mappings/create">Nuevo Mapeo</Link>
+                                </Button>
+                                <Button asChild class="flex-1" variant="outline" size="sm">
+                                    <Link href="/payment-method-account-mappings?is_active=true">Activos</Link>
                                 </Button>
                             </div>
                         </div>

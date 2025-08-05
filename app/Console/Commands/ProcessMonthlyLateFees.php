@@ -3,10 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Services\LateFeesService;
-use Illuminate\Console\Command;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class ProcessMonthlyLateFees extends Command
 {
@@ -39,9 +38,9 @@ class ProcessMonthlyLateFees extends Command
     {
         $isDryRun = $this->option('dry-run');
         $processDate = $this->option('date') ? Carbon::parse($this->option('date')) : now();
-        
+
         $this->info("Procesando intereses de mora para fecha: {$processDate->format('Y-m-d')}");
-        
+
         if ($isDryRun) {
             $this->warn('MODO SIMULACIÓN - No se realizarán cambios');
         }
@@ -56,6 +55,7 @@ class ProcessMonthlyLateFees extends Command
 
         if ($overdueInvoices->isEmpty()) {
             $this->info('No hay facturas vencidas para procesar');
+
             return 0;
         }
 
@@ -66,28 +66,28 @@ class ProcessMonthlyLateFees extends Command
         foreach ($overdueInvoices as $invoice) {
             try {
                 $this->line("Procesando factura: {$invoice->invoice_number} - Apartamento {$invoice->apartment->number}");
-                
+
                 $result = $this->lateFeesService->processMonthlyLateFee($invoice, $processDate, $isDryRun);
-                
+
                 if ($result['applied']) {
                     $processed++;
                     $totalLateFees += $result['late_fee_amount'];
-                    $this->info("  ✓ Mora aplicada: $" . number_format($result['late_fee_amount'], 2));
+                    $this->info('  ✓ Mora aplicada: $'.number_format($result['late_fee_amount'], 2));
                 } else {
-                    $this->line("  - " . $result['reason']);
+                    $this->line('  - '.$result['reason']);
                 }
-                
+
             } catch (\Exception $e) {
                 $errors++;
-                $this->error("  ✗ Error procesando factura {$invoice->invoice_number}: " . $e->getMessage());
+                $this->error("  ✗ Error procesando factura {$invoice->invoice_number}: ".$e->getMessage());
             }
         }
 
         $this->newLine();
-        $this->info("Resumen del procesamiento:");
+        $this->info('Resumen del procesamiento:');
         $this->info("- Facturas procesadas: {$processed}");
-        $this->info("- Total intereses aplicados: $" . number_format($totalLateFees, 2));
-        
+        $this->info('- Total intereses aplicados: $'.number_format($totalLateFees, 2));
+
         if ($errors > 0) {
             $this->error("- Errores: {$errors}");
         }

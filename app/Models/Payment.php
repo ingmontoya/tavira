@@ -317,7 +317,7 @@ class Payment extends Model
             'conjunto_config_id' => $this->conjunto_config_id,
             'transaction_date' => $this->payment_date,
             'description' => $description,
-            'reference_type' => 'payment_receipt',
+            'reference_type' => 'payment',
             'reference_id' => $this->id,
             'status' => 'borrador',
             'created_by' => auth()->id() ?? $this->created_by,
@@ -348,25 +348,10 @@ class Payment extends Model
 
     private function getBankAccountForPaymentMethod(): ChartOfAccounts
     {
-        $bankAccountCodes = [
-            'cash' => '110501', // Caja General
-            'bank_transfer' => '111001', // Banco Principal
-            'pse' => '111001', // Banco Principal
-            'credit_card' => '111001', // Banco Principal
-            'debit_card' => '111001', // Banco Principal
-            'check' => '111001', // Banco Principal
-            'online' => '111001', // Banco Principal
-            'other' => '111001', // Banco Principal (default)
-        ];
-
-        $accountCode = $bankAccountCodes[$this->payment_method] ?? $bankAccountCodes['bank_transfer'];
-
-        $account = ChartOfAccounts::forConjunto($this->conjunto_config_id)
-            ->where('code', $accountCode)
-            ->first();
+        $account = PaymentMethodAccountMapping::getCashAccountForPaymentMethod($this->conjunto_config_id, $this->payment_method);
 
         if (! $account) {
-            throw new \Exception("No se encontró la cuenta contable con código: {$accountCode}");
+            throw new \Exception("No se encontró mapeo de cuenta para el método de pago: {$this->payment_method}");
         }
 
         return $account;

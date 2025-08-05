@@ -3,15 +3,14 @@
 namespace App\Services;
 
 use App\Models\AccountingTransaction;
-use App\Models\AccountingTransactionEntry;
 use App\Models\ChartOfAccounts;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Servicio de validaciones contables avanzadas
- * 
+ *
  * Proporciona validaciones adicionales de integridad contable más allá
  * de las validaciones básicas de partida doble, incluyendo:
  * - Control de períodos cerrados
@@ -23,8 +22,8 @@ class AccountingValidationService
 {
     /**
      * Valida la integridad completa de una transacción contable
-     * 
-     * @param AccountingTransaction $transaction Transacción a validar
+     *
+     * @param  AccountingTransaction  $transaction  Transacción a validar
      * @return array Resultado de la validación con errores y advertencias
      */
     public function validateTransactionIntegrity(AccountingTransaction $transaction): array
@@ -34,13 +33,13 @@ class AccountingValidationService
         $info = [];
 
         // VALIDACIÓN 1: Partida doble básica (ya implementada pero verificamos)
-        if (!$transaction->is_balanced) {
+        if (! $transaction->is_balanced) {
             $errors[] = "La transacción no cumple con la partida doble: Débitos({$transaction->total_debit}) ≠ Créditos({$transaction->total_credit})";
         }
 
         // VALIDACIÓN 2: Período cerrado
         $periodValidation = $this->validatePeriodOpen($transaction);
-        if (!$periodValidation['is_valid']) {
+        if (! $periodValidation['is_valid']) {
             $errors[] = $periodValidation['message'];
         }
 
@@ -73,7 +72,7 @@ class AccountingValidationService
                 'total_errors' => count($errors),
                 'total_warnings' => count($warnings),
                 'can_be_posted' => empty($errors),
-                'requires_review' => !empty($warnings),
+                'requires_review' => ! empty($warnings),
             ],
         ];
     }
@@ -90,7 +89,7 @@ class AccountingValidationService
         // TODO: Integrar con tabla de control de períodos cerrados cuando se implemente
         // Por ahora, usar regla simple: no permitir transacciones en períodos pasados de más de 3 meses
         $threeMonthsAgo = Carbon::now()->subMonths(3);
-        
+
         if ($transactionDate->lt($threeMonthsAgo)) {
             return [
                 'is_valid' => false,
@@ -123,9 +122,10 @@ class AccountingValidationService
 
         foreach ($transaction->entries as $entry) {
             $account = $entry->account;
-            
-            if (!$account) {
+
+            if (! $account) {
                 $errors[] = "Movimiento con cuenta inexistente (ID: {$entry->account_id})";
+
                 continue;
             }
 
@@ -134,17 +134,17 @@ class AccountingValidationService
                 // Cuenta de naturaleza débito con movimiento crédito
                 // Esto puede ser válido en algunos casos (ej: disminución de activo)
                 // pero vale la pena advertir
-                $warnings[] = "Cuenta '{$account->full_name}' (naturaleza débito) tiene movimiento crédito de $" . number_format($entry->credit_amount, 2);
+                $warnings[] = "Cuenta '{$account->full_name}' (naturaleza débito) tiene movimiento crédito de $".number_format($entry->credit_amount, 2);
             }
 
             if ($account->nature === 'credit' && $entry->debit_amount > 0) {
                 // Cuenta de naturaleza crédito con movimiento débito
                 // Similar al caso anterior
-                $warnings[] = "Cuenta '{$account->full_name}' (naturaleza crédito) tiene movimiento débito de $" . number_format($entry->debit_amount, 2);
+                $warnings[] = "Cuenta '{$account->full_name}' (naturaleza crédito) tiene movimiento débito de $".number_format($entry->debit_amount, 2);
             }
 
             // Validar que la cuenta permita movimientos directos
-            if (!$account->accepts_posting) {
+            if (! $account->accepts_posting) {
                 $errors[] = "La cuenta '{$account->full_name}' no permite movimientos directos (cuenta de agrupación)";
             }
         }
@@ -165,17 +165,19 @@ class AccountingValidationService
 
         foreach ($transaction->entries as $entry) {
             $account = $entry->account;
-            
-            if (!$account) continue;
 
-            if ($account->requires_third_party && !$entry->third_party_id) {
+            if (! $account) {
+                continue;
+            }
+
+            if ($account->requires_third_party && ! $entry->third_party_id) {
                 $errors[] = "La cuenta '{$account->full_name}' requiere tercero pero no tiene uno asignado";
             }
 
             // Validar que el tercero exista si está asignado
             if ($entry->third_party_id && $entry->third_party_type) {
                 $thirdPartyExists = $this->validateThirdPartyExists($entry->third_party_type, $entry->third_party_id);
-                if (!$thirdPartyExists) {
+                if (! $thirdPartyExists) {
                     $errors[] = "Tercero {$entry->third_party_type}#{$entry->third_party_id} no existe en el sistema";
                 }
             }
@@ -197,8 +199,8 @@ class AccountingValidationService
 
         if ($transaction->reference_type && $transaction->reference_id) {
             $referenceExists = $this->validateReferenceExists($transaction->reference_type, $transaction->reference_id);
-            
-            if (!$referenceExists) {
+
+            if (! $referenceExists) {
                 $warnings[] = "La referencia {$transaction->reference_type}#{$transaction->reference_id} no existe en el sistema";
             } else {
                 $info[] = "Referencia validada: {$transaction->reference_type}#{$transaction->reference_id}";
@@ -207,8 +209,8 @@ class AccountingValidationService
 
         // Validar coherencia entre descripción y referencia
         if ($transaction->reference_type === 'invoice' && $transaction->description) {
-            if (!str_contains(strtolower($transaction->description), 'factura')) {
-                $warnings[] = "Transacción referencia una factura pero la descripción no lo indica claramente";
+            if (! str_contains(strtolower($transaction->description), 'factura')) {
+                $warnings[] = 'Transacción referencia una factura pero la descripción no lo indica claramente';
             }
         }
 
@@ -245,12 +247,12 @@ class AccountingValidationService
         if ($reserveFundEntries->isNotEmpty()) {
             $creditAmount = $reserveFundEntries->sum('credit_amount');
             if ($creditAmount > 0) {
-                $info[] = "Apropiación al fondo de reserva: $" . number_format($creditAmount, 2);
-                
+                $info[] = 'Apropiación al fondo de reserva: $'.number_format($creditAmount, 2);
+
                 // Validar que haya un débito correspondiente en cuenta de gasto
                 $expenseEntry = $transaction->entries->firstWhere('account.code', '530502');
-                if (!$expenseEntry) {
-                    $warnings[] = "Apropiación al fondo de reserva sin contrapartida en cuenta de gasto (530502)";
+                if (! $expenseEntry) {
+                    $warnings[] = 'Apropiación al fondo de reserva sin contrapartida en cuenta de gasto (530502)';
                 }
             }
         }
@@ -261,7 +263,7 @@ class AccountingValidationService
         });
 
         if ($incomeEntries->isNotEmpty() && $carteraEntries->isEmpty()) {
-            $warnings[] = "Ingresos operacionales registrados sin contrapartida en cartera (posible error)";
+            $warnings[] = 'Ingresos operacionales registrados sin contrapartida en cartera (posible error)';
         }
 
         return [
@@ -299,8 +301,8 @@ class AccountingValidationService
 
     /**
      * Ejecuta validaciones masivas sobre un conjunto de transacciones
-     * 
-     * @param Collection $transactions Colección de transacciones a validar
+     *
+     * @param  Collection  $transactions  Colección de transacciones a validar
      * @return array Resumen de validaciones masivas
      */
     public function validateTransactionsBatch(Collection $transactions): array
@@ -317,14 +319,14 @@ class AccountingValidationService
 
         foreach ($transactions as $transaction) {
             $validation = $this->validateTransactionIntegrity($transaction);
-            
+
             if ($validation['is_valid']) {
                 $results['valid_transactions']++;
             } else {
                 $results['invalid_transactions']++;
             }
 
-            if (!empty($validation['warnings'])) {
+            if (! empty($validation['warnings'])) {
                 $results['transactions_with_warnings']++;
             }
 
@@ -343,10 +345,10 @@ class AccountingValidationService
 
     /**
      * Valida la integridad contable de un período completo
-     * 
-     * @param int $conjuntoConfigId ID del conjunto
-     * @param int $month Mes a validar
-     * @param int $year Año a validar
+     *
+     * @param  int  $conjuntoConfigId  ID del conjunto
+     * @param  int  $month  Mes a validar
+     * @param  int  $year  Año a validar
      * @return array Resultado de la validación del período
      */
     public function validatePeriodIntegrity(int $conjuntoConfigId, int $month, int $year): array
@@ -412,6 +414,7 @@ class AccountingValidationService
     private function validateReserveFundCompliance(int $conjuntoConfigId, int $month, int $year): array
     {
         $reserveFundService = new ReserveFundService($conjuntoConfigId);
+
         return $reserveFundService->validateLegalCompliance($year);
     }
 
@@ -426,15 +429,15 @@ class AccountingValidationService
 
         foreach ($accounts as $account) {
             $balance = $account->getBalance();
-            
+
             // Activos y gastos no deberían tener saldo crédito (negativo)
             if (in_array($account->account_type, ['asset', 'expense']) && $balance < 0) {
-                $inconsistencies[] = "Cuenta {$account->full_name} tiene saldo crédito: $" . number_format(abs($balance), 2);
+                $inconsistencies[] = "Cuenta {$account->full_name} tiene saldo crédito: $".number_format(abs($balance), 2);
             }
-            
+
             // Pasivos, patrimonio e ingresos no deberían tener saldo débito (negativo)
             if (in_array($account->account_type, ['liability', 'equity', 'income']) && $balance < 0) {
-                $inconsistencies[] = "Cuenta {$account->full_name} tiene saldo débito: $" . number_format(abs($balance), 2);
+                $inconsistencies[] = "Cuenta {$account->full_name} tiene saldo débito: $".number_format(abs($balance), 2);
             }
         }
 

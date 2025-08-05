@@ -2,21 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Events\ReserveFundAppropriationCreated;
 use App\Models\ConjuntoConfig;
 use App\Services\ReserveFundService;
-use App\Events\ReserveFundAppropriationCreated;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Comando para apropiación automática del fondo de reserva
- * 
+ *
  * Uso:
  * - php artisan reserve-fund:appropriate (mes anterior automático)
  * - php artisan reserve-fund:appropriate --month=5 --year=2024
  * - php artisan reserve-fund:appropriate --conjunto=1
- * 
+ *
  * Programación sugerida en cron:
  * # Ejecutar el 5to día de cada mes para el mes anterior
  * 0 6 5 * * php artisan reserve-fund:appropriate
@@ -45,35 +45,35 @@ class AppropriateMonthlyReserveFund extends Command
     {
         try {
             $this->info('🏢 Iniciando apropiación automática del fondo de reserva...');
-            
+
             // Determinar período a procesar
             $period = $this->determinePeriod();
             $month = $period['month'];
             $year = $period['year'];
-            
+
             $this->info("📅 Procesando período: {$month}/{$year}");
-            
+
             // Obtener conjuntos a procesar
             $conjuntos = $this->getConjuntosToProcess();
             $this->info("🏘️  Conjuntos a procesar: {$conjuntos->count()}");
-            
+
             $successCount = 0;
             $errorCount = 0;
             $skippedCount = 0;
-            
+
             // Procesar cada conjunto
             foreach ($conjuntos as $conjunto) {
                 $this->info("📋 Procesando conjunto: {$conjunto->name} (ID: {$conjunto->id})");
-                
+
                 try {
                     $result = $this->processConjunto($conjunto, $month, $year);
-                    
+
                     if ($result['success']) {
                         $successCount++;
-                        
+
                         if ($result['transaction']) {
                             $this->info("  ✅ Apropiación creada: {$result['transaction']->transaction_number}");
-                            $this->info("  💰 Monto apropiado: $" . number_format($result['amount'], 2));
+                            $this->info('  💰 Monto apropiado: $'.number_format($result['amount'], 2));
                         } else {
                             $this->info("  ℹ️  {$result['message']}");
                             $skippedCount++;
@@ -82,11 +82,11 @@ class AppropriateMonthlyReserveFund extends Command
                         $errorCount++;
                         $this->error("  ❌ Error: {$result['message']}");
                     }
-                    
+
                 } catch (\Exception $e) {
                     $errorCount++;
                     $this->error("  💥 Excepción: {$e->getMessage()}");
-                    
+
                     Log::error('Error procesando conjunto en apropiación de reserva', [
                         'conjunto_id' => $conjunto->id,
                         'month' => $month,
@@ -95,19 +95,19 @@ class AppropriateMonthlyReserveFund extends Command
                     ]);
                 }
             }
-            
+
             // Mostrar resumen
             $this->showSummary($successCount, $errorCount, $skippedCount, $month, $year);
-            
+
             return $this->getExitCode($errorCount);
-            
+
         } catch (\Exception $e) {
             $this->error("💥 Error fatal: {$e->getMessage()}");
             Log::error('Error fatal en comando de apropiación de reserva', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return Command::FAILURE;
         }
     }
@@ -119,8 +119,8 @@ class AppropriateMonthlyReserveFund extends Command
     {
         $month = $this->option('month');
         $year = $this->option('year');
-        
-        if (!$month) {
+
+        if (! $month) {
             // Si no se especifica mes, usar el mes anterior
             $previousMonth = Carbon::now()->subMonth();
             $month = $previousMonth->month;
@@ -128,12 +128,12 @@ class AppropriateMonthlyReserveFund extends Command
         } else {
             $year = $year ?? Carbon::now()->year;
         }
-        
+
         // Validar mes
         if ($month < 1 || $month > 12) {
             throw new \InvalidArgumentException("Mes inválido: {$month}. Debe estar entre 1 y 12.");
         }
-        
+
         return [
             'month' => (int) $month,
             'year' => (int) $year,
@@ -146,15 +146,16 @@ class AppropriateMonthlyReserveFund extends Command
     private function getConjuntosToProcess(): \Illuminate\Database\Eloquent\Collection
     {
         $conjuntoId = $this->option('conjunto');
-        
+
         if ($conjuntoId) {
             $conjunto = ConjuntoConfig::find($conjuntoId);
-            if (!$conjunto) {
+            if (! $conjunto) {
                 throw new \InvalidArgumentException("Conjunto no encontrado: {$conjuntoId}");
             }
+
             return collect([$conjunto]);
         }
-        
+
         return ConjuntoConfig::all();
     }
 
@@ -164,27 +165,27 @@ class AppropriateMonthlyReserveFund extends Command
     private function processConjunto(ConjuntoConfig $conjunto, int $month, int $year): array
     {
         $service = new ReserveFundService($conjunto->id);
-        
+
         // Si es dry-run, solo calcular sin crear
         if ($this->option('dry-run')) {
             $amount = $service->calculateMonthlyReserve($month, $year);
-            
+
             return [
                 'success' => true,
                 'transaction' => null,
                 'amount' => $amount,
-                'message' => "DRY-RUN: Se apropiarian $" . number_format($amount, 2),
+                'message' => 'DRY-RUN: Se apropiarian $'.number_format($amount, 2),
             ];
         }
-        
+
         // Verificar si ya existe apropiación (a menos que sea --force)
-        if (!$this->option('force')) {
+        if (! $this->option('force')) {
             $existing = $service->getAppropriationHistory($year)
                 ->filter(function ($transaction) use ($month, $year) {
                     return $transaction->transaction_date->month === $month &&
                            $transaction->transaction_date->year === $year;
                 });
-                
+
             if ($existing->isNotEmpty()) {
                 return [
                     'success' => true,
@@ -194,14 +195,14 @@ class AppropriateMonthlyReserveFund extends Command
                 ];
             }
         }
-        
+
         // Ejecutar apropiación
         $transaction = $service->executeMonthlyAppropriation($month, $year);
-        
+
         if ($transaction) {
             // Disparar evento para notificaciones adicionales
             $monthlyIncome = $service->calculateMonthlyReserve($month, $year) / 0.30; // Calcular ingresos base
-            
+
             event(new ReserveFundAppropriationCreated(
                 $transaction,
                 $month,
@@ -209,7 +210,7 @@ class AppropriateMonthlyReserveFund extends Command
                 (float) $transaction->total_debit,
                 $monthlyIncome
             ));
-            
+
             return [
                 'success' => true,
                 'transaction' => $transaction,
@@ -217,7 +218,7 @@ class AppropriateMonthlyReserveFund extends Command
                 'message' => 'Apropiación ejecutada exitosamente',
             ];
         }
-        
+
         return [
             'success' => true,
             'transaction' => null,
@@ -238,12 +239,12 @@ class AppropriateMonthlyReserveFund extends Command
         $this->info("✅ Éxitos: {$successCount}");
         $this->info("⏭️  Omitidos: {$skippedCount}");
         $this->info("❌ Errores: {$errorCount}");
-        $this->info("📊 Total procesados: " . ($successCount + $errorCount));
-        
+        $this->info('📊 Total procesados: '.($successCount + $errorCount));
+
         if ($this->option('dry-run')) {
             $this->warn('🔍 MODO PRUEBA - No se crearon transacciones reales');
         }
-        
+
         $this->newLine();
     }
 

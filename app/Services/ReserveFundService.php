@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AccountingTransaction;
 use App\Models\ChartOfAccounts;
-use App\Models\ConjuntoConfig;
 use App\Settings\PaymentSettings;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * Servicio para manejo automático del Fondo de Reserva
  * Cumple con Ley 675 de 2001 - Propiedad Horizontal
- * 
+ *
  * Funcionalidades:
  * - Cálculo automático del 30% mínimo legal
  * - Apropiación mensual automática
@@ -23,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 class ReserveFundService
 {
     private int $conjuntoConfigId;
+
     private PaymentSettings $paymentSettings;
 
     public function __construct(int $conjuntoConfigId)
@@ -34,9 +34,9 @@ class ReserveFundService
     /**
      * Calcula el monto del fondo de reserva para un mes específico
      * Basado en los ingresos operacionales del período
-     * 
-     * @param int $month Mes (1-12)
-     * @param int $year Año
+     *
+     * @param  int  $month  Mes (1-12)
+     * @param  int  $year  Año
      * @return float Monto a apropiar para reserva
      */
     public function calculateMonthlyReserve(int $month, int $year): float
@@ -44,12 +44,12 @@ class ReserveFundService
         try {
             // Obtener ingresos operacionales del mes (cuentas 4xxx)
             $monthlyIncome = $this->getOperationalIncomeForMonth($month, $year);
-            
+
             // Porcentaje configurable (por defecto 30% según Ley 675)
             $reservePercentage = $this->paymentSettings->get('reserve_fund_percentage', 30) / 100;
-            
+
             $reserveAmount = $monthlyIncome * $reservePercentage;
-            
+
             Log::info('Cálculo fondo de reserva', [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'month' => $month,
@@ -60,7 +60,7 @@ class ReserveFundService
             ]);
 
             return round($reserveAmount, 2);
-            
+
         } catch (\Exception $e) {
             Log::error('Error calculando fondo de reserva', [
                 'conjunto_config_id' => $this->conjuntoConfigId,
@@ -68,7 +68,7 @@ class ReserveFundService
                 'year' => $year,
                 'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -76,15 +76,15 @@ class ReserveFundService
     /**
      * Ejecuta la apropiación automática del fondo de reserva
      * Crea el asiento contable correspondiente
-     * 
-     * @param int $month Mes
-     * @param int $year Año
+     *
+     * @param  int  $month  Mes
+     * @param  int  $year  Año
      * @return AccountingTransaction|null Transacción creada o null si no hay monto a apropiar
      */
     public function executeMonthlyAppropriation(int $month, int $year): ?AccountingTransaction
     {
         DB::beginTransaction();
-        
+
         try {
             // Validar que no exista apropiación previa para el período
             if ($this->hasExistingAppropriation($month, $year)) {
@@ -93,14 +93,15 @@ class ReserveFundService
                     'month' => $month,
                     'year' => $year,
                 ]);
-                
+
                 DB::rollBack();
+
                 return null;
             }
 
             // Calcular monto a apropiar
             $reserveAmount = $this->calculateMonthlyReserve($month, $year);
-            
+
             // Si no hay monto a apropiar, terminar
             if ($reserveAmount <= 0) {
                 Log::info('No hay monto para apropiar al fondo de reserva', [
@@ -108,16 +109,17 @@ class ReserveFundService
                     'month' => $month,
                     'year' => $year,
                 ]);
-                
+
                 DB::rollBack();
+
                 return null;
             }
 
             // Crear transacción contable
             $transaction = $this->createReserveFundTransaction($reserveAmount, $month, $year);
-            
+
             DB::commit();
-            
+
             Log::info('Apropiación de fondo de reserva ejecutada exitosamente', [
                 'transaction_id' => $transaction->id,
                 'amount' => $reserveAmount,
@@ -126,39 +128,38 @@ class ReserveFundService
             ]);
 
             return $transaction;
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('Error ejecutando apropiación de fondo de reserva', [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'month' => $month,
                 'year' => $year,
                 'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
 
     /**
      * Obtiene el balance actual del fondo de reserva
-     * 
-     * @param string|null $asOfDate Fecha de corte (opcional)
+     *
+     * @param  string|null  $asOfDate  Fecha de corte (opcional)
      * @return float Saldo del fondo de reserva
      */
     public function getReserveFundBalance(?string $asOfDate = null): float
     {
         $reserveFundAccount = $this->getReserveFundAccount();
-        
+
         return $reserveFundAccount->getBalance(null, $asOfDate);
     }
 
     /**
      * Obtiene el historial de apropiaciones del fondo de reserva
-     * 
-     * @param int $year Año (opcional)
-     * @return \Illuminate\Database\Eloquent\Collection
+     *
+     * @param  int  $year  Año (opcional)
      */
     public function getAppropriationHistory(?int $year = null): \Illuminate\Database\Eloquent\Collection
     {
@@ -166,28 +167,28 @@ class ReserveFundService
             ->where('description', 'LIKE', '%apropiación mensual fondo de reserva%')
             ->where('status', 'contabilizado')
             ->orderBy('transaction_date', 'desc');
-            
+
         if ($year) {
             $query->whereYear('transaction_date', $year);
         }
-        
+
         return $query->with(['entries.account'])->get();
     }
 
     /**
      * Valida si el conjunto cumple con el porcentaje mínimo legal
-     * 
-     * @param int $year Año a evaluar
+     *
+     * @param  int  $year  Año a evaluar
      * @return array Resultado de la validación
      */
     public function validateLegalCompliance(int $year): array
     {
         $totalIncome = $this->getOperationalIncomeForYear($year);
         $totalAppropriated = $this->getTotalAppropriatedForYear($year);
-        
+
         $minimumRequired = $totalIncome * 0.30; // 30% mínimo legal
         $compliancePercentage = $totalIncome > 0 ? ($totalAppropriated / $totalIncome) * 100 : 0;
-        
+
         return [
             'year' => $year,
             'total_income' => $totalIncome,
@@ -238,7 +239,7 @@ class ReserveFundService
     private function getTotalAppropriatedForYear(int $year): float
     {
         $reserveFundAccount = $this->getReserveFundAccount();
-        
+
         return AccountingTransaction::forConjunto($this->conjuntoConfigId)
             ->posted()
             ->whereYear('transaction_date', $year)
@@ -268,7 +269,7 @@ class ReserveFundService
         // Obtener cuentas necesarias
         $expenseAccount = $this->getReserveExpenseAccount();
         $reserveFundAccount = $this->getReserveFundAccount();
-        
+
         // Crear transacción
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $this->conjuntoConfigId,
@@ -312,11 +313,11 @@ class ReserveFundService
             ->where('code', '530502')
             ->first();
 
-        if (!$account) {
+        if (! $account) {
             // Si no existe la cuenta, crear sugerencia o lanzar excepción con información
             throw new \Exception(
-                "No se encontró la cuenta 530502 'Apropiación Fondo de Reserva'. " .
-                "Esta cuenta debe ser creada en el plan de cuentas para cumplir con la Ley 675."
+                "No se encontró la cuenta 530502 'Apropiación Fondo de Reserva'. ".
+                'Esta cuenta debe ser creada en el plan de cuentas para cumplir con la Ley 675.'
             );
         }
 
@@ -332,10 +333,10 @@ class ReserveFundService
             ->where('code', '320501')
             ->first();
 
-        if (!$account) {
+        if (! $account) {
             throw new \Exception(
-                "No se encontró la cuenta 320501 'Fondo de Reserva (Ley 675)'. " .
-                "Esta cuenta es obligatoria según la normativa de propiedad horizontal."
+                "No se encontró la cuenta 320501 'Fondo de Reserva (Ley 675)'. ".
+                'Esta cuenta es obligatoria según la normativa de propiedad horizontal.'
             );
         }
 

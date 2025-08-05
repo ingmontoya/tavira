@@ -381,17 +381,16 @@ class PaymentManagementController extends Controller
             ->get()
             ->keyBy('code');
 
-        // Define payment method to account mapping
-        $paymentMethodAccounts = [
-            'cash' => $accounts->get('110501'), // Caja General
-            'bank_transfer' => $accounts->get('111001'), // Banco Principal
-            'pse' => $accounts->get('111001'), // Banco Principal
-            'credit_card' => $accounts->get('111001'), // Banco Principal
-            'debit_card' => $accounts->get('111001'), // Banco Principal
-            'check' => $accounts->get('111001'), // Banco Principal
-            'online' => $accounts->get('111001'), // Banco Principal
-            'other' => $accounts->get('111001'), // Banco Principal (default)
-        ];
+        // Get payment method accounts from mapping
+        $paymentMethods = \App\Models\PaymentMethodAccountMapping::getAvailablePaymentMethods();
+        $paymentMethodAccounts = [];
+
+        foreach ($paymentMethods as $method => $label) {
+            $account = \App\Models\PaymentMethodAccountMapping::getCashAccountForPaymentMethod($conjuntoConfigId, $method);
+            if ($account) {
+                $paymentMethodAccounts[$method] = $account;
+            }
+        }
 
         return [
             'paymentMethodAccounts' => $paymentMethodAccounts,

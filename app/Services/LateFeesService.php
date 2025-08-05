@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Settings\PaymentSettings;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -28,16 +27,16 @@ class LateFeesService
             return [
                 'applied' => false,
                 'reason' => 'Ya se procesó la mora para este mes',
-                'late_fee_amount' => 0
+                'late_fee_amount' => 0,
             ];
         }
 
         // Verificar si la factura está vencida
-        if (!$invoice->isOverdue()) {
+        if (! $invoice->isOverdue()) {
             return [
                 'applied' => false,
                 'reason' => 'La factura no está vencida',
-                'late_fee_amount' => 0
+                'late_fee_amount' => 0,
             ];
         }
 
@@ -46,7 +45,7 @@ class LateFeesService
             return [
                 'applied' => false,
                 'reason' => 'No hay balance pendiente',
-                'late_fee_amount' => 0
+                'late_fee_amount' => 0,
             ];
         }
 
@@ -56,7 +55,7 @@ class LateFeesService
             return [
                 'applied' => false,
                 'reason' => 'Dentro del período de gracia',
-                'late_fee_amount' => 0
+                'late_fee_amount' => 0,
             ];
         }
 
@@ -67,11 +66,11 @@ class LateFeesService
             return [
                 'applied' => false,
                 'reason' => 'Monto de mora calculado es cero',
-                'late_fee_amount' => 0
+                'late_fee_amount' => 0,
             ];
         }
 
-        if (!$isDryRun) {
+        if (! $isDryRun) {
             // Aplicar la mora
             $this->applyLateFeeToInvoice($invoice, $lateFeeAmount, $processDate);
         }
@@ -79,7 +78,7 @@ class LateFeesService
         return [
             'applied' => true,
             'reason' => 'Mora aplicada exitosamente',
-            'late_fee_amount' => $lateFeeAmount
+            'late_fee_amount' => $lateFeeAmount,
         ];
     }
 
@@ -88,7 +87,7 @@ class LateFeesService
      */
     private function calculateMonthlyLateFee(Invoice $invoice, Carbon $processDate): float
     {
-        if (!$this->paymentSettings->late_fees_enabled) {
+        if (! $this->paymentSettings->late_fees_enabled) {
             return 0;
         }
 
@@ -96,7 +95,7 @@ class LateFeesService
         // Si es la primera vez, usar el subtotal original
         // Si ya tiene moras aplicadas, usar el balance actual
         $baseAmount = $invoice->original_base_amount ?? $invoice->balance_amount;
-        
+
         // Si no hay original_base_amount, es la primera vez - guardarlo
         if (is_null($invoice->original_base_amount)) {
             $baseAmount = $invoice->subtotal; // Usar subtotal sin descuentos ni moras previas
@@ -121,7 +120,7 @@ class LateFeesService
 
             // Actualizar el campo late_fees con el nuevo monto
             $invoice->late_fees += $lateFeeAmount;
-            
+
             // Actualizar el historial de moras
             $lateFeesHistory = $invoice->late_fee_history ?? [];
             $lateFeesHistory[] = [
@@ -132,18 +131,18 @@ class LateFeesService
                 'month' => $processDate->format('Y-m'),
             ];
             $invoice->late_fee_history = $lateFeesHistory;
-            
+
             // Actualizar contadores
             $invoice->late_fee_months_applied += 1;
             $invoice->last_late_fee_calculation_date = $processDate->toDateString();
-            
+
             // Recalcular totales
             $invoice->calculateTotals();
-            
+
             // Actualizar status
             $invoice->updateStatus();
 
-            Log::info("Mora aplicada", [
+            Log::info('Mora aplicada', [
                 'invoice_id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
                 'apartment' => $invoice->apartment->number,
@@ -164,7 +163,7 @@ class LateFeesService
         }
 
         $lastProcessDate = Carbon::parse($invoice->last_late_fee_calculation_date);
-        
+
         // Si se procesó en el mismo mes y año, ya está procesado
         return $lastProcessDate->isSameMonth($processDate);
     }

@@ -159,18 +159,13 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
 
     private function getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod)
     {
-        $cashAccountCodes = [
-            'cash' => '110501', // Caja General
-            'bank_transfer' => '111001', // Banco Principal
-            'pse' => '111001', // Banco Principal
-            'credit_card' => '111001', // Banco Principal
-            'debit_card' => '111001', // Banco Principal
-            'check' => '111001', // Banco Principal
-        ];
+        $account = \App\Models\PaymentMethodAccountMapping::getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod);
 
-        $accountCode = $cashAccountCodes[$paymentMethod] ?? $cashAccountCodes['bank_transfer'];
+        if (! $account) {
+            throw new \Exception("No se encontró mapeo de cuenta para el método de pago: {$paymentMethod}");
+        }
 
-        return $this->getAccountByCode($conjuntoConfigId, $accountCode);
+        return $account;
     }
 
     private function getAccountsForConceptType($conjuntoConfigId, $conceptType, $paymentConceptId = null)

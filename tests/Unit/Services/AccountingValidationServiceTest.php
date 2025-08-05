@@ -3,7 +3,6 @@
 namespace Tests\Unit\Services;
 
 use App\Models\AccountingTransaction;
-use App\Models\AccountingTransactionEntry;
 use App\Models\Apartment;
 use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
@@ -14,7 +13,7 @@ use Tests\TestCase;
 
 /**
  * Tests unitarios para AccountingValidationService
- * 
+ *
  * Valida el funcionamiento correcto de:
  * - Validaciones de integridad contable
  * - Control de períodos cerrados
@@ -26,23 +25,27 @@ class AccountingValidationServiceTest extends TestCase
     use RefreshDatabase;
 
     private ConjuntoConfig $conjunto;
+
     private AccountingValidationService $service;
+
     private ChartOfAccounts $assetAccount;
+
     private ChartOfAccounts $incomeAccount;
+
     private ChartOfAccounts $carteraAccount;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Crear conjunto de prueba
         $this->conjunto = ConjuntoConfig::factory()->create();
-        
+
         // Crear cuentas de prueba
         $this->createTestAccounts();
-        
+
         // Instanciar servicio
-        $this->service = new AccountingValidationService();
+        $this->service = new AccountingValidationService;
     }
 
     /** @test */
@@ -50,10 +53,10 @@ class AccountingValidationServiceTest extends TestCase
     {
         // Arrange: Crear transacción válida
         $transaction = $this->createValidTransaction();
-        
+
         // Act: Validar transacción
         $result = $this->service->validateTransactionIntegrity($transaction);
-        
+
         // Assert: No debe tener errores
         $this->assertTrue($result['is_valid'], 'Transacción válida debe pasar todas las validaciones');
         $this->assertEmpty($result['errors'], 'No debe tener errores');
@@ -86,10 +89,10 @@ class AccountingValidationServiceTest extends TestCase
             'debit_amount' => 0,
             'credit_amount' => 800, // Diferencia de 200
         ]);
-        
+
         // Act: Validar transacción
         $result = $this->service->validateTransactionIntegrity($transaction);
-        
+
         // Assert: Debe detectar el error
         $this->assertFalse($result['is_valid'], 'Transacción desbalanceada debe fallar validación');
         $this->assertContains('partida doble', implode(' ', $result['errors']), 'Debe detectar error de partida doble');
@@ -106,13 +109,13 @@ class AccountingValidationServiceTest extends TestCase
             'status' => 'borrador',
             'created_by' => 1,
         ]);
-        
+
         // Act: Validar período
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('validatePeriodOpen');
         $method->setAccessible(true);
         $result = $method->invoke($this->service, $transaction);
-        
+
         // Assert: Período debe estar abierto
         $this->assertTrue($result['is_valid'], 'Fecha reciente debe ser válida');
     }
@@ -128,13 +131,13 @@ class AccountingValidationServiceTest extends TestCase
             'status' => 'borrador',
             'created_by' => 1,
         ]);
-        
+
         // Act: Validar período
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('validatePeriodOpen');
         $method->setAccessible(true);
         $result = $method->invoke($this->service, $transaction);
-        
+
         // Assert: Período debe estar cerrado
         $this->assertFalse($result['is_valid'], 'Fecha muy antigua debe ser inválida');
         $this->assertStringContainsString('períodos anteriores', $result['message']);
@@ -151,13 +154,13 @@ class AccountingValidationServiceTest extends TestCase
             'status' => 'borrador',
             'created_by' => 1,
         ]);
-        
+
         // Act: Validar período
         $reflection = new \ReflectionClass($this->service);
         $method = $reflection->getMethod('validatePeriodOpen');
         $method->setAccessible(true);
         $result = $method->invoke($this->service, $transaction);
-        
+
         // Assert: Fecha futura debe ser inválida
         $this->assertFalse($result['is_valid'], 'Fecha futura lejana debe ser inválida');
         $this->assertStringContainsString('fecha futura', $result['message']);
@@ -168,7 +171,7 @@ class AccountingValidationServiceTest extends TestCase
     {
         // Arrange: Crear cuenta que requiere tercero
         $this->carteraAccount->update(['requires_third_party' => true]);
-        
+
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $this->conjunto->id,
             'transaction_date' => now()->subDays(5),
@@ -192,10 +195,10 @@ class AccountingValidationServiceTest extends TestCase
             'debit_amount' => 0,
             'credit_amount' => 1000,
         ]);
-        
+
         // Act: Validar transacción
         $result = $this->service->validateTransactionIntegrity($transaction);
-        
+
         // Assert: Debe detectar falta de tercero
         $this->assertFalse($result['is_valid'], 'Debe fallar por falta de tercero');
         $this->assertContains('requiere tercero', implode(' ', $result['errors']));
@@ -208,9 +211,9 @@ class AccountingValidationServiceTest extends TestCase
         $apartment = Apartment::factory()->create([
             'conjunto_config_id' => $this->conjunto->id,
         ]);
-        
+
         $this->carteraAccount->update(['requires_third_party' => true]);
-        
+
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $this->conjunto->id,
             'transaction_date' => now()->subDays(5),
@@ -235,13 +238,13 @@ class AccountingValidationServiceTest extends TestCase
             'debit_amount' => 0,
             'credit_amount' => 1000,
         ]);
-        
+
         // Act: Validar transacción
         $result = $this->service->validateTransactionIntegrity($transaction);
-        
+
         // Assert: No debe tener errores relacionados con terceros
         $this->assertTrue($result['is_valid'], 'Transacción con tercero válido debe pasar');
-        $tercerosErrors = array_filter($result['errors'], fn($error) => str_contains($error, 'tercero'));
+        $tercerosErrors = array_filter($result['errors'], fn ($error) => str_contains($error, 'tercero'));
         $this->assertEmpty($tercerosErrors, 'No debe tener errores de terceros');
     }
 
@@ -271,10 +274,10 @@ class AccountingValidationServiceTest extends TestCase
             'debit_amount' => 1000,
             'credit_amount' => 0,
         ]);
-        
+
         // Act: Validar transacción
         $result = $this->service->validateTransactionIntegrity($transaction);
-        
+
         // Assert: Debe ser válida pero con advertencia
         $this->assertTrue($result['is_valid'], 'Debe ser válida aunque inusual');
         $this->assertNotEmpty($result['warnings'], 'Debe tener advertencias');
@@ -287,12 +290,12 @@ class AccountingValidationServiceTest extends TestCase
         // Arrange: Crear múltiples transacciones (algunas válidas, otras no)
         $validTransaction = $this->createValidTransaction();
         $invalidTransaction = $this->createInvalidTransaction();
-        
+
         $transactions = collect([$validTransaction, $invalidTransaction]);
-        
+
         // Act: Validar lote
         $result = $this->service->validateTransactionsBatch($transactions);
-        
+
         // Assert: Debe procesar ambas transacciones
         $this->assertEquals(2, $result['total_transactions']);
         $this->assertEquals(1, $result['valid_transactions']);
@@ -306,13 +309,13 @@ class AccountingValidationServiceTest extends TestCase
         // Arrange: Crear transacciones para un mes específico
         $month = 5;
         $year = 2024;
-        
+
         $this->createValidTransactionForPeriod($month, $year);
         $this->createValidTransactionForPeriod($month, $year);
-        
+
         // Act: Validar período
         $result = $this->service->validatePeriodIntegrity($this->conjunto->id, $month, $year);
-        
+
         // Assert: Verificar validación del período
         $this->assertEquals(2, $result['total_transactions']);
         $this->assertEquals(2, $result['valid_transactions']);

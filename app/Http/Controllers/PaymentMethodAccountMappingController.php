@@ -1,0 +1,187 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\ChartOfAccounts;
+use App\Models\ConjuntoConfig;
+use App\Models\PaymentMethodAccountMapping;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+
+class PaymentMethodAccountMappingController extends Controller
+{
+    public function index(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $query = PaymentMethodAccountMapping::with(['cashAccount'])
+            ->where('conjunto_config_id', $conjunto->id);
+
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('payment_method', 'like', "%{$search}%")
+                    ->orWhereHas('cashAccount', function ($accountQuery) use ($search) {
+                        $accountQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $mappings = $query->orderBy('payment_method')->paginate(15);
+
+        // Transform the data to include payment method labels
+        $mappings->getCollection()->transform(function ($mapping) {
+            $mapping->payment_method_label = PaymentMethodAccountMapping::getAvailablePaymentMethods()[$mapping->payment_method] ?? $mapping->payment_method;
+
+            return $mapping;
+        });
+
+        $filters = $request->only(['payment_method', 'is_active', 'search']);
+
+        // If no filters are applied, return null instead of empty array
+        if (empty(array_filter($filters))) {
+            $filters = null;
+        }
+
+        return Inertia::render('Payments/MethodAccountMappings/Index', [
+            'mappings' => $mappings,
+            'filters' => $filters,
+        ]);
+    }
+
+    public function create()
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        // Get cash accounts (assets with type 'cash' or 'bank')
+        $cashAccounts = ChartOfAccounts::where('is_active', true)
+            ->whereIn('type', ['asset'])
+            ->whereIn('subtype', ['cash', 'bank'])
+            ->orderBy('code')
+            ->get();
+
+        $paymentMethods = PaymentMethodAccountMapping::getAvailablePaymentMethods();
+
+        return Inertia::render('Payments/MethodAccountMappings/Create', [
+            'cashAccounts' => $cashAccounts,
+            'paymentMethods' => $paymentMethods,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $validated = $request->validate([
+            'payment_method' => [
+                'required',
+                Rule::in(array_keys(PaymentMethodAccountMapping::getAvailablePaymentMethods())),
+                Rule::unique('payment_method_account_mappings')
+                    ->where('conjunto_config_id', $conjunto->id)
+                    ->where('is_active', true),
+            ],
+            'cash_account_id' => 'required|exists:chart_of_accounts,id',
+            'is_active' => 'boolean',
+        ]);
+
+        PaymentMethodAccountMapping::create([
+            'conjunto_config_id' => $conjunto->id,
+            'payment_method' => $validated['payment_method'],
+            'cash_account_id' => $validated['cash_account_id'],
+            'is_active' => $validated['is_active'] ?? true,
+        ]);
+
+        return redirect()->route('payment-method-account-mappings.index')
+            ->with('success', 'Mapeo de cuenta creado exitosamente.');
+    }
+
+    public function show(PaymentMethodAccountMapping $paymentMethodAccountMapping)
+    {
+        $paymentMethodAccountMapping->load(['conjuntoConfig', 'cashAccount']);
+        $paymentMethodAccountMapping->payment_method_label = PaymentMethodAccountMapping::getAvailablePaymentMethods()[$paymentMethodAccountMapping->payment_method] ?? $paymentMethodAccountMapping->payment_method;
+
+        return Inertia::render('Payments/MethodAccountMappings/Show', [
+            'mapping' => $paymentMethodAccountMapping,
+        ]);
+    }
+
+    public function edit(PaymentMethodAccountMapping $paymentMethodAccountMapping)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        // Get cash accounts (assets with type 'cash' or 'bank')
+        $cashAccounts = ChartOfAccounts::where('is_active', true)
+            ->whereIn('type', ['asset'])
+            ->whereIn('subtype', ['cash', 'bank'])
+            ->orderBy('code')
+            ->get();
+
+        $paymentMethods = PaymentMethodAccountMapping::getAvailablePaymentMethods();
+
+        return Inertia::render('Payments/MethodAccountMappings/Edit', [
+            'mapping' => $paymentMethodAccountMapping,
+            'cashAccounts' => $cashAccounts,
+            'paymentMethods' => $paymentMethods,
+        ]);
+    }
+
+    public function update(Request $request, PaymentMethodAccountMapping $paymentMethodAccountMapping)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $validated = $request->validate([
+            'payment_method' => [
+                'required',
+                Rule::in(array_keys(PaymentMethodAccountMapping::getAvailablePaymentMethods())),
+                Rule::unique('payment_method_account_mappings')
+                    ->where('conjunto_config_id', $conjunto->id)
+                    ->where('is_active', true)
+                    ->ignore($paymentMethodAccountMapping->id),
+            ],
+            'cash_account_id' => 'required|exists:chart_of_accounts,id',
+            'is_active' => 'boolean',
+        ]);
+
+        $paymentMethodAccountMapping->update([
+            'payment_method' => $validated['payment_method'],
+            'cash_account_id' => $validated['cash_account_id'],
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        return redirect()->route('payment-method-account-mappings.show', $paymentMethodAccountMapping)
+            ->with('success', 'Mapeo de cuenta actualizado exitosamente.');
+    }
+
+    public function destroy(PaymentMethodAccountMapping $paymentMethodAccountMapping)
+    {
+        // Check if this mapping is being used in any accounting transactions
+        // We would need to check for related payment records that might reference this mapping
+        // For now, we'll allow deletion but in production you might want to add additional checks
+
+        $paymentMethodAccountMapping->delete();
+
+        return redirect()->route('payment-method-account-mappings.index')
+            ->with('success', 'Mapeo de cuenta eliminado exitosamente.');
+    }
+
+    public function toggle(PaymentMethodAccountMapping $paymentMethodAccountMapping)
+    {
+        $paymentMethodAccountMapping->update([
+            'is_active' => ! $paymentMethodAccountMapping->is_active,
+        ]);
+
+        $status = $paymentMethodAccountMapping->is_active ? 'activado' : 'desactivado';
+
+        return back()->with('success', "Mapeo de cuenta {$status} exitosamente.");
+    }
+}

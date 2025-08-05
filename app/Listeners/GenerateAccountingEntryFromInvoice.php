@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 
 class GenerateAccountingEntryFromInvoice
 {
-
     public function handle(InvoiceCreated $event): void
     {
         try {

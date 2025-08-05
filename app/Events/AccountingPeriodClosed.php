@@ -8,7 +8,7 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Evento disparado cuando se completa un cierre contable mensual
- * 
+ *
  * Permite integrar notificaciones, backups automáticos y otras funcionalidades
  * posteriores al cierre sin afectar la funcionalidad core
  */
@@ -17,8 +17,11 @@ class AccountingPeriodClosed
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public int $conjuntoConfigId;
+
     public int $month;
+
     public int $year;
+
     public array $closingResults;
 
     /**

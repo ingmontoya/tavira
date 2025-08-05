@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * Tests de integración para el comando AppropriateMonthlyReserveFund
- * 
+ *
  * Valida el funcionamiento correcto del comando:
  * - Ejecución exitosa con parámetros
  * - Modo dry-run
@@ -28,12 +28,12 @@ class AppropriateMonthlyReserveFundTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Crear conjunto de prueba
         $this->conjunto = ConjuntoConfig::factory()->create([
             'name' => 'Conjunto Test Reserva',
         ]);
-        
+
         // Crear cuentas necesarias
         $this->createRequiredAccounts();
     }
@@ -43,29 +43,29 @@ class AppropriateMonthlyReserveFundTest extends TestCase
     {
         // Arrange: Crear ingresos para el período
         $this->createIncomeTransaction(1000000, 5, 2024);
-        
+
         // Act: Ejecutar comando
         $exitCode = Artisan::call('reserve-fund:appropriate', [
             '--month' => 5,
             '--year' => 2024,
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         // Assert: Comando exitoso
         $this->assertEquals(0, $exitCode, 'Comando debe terminar exitosamente');
-        
+
         // Verificar que se creó la transacción
         $this->assertDatabaseHas('accounting_transactions', [
             'conjunto_config_id' => $this->conjunto->id,
             'description' => 'Apropiación mensual fondo de reserva - 5/2024',
             'status' => 'contabilizado',
         ]);
-        
+
         // Verificar monto apropiado (30% de $1,000,000 = $300,000)
         $transaction = AccountingTransaction::where('conjunto_config_id', $this->conjunto->id)
             ->where('description', 'LIKE', '%apropiación mensual fondo de reserva%')
             ->first();
-            
+
         $this->assertEquals(300000, $transaction->total_debit);
     }
 
@@ -74,7 +74,7 @@ class AppropriateMonthlyReserveFundTest extends TestCase
     {
         // Arrange: Crear ingresos para el período
         $this->createIncomeTransaction(800000, 6, 2024);
-        
+
         // Act: Ejecutar comando en dry-run
         $exitCode = Artisan::call('reserve-fund:appropriate', [
             '--month' => 6,
@@ -82,10 +82,10 @@ class AppropriateMonthlyReserveFundTest extends TestCase
             '--conjunto' => $this->conjunto->id,
             '--dry-run' => true,
         ]);
-        
+
         // Assert: Comando exitoso pero sin transacciones
         $this->assertEquals(0, $exitCode, 'Comando debe terminar exitosamente');
-        
+
         // Verificar que NO se creó la transacción
         $this->assertDatabaseMissing('accounting_transactions', [
             'conjunto_config_id' => $this->conjunto->id,
@@ -99,15 +99,15 @@ class AppropriateMonthlyReserveFundTest extends TestCase
         // Arrange: Crear ingresos para el mes anterior
         $previousMonth = now()->subMonth();
         $this->createIncomeTransaction(1200000, $previousMonth->month, $previousMonth->year);
-        
+
         // Act: Ejecutar comando sin especificar mes
         $exitCode = Artisan::call('reserve-fund:appropriate', [
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         // Assert: Debe procesar el mes anterior
         $this->assertEquals(0, $exitCode, 'Comando debe terminar exitosamente');
-        
+
         $expectedDescription = "Apropiación mensual fondo de reserva - {$previousMonth->month}/{$previousMonth->year}";
         $this->assertDatabaseHas('accounting_transactions', [
             'conjunto_config_id' => $this->conjunto->id,
@@ -120,23 +120,23 @@ class AppropriateMonthlyReserveFundTest extends TestCase
     {
         // Arrange: Crear apropiación existente
         $this->createIncomeTransaction(1000000, 5, 2024);
-        
+
         // Primera ejecución
         Artisan::call('reserve-fund:appropriate', [
             '--month' => 5,
             '--year' => 2024,
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         $transactionsBefore = AccountingTransaction::count();
-        
+
         // Act: Segunda ejecución (debe omitirse)
         $exitCode = Artisan::call('reserve-fund:appropriate', [
             '--month' => 5,
             '--year' => 2024,
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         // Assert: No debe crear segunda transacción
         $this->assertEquals(0, $exitCode, 'Comando debe terminar exitosamente');
         $this->assertEquals($transactionsBefore, AccountingTransaction::count(), 'No debe crear transacción adicional');
@@ -148,25 +148,25 @@ class AppropriateMonthlyReserveFundTest extends TestCase
         // Arrange: Crear segundo conjunto
         $conjunto2 = ConjuntoConfig::factory()->create(['name' => 'Conjunto Test 2']);
         $this->createRequiredAccountsForConjunto($conjunto2->id);
-        
+
         // Crear ingresos para ambos conjuntos
         $this->createIncomeTransaction(1000000, 5, 2024, $this->conjunto->id);
         $this->createIncomeTransaction(800000, 5, 2024, $conjunto2->id);
-        
+
         // Act: Ejecutar sin especificar conjunto
         $exitCode = Artisan::call('reserve-fund:appropriate', [
             '--month' => 5,
             '--year' => 2024,
         ]);
-        
+
         // Assert: Debe procesar ambos conjuntos
         $this->assertEquals(0, $exitCode, 'Comando debe terminar exitosamente');
-        
+
         $this->assertDatabaseHas('accounting_transactions', [
             'conjunto_config_id' => $this->conjunto->id,
             'description' => 'Apropiación mensual fundo de reserva - 5/2024',
         ]);
-        
+
         $this->assertDatabaseHas('accounting_transactions', [
             'conjunto_config_id' => $conjunto2->id,
             'description' => 'Apropiación mensual fundo de reserva - 5/2024',
@@ -182,7 +182,7 @@ class AppropriateMonthlyReserveFundTest extends TestCase
             '--year' => 2024,
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         // Assert: Debe fallar
         $this->assertEquals(1, $exitCode, 'Comando debe fallar con mes inválido');
     }
@@ -196,7 +196,7 @@ class AppropriateMonthlyReserveFundTest extends TestCase
             '--year' => 2024,
             '--conjunto' => 99999, // ID inexistente
         ]);
-        
+
         // Assert: Debe fallar
         $this->assertEquals(1, $exitCode, 'Comando debe fallar con conjunto inexistente');
     }
@@ -210,10 +210,10 @@ class AppropriateMonthlyReserveFundTest extends TestCase
             '--year' => 2024,
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         // Assert: Debe terminar exitosamente pero sin crear transacción
         $this->assertEquals(0, $exitCode, 'Comando debe manejar correctamente la falta de ingresos');
-        
+
         $this->assertDatabaseMissing('accounting_transactions', [
             'conjunto_config_id' => $this->conjunto->id,
             'description' => 'Apropiación mensual fondo de reserva - 5/2024',
@@ -225,15 +225,15 @@ class AppropriateMonthlyReserveFundTest extends TestCase
     {
         // Arrange: Crear apropiación existente
         $this->createIncomeTransaction(1000000, 5, 2024);
-        
+
         Artisan::call('reserve-fund:appropriate', [
             '--month' => 5,
             '--year' => 2024,
             '--conjunto' => $this->conjunto->id,
         ]);
-        
+
         $transactionsBefore = AccountingTransaction::count();
-        
+
         // Act: Ejecutar con --force
         $exitCode = Artisan::call('reserve-fund:appropriate', [
             '--month' => 5,
@@ -241,7 +241,7 @@ class AppropriateMonthlyReserveFundTest extends TestCase
             '--conjunto' => $this->conjunto->id,
             '--force' => true,
         ]);
-        
+
         // Assert: Debe crear segunda transacción
         $this->assertEquals(0, $exitCode, 'Comando con --force debe terminar exitosamente');
         $transactionsAfter = AccountingTransaction::count();
@@ -315,10 +315,10 @@ class AppropriateMonthlyReserveFundTest extends TestCase
         $incomeAccount = ChartOfAccounts::where('conjunto_config_id', $conjuntoId)
             ->where('code', '413501')
             ->first();
-        
+
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $conjuntoId,
-            'transaction_date' => sprintf("%d-%02d-15", $year, $month),
+            'transaction_date' => sprintf('%d-%02d-15', $year, $month),
             'description' => "Ingresos test - {$month}/{$year}",
             'reference_type' => 'test',
             'reference_id' => 1,

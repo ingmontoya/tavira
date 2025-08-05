@@ -29,7 +29,7 @@ return new class extends Migration
                 'last_late_fee_calculation_date',
                 'late_fee_months_applied',
                 'late_fee_history',
-                'original_base_amount'
+                'original_base_amount',
             ]);
         });
     }

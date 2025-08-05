@@ -169,10 +169,10 @@ class GenerateMonthlyInvoices extends Command
                 ]);
 
                 $invoice->calculateTotals();
-                
+
                 // Fire the InvoiceCreated event after invoice is fully populated
                 event(new InvoiceCreated($invoice));
-                
+
                 $generatedCount++;
             } catch (\Exception $e) {
                 $this->error("Error generando factura para apartamento {$apartment->number}: {$e->getMessage()}");
