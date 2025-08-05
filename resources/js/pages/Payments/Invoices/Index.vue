@@ -447,7 +447,7 @@ const typeOptions = [
                                 <SelectContent>
                                     <SelectItem value="all">Todos los apartamentos</SelectItem>
                                     <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id.toString()">
-                                        {{ apartment.full_address }}
+                                        {{ apartment.number }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>

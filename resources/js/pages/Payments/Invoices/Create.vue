@@ -165,7 +165,7 @@ watch(
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id.toString()">
-                                                {{ apartment.number }}
+                                                {{ apartment.full_address }} - {{ apartment.apartment_type.name }}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>

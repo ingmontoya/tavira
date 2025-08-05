@@ -54,6 +54,7 @@ class InvoiceController extends Controller
         $invoices = $query->orderBy('created_at', 'desc')->paginate(25);
 
         $apartments = Apartment::where('conjunto_config_id', $conjunto->id)
+            ->with('apartmentType')
             ->orderBy('tower')->orderBy('number')->get();
 
         return Inertia::render('Payments/Invoices/Index', [
