@@ -86,7 +86,7 @@ class Payment extends Model
 
     public function scopePending($query)
     {
-        return $query->where('status', 'pendiente');
+        return $query->where('status', 'pending');
     }
 
     public function scopeApplied($query)
@@ -117,10 +117,10 @@ class Payment extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pendiente' => 'Pendiente',
-            'aplicado' => 'Aplicado',
-            'parcialmente_aplicado' => 'Parcialmente Aplicado',
-            'reversado' => 'Reversado',
+            'pendiente', 'pending' => 'Pendiente',
+            'aplicado', 'applied' => 'Aplicado',
+            'parcialmente_aplicado', 'partially_applied' => 'Parcialmente Aplicado',
+            'reversado', 'reversed' => 'Reversado',
             default => 'Sin estado',
         };
     }
@@ -128,27 +128,27 @@ class Payment extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'pendiente' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
-            'aplicado' => ['text' => 'Aplicado', 'class' => 'bg-green-100 text-green-800'],
-            'parcialmente_aplicado' => ['text' => 'Parcialmente Aplicado', 'class' => 'bg-blue-100 text-blue-800'],
-            'reversado' => ['text' => 'Reversado', 'class' => 'bg-red-100 text-red-800'],
+            'pendiente', 'pending' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'aplicado', 'applied' => ['text' => 'Aplicado', 'class' => 'bg-green-100 text-green-800'],
+            'parcialmente_aplicado', 'partially_applied' => ['text' => 'Parcialmente Aplicado', 'class' => 'bg-blue-100 text-blue-800'],
+            'reversado', 'reversed' => ['text' => 'Reversado', 'class' => 'bg-red-100 text-red-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
         };
     }
 
     public function getIsFullyAppliedAttribute(): bool
     {
-        return $this->status === 'aplicado';
+        return in_array($this->status, ['aplicado', 'applied']);
     }
 
     public function getIsPendingAttribute(): bool
     {
-        return $this->status === 'pendiente';
+        return in_array($this->status, ['pendiente', 'pending']);
     }
 
     public function getCanBeAppliedAttribute(): bool
     {
-        return in_array($this->status, ['pendiente', 'parcialmente_aplicado']) && $this->remaining_amount > 0;
+        return in_array($this->status, ['pendiente', 'pending', 'parcialmente_aplicado', 'partially_applied']) && $this->remaining_amount > 0;
     }
 
     // Methods
@@ -250,7 +250,7 @@ class Payment extends Model
             'description' => $description,
             'reference_type' => 'payment_application',
             'reference_id' => $application->id,
-            'status' => 'draft',
+            'status' => 'borrador',
             'created_by' => auth()->id() ?? $this->created_by,
         ]);
 
@@ -309,6 +309,69 @@ class Payment extends Model
         return $account->id;
     }
 
+    private function createInitialAccountingEntry(): void
+    {
+        $description = "Recepción pago {$this->payment_number} - Apto {$this->apartment->number}";
+
+        $transaction = AccountingTransaction::create([
+            'conjunto_config_id' => $this->conjunto_config_id,
+            'transaction_date' => $this->payment_date,
+            'description' => $description,
+            'reference_type' => 'payment_receipt',
+            'reference_id' => $this->id,
+            'status' => 'borrador',
+            'created_by' => auth()->id() ?? $this->created_by,
+        ]);
+
+        // Débito: Cuenta de banco según método de pago (ingreso de dinero)
+        $bankAccount = $this->getBankAccountForPaymentMethod();
+        $transaction->addEntry([
+            'account_id' => $bankAccount->id,
+            'description' => "Pago recibido - {$description}",
+            'debit_amount' => $this->total_amount,
+            'credit_amount' => 0,
+        ]);
+
+        // Crédito: Cuenta 130501 - CARTERA ADMINISTRACIÓN (disminución de cartera por cobrar)
+        $adminReceivableAccount = $this->getAccountByCode('130501');
+        $transaction->addEntry([
+            'account_id' => $adminReceivableAccount,
+            'description' => "Cobro cartera administración - {$description}",
+            'debit_amount' => 0,
+            'credit_amount' => $this->total_amount,
+            'third_party_type' => 'apartment',
+            'third_party_id' => $this->apartment_id,
+        ]);
+
+        $transaction->post();
+    }
+
+    private function getBankAccountForPaymentMethod(): ChartOfAccounts
+    {
+        $bankAccountCodes = [
+            'cash' => '110501', // Caja General
+            'bank_transfer' => '111001', // Banco Principal
+            'pse' => '111001', // Banco Principal
+            'credit_card' => '111001', // Banco Principal
+            'debit_card' => '111001', // Banco Principal
+            'check' => '111001', // Banco Principal
+            'online' => '111001', // Banco Principal
+            'other' => '111001', // Banco Principal (default)
+        ];
+
+        $accountCode = $bankAccountCodes[$this->payment_method] ?? $bankAccountCodes['bank_transfer'];
+
+        $account = ChartOfAccounts::forConjunto($this->conjunto_config_id)
+            ->where('code', $accountCode)
+            ->first();
+
+        if (! $account) {
+            throw new \Exception("No se encontró la cuenta contable con código: {$accountCode}");
+        }
+
+        return $account;
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -329,6 +392,11 @@ class Payment extends Model
             if (empty($payment->applied_amount)) {
                 $payment->applied_amount = 0;
             }
+        });
+
+        static::created(function ($payment) {
+            // Generate automatic accounting entry for payment receipt
+            $payment->createInitialAccountingEntry();
         });
     }
 

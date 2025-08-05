@@ -312,8 +312,8 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 
 ## 📋 Estado del Proyecto
 **Fecha de inicio:** 2025-08-01  
-**Estado actual:** Backend Core y APIs Completados  
-**Progreso general:** 65%
+**Estado actual:** Backend y Frontend Core Completados  
+**Progreso general:** 85%
 
 ### 🎯 Hitos Completados
 - ✅ Análisis y diseño del sistema contable
@@ -324,13 +324,16 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 - ✅ Sistema de presupuesto con ejecución automática
 - ✅ Alertas de sobrepresupuesto implementadas
 - ✅ Controladores y APIs REST completados
-- ✅ Sistema de reportes financieros
+- ✅ Sistema de reportes financieros (backend)
+- ✅ Frontend Vue.js - Páginas principales implementadas
+- ✅ Interfaces CRUD completas para todos los módulos core
+- ✅ Sistema de transacciones con filtros avanzados
 
 ### 🔥 Próximos Pasos
-- 🎨 Frontend Vue.js (Interfaces de usuario)
-- 📊 Reportes avanzados y dashboards
+- 📊 Páginas de reportes financieros específicos (Balance, P&L, etc.)
+- 🧩 Componentes Vue reutilizables especializados
 - 🔧 Testing integral del módulo
-- 📱 Optimizaciones de rendimiento
+- 🚀 Funcionalidades avanzadas de automatización
 
 ---
 
@@ -406,32 +409,41 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 ## 🎨 Desarrollo - Frontend (Vue.js)
 
 ### Páginas Principales
-- [ ] **Plan de Cuentas** (`/accounting/chart-of-accounts`)
-  - [ ] Vista jerárquica de cuentas
-  - [ ] Crear/editar cuentas
-  - [ ] Importar plan de cuentas estándar
-- [ ] **Libro Mayor** (`/accounting/general-ledger`)
-  - [ ] Consulta por cuenta y período
-  - [ ] Filtros avanzados
-  - [ ] Exportación a Excel
-- [ ] **Presupuesto** (`/accounting/budget`)
-  - [ ] Creación de presupuesto anual
-  - [ ] Seguimiento mensual
-  - [ ] Comparativo vs ejecutado
+- [x] **Plan de Cuentas** (`/accounting/chart-of-accounts`)
+  - [x] Vista jerárquica de cuentas
+  - [x] Crear/editar cuentas CRUD completo
+  - [x] Importar plan de cuentas estándar
+  - [x] Consulta de balances por cuenta
+- [x] **Transacciones Contables** (`/accounting/transactions`)
+  - [x] Listado completo con filtros avanzados
+  - [x] Crear/editar transacciones manuales
+  - [x] Validación de partida doble
+  - [x] Estados: borrador, contabilizada, cancelada
+- [x] **Presupuesto** (`/accounting/budget`)
+  - [x] Creación de presupuesto anual
+  - [x] Seguimiento mensual automático
+  - [x] Comparativo vs ejecutado con alertas
+  - [x] Estados: borrador, aprobado, activo, cerrado
 
 ### Reportes Financieros
-- [ ] **Balance General** (`/reports/balance-sheet`)
+- [x] **Backend de Reportes** (`AccountingReportsController`)
+  - [x] API para Balance General
+  - [x] API para Estado de Resultados
+  - [x] API para Libro Mayor
+  - [x] API para Ejecución Presupuestal
+  - [x] API para Cartera por Edades
+- [ ] **Balance General** (`/reports/balance-sheet`) - Página Vue pendiente
   - [ ] Vista comparativa por períodos
   - [ ] Drill-down a cuentas específicas
   - [ ] Exportación PDF/Excel
-- [ ] **Estado de Resultados** (`/reports/income-statement`)
+- [ ] **Estado de Resultados** (`/reports/income-statement`) - Página Vue pendiente
   - [ ] Vista mensual/anual
   - [ ] Gráficos de tendencias
   - [ ] Análisis de variaciones
-- [ ] **Flujo de Efectivo** (`/reports/cash-flow`)
+- [ ] **Flujo de Efectivo** (`/reports/cash-flow`) - Página Vue pendiente
   - [ ] Proyección de flujos
   - [ ] Categorización de movimientos
-- [ ] **Cartera por Edades** (`/reports/debt-aging`)
+- [ ] **Cartera por Edades** (`/reports/debt-aging`) - Página Vue pendiente
   - [ ] Análisis de cartera vencida
   - [ ] Integración con sistema de cobranza
 
@@ -447,22 +459,23 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 ## 📊 Características Específicas
 
 ### Normatividad Colombiana
-- [ ] Plan de cuentas según Decreto 2650
+- [x] Plan de cuentas según Decreto 2650 - Implementado vía ChartOfAccountsSeeder
 - [ ] Cálculo de retenciones automáticas
 - [ ] Manejo de IVA en servicios
 - [ ] Reportes para DIAN (si aplica)
 
 ### Propiedad Horizontal
-- [ ] **Fondo de Reserva** - Cálculo automático del %
-- [ ] **Gastos Comunes vs Extraordinarios** - Clasificación
+- [ ] **Fondo de Reserva** - Cálculo automático del % (infraestructura lista)
+- [x] **Gastos Comunes vs Extraordinarios** - Clasificación vía payment concepts
 - [ ] **Subsidios Cruzados** - Entre tipos de apartamento
-- [ ] **Cuotas Extraordinarias** - Para proyectos especiales
-- [ ] **Intereses de Mora** - Según normativa vigente
+- [x] **Cuotas Extraordinarias** - Implementado vía sistema de facturación
+- [x] **Intereses de Mora** - Base implementada (ProcessLateFeesCommand existe)
 
 ### Automatizaciones
-- [ ] Generación automática de asientos contables
+- [x] Generación automática de asientos contables - Listeners implementados
+- [x] Alertas de sobrepresupuesto - CheckBudgetOverspend command
+- [x] Validación automática de partida doble - En cada transacción
 - [ ] Cálculo automático de depreciaciones
-- [ ] Alertas de descuadres contables
 - [ ] Backup automático de datos financieros
 - [ ] Cierre contable mensual automatizado
 
@@ -644,7 +657,7 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 ## 👥 Equipo y Responsabilidades
 
 - **Desarrollador Backend:** ✅ Modelos, lógica contable y APIs COMPLETADO
-- **Desarrollador Frontend:** 🚧 Interfaces y reportes EN PROGRESO
+- **Desarrollador Frontend:** ✅ Interfaces principales COMPLETADAS, reportes específicos PENDIENTES
 - **Contador/Auditor:** 📋 Validación y testing PENDIENTE  
 - **Product Owner:** 📋 Priorización y feedback CONTINUO
 - **QA:** 📋 Testing integral del módulo PENDIENTE
@@ -653,7 +666,7 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 
 ## 📊 Métricas de Implementación
 
-- **Líneas de código:** ~4,500 LOC
+- **Líneas de código:** ~6,500 LOC
 - **Tablas de BD:** 7 tablas nuevas
 - **Cuentas contables:** 60+ cuentas implementadas
 - **Eventos:** 3 eventos + 3 listeners
@@ -665,7 +678,7 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 
 ---
 
-## 🆕 Nuevas Funcionalidades Implementadas (2025-08-01)
+## 🆕 Funcionalidades Completadas (2025-08-04) - ACTUALIZACIÓN
 
 ### Sistema de Ejecución Presupuestal Automática
 - **Cálculo automático de montos ejecutados** desde entradas contables
@@ -685,22 +698,32 @@ El sistema no solo registra transacciones, sino que proporciona inteligencia fin
 - **Mapeo por defecto** siguiendo el plan de cuentas colombiano
 - **Relaciones completas** entre conceptos y cuentas
 
+### Frontend Vue.js Completado
+- **Plan de Cuentas**: CRUD completo con vista jerárquica (/accounting/chart-of-accounts)
+- **Transacciones Contables**: Listado, filtros, CRUD, validaciones (/accounting/transactions)
+- **Presupuestos**: Gestión completa, seguimiento, alertas (/accounting/budget)
+- **Rutas del Módulo**: Sistema completo de routing implementado
+- **Integración**: Navegación desde sidebar, breadcrumbs, permisos
+
 ### Controladores y APIs REST Completos
 - **ChartOfAccountsController**: CRUD, jerarquía, balances
 - **AccountingTransactionController**: Transacciones, validaciones, asientos
 - **BudgetController**: Presupuestos, ejecución, alertas
-- **FinancialReportController**: 5 tipos de reportes financieros
+- **AccountingReportsController**: 5 tipos de reportes financieros (APIs listas)
 - **ReconciliationController**: Conciliación bancaria completa
 
 ### Sistema de Reportes Financieros
-- **Balance General** con clasificación por tipo de cuenta
-- **Estado de Resultados** con análisis de períodos
-- **Libro Mayor** con consultas detalladas por cuenta
-- **Ejecución Presupuestal** con variaciones y alertas
-- **Cartera por Edades** para análisis de cobros
+- **APIs de Reportes**: 5 endpoints completos listos para consumo
+- **Balance General** con clasificación por tipo de cuenta (backend listo)
+- **Estado de Resultados** con análisis de períodos (backend listo)
+- **Libro Mayor** con consultas detalladas por cuenta (backend listo)
+- **Ejecución Presupuestal** con variaciones y alertas (backend listo)
+- **Cartera por Edades** para análisis de cobros (backend listo)
+- **Páginas Vue Pendientes**: Faltan las interfaces frontend para estos reportes
 
 ---
 
-**Última actualización:** 2025-08-01  
-**Próxima revisión:** 2025-08-08  
+**Última actualización:** 2025-08-04  
+**Próxima revisión:** 2025-08-11  
+**Estado real:** Frontend Core + Backend Completados (85%)  
 **Responsable técnico:** Claude Code Assistant

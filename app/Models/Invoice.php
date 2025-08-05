@@ -51,9 +51,6 @@ class Invoice extends Model
         'balance_due',
     ];
 
-    protected $dispatchesEvents = [
-        'created' => InvoiceCreated::class,
-    ];
 
     public function apartment(): BelongsTo
     {
@@ -230,11 +227,11 @@ class Invoice extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pendiente' => 'Pendiente',
-            'pago_parcial' => 'Pago Parcial',
-            'pagado' => 'Pagado',
-            'vencido' => 'Vencido',
-            'cancelado' => 'Cancelado',
+            'pendiente', 'pending' => 'Pendiente',
+            'pago_parcial', 'partial_payment' => 'Pago Parcial',
+            'pagado', 'paid' => 'Pagado',
+            'vencido', 'overdue' => 'Vencido',
+            'cancelado', 'cancelled' => 'Cancelado',
             default => 'Sin estado',
         };
     }
@@ -242,11 +239,11 @@ class Invoice extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'pendiente' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
-            'pago_parcial' => ['text' => 'Pago Parcial', 'class' => 'bg-blue-100 text-blue-800'],
-            'pagado' => ['text' => 'Pagado', 'class' => 'bg-green-100 text-green-800'],
-            'vencido' => ['text' => 'Vencido', 'class' => 'bg-red-100 text-red-800'],
-            'cancelado' => ['text' => 'Cancelado', 'class' => 'bg-gray-100 text-gray-800'],
+            'pendiente', 'pending' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'pago_parcial', 'partial_payment' => ['text' => 'Pago Parcial', 'class' => 'bg-blue-100 text-blue-800'],
+            'pagado', 'paid' => ['text' => 'Pagado', 'class' => 'bg-green-100 text-green-800'],
+            'vencido', 'overdue' => ['text' => 'Vencido', 'class' => 'bg-red-100 text-red-800'],
+            'cancelado', 'cancelled' => ['text' => 'Cancelado', 'class' => 'bg-gray-100 text-gray-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
         };
     }

@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
 import { formatCurrency } from '@/utils';
 
 interface Apartment {
@@ -36,11 +35,24 @@ interface Invoice {
     }[];
 }
 
+interface ChartOfAccount {
+    id: number;
+    code: string;
+    name: string;
+    account_type: string;
+}
+
+interface AccountingAccounts {
+    paymentMethodAccounts: Record<string, ChartOfAccount>;
+    adminReceivableAccount: ChartOfAccount;
+}
+
 const props = defineProps<{
     apartments: Apartment[];
     preSelectedApartment?: Apartment;
     preSelectedInvoices?: Invoice[];
     paymentMethods: Record<string, string>;
+    accountingAccounts: AccountingAccounts;
 }>();
 
 const form = useForm({
@@ -141,6 +153,40 @@ const paymentSimulation = computed(() => {
     }
 
     return simulation;
+});
+
+// Accounting simulation
+const accountingSimulation = computed(() => {
+    if (!paymentAmount.value || !form.payment_method) {
+        return null;
+    }
+
+    const bankAccount = props.accountingAccounts.paymentMethodAccounts[form.payment_method];
+    const adminAccount = props.accountingAccounts.adminReceivableAccount;
+
+    if (!bankAccount || !adminAccount) {
+        return null;
+    }
+
+    return {
+        entries: [
+            {
+                type: 'debit',
+                account: bankAccount,
+                amount: paymentAmount.value,
+                description: `Pago recibido - ${props.paymentMethods[form.payment_method]}`,
+            },
+            {
+                type: 'credit',
+                account: adminAccount,
+                amount: paymentAmount.value,
+                description: 'Cobro cartera administración',
+            },
+        ],
+        totalDebits: paymentAmount.value,
+        totalCredits: paymentAmount.value,
+        isBalanced: true,
+    };
 });
 
 const submit = () => {
@@ -420,6 +466,97 @@ const breadcrumbs = [
                                         </p>
                                         <p v-if="paymentAmount > totalPendingAmount" class="text-sm text-green-700 mt-1">
                                             Sobrante: {{ formatCurrency(paymentAmount - totalPendingAmount) }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Accounting Simulation -->
+                <Card v-if="accountingSimulation">
+                    <CardHeader>
+                        <CardTitle>Simulación Contable</CardTitle>
+                        <CardDescription>
+                            Asientos contables que se generarán automáticamente al registrar el pago
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="space-y-4">
+                            <!-- Transaction Summary -->
+                            <div class="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                                <div class="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <div class="text-sm text-blue-600 font-medium">Total Débitos</div>
+                                        <div class="font-mono text-lg font-bold text-blue-800">{{ formatCurrency(accountingSimulation.totalDebits) }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-blue-600 font-medium">Total Créditos</div>
+                                        <div class="font-mono text-lg font-bold text-blue-800">{{ formatCurrency(accountingSimulation.totalCredits) }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-blue-600 font-medium">Estado</div>
+                                        <Badge :class="accountingSimulation.isBalanced ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                            {{ accountingSimulation.isBalanced ? 'Balanceado' : 'Desbalanceado' }}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accounting Entries -->
+                            <div class="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Cuenta</TableHead>
+                                            <TableHead>Descripción</TableHead>
+                                            <TableHead class="text-right">Débito</TableHead>
+                                            <TableHead class="text-right">Crédito</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow v-for="(entry, index) in accountingSimulation.entries" :key="index">
+                                            <TableCell>
+                                                <div class="space-y-1">
+                                                    <div class="font-mono text-sm font-medium">{{ entry.account.code }}</div>
+                                                    <div class="text-xs text-muted-foreground">{{ entry.account.name }}</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div class="text-sm">{{ entry.description }}</div>
+                                            </TableCell>
+                                            <TableCell class="text-right">
+                                                <div v-if="entry.type === 'debit'" class="font-mono text-sm font-medium text-green-600">
+                                                    {{ formatCurrency(entry.amount) }}
+                                                </div>
+                                                <div v-else class="text-sm text-muted-foreground">-</div>
+                                            </TableCell>
+                                            <TableCell class="text-right">
+                                                <div v-if="entry.type === 'credit'" class="font-mono text-sm font-medium text-red-600">
+                                                    {{ formatCurrency(entry.amount) }}
+                                                </div>
+                                                <div v-else class="text-sm text-muted-foreground">-</div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            <!-- Accounting Note -->
+                            <div class="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Registro Contable Automático</p>
+                                        <p class="text-sm text-gray-700 mt-1">
+                                            Este asiento se generará automáticamente al registrar el pago. 
+                                            Se debitará la cuenta {{ accountingSimulation.entries[0].account.code }} ({{ accountingSimulation.entries[0].account.name }}) 
+                                            y se acreditará la cuenta {{ accountingSimulation.entries[1].account.code }} ({{ accountingSimulation.entries[1].account.name }}).
                                         </p>
                                     </div>
                                 </div>

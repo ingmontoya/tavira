@@ -32,6 +32,7 @@ export interface AccountingTransaction {
     transaction_date: string;
     total_amount: number;
     status: 'Draft' | 'Posted' | 'Reversed';
+    apartment_number?: string;
     created_by: {
         id: number;
         name: string;
@@ -105,13 +106,19 @@ const filteredData = computed(() => {
     if (customFilters.value.search) {
         const searchTerm = customFilters.value.search.toLowerCase();
         filtered = filtered.filter(
-            (transaction) =>
-                transaction.reference?.toLowerCase().includes(searchTerm) ||
-                transaction.description?.toLowerCase().includes(searchTerm) ||
-                transaction.created_by?.name?.toLowerCase().includes(searchTerm) ||
-                transaction.entries?.some(
-                    (entry) => entry.account.code.toLowerCase().includes(searchTerm) || entry.account.name.toLowerCase().includes(searchTerm),
-                ),
+            (transaction) => {
+                // Extract apartment number from description for search
+                const apartmentMatch = transaction.description?.match(/Apto\s+([A-Z0-9]+)/);
+                const apartmentNumber = apartmentMatch ? apartmentMatch[1].toLowerCase() : '';
+                
+                return transaction.reference?.toLowerCase().includes(searchTerm) ||
+                    transaction.description?.toLowerCase().includes(searchTerm) ||
+                    transaction.created_by?.name?.toLowerCase().includes(searchTerm) ||
+                    apartmentNumber.includes(searchTerm) ||
+                    transaction.entries?.some(
+                        (entry) => entry.account.code.toLowerCase().includes(searchTerm) || entry.account.name.toLowerCase().includes(searchTerm),
+                    );
+            }
         );
     }
 
@@ -151,6 +158,27 @@ const columns = [
         },
         enableSorting: false,
         enableHiding: false,
+    }),
+    columnHelper.display({
+        id: 'apartment',
+        enablePinning: true,
+        header: 'Apartamento',
+        cell: ({ row }) => {
+            const transaction = row.original;
+            
+            // Extract apartment number from description or reference
+            let apartmentNumber = transaction.apartment_number;
+            if (!apartmentNumber && transaction.description) {
+                const match = transaction.description.match(/Apto\s+([A-Z0-9]+)/);
+                apartmentNumber = match ? match[1] : null;
+            }
+            
+            if (apartmentNumber) {
+                return h('div', { class: 'font-mono text-sm font-medium' }, apartmentNumber);
+            }
+            
+            return h('div', { class: 'text-muted-foreground text-sm' }, '-');
+        },
     }),
     columnHelper.accessor('reference', {
         enablePinning: true,
@@ -308,7 +336,7 @@ const table = useVueTable({
             return expanded.value;
         },
         columnPinning: {
-            left: ['status'],
+            left: ['apartment', 'status'],
         },
     },
 });
@@ -349,7 +377,7 @@ const exportTransactions = () => {
                             <Input
                                 id="search"
                                 v-model="customFilters.search"
-                                placeholder="Buscar por referencia, descripción, cuenta o usuario..."
+                                placeholder="Buscar por apartamento, referencia, descripción, cuenta o usuario..."
                                 class="max-w-md pl-10"
                             />
                         </div>
@@ -389,7 +417,10 @@ const exportTransactions = () => {
                             <X class="mr-2 h-4 w-4" />
                             Limpiar filtros
                         </Button>
-                        <div class="text-sm text-muted-foreground">Mostrando {{ filteredData.length }} de {{ data.length }} transacciones</div>
+                        <div class="text-sm text-muted-foreground">
+                            Mostrando {{ filteredData.length }} de {{ data.length }} transacciones en esta página 
+                            ({{ transactions.total || 0 }} total en el sistema)
+                        </div>
                     </div>
                 </div>
             </Card>
@@ -489,13 +520,34 @@ const exportTransactions = () => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
-                <div class="flex-1 text-sm text-muted-foreground">
-                    {{ table.getFilteredSelectedRowModel().rows.length }} de {{ table.getFilteredRowModel().rows.length }} fila(s) seleccionadas.
+            <div class="flex items-center justify-between space-x-2 py-4">
+                <div class="flex items-center space-x-2">
+                    <div class="text-sm text-muted-foreground">
+                        {{ table.getFilteredSelectedRowModel().rows.length }} de {{ table.getFilteredRowModel().rows.length }} fila(s) seleccionadas.
+                    </div>
                 </div>
-                <div class="space-x-2">
-                    <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Anterior </Button>
-                    <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Siguiente </Button>
+                <div class="flex items-center space-x-2">
+                    <div class="text-sm text-muted-foreground">
+                        Mostrando {{ transactions.from || 0 }} - {{ transactions.to || 0 }} de {{ transactions.total || 0 }} transacciones
+                    </div>
+                    <div class="space-x-2">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            :disabled="!transactions.prev_page_url"
+                            @click="router.visit(transactions.prev_page_url)"
+                        > 
+                            Anterior 
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            :disabled="!transactions.next_page_url"
+                            @click="router.visit(transactions.next_page_url)"
+                        > 
+                            Siguiente 
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Apartment;
+use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -58,7 +59,7 @@ class PaymentManagementController extends Controller
             'apartments' => $apartments,
             'filters' => $request->only(['status', 'apartment_id', 'start_date', 'end_date', 'search']),
             'statuses' => [
-                'pendiente' => 'Pendiente',
+                'pending' => 'Pendiente',
                 'aplicado' => 'Aplicado',
                 'parcialmente_aplicado' => 'Parcialmente Aplicado',
                 'reversado' => 'Reversado',
@@ -121,6 +122,9 @@ class PaymentManagementController extends Controller
             }
         }
 
+        // Get accounting accounts for simulation
+        $accountingAccounts = $this->getAccountingAccountsForSimulation($conjunto->id);
+
         return Inertia::render('Finance/Payments/Create', [
             'apartments' => $apartments,
             'preSelectedApartment' => $preSelectedApartment,
@@ -134,6 +138,7 @@ class PaymentManagementController extends Controller
                 'online' => 'Pago Online',
                 'other' => 'Otro',
             ],
+            'accountingAccounts' => $accountingAccounts,
         ]);
     }
 
@@ -359,5 +364,38 @@ class PaymentManagementController extends Controller
             });
 
         return response()->json(['invoices' => $invoices]);
+    }
+
+    private function getAccountingAccountsForSimulation(int $conjuntoConfigId): array
+    {
+        // Get the accounts needed for payment accounting simulation
+        $accountCodes = [
+            '110501', // Caja General
+            '111001', // Banco Principal
+            '130501', // CARTERA ADMINISTRACIÓN
+        ];
+
+        $accounts = ChartOfAccounts::forConjunto($conjuntoConfigId)
+            ->whereIn('code', $accountCodes)
+            ->select('id', 'code', 'name', 'account_type')
+            ->get()
+            ->keyBy('code');
+
+        // Define payment method to account mapping
+        $paymentMethodAccounts = [
+            'cash' => $accounts->get('110501'), // Caja General
+            'bank_transfer' => $accounts->get('111001'), // Banco Principal
+            'pse' => $accounts->get('111001'), // Banco Principal
+            'credit_card' => $accounts->get('111001'), // Banco Principal
+            'debit_card' => $accounts->get('111001'), // Banco Principal
+            'check' => $accounts->get('111001'), // Banco Principal
+            'online' => $accounts->get('111001'), // Banco Principal
+            'other' => $accounts->get('111001'), // Banco Principal (default)
+        ];
+
+        return [
+            'paymentMethodAccounts' => $paymentMethodAccounts,
+            'adminReceivableAccount' => $accounts->get('130501'),
+        ];
     }
 }

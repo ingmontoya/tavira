@@ -203,7 +203,7 @@ class ReconciliationController extends Controller
                 'transaction_date' => $validated['transaction_date'],
                 'description' => 'Ajuste de conciliación bancaria - '.$validated['description'],
                 'reference_type' => 'bank_reconciliation',
-                'status' => 'draft',
+                'status' => 'borrador',
                 'created_by' => auth()->id(),
             ]);
 

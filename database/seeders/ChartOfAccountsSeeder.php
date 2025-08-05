@@ -147,6 +147,9 @@ class ChartOfAccountsSeeder extends Seeder
 
             // Subcuentas de Gastos Financieros
             ['code' => '530501', 'name' => 'GASTOS BANCARIOS', 'description' => 'Gastos por servicios bancarios', 'account_type' => 'expense', 'parent_code' => '5305', 'level' => 4, 'is_active' => true, 'requires_third_party' => false, 'nature' => 'debit', 'accepts_posting' => true],
+            
+            // Subcuenta específica para Apropiación del Fondo de Reserva (Ley 675)
+            ['code' => '530502', 'name' => 'APROPIACIÓN FONDO DE RESERVA', 'description' => 'Gasto por apropiación mensual al fondo de reserva según Ley 675', 'account_type' => 'expense', 'parent_code' => '5305', 'level' => 4, 'is_active' => true, 'requires_third_party' => false, 'nature' => 'debit', 'accepts_posting' => true],
         ];
     }
 }

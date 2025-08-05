@@ -41,7 +41,7 @@ class AccountingTransactionController extends Controller
 
         $transactions = $query->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate(50)
+            ->paginate(100)
             ->withQueryString();
 
         return Inertia::render('Accounting/Transactions/Index', [
@@ -120,7 +120,7 @@ class AccountingTransactionController extends Controller
                 'transaction_date' => $validated['transaction_date'],
                 'description' => $validated['description'],
                 'reference_type' => $validated['reference_type'] ?? 'manual',
-                'status' => 'draft',
+                'status' => 'borrador',
                 'created_by' => auth()->id(),
             ]);
 

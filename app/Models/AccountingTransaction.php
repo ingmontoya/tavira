@@ -82,12 +82,12 @@ class AccountingTransaction extends Model
 
     public function scopePosted($query)
     {
-        return $query->where('status', 'posted');
+        return $query->where('status', 'contabilizado');
     }
 
     public function scopeDraft($query)
     {
-        return $query->where('status', 'draft');
+        return $query->where('status', 'borrador');
     }
 
     public function scopeByPeriod($query, string $startDate, string $endDate)
@@ -104,9 +104,9 @@ class AccountingTransaction extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'draft' => 'Borrador',
-            'posted' => 'Contabilizado',
-            'cancelled' => 'Cancelado',
+            'borrador' => 'Borrador',
+            'contabilizado' => 'Contabilizado',
+            'cancelado' => 'Cancelado',
             default => 'Sin estado',
         };
     }
@@ -114,9 +114,9 @@ class AccountingTransaction extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'draft' => ['text' => 'Borrador', 'class' => 'bg-yellow-100 text-yellow-800'],
-            'posted' => ['text' => 'Contabilizado', 'class' => 'bg-green-100 text-green-800'],
-            'cancelled' => ['text' => 'Cancelado', 'class' => 'bg-red-100 text-red-800'],
+            'borrador' => ['text' => 'Borrador', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'contabilizado' => ['text' => 'Contabilizado', 'class' => 'bg-green-100 text-green-800'],
+            'cancelado' => ['text' => 'Cancelado', 'class' => 'bg-red-100 text-red-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
         };
     }
@@ -128,14 +128,14 @@ class AccountingTransaction extends Model
 
     public function getCanBePostedAttribute(): bool
     {
-        return $this->status === 'draft' &&
+        return $this->status === 'borrador' &&
                $this->is_balanced &&
                $this->entries()->count() > 0;
     }
 
     public function getCanBeCancelledAttribute(): bool
     {
-        return $this->status === 'posted';
+        return $this->status === 'contabilizado';
     }
 
     public function getTotalAmountAttribute(): float
@@ -169,8 +169,26 @@ class AccountingTransaction extends Model
             throw new \Exception('La transacción no cumple con la partida doble');
         }
 
+        // Ejecutar validaciones adicionales de integridad
+        $validationService = new \App\Services\AccountingValidationService();
+        $validation = $validationService->validateTransactionIntegrity($this);
+        
+        if (!$validation['is_valid']) {
+            $errors = implode('; ', $validation['errors']);
+            throw new \Exception("La transacción no pasa las validaciones de integridad: {$errors}");
+        }
+
+        // Log warnings if any
+        if (!empty($validation['warnings'])) {
+            \Illuminate\Support\Facades\Log::warning('Transacción contabilizada con advertencias', [
+                'transaction_id' => $this->id,
+                'transaction_number' => $this->transaction_number,
+                'warnings' => $validation['warnings'],
+            ]);
+        }
+
         $this->update([
-            'status' => 'posted',
+            'status' => 'contabilizado',
             'posted_by' => auth()->id(),
             'posted_at' => now(),
         ]);
@@ -185,12 +203,12 @@ class AccountingTransaction extends Model
             throw new \Exception('La transacción no puede ser cancelada');
         }
 
-        $this->update(['status' => 'cancelled']);
+        $this->update(['status' => 'cancelado']);
     }
 
     public function addEntry(array $entryData): AccountingTransactionEntry
     {
-        if ($this->status !== 'draft') {
+        if ($this->status !== 'borrador') {
             throw new \Exception('Solo se pueden agregar movimientos a transacciones en borrador');
         }
 
@@ -205,7 +223,7 @@ class AccountingTransaction extends Model
         $transaction = self::create([
             'conjunto_config_id' => $invoice->apartment->apartmentType->conjunto_config_id,
             'transaction_date' => $invoice->billing_date,
-            'description' => "Factura {$invoice->invoice_number} - {$invoice->apartment->number}",
+            'description' => "Apto {$invoice->apartment->number} - Factura {$invoice->invoice_number}",
             'reference_type' => 'invoice',
             'reference_id' => $invoice->id,
             'created_by' => auth()->id(),
@@ -239,7 +257,7 @@ class AccountingTransaction extends Model
         $transaction = self::create([
             'conjunto_config_id' => $invoice->apartment->apartmentType->conjunto_config_id,
             'transaction_date' => now()->toDateString(),
-            'description' => "Pago factura {$invoice->invoice_number} - {$invoice->apartment->number}",
+            'description' => "Apto {$invoice->apartment->number} - Pago factura {$invoice->invoice_number}",
             'reference_type' => 'payment',
             'reference_id' => $invoice->id,
             'created_by' => auth()->id(),
@@ -287,12 +305,12 @@ class AccountingTransaction extends Model
 
         static::creating(function ($transaction) {
             if (empty($transaction->transaction_number)) {
-                $transaction->transaction_number = self::generateTransactionNumber();
+                $transaction->transaction_number = self::generateTransactionNumber($transaction);
             }
         });
     }
 
-    private static function generateTransactionNumber(): string
+    private static function generateTransactionNumber($transaction = null): string
     {
         $year = now()->year;
         $month = now()->format('m');
@@ -303,6 +321,20 @@ class AccountingTransaction extends Model
 
         $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
 
-        return sprintf('TXN-%s%s-%04d', $year, $month, $sequence);
+        // Try to get apartment number from reference
+        $apartmentCode = '';
+        if ($transaction && $transaction->reference_type === 'invoice' && $transaction->reference_id) {
+            $invoice = \App\Models\Invoice::find($transaction->reference_id);
+            if ($invoice && $invoice->apartment) {
+                $apartmentCode = $invoice->apartment->number . '-';
+            }
+        } elseif ($transaction && $transaction->reference_type === 'payment' && $transaction->reference_id) {
+            $invoice = \App\Models\Invoice::find($transaction->reference_id);
+            if ($invoice && $invoice->apartment) {
+                $apartmentCode = $invoice->apartment->number . '-';
+            }
+        }
+
+        return sprintf('TXN-%s%s%s-%04d', $apartmentCode, $year, $month, $sequence);
     }
 }

@@ -5,13 +5,10 @@ namespace App\Listeners;
 use App\Events\InvoiceCreated;
 use App\Models\AccountingTransaction;
 use App\Models\ChartOfAccounts;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class GenerateAccountingEntryFromInvoice implements ShouldQueue
+class GenerateAccountingEntryFromInvoice
 {
-    use InteractsWithQueue;
 
     public function handle(InvoiceCreated $event): void
     {
@@ -78,12 +75,12 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $conjuntoConfigId,
             'transaction_date' => $invoice->billing_date,
-            'description' => "Factura {$invoice->invoice_number} - {$this->getConceptTypeLabel($conceptType)} - Apto {$invoice->apartment->number}",
+            'description' => "Apto {$invoice->apartment->number} - Factura {$invoice->invoice_number} - {$this->getConceptTypeLabel($conceptType)}",
             'reference_type' => 'invoice',
             'reference_id' => $invoice->id,
             'total_debit' => 0,
             'total_credit' => 0,
-            'status' => 'draft',
+            'status' => 'borrador',
             'created_by' => auth()->id() ?? 1,
         ]);
 
@@ -115,12 +112,12 @@ class GenerateAccountingEntryFromInvoice implements ShouldQueue
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $conjuntoConfigId,
             'transaction_date' => $invoice->billing_date,
-            'description' => "Factura {$invoice->invoice_number} - Apto {$invoice->apartment->number}",
+            'description' => "Apto {$invoice->apartment->number} - Factura {$invoice->invoice_number}",
             'reference_type' => 'invoice',
             'reference_id' => $invoice->id,
             'total_debit' => 0,
             'total_credit' => 0,
-            'status' => 'draft',
+            'status' => 'borrador',
             'created_by' => auth()->id() ?? 1,
         ]);
 

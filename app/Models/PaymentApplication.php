@@ -84,8 +84,8 @@ class PaymentApplication extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'activo' => 'Activo',
-            'reversado' => 'Reversado',
+            'activo', 'active' => 'Activo',
+            'reversado', 'reversed' => 'Reversado',
             default => 'Sin estado',
         };
     }
@@ -93,25 +93,25 @@ class PaymentApplication extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'activo' => ['text' => 'Activo', 'class' => 'bg-green-100 text-green-800'],
-            'reversado' => ['text' => 'Reversado', 'class' => 'bg-red-100 text-red-800'],
+            'activo', 'active' => ['text' => 'Activo', 'class' => 'bg-green-100 text-green-800'],
+            'reversado', 'reversed' => ['text' => 'Reversado', 'class' => 'bg-red-100 text-red-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
         };
     }
 
     public function getIsActiveAttribute(): bool
     {
-        return $this->status === 'activo';
+        return in_array($this->status, ['activo', 'active']);
     }
 
     public function getIsReversedAttribute(): bool
     {
-        return $this->status === 'reversado';
+        return in_array($this->status, ['reversado', 'reversed']);
     }
 
     public function getCanBeReversedAttribute(): bool
     {
-        return $this->status === 'activo';
+        return in_array($this->status, ['activo', 'active']);
     }
 
     // Methods
@@ -157,7 +157,7 @@ class PaymentApplication extends Model
             'description' => $description,
             'reference_type' => 'payment_application_reversal',
             'reference_id' => $this->id,
-            'status' => 'draft',
+            'status' => 'borrador',
             'created_by' => auth()->id(),
         ]);
 
