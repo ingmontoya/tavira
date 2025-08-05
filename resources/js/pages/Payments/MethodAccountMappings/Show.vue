@@ -37,10 +37,14 @@ const props = defineProps<{
 }>();
 
 const toggleMapping = () => {
-    router.post(`/payment-method-account-mappings/${props.mapping.id}/toggle`, {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.post(
+        `/payment-method-account-mappings/${props.mapping.id}/toggle`,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const deleteMapping = () => {
@@ -116,7 +120,7 @@ const breadcrumbs = [
 
             <div class="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
                 <!-- Main Content -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Basic Information -->
                     <Card>
                         <CardHeader>
@@ -148,7 +152,7 @@ const breadcrumbs = [
                                         <div>
                                             <h5 class="font-medium">{{ mapping.cash_account.code }} - {{ mapping.cash_account.name }}</h5>
                                             <p class="text-sm text-muted-foreground">
-                                                {{ mapping.cash_account.type }} 
+                                                {{ mapping.cash_account.type }}
                                                 <span v-if="mapping.cash_account.subtype">/ {{ mapping.cash_account.subtype }}</span>
                                             </p>
                                         </div>
@@ -213,9 +217,8 @@ const breadcrumbs = [
                             <div class="space-y-2">
                                 <h4 class="text-sm font-medium">Propósito</h4>
                                 <p class="text-sm text-muted-foreground">
-                                    Este mapeo define que todos los pagos recibidos con el método 
-                                    "{{ mapping.payment_method_label }}" se registrarán en la cuenta contable 
-                                    "{{ mapping.cash_account.name }}".
+                                    Este mapeo define que todos los pagos recibidos con el método "{{ mapping.payment_method_label }}" se registrarán
+                                    en la cuenta contable "{{ mapping.cash_account.name }}".
                                 </p>
                             </div>
                         </CardContent>
@@ -228,8 +231,8 @@ const breadcrumbs = [
                         </CardHeader>
                         <CardContent>
                             <p class="text-sm text-muted-foreground">
-                                Al eliminar este mapeo, los pagos futuros con este método podrían usar el mapeo por defecto 
-                                o generar errores en el registro contable.
+                                Al eliminar este mapeo, los pagos futuros con este método podrían usar el mapeo por defecto o generar errores en el
+                                registro contable.
                             </p>
                         </CardContent>
                     </Card>

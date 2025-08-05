@@ -10,10 +10,10 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCurrency } from '@/utils';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { AlertTriangle, Building, CheckCircle, CreditCard, Download, Edit, ExternalLink, Mail, Printer, Receipt, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { formatCurrency } from '@/utils';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -166,7 +166,6 @@ const sendByEmail = () => {
         },
     );
 };
-
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
@@ -421,8 +420,10 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                         <CardHeader>
                             <CardTitle>Historial de Pagos</CardTitle>
                             <CardDescription>
-                                Pagos aplicados a esta factura
-                                ({{ invoice.payment_applications.filter(app => app.status === 'active').length }} activos)
+                                Pagos aplicados a esta factura ({{
+                                    invoice.payment_applications.filter((app) => app.status === 'active').length
+                                }}
+                                activos)
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -432,15 +433,19 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Total Aplicado</p>
                                         <p class="text-xl font-bold text-green-600">
-                                            {{ formatCurrency(invoice.payment_applications
-                                                .filter(app => app.status === 'activo')
-                                                .reduce((sum, app) => sum + app.amount_applied, 0)) }}
+                                            {{
+                                                formatCurrency(
+                                                    invoice.payment_applications
+                                                        .filter((app) => app.status === 'activo')
+                                                        .reduce((sum, app) => sum + app.amount_applied, 0),
+                                                )
+                                            }}
                                         </p>
                                     </div>
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Aplicaciones</p>
                                         <p class="text-xl font-bold">
-                                            {{ invoice.payment_applications.filter(app => app.status === 'activo').length }}
+                                            {{ invoice.payment_applications.filter((app) => app.status === 'activo').length }}
                                         </p>
                                     </div>
                                 </div>
@@ -479,25 +484,32 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                                                 </TableCell>
                                                 <TableCell>
                                                     <div class="text-sm">
-                                                        {{ new Date(application.applied_date).toLocaleDateString('es-CO', {
-                                                            year: 'numeric',
-                                                            month: 'short',
-                                                            day: 'numeric'
-                                                        }) }}
+                                                        {{
+                                                            new Date(application.applied_date).toLocaleDateString('es-CO', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                            })
+                                                        }}
                                                     </div>
                                                     <div class="text-xs text-muted-foreground">
-                                                        Pago: {{ new Date(application.payment.payment_date).toLocaleDateString('es-CO', {
-                                                            year: 'numeric',
-                                                            month: 'short',
-                                                            day: 'numeric'
-                                                        }) }}
+                                                        Pago:
+                                                        {{
+                                                            new Date(application.payment.payment_date).toLocaleDateString('es-CO', {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                            })
+                                                        }}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell class="text-right">
-                                                    <div :class="[
-                                                        'font-mono text-sm font-medium',
-                                                        application.status === 'activo' ? 'text-green-600' : 'text-red-600 line-through'
-                                                    ]">
+                                                    <div
+                                                        :class="[
+                                                            'font-mono text-sm font-medium',
+                                                            application.status === 'activo' ? 'text-green-600' : 'text-red-600 line-through',
+                                                        ]"
+                                                    >
                                                         {{ formatCurrency(application.amount_applied) }}
                                                     </div>
                                                 </TableCell>
@@ -508,12 +520,18 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge :class="application.status === 'activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                    <Badge
+                                                        :class="
+                                                            application.status === 'activo'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        "
+                                                    >
                                                         {{ application.status_label }}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell class="text-center">
-                                                    <Link 
+                                                    <Link
                                                         :href="`/finance/payments/${application.payment.id}`"
                                                         class="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
                                                     >

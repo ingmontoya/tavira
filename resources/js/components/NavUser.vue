@@ -17,13 +17,21 @@ const { isMobile, state } = useSidebar();
         <SidebarMenuItem>
             <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                    <SidebarMenuButton size="lg" class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                        <UserInfo :user="user" />
-                        <ChevronsUpDown class="ml-auto size-4" />
+                    <SidebarMenuButton
+                        size="lg"
+                        class="group relative overflow-hidden transition-all duration-200 hover:scale-105 hover:shadow-lg data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                    >
+                        <div class="flex w-full items-center gap-3 transition-all duration-200 group-hover:translate-x-0.5">
+                            <UserInfo :user="user" />
+                            <ChevronsUpDown class="ml-auto size-4 transition-all duration-200 group-hover:scale-110 group-hover:rotate-180" />
+                        </div>
+                        <div
+                            class="absolute inset-0 rounded-lg bg-gradient-to-r from-primary/5 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                        />
                     </SidebarMenuButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                    class="w-(--reka-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                    class="w-(--reka-dropdown-menu-trigger-width) min-w-56 animate-in rounded-lg border-border/50 bg-background/95 shadow-xl backdrop-blur-sm duration-200 fade-in-0 zoom-in-95"
                     :side="isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'"
                     align="end"
                     :side-offset="4"

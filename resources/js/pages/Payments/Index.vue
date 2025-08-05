@@ -10,7 +10,7 @@ import ValidationErrors from '@/components/ValidationErrors.vue';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { AlertTriangle, CheckCircle, CreditCard, Receipt, Settings, TrendingUp, XCircle, MapPin } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle, CreditCard, MapPin, Receipt, Settings, TrendingUp, XCircle } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface Stats {

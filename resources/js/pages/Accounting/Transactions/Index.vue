@@ -105,21 +105,21 @@ const filteredData = computed(() => {
     // Search filter
     if (customFilters.value.search) {
         const searchTerm = customFilters.value.search.toLowerCase();
-        filtered = filtered.filter(
-            (transaction) => {
-                // Extract apartment number from description for search
-                const apartmentMatch = transaction.description?.match(/Apto\s+([A-Z0-9]+)/);
-                const apartmentNumber = apartmentMatch ? apartmentMatch[1].toLowerCase() : '';
-                
-                return transaction.reference?.toLowerCase().includes(searchTerm) ||
-                    transaction.description?.toLowerCase().includes(searchTerm) ||
-                    transaction.created_by?.name?.toLowerCase().includes(searchTerm) ||
-                    apartmentNumber.includes(searchTerm) ||
-                    transaction.entries?.some(
-                        (entry) => entry.account.code.toLowerCase().includes(searchTerm) || entry.account.name.toLowerCase().includes(searchTerm),
-                    );
-            }
-        );
+        filtered = filtered.filter((transaction) => {
+            // Extract apartment number from description for search
+            const apartmentMatch = transaction.description?.match(/Apto\s+([A-Z0-9]+)/);
+            const apartmentNumber = apartmentMatch ? apartmentMatch[1].toLowerCase() : '';
+
+            return (
+                transaction.reference?.toLowerCase().includes(searchTerm) ||
+                transaction.description?.toLowerCase().includes(searchTerm) ||
+                transaction.created_by?.name?.toLowerCase().includes(searchTerm) ||
+                apartmentNumber.includes(searchTerm) ||
+                transaction.entries?.some(
+                    (entry) => entry.account.code.toLowerCase().includes(searchTerm) || entry.account.name.toLowerCase().includes(searchTerm),
+                )
+            );
+        });
     }
 
     // Status filter
@@ -165,18 +165,18 @@ const columns = [
         header: 'Apartamento',
         cell: ({ row }) => {
             const transaction = row.original;
-            
+
             // Extract apartment number from description or reference
             let apartmentNumber = transaction.apartment_number;
             if (!apartmentNumber && transaction.description) {
                 const match = transaction.description.match(/Apto\s+([A-Z0-9]+)/);
                 apartmentNumber = match ? match[1] : null;
             }
-            
+
             if (apartmentNumber) {
                 return h('div', { class: 'font-mono text-sm font-medium' }, apartmentNumber);
             }
-            
+
             return h('div', { class: 'text-muted-foreground text-sm' }, '-');
         },
     }),
@@ -186,11 +186,11 @@ const columns = [
         cell: ({ row }) => {
             const reference = row.getValue('reference') as any;
             const referenceType = row.original.reference_type;
-            
+
             if (!reference || !referenceType) {
                 return h('div', { class: 'text-muted-foreground text-sm' }, 'Manual');
             }
-            
+
             let displayText = '';
             if (referenceType === 'invoice' && reference.invoice_number) {
                 displayText = reference.invoice_number;
@@ -199,7 +199,7 @@ const columns = [
             } else {
                 displayText = `${referenceType.charAt(0).toUpperCase() + referenceType.slice(1)} #${reference.id}`;
             }
-            
+
             return h('div', { class: 'font-mono text-sm' }, displayText);
         },
     }),
@@ -418,8 +418,8 @@ const exportTransactions = () => {
                             Limpiar filtros
                         </Button>
                         <div class="text-sm text-muted-foreground">
-                            Mostrando {{ filteredData.length }} de {{ data.length }} transacciones en esta página 
-                            ({{ transactions.total || 0 }} total en el sistema)
+                            Mostrando {{ filteredData.length }} de {{ data.length }} transacciones en esta página ({{ transactions.total || 0 }} total
+                            en el sistema)
                         </div>
                     </div>
                 </div>
@@ -531,21 +531,11 @@ const exportTransactions = () => {
                         Mostrando {{ transactions.from || 0 }} - {{ transactions.to || 0 }} de {{ transactions.total || 0 }} transacciones
                     </div>
                     <div class="space-x-2">
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            :disabled="!transactions.prev_page_url"
-                            @click="router.visit(transactions.prev_page_url)"
-                        > 
-                            Anterior 
+                        <Button variant="outline" size="sm" :disabled="!transactions.prev_page_url" @click="router.visit(transactions.prev_page_url)">
+                            Anterior
                         </Button>
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            :disabled="!transactions.next_page_url"
-                            @click="router.visit(transactions.next_page_url)"
-                        > 
-                            Siguiente 
+                        <Button variant="outline" size="sm" :disabled="!transactions.next_page_url" @click="router.visit(transactions.next_page_url)">
+                            Siguiente
                         </Button>
                     </div>
                 </div>

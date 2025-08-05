@@ -113,13 +113,6 @@ export function useNavigation() {
             visible: hasPermission('view_payments'),
         },
         {
-            title: 'Mapeo de Cuentas',
-            href: '/payment-method-account-mappings',
-            icon: MapPin,
-            tourId: 'nav-payment-method-account-mappings',
-            visible: hasPermission('view_payments'),
-        },
-        {
             title: 'Acuerdos de Pago',
             href: '/payment-agreements',
             icon: FileText,
@@ -170,6 +163,13 @@ export function useNavigation() {
             icon: Wallet,
             tourId: 'nav-budgets',
             visible: hasPermission('view_accounting'),
+        },
+        {
+            title: 'Mapeo de Cuentas',
+            href: '/payment-method-account-mappings',
+            icon: MapPin,
+            tourId: 'nav-payment-method-account-mappings',
+            visible: hasPermission('view_payments'),
         },
         {
             title: 'Reportes Contables',

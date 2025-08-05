@@ -67,9 +67,7 @@ const breadcrumbs = [
                 </div>
                 <div class="flex space-x-2">
                     <Button asChild variant="outline">
-                        <Link :href="`/payment-method-account-mappings/${mapping.id}`">
-                            Ver Detalle
-                        </Link>
+                        <Link :href="`/payment-method-account-mappings/${mapping.id}`"> Ver Detalle </Link>
                     </Button>
                     <Button asChild variant="outline">
                         <Link href="/payment-method-account-mappings">
@@ -124,9 +122,7 @@ const breadcrumbs = [
                                     <div v-if="form.errors.cash_account_id" class="text-sm text-destructive">
                                         {{ form.errors.cash_account_id }}
                                     </div>
-                                    <p class="text-sm text-muted-foreground">
-                                        Solo se muestran cuentas de activos de tipo efectivo o bancarias
-                                    </p>
+                                    <p class="text-sm text-muted-foreground">Solo se muestran cuentas de activos de tipo efectivo o bancarias</p>
                                 </div>
 
                                 <!-- Active Status -->
@@ -160,7 +156,7 @@ const breadcrumbs = [
                             </p>
                             <div class="space-y-2">
                                 <h4 class="text-sm font-medium">Ejemplos:</h4>
-                                <ul class="text-sm text-muted-foreground space-y-1">
+                                <ul class="space-y-1 text-sm text-muted-foreground">
                                     <li>• Efectivo → Caja General</li>
                                     <li>• Transferencia → Banco Davivienda</li>
                                     <li>• Tarjeta → Banco Bogotá</li>
@@ -176,9 +172,7 @@ const breadcrumbs = [
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-2">
-                                <p class="text-sm text-muted-foreground">
-                                    {{ cashAccounts.length }} cuentas de efectivo/banco disponibles
-                                </p>
+                                <p class="text-sm text-muted-foreground">{{ cashAccounts.length }} cuentas de efectivo/banco disponibles</p>
                             </div>
                         </CardContent>
                     </Card>

@@ -7,7 +7,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle, CreditCard, DollarSign, Edit, FileText, Hash, Receipt, RefreshCw, RotateCcw, XCircle } from 'lucide-vue-next';
+import {
+    AlertCircle,
+    ArrowLeft,
+    CheckCircle,
+    CreditCard,
+    DollarSign,
+    Edit,
+    FileText,
+    Hash,
+    Receipt,
+    RefreshCw,
+    RotateCcw,
+    XCircle,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface PaymentApplication {
@@ -132,8 +145,8 @@ const paymentMethodIcon = computed(() => {
 
 const totalAppliedAmount = computed(() => {
     return props.payment.applications
-        .filter(app => app.status === 'active')
-        .reduce((sum, app) => sum + parseFloat(app.amount_applied as string || '0'), 0);
+        .filter((app) => app.status === 'active')
+        .reduce((sum, app) => sum + parseFloat((app.amount_applied as string) || '0'), 0);
 });
 
 const canEdit = computed(() => {
@@ -145,7 +158,7 @@ const canApply = computed(() => {
 });
 
 const canReverse = computed(() => {
-    return parseFloat(props.payment.applied_amount as string || '0') > 0;
+    return parseFloat((props.payment.applied_amount as string) || '0') > 0;
 });
 
 const formatDate = (dateString: string) => {
@@ -167,16 +180,24 @@ const formatDateTime = (dateString: string) => {
 };
 
 const applyPayment = () => {
-    router.post(`/finance/payments/${props.payment.id}/apply`, {}, {
-        preserveScroll: true,
-    });
+    router.post(
+        `/finance/payments/${props.payment.id}/apply`,
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
 };
 
 const reversePayment = () => {
     if (confirm('¿Está seguro de que desea reversar las aplicaciones de este pago?')) {
-        router.post(`/finance/payments/${props.payment.id}/reverse`, {}, {
-            preserveScroll: true,
-        });
+        router.post(
+            `/finance/payments/${props.payment.id}/reverse`,
+            {},
+            {
+                preserveScroll: true,
+            },
+        );
     }
 };
 
@@ -287,14 +308,22 @@ const breadcrumbs = [
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Progreso de Aplicación</Label>
                                     <div class="mt-1">
-                                        <div class="h-2 bg-gray-200 rounded-full">
-                                            <div 
-                                                class="h-2 bg-green-500 rounded-full transition-all duration-300"
-                                                :style="{ width: `${(parseFloat(payment.applied_amount as string || '0') / parseFloat(payment.total_amount as string || '1')) * 100}%` }"
+                                        <div class="h-2 rounded-full bg-gray-200">
+                                            <div
+                                                class="h-2 rounded-full bg-green-500 transition-all duration-300"
+                                                :style="{
+                                                    width: `${(parseFloat((payment.applied_amount as string) || '0') / parseFloat((payment.total_amount as string) || '1')) * 100}%`,
+                                                }"
                                             ></div>
                                         </div>
-                                        <p class="text-xs text-muted-foreground mt-1">
-                                            {{ ((parseFloat(payment.applied_amount as string || '0') / parseFloat(payment.total_amount as string || '1')) * 100).toFixed(1) }}% aplicado
+                                        <p class="mt-1 text-xs text-muted-foreground">
+                                            {{
+                                                (
+                                                    (parseFloat((payment.applied_amount as string) || '0') /
+                                                        parseFloat((payment.total_amount as string) || '1')) *
+                                                    100
+                                                ).toFixed(1)
+                                            }}% aplicado
                                         </p>
                                     </div>
                                 </div>
@@ -327,9 +356,9 @@ const breadcrumbs = [
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="payment.applications.length === 0" class="text-center text-muted-foreground py-8">
-                                <Receipt class="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                <p class="text-lg font-medium mb-2">Sin Aplicaciones</p>
+                            <div v-if="payment.applications.length === 0" class="py-8 text-center text-muted-foreground">
+                                <Receipt class="mx-auto mb-4 h-12 w-12 opacity-50" />
+                                <p class="mb-2 text-lg font-medium">Sin Aplicaciones</p>
                                 <p class="text-sm">Este pago aún no se ha aplicado a ninguna factura.</p>
                                 <Button v-if="canApply" class="mt-4 gap-2" @click="applyPayment">
                                     <CheckCircle class="h-4 w-4" />
@@ -343,7 +372,7 @@ const breadcrumbs = [
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Aplicaciones Activas</p>
                                         <p class="text-xl font-bold">
-                                            {{ payment.applications.filter(app => app.status === 'active').length }}
+                                            {{ payment.applications.filter((app) => app.status === 'active').length }}
                                         </p>
                                     </div>
                                     <div class="text-center">
@@ -355,7 +384,7 @@ const breadcrumbs = [
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Aplicaciones Reversadas</p>
                                         <p class="text-xl font-bold text-red-600">
-                                            {{ payment.applications.filter(app => app.status === 'reversed').length }}
+                                            {{ payment.applications.filter((app) => app.status === 'reversed').length }}
                                         </p>
                                     </div>
                                 </div>
@@ -383,7 +412,8 @@ const breadcrumbs = [
                                                     <div class="space-y-1">
                                                         <div class="font-mono text-sm font-medium">{{ application.invoice.invoice_number }}</div>
                                                         <div class="text-xs text-muted-foreground">
-                                                            Total: {{ formatCurrency(parseFloat(application.invoice.total_amount as string || '0')) }}
+                                                            Total:
+                                                            {{ formatCurrency(parseFloat((application.invoice.total_amount as string) || '0')) }}
                                                         </div>
                                                     </div>
                                                 </TableCell>
@@ -393,12 +423,23 @@ const breadcrumbs = [
                                                     </div>
                                                 </TableCell>
                                                 <TableCell class="text-right">
-                                                    <div :class="['font-mono text-sm font-medium', application.status === 'active' ? 'text-green-600' : 'text-red-600 line-through']">
-                                                        {{ formatCurrency(parseFloat(application.amount_applied as string || '0')) }}
+                                                    <div
+                                                        :class="[
+                                                            'font-mono text-sm font-medium',
+                                                            application.status === 'active' ? 'text-green-600' : 'text-red-600 line-through',
+                                                        ]"
+                                                    >
+                                                        {{ formatCurrency(parseFloat((application.amount_applied as string) || '0')) }}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge :class="application.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                                    <Badge
+                                                        :class="
+                                                            application.status === 'active'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        "
+                                                    >
                                                         {{ application.status_label }}
                                                     </Badge>
                                                 </TableCell>
@@ -427,7 +468,7 @@ const breadcrumbs = [
                         <CardContent class="space-y-4">
                             <div class="text-center">
                                 <p class="text-sm text-muted-foreground">Monto Total</p>
-                                <p class="text-2xl font-bold">{{ formatCurrency(parseFloat(payment.total_amount as string || '0')) }}</p>
+                                <p class="text-2xl font-bold">{{ formatCurrency(parseFloat((payment.total_amount as string) || '0')) }}</p>
                             </div>
 
                             <Separator />
@@ -435,17 +476,24 @@ const breadcrumbs = [
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Monto aplicado:</span>
-                                    <span class="font-medium text-green-600">{{ formatCurrency(parseFloat(payment.applied_amount as string || '0')) }}</span>
+                                    <span class="font-medium text-green-600">{{
+                                        formatCurrency(parseFloat((payment.applied_amount as string) || '0'))
+                                    }}</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Monto restante:</span>
-                                    <span :class="['font-medium', parseFloat(payment.remaining_amount as string || '0') > 0 ? 'text-yellow-600' : 'text-green-600']">
-                                        {{ formatCurrency(parseFloat(payment.remaining_amount as string || '0')) }}
+                                    <span
+                                        :class="[
+                                            'font-medium',
+                                            parseFloat((payment.remaining_amount as string) || '0') > 0 ? 'text-yellow-600' : 'text-green-600',
+                                        ]"
+                                    >
+                                        {{ formatCurrency(parseFloat((payment.remaining_amount as string) || '0')) }}
                                     </span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Aplicaciones:</span>
-                                    <span>{{ payment.applications.filter(app => app.status === 'active').length }}</span>
+                                    <span>{{ payment.applications.filter((app) => app.status === 'active').length }}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -511,12 +559,7 @@ const breadcrumbs = [
                                 Editar Pago
                             </Button>
 
-                            <Button
-                                v-if="canApply"
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="applyPayment"
-                            >
+                            <Button v-if="canApply" variant="outline" class="w-full justify-start gap-2" @click="applyPayment">
                                 <CheckCircle class="h-4 w-4" />
                                 Aplicar a Facturas
                             </Button>

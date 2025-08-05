@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCurrency } from '@/utils';
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
-import { formatCurrency } from '@/utils';
 
 interface Apartment {
     id: number;
@@ -68,50 +68,52 @@ const pendingInvoices = ref<Invoice[]>([]);
 const loadingInvoices = ref(false);
 
 // Load pending invoices when apartment is selected
-watch(() => form.apartment_id, async (apartmentId) => {
-    if (!apartmentId) {
-        pendingInvoices.value = [];
-        return;
-    }
-
-    // If we have preselected invoices and this is the preselected apartment, use those
-    if (props.preSelectedInvoices && 
-        props.preSelectedApartment && 
-        apartmentId === props.preSelectedApartment.id.toString()) {
-        console.log('Using preselected invoices:', props.preSelectedInvoices);
-        pendingInvoices.value = props.preSelectedInvoices;
-        return;
-    }
-
-    // Otherwise, fetch via API
-    loadingInvoices.value = true;
-    try {
-        console.log('Loading pending invoices for apartment:', apartmentId);
-        
-        // Use fetch instead of axios to ensure proper cookies are sent
-        const response = await fetch(`/finance/payments/pending-invoices?apartment_id=${apartmentId}`, {
-            method: 'GET',
-            credentials: 'same-origin', // This ensures cookies are sent
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+watch(
+    () => form.apartment_id,
+    async (apartmentId) => {
+        if (!apartmentId) {
+            pendingInvoices.value = [];
+            return;
         }
-        
-        const data = await response.json();
-        console.log('Pending invoices response:', data);
-        pendingInvoices.value = data.invoices;
-    } catch (error) {
-        console.error('Error loading pending invoices:', error);
-        pendingInvoices.value = [];
-    } finally {
-        loadingInvoices.value = false;
-    }
-}, { immediate: true });
+
+        // If we have preselected invoices and this is the preselected apartment, use those
+        if (props.preSelectedInvoices && props.preSelectedApartment && apartmentId === props.preSelectedApartment.id.toString()) {
+            console.log('Using preselected invoices:', props.preSelectedInvoices);
+            pendingInvoices.value = props.preSelectedInvoices;
+            return;
+        }
+
+        // Otherwise, fetch via API
+        loadingInvoices.value = true;
+        try {
+            console.log('Loading pending invoices for apartment:', apartmentId);
+
+            // Use fetch instead of axios to ensure proper cookies are sent
+            const response = await fetch(`/finance/payments/pending-invoices?apartment_id=${apartmentId}`, {
+                method: 'GET',
+                credentials: 'same-origin', // This ensures cookies are sent
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Pending invoices response:', data);
+            pendingInvoices.value = data.invoices;
+        } catch (error) {
+            console.error('Error loading pending invoices:', error);
+            pendingInvoices.value = [];
+        } finally {
+            loadingInvoices.value = false;
+        }
+    },
+    { immediate: true },
+);
 
 // Calculate totals
 const totalPendingAmount = computed(() => {
@@ -212,7 +214,9 @@ const breadcrumbs = [
         <div class="container mx-auto max-w-4xl px-4 py-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold tracking-tight">Registrar Nuevo Pago</h1>
-                <p class="text-muted-foreground">Complete la información del pago. El sistema aplicará automáticamente el pago a las facturas pendientes.</p>
+                <p class="text-muted-foreground">
+                    Complete la información del pago. El sistema aplicará automáticamente el pago a las facturas pendientes.
+                </p>
             </div>
 
             <form @submit.prevent="submit" class="space-y-8">
@@ -255,12 +259,7 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="payment_date">Fecha del Pago</Label>
-                                <Input
-                                    id="payment_date"
-                                    v-model="form.payment_date"
-                                    type="date"
-                                    :disabled="form.processing"
-                                />
+                                <Input id="payment_date" v-model="form.payment_date" type="date" :disabled="form.processing" />
                                 <div v-if="form.errors.payment_date" class="text-sm text-red-600">{{ form.errors.payment_date }}</div>
                             </div>
 
@@ -292,12 +291,7 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="notes">Notas</Label>
-                                <Textarea
-                                    id="notes"
-                                    v-model="form.notes"
-                                    placeholder="Observaciones adicionales..."
-                                    :disabled="form.processing"
-                                />
+                                <Textarea id="notes" v-model="form.notes" placeholder="Observaciones adicionales..." :disabled="form.processing" />
                                 <div v-if="form.errors.notes" class="text-sm text-red-600">{{ form.errors.notes }}</div>
                             </div>
                         </CardContent>
@@ -313,15 +307,13 @@ const breadcrumbs = [
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="!form.apartment_id" class="text-center text-muted-foreground py-8">
+                            <div v-if="!form.apartment_id" class="py-8 text-center text-muted-foreground">
                                 Seleccione un apartamento para ver las facturas pendientes
                             </div>
-                            
-                            <div v-else-if="loadingInvoices" class="text-center text-muted-foreground py-8">
-                                Cargando facturas...
-                            </div>
 
-                            <div v-else-if="pendingInvoices.length === 0" class="text-center text-muted-foreground py-8">
+                            <div v-else-if="loadingInvoices" class="py-8 text-center text-muted-foreground">Cargando facturas...</div>
+
+                            <div v-else-if="pendingInvoices.length === 0" class="py-8 text-center text-muted-foreground">
                                 No hay facturas pendientes para este apartamento
                             </div>
 
@@ -373,7 +365,11 @@ const breadcrumbs = [
                                                     <div class="font-mono text-sm">{{ formatCurrency(invoice.balance_amount) }}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge :class="invoice.status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'">
+                                                    <Badge
+                                                        :class="
+                                                            invoice.status === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                                        "
+                                                    >
                                                         {{ invoice.status_label }}
                                                     </Badge>
                                                 </TableCell>
@@ -390,9 +386,7 @@ const breadcrumbs = [
                 <Card v-if="pendingInvoices.length > 0 && paymentAmount > 0">
                     <CardHeader>
                         <CardTitle>Simulación de Aplicación de Pago</CardTitle>
-                        <CardDescription>
-                            Así es como se aplicará el pago a las facturas pendientes (orden cronológico)
-                        </CardDescription>
+                        <CardDescription> Así es como se aplicará el pago a las facturas pendientes (orden cronológico) </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
@@ -430,9 +424,7 @@ const breadcrumbs = [
                                             <TableCell>
                                                 <div class="space-y-1">
                                                     <div class="font-mono text-sm">{{ simulation.invoice.invoice_number }}</div>
-                                                    <div class="text-xs text-muted-foreground">
-                                                        Orden: {{ index + 1 }}
-                                                    </div>
+                                                    <div class="text-xs text-muted-foreground">Orden: {{ index + 1 }}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell class="text-right">
@@ -444,7 +436,9 @@ const breadcrumbs = [
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge :class="simulation.willBeFullyPaid ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'">
+                                                <Badge
+                                                    :class="simulation.willBeFullyPaid ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'"
+                                                >
                                                     {{ simulation.willBeFullyPaid ? 'Pago Completo' : 'Pago Parcial' }}
                                                 </Badge>
                                             </TableCell>
@@ -453,18 +447,20 @@ const breadcrumbs = [
                                 </Table>
                             </div>
 
-                            <div v-if="willFullyPay" class="rounded-lg bg-green-50 border border-green-200 p-4">
+                            <div v-if="willFullyPay" class="rounded-lg border border-green-200 bg-green-50 p-4">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0">
                                         <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clip-rule="evenodd"
+                                            />
                                         </svg>
                                     </div>
                                     <div class="ml-3">
-                                        <p class="text-sm font-medium text-green-800">
-                                            ¡Excelente! Este pago cubrirá todas las facturas pendientes.
-                                        </p>
-                                        <p v-if="paymentAmount > totalPendingAmount" class="text-sm text-green-700 mt-1">
+                                        <p class="text-sm font-medium text-green-800">¡Excelente! Este pago cubrirá todas las facturas pendientes.</p>
+                                        <p v-if="paymentAmount > totalPendingAmount" class="mt-1 text-sm text-green-700">
                                             Sobrante: {{ formatCurrency(paymentAmount - totalPendingAmount) }}
                                         </p>
                                     </div>
@@ -478,25 +474,27 @@ const breadcrumbs = [
                 <Card v-if="accountingSimulation">
                     <CardHeader>
                         <CardTitle>Simulación Contable</CardTitle>
-                        <CardDescription>
-                            Asientos contables que se generarán automáticamente al registrar el pago
-                        </CardDescription>
+                        <CardDescription> Asientos contables que se generarán automáticamente al registrar el pago </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
                             <!-- Transaction Summary -->
-                            <div class="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                            <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
                                 <div class="grid grid-cols-3 gap-4 text-center">
                                     <div>
-                                        <div class="text-sm text-blue-600 font-medium">Total Débitos</div>
-                                        <div class="font-mono text-lg font-bold text-blue-800">{{ formatCurrency(accountingSimulation.totalDebits) }}</div>
+                                        <div class="text-sm font-medium text-blue-600">Total Débitos</div>
+                                        <div class="font-mono text-lg font-bold text-blue-800">
+                                            {{ formatCurrency(accountingSimulation.totalDebits) }}
+                                        </div>
                                     </div>
                                     <div>
-                                        <div class="text-sm text-blue-600 font-medium">Total Créditos</div>
-                                        <div class="font-mono text-lg font-bold text-blue-800">{{ formatCurrency(accountingSimulation.totalCredits) }}</div>
+                                        <div class="text-sm font-medium text-blue-600">Total Créditos</div>
+                                        <div class="font-mono text-lg font-bold text-blue-800">
+                                            {{ formatCurrency(accountingSimulation.totalCredits) }}
+                                        </div>
                                     </div>
                                     <div>
-                                        <div class="text-sm text-blue-600 font-medium">Estado</div>
+                                        <div class="text-sm font-medium text-blue-600">Estado</div>
                                         <Badge :class="accountingSimulation.isBalanced ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                                             {{ accountingSimulation.isBalanced ? 'Balanceado' : 'Desbalanceado' }}
                                         </Badge>
@@ -544,19 +542,25 @@ const breadcrumbs = [
                             </div>
 
                             <!-- Accounting Note -->
-                            <div class="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0">
                                         <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                clip-rule="evenodd"
+                                            />
                                         </svg>
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-gray-900">Registro Contable Automático</p>
-                                        <p class="text-sm text-gray-700 mt-1">
-                                            Este asiento se generará automáticamente al registrar el pago. 
-                                            Se debitará la cuenta {{ accountingSimulation.entries[0].account.code }} ({{ accountingSimulation.entries[0].account.name }}) 
-                                            y se acreditará la cuenta {{ accountingSimulation.entries[1].account.code }} ({{ accountingSimulation.entries[1].account.name }}).
+                                        <p class="mt-1 text-sm text-gray-700">
+                                            Este asiento se generará automáticamente al registrar el pago. Se debitará la cuenta
+                                            {{ accountingSimulation.entries[0].account.code }} ({{ accountingSimulation.entries[0].account.name }}) y
+                                            se acreditará la cuenta {{ accountingSimulation.entries[1].account.code }} ({{
+                                                accountingSimulation.entries[1].account.name
+                                            }}).
                                         </p>
                                     </div>
                                 </div>
@@ -567,9 +571,7 @@ const breadcrumbs = [
 
                 <!-- Actions -->
                 <div class="flex items-center justify-end space-x-4">
-                    <Button type="button" variant="outline" @click="$inertia.visit('/finance/payments')">
-                        Cancelar
-                    </Button>
+                    <Button type="button" variant="outline" @click="$inertia.visit('/finance/payments')"> Cancelar </Button>
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Procesando...' : 'Registrar Pago' }}
                     </Button>

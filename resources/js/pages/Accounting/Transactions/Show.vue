@@ -102,10 +102,10 @@ const referenceDisplay = computed(() => {
     if (!props.transaction.reference || !props.transaction.reference_type) {
         return props.transaction.transaction_number || 'Manual';
     }
-    
+
     const reference = props.transaction.reference;
     const referenceType = props.transaction.reference_type;
-    
+
     if (referenceType === 'invoice' && reference.invoice_number) {
         return reference.invoice_number;
     } else if (referenceType === 'payment' && reference.payment_number) {

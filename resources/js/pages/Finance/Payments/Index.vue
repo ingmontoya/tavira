@@ -217,7 +217,7 @@ const columns = [
             );
         },
         cell: ({ row }) => {
-            const amount = parseFloat(row.getValue('total_amount') as string || '0');
+            const amount = parseFloat((row.getValue('total_amount') as string) || '0');
             return h(
                 'div',
                 {
@@ -230,10 +230,10 @@ const columns = [
     columnHelper.accessor('applied_amount', {
         header: 'Monto Aplicado',
         cell: ({ row }) => {
-            const appliedAmount = parseFloat(row.getValue('applied_amount') as string || '0');
-            const totalAmount = parseFloat(row.original.total_amount as string || '0');
+            const appliedAmount = parseFloat((row.getValue('applied_amount') as string) || '0');
+            const totalAmount = parseFloat((row.original.total_amount as string) || '0');
             const percentage = totalAmount > 0 ? (appliedAmount / totalAmount) * 100 : 0;
-            
+
             return h('div', { class: 'space-y-1' }, [
                 h('div', { class: 'text-right font-mono text-sm' }, `$${appliedAmount.toLocaleString()}`),
                 h('div', { class: 'text-xs text-muted-foreground text-right' }, `${percentage.toFixed(0)}%`),
@@ -262,9 +262,7 @@ const columns = [
             return h('div', { class: 'text-sm' }, [
                 h('div', { class: 'font-medium' }, `${payment.applications.length} factura(s)`),
                 payment.applications.length > 0 &&
-                    h('div', { class: 'text-xs text-muted-foreground' }, 
-                        payment.applications.map(app => app.invoice.invoice_number).join(', ')
-                    ),
+                    h('div', { class: 'text-xs text-muted-foreground' }, payment.applications.map((app) => app.invoice.invoice_number).join(', ')),
             ]);
         },
     }),
