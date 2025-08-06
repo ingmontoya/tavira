@@ -14,6 +14,20 @@ class GenerateAccountingEntryFromInvoice
         try {
             $invoice = $event->invoice;
 
+            // Verificar si ya existen transacciones contables para esta factura
+            $existingTransactions = AccountingTransaction::where('reference_type', 'invoice')
+                ->where('reference_id', $invoice->id)
+                ->count();
+
+            if ($existingTransactions > 0) {
+                Log::info('Transacciones contables ya existen para la factura', [
+                    'invoice_id' => $invoice->id,
+                    'existing_transactions' => $existingTransactions,
+                ]);
+
+                return;
+            }
+
             // Obtener el conjunto_config_id desde la relación del apartamento
             $conjuntoConfigId = $invoice->apartment->apartmentType->conjunto_config_id;
 

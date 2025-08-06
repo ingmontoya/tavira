@@ -106,6 +106,13 @@ export function useNavigation() {
             visible: hasPermission('view_payments'),
         },
         {
+            title: 'Envío de Facturas',
+            href: '/invoices/email',
+            icon: Mail,
+            tourId: 'nav-invoice-email',
+            visible: hasPermission('view_payments'),
+        },
+        {
             title: 'Conceptos de Pago',
             href: '/payment-concepts',
             icon: Settings,

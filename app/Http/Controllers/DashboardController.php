@@ -165,12 +165,21 @@ class DashboardController extends Controller
         $conjunto = ConjuntoConfig::first(); // Obtener el conjunto único
         $conjuntoName = $conjunto ? $conjunto->name : 'Vista Hermosa';
         $towerNames = $conjunto && $conjunto->tower_names ? $conjunto->tower_names : ['A', 'B', 'C'];
+        // dd($conjunto, $conjuntoName, $towerNames);
 
-        return collect([
-            ['name' => "Torre {$towerNames[0]} - {$conjuntoName}", 'residents' => 89, 'color' => '#3b82f6'],
-            ['name' => "Torre {$towerNames[1]} - {$conjuntoName}", 'residents' => 76, 'color' => '#ef4444'],
-            ['name' => "Torre {$towerNames[2]} - {$conjuntoName}", 'residents' => 65, 'color' => '#10b981'],
-        ]);
+        $towers = collect();
+        $colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
+        $residents = [89, 76, 65, 82, 94, 71]; // Mock residents data
+        
+        foreach ($towerNames as $index => $towerName) {
+            $towers->push([
+                'name' => "Torre {$towerName} - {$conjuntoName}",
+                'residents' => $residents[$index] ?? 50 + ($index * 10), // Fallback calculation
+                'color' => $colors[$index] ?? '#6b7280' // Default gray color
+            ]);
+        }
+        
+        return $towers;
     }
 
     private function getOccupancyStatus()

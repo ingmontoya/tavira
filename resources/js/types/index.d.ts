@@ -112,4 +112,156 @@ export interface Apartment {
     apartment_type?: ApartmentType;
     created_at: string;
     updated_at: string;
+    full_address?: string;
+}
+
+// Invoice Email System Types
+export interface Invoice {
+    id: number;
+    invoice_number: string;
+    apartment: {
+        id: number;
+        number: string;
+        tower: string;
+        full_address: string;
+    } | null;
+    type: string;
+    type_label: string;
+    billing_date: string;
+    due_date: string;
+    billing_period_label: string;
+    total_amount: number;
+    paid_amount: number;
+    balance_due: number;
+    status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
+    status_label: string;
+    status_badge: {
+        text: string;
+        class: string;
+    };
+    days_overdue?: number;
+    items: InvoiceItem[];
+    can_send_email: boolean;
+    email_deliveries?: InvoiceEmailDelivery[];
+}
+
+export interface InvoiceItem {
+    id: number;
+    description: string;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+}
+
+export interface InvoiceEmailBatch {
+    id: number;
+    name: string;
+    description?: string;
+    status: 'borrador' | 'listo' | 'procesando' | 'completado' | 'con_errores';
+    status_label: string;
+    status_badge: {
+        text: string;
+        class: string;
+    };
+    total_invoices: number;
+    sent_count: number;
+    failed_count: number;
+    pending_count: number;
+    created_at: string;
+    updated_at: string;
+    sent_at?: string;
+    completed_at?: string;
+    created_by: User;
+    deliveries: InvoiceEmailDelivery[];
+    can_edit: boolean;
+    can_send: boolean;
+    can_delete: boolean;
+}
+
+export interface InvoiceEmailDelivery {
+    id: number;
+    batch_id: number;
+    invoice_id: number;
+    recipient_email: string;
+    recipient_name?: string;
+    status: 'pendiente' | 'enviado' | 'fallido' | 'rebotado';
+    status_label: string;
+    status_badge: {
+        text: string;
+        class: string;
+    };
+    sent_at?: string;
+    failed_at?: string;
+    error_message?: string;
+    retry_count: number;
+    max_retries: number;
+    created_at: string;
+    updated_at: string;
+    invoice: Invoice;
+    can_retry: boolean;
+}
+
+export interface EmailTemplate {
+    id: number;
+    name: string;
+    subject: string;
+    body: string;
+    is_active: boolean;
+    variables: string[];
+}
+
+// Email System API Responses
+export interface InvoiceEmailBatchResponse {
+    data: InvoiceEmailBatch[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
+export interface EligibleInvoicesResponse {
+    data: Invoice[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
+// Filter interfaces
+export interface InvoiceEmailBatchFilters {
+    search?: string;
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+}
+
+export interface EligibleInvoiceFilters {
+    search?: string;
+    apartment_id?: string;
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+    type?: string;
+}
+
+// Form data interfaces
+export interface CreateInvoiceEmailBatchData {
+    name: string;
+    description?: string;
+    invoice_ids: number[];
+    template_id?: number;
+    send_immediately?: boolean;
+}
+
+export interface BatchProgressData {
+    total: number;
+    sent: number;
+    failed: number;
+    pending: number;
+    percentage: number;
+    current_status: string;
 }

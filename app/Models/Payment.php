@@ -224,6 +224,7 @@ class Payment extends Model
             // Update payment
             $this->applied_amount += $amountToApply;
             $remainingAmount -= $amountToApply;
+            $this->save();
 
             $applications[] = $application;
 
@@ -254,44 +255,23 @@ class Payment extends Model
             'created_by' => auth()->id() ?? $this->created_by,
         ]);
 
-        // If it's a full payment for the invoice, we remove it from accounts receivable
-        // If it's partial, we create an internal transfer
+        // Single accounting entry per application: Cash received, reduce accounts receivable
+        $bankAccount = $this->getBankAccountForPaymentMethod();
+        $transaction->addEntry([
+            'account_id' => $bankAccount->id,
+            'description' => "Pago recibido - {$description}",
+            'debit_amount' => $application->amount_applied,
+            'credit_amount' => 0,
+        ]);
 
-        if ($invoice->status === 'paid') {
-            // Full payment - remove from accounts receivable
-            $transaction->addEntry([
-                'account_id' => $this->getAccountByCode('111001'), // CAJA/BANCO
-                'description' => "Pago recibido - {$description}",
-                'debit_amount' => $application->amount_applied,
-                'credit_amount' => 0,
-            ]);
-
-            $transaction->addEntry([
-                'account_id' => $this->getAccountByCode('130501'), // CARTERA ADMINISTRACIÓN
-                'description' => "Cobro factura - {$description}",
-                'debit_amount' => 0,
-                'credit_amount' => $application->amount_applied,
-                'third_party_type' => 'apartment',
-                'third_party_id' => $this->apartment_id,
-            ]);
-        } else {
-            // Partial payment - create internal accounting entries for tracking
-            $transaction->addEntry([
-                'account_id' => $this->getAccountByCode('111001'), // CAJA/BANCO
-                'description' => "Pago parcial recibido - {$description}",
-                'debit_amount' => $application->amount_applied,
-                'credit_amount' => 0,
-            ]);
-
-            $transaction->addEntry([
-                'account_id' => $this->getAccountByCode('130501'), // CARTERA ADMINISTRACIÓN
-                'description' => "Aplicación pago parcial - {$description}",
-                'debit_amount' => 0,
-                'credit_amount' => $application->amount_applied,
-                'third_party_type' => 'apartment',
-                'third_party_id' => $this->apartment_id,
-            ]);
-        }
+        $transaction->addEntry([
+            'account_id' => $this->getAccountByCode('130501'), // CARTERA ADMINISTRACIÓN
+            'description' => "Cobro cartera administración - {$description}",
+            'debit_amount' => 0,
+            'credit_amount' => $application->amount_applied,
+            'third_party_type' => 'apartment',
+            'third_party_id' => $this->apartment_id,
+        ]);
 
         $transaction->post();
     }
@@ -363,7 +343,7 @@ class Payment extends Model
 
         static::creating(function ($payment) {
             if (empty($payment->payment_number)) {
-                $payment->payment_number = self::generatePaymentNumber();
+                $payment->payment_number = self::generatePaymentNumber($payment);
             }
 
             if (empty($payment->remaining_amount)) {
@@ -380,22 +360,28 @@ class Payment extends Model
         });
 
         static::created(function ($payment) {
-            // Generate automatic accounting entry for payment receipt
-            $payment->createInitialAccountingEntry();
+            // Initial accounting entry will be created when payment is applied to invoices
+            // This prevents double accounting
         });
     }
 
-    private static function generatePaymentNumber(): string
+    private static function generatePaymentNumber($payment): string
     {
         $year = now()->year;
         $month = now()->format('m');
+        
+        // Get apartment identifier (tower + apartment number)
+        $apartment = Apartment::find($payment->apartment_id);
+        $apartmentIdentifier = $apartment ? $apartment->identifier : '0000';
+        
         $lastPayment = self::whereYear('created_at', $year)
             ->whereMonth('created_at', now()->month)
+            ->where('apartment_id', $payment->apartment_id)
             ->orderBy('id', 'desc')
             ->first();
 
-        $sequence = $lastPayment ? ((int) substr($lastPayment->payment_number, -4)) + 1 : 1;
+        $sequence = $lastPayment ? ((int) substr($lastPayment->payment_number, -2)) + 1 : 1;
 
-        return sprintf('PAY-%s%s-%04d', $year, $month, $sequence);
+        return sprintf('PAY-%s%s-%s-%02d', $year, $month, $apartmentIdentifier, $sequence);
     }
 }

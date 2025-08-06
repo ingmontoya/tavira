@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Events\AccountingTransactionPosted;
+use App\Events\InvoiceCreated;
 use App\Events\PaymentReceived;
+use App\Listeners\GenerateAccountingEntryFromInvoice;
 use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
@@ -40,7 +42,8 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(Verified::class, SendWelcomeEmail::class);
 
-        // Eventos contables - InvoiceCreated is handled by model $dispatchesEvents
+        // Eventos contables
+        Event::listen(InvoiceCreated::class, GenerateAccountingEntryFromInvoice::class);
         Event::listen(PaymentReceived::class, GenerateAccountingEntryFromPayment::class);
         Event::listen(AccountingTransactionPosted::class, UpdateBudgetExecutionFromTransaction::class);
     }

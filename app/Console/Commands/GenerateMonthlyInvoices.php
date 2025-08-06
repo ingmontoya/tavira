@@ -88,12 +88,24 @@ class GenerateMonthlyInvoices extends Command
         if ($existingInvoices > 0 && $force) {
             $this->warn("Eliminando {$existingInvoices} facturas existentes para {$year}-{$month}...");
 
+            // Obtener los IDs de las facturas antes de eliminarlas
+            $invoiceIds = Invoice::where('type', 'monthly')
+                ->where('billing_period_year', $year)
+                ->where('billing_period_month', $month)
+                ->pluck('id');
+
+            // Eliminar las transacciones contables asociadas
+            $deletedTransactions = \App\Models\AccountingTransaction::where('reference_type', 'invoice')
+                ->whereIn('reference_id', $invoiceIds)
+                ->delete();
+
+            // Eliminar las facturas
             $deleted = Invoice::where('type', 'monthly')
                 ->where('billing_period_year', $year)
                 ->where('billing_period_month', $month)
                 ->delete();
 
-            $this->info("Se eliminaron {$deleted} facturas existentes.");
+            $this->info("Se eliminaron {$deleted} facturas y {$deletedTransactions} transacciones contables existentes.");
         }
     }
 

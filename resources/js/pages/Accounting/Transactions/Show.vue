@@ -29,7 +29,7 @@ interface AccountingTransaction {
     description: string;
     transaction_date: string;
     total_amount: number | string;
-    status: 'draft' | 'posted' | 'cancelled';
+    status: 'borrador' | 'contabilizado' | 'cancelado';
     created_by: {
         id: number;
         name: string;
@@ -53,19 +53,19 @@ const props = defineProps<{
 // Computed properties
 const statusInfo = computed(() => {
     const statusMap = {
-        draft: {
+        borrador: {
             label: 'Borrador',
             color: 'bg-gray-100 text-gray-800',
             icon: Edit,
             description: 'Transacción en proceso de creación',
         },
-        posted: {
-            label: 'Contabilizada',
+        contabilizado: {
+            label: 'Contabilizado',
             color: 'bg-green-100 text-green-800',
             icon: CheckCircle,
             description: 'Transacción confirmada y registrada',
         },
-        cancelled: {
+        cancelado: {
             label: 'Cancelada',
             color: 'bg-red-100 text-red-800',
             icon: XCircle,
@@ -99,19 +99,45 @@ const canEdit = computed(() => {
 });
 
 const referenceDisplay = computed(() => {
-    if (!props.transaction.reference || !props.transaction.reference_type) {
+    if (!props.transaction.reference_type) {
         return props.transaction.transaction_number || 'Manual';
     }
 
     const reference = props.transaction.reference;
     const referenceType = props.transaction.reference_type;
 
-    if (referenceType === 'invoice' && reference.invoice_number) {
+    if (referenceType === 'invoice' && reference?.invoice_number) {
         return reference.invoice_number;
-    } else if (referenceType === 'payment' && reference.payment_number) {
+    } else if (referenceType === 'payment' && reference?.payment_number) {
         return reference.payment_number;
+    } else if (referenceType === 'payment_application' && reference) {
+        // For payment applications, show payment number
+        const payment = reference.payment || {};
+        return payment.payment_number || `Aplicación de Pago #${reference.id}`;
+    } else if (referenceType === 'payment_application_reversal' && reference) {
+        return `Reverso Aplicación de Pago #${reference.id}`;
+    } else if (reference?.id) {
+        const typeLabels = {
+            'payment_application': 'Aplicación de Pago',
+            'payment_application_reversal': 'Reverso Aplicación de Pago',
+            'invoice': 'Factura',
+            'payment': 'Pago',
+            'budget': 'Presupuesto',
+            'expense': 'Gasto'
+        };
+        const typeLabel = typeLabels[referenceType] || referenceType.charAt(0).toUpperCase() + referenceType.slice(1);
+        return `${typeLabel} #${reference.id}`;
     } else {
-        return `${referenceType.charAt(0).toUpperCase() + referenceType.slice(1)} #${reference.id}`;
+        const typeLabels = {
+            'payment_application': 'Aplicación de Pago',
+            'payment_application_reversal': 'Reverso Aplicación de Pago',
+            'invoice': 'Factura',
+            'payment': 'Pago',
+            'budget': 'Presupuesto',
+            'expense': 'Gasto'
+        };
+        const typeLabel = typeLabels[referenceType] || referenceType.charAt(0).toUpperCase() + referenceType.slice(1);
+        return props.transaction.transaction_number || typeLabel;
     }
 });
 

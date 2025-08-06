@@ -17,7 +17,7 @@ class AccountingTransactionController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $query = AccountingTransaction::forConjunto($conjunto->id)
-            ->with(['entries.account', 'createdBy', 'postedBy', 'reference']);
+            ->with(['entries.account', 'entries.thirdParty', 'createdBy', 'postedBy', 'reference']);
 
         if ($request->filled('status')) {
             $query->byStatus($request->status);
@@ -42,7 +42,13 @@ class AccountingTransactionController extends Controller
         $transactions = $query->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc')
             ->paginate(100)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(function ($transaction) {
+                // Add apartment information to each transaction
+                $apartment = $transaction->apartment;
+                $transaction->apartment_number = $apartment ? $apartment->number : null;
+                return $transaction;
+            });
 
         return Inertia::render('Accounting/Transactions/Index', [
             'transactions' => $transactions,
@@ -138,6 +144,7 @@ class AccountingTransactionController extends Controller
     {
         $transaction->load([
             'entries.account',
+            'entries.thirdParty',
             'createdBy',
             'postedBy',
             'reference',

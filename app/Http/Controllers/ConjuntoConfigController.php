@@ -123,6 +123,10 @@ class ConjuntoConfigController extends Controller
                 ->with('error', 'No se encontró configuración del conjunto. Primero debe crear uno.');
         }
 
+        // Ensure is_active is properly cast to boolean
+        $conjunto->makeHidden(['created_at', 'updated_at']);
+        $conjunto->is_active = (bool) $conjunto->is_active;
+
         return Inertia::render('ConjuntoConfig/Edit', [
             'conjunto' => $conjunto,
             'flash' => [
@@ -173,6 +177,12 @@ class ConjuntoConfigController extends Controller
 
             // Update conjunto configuration (excluding apartment_types)
             $configData = collect($validated)->except(['apartment_types'])->toArray();
+            
+            // Ensure is_active is properly cast to boolean
+            if (isset($configData['is_active'])) {
+                $configData['is_active'] = (bool) $configData['is_active'];
+            }
+            
             $conjunto->update($configData);
 
             // Handle apartment types if provided

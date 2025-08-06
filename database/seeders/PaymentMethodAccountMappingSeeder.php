@@ -1,0 +1,60 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\ChartOfAccounts;
+use App\Models\ConjuntoConfig;
+use App\Models\PaymentMethodAccountMapping;
+use Illuminate\Database\Seeder;
+
+class PaymentMethodAccountMappingSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+        
+        if (!$conjunto) {
+            $this->command->error('No active conjunto configuration found. Please run ConjuntoSeeder first.');
+            return;
+        }
+
+        $this->command->info("Creating payment method account mappings for conjunto: {$conjunto->name}");
+
+        // Define payment method to account mappings
+        $paymentMethods = [
+            'cash' => '110501', // Caja General
+            'bank_transfer' => '111001', // Banco Principal - Cuenta Corriente
+            'check' => '111001', // Banco Principal - Cuenta Corriente
+            'credit_card' => '111001', // Banco Principal - Cuenta Corriente
+            'debit_card' => '111001', // Banco Principal - Cuenta Corriente
+            'online' => '111001', // Banco Principal - Cuenta Corriente
+            'pse' => '111001', // Banco Principal - Cuenta Corriente
+            'other' => '111001', // Banco Principal - Cuenta Corriente (default)
+        ];
+
+        foreach ($paymentMethods as $method => $accountCode) {
+            $account = ChartOfAccounts::forConjunto($conjunto->id)
+                ->where('code', $accountCode)
+                ->first();
+
+            if ($account) {
+                PaymentMethodAccountMapping::firstOrCreate([
+                    'conjunto_config_id' => $conjunto->id,
+                    'payment_method' => $method,
+                ], [
+                    'cash_account_id' => $account->id,
+                    'is_active' => true,
+                ]);
+
+                $this->command->info("✓ Created mapping: {$method} -> {$account->name} ({$accountCode})");
+            } else {
+                $this->command->warn("✗ Account not found for code: {$accountCode} (payment method: {$method})");
+            }
+        }
+
+        $this->command->info('Payment method account mappings created successfully!');
+    }
+}

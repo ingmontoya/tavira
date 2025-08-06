@@ -49,6 +49,18 @@ interface PaymentApplication {
     };
 }
 
+interface ChartOfAccount {
+    id: number;
+    code: string;
+    name: string;
+    account_type: string;
+}
+
+interface AccountingAccounts {
+    paymentMethodAccounts: Record<string, ChartOfAccount>;
+    adminReceivableAccount: ChartOfAccount;
+}
+
 interface Payment {
     id: number;
     payment_number: string;
@@ -90,6 +102,7 @@ interface Payment {
 
 const props = defineProps<{
     payment: Payment;
+    accountingAccounts: AccountingAccounts;
 }>();
 
 // Computed properties
@@ -145,7 +158,7 @@ const paymentMethodIcon = computed(() => {
 
 const totalAppliedAmount = computed(() => {
     return props.payment.applications
-        .filter((app) => app.status === 'active')
+        .filter((app) => app.status === 'activo' || app.status === 'active')
         .reduce((sum, app) => sum + parseFloat((app.amount_applied as string) || '0'), 0);
 });
 
@@ -159,6 +172,42 @@ const canApply = computed(() => {
 
 const canReverse = computed(() => {
     return parseFloat((props.payment.applied_amount as string) || '0') > 0;
+});
+
+// Accounting simulation for this payment
+const accountingSimulation = computed(() => {
+    const totalAmount = parseFloat((props.payment.total_amount as string) || '0');
+    
+    if (!totalAmount || !props.payment.payment_method) {
+        return null;
+    }
+
+    const bankAccount = props.accountingAccounts.paymentMethodAccounts[props.payment.payment_method];
+    const adminAccount = props.accountingAccounts.adminReceivableAccount;
+
+    if (!bankAccount || !adminAccount) {
+        return null;
+    }
+
+    return {
+        entries: [
+            {
+                type: 'debit',
+                account: bankAccount,
+                amount: totalAmount,
+                description: `Pago recibido - ${props.payment.payment_method_label}`,
+            },
+            {
+                type: 'credit',
+                account: adminAccount,
+                amount: totalAmount,
+                description: 'Cobro cartera administración',
+            },
+        ],
+        totalDebits: totalAmount,
+        totalCredits: totalAmount,
+        isBalanced: true,
+    };
 });
 
 const formatDate = (dateString: string) => {
@@ -346,7 +395,7 @@ const breadcrumbs = [
                         </CardContent>
                     </Card>
 
-                    <!-- Payment Applications -->
+                    <!-- Aplicaciones de Pago -->
                     <Card>
                         <CardHeader>
                             <CardTitle>Aplicaciones del Pago</CardTitle>
@@ -372,7 +421,7 @@ const breadcrumbs = [
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Aplicaciones Activas</p>
                                         <p class="text-xl font-bold">
-                                            {{ payment.applications.filter((app) => app.status === 'active').length }}
+                                            {{ payment.applications.filter((app) => app.status === 'activo' || app.status === 'active').length }}
                                         </p>
                                     </div>
                                     <div class="text-center">
@@ -384,7 +433,7 @@ const breadcrumbs = [
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Aplicaciones Reversadas</p>
                                         <p class="text-xl font-bold text-red-600">
-                                            {{ payment.applications.filter((app) => app.status === 'reversed').length }}
+                                            {{ payment.applications.filter((app) => app.status === 'reversado' || app.status === 'reversed').length }}
                                         </p>
                                     </div>
                                 </div>
@@ -426,7 +475,7 @@ const breadcrumbs = [
                                                     <div
                                                         :class="[
                                                             'font-mono text-sm font-medium',
-                                                            application.status === 'active' ? 'text-green-600' : 'text-red-600 line-through',
+                                                            (application.status === 'activo' || application.status === 'active') ? 'text-green-600' : 'text-red-600 line-through',
                                                         ]"
                                                     >
                                                         {{ formatCurrency(parseFloat((application.amount_applied as string) || '0')) }}
@@ -435,7 +484,7 @@ const breadcrumbs = [
                                                 <TableCell>
                                                     <Badge
                                                         :class="
-                                                            application.status === 'active'
+                                                            (application.status === 'activo' || application.status === 'active')
                                                                 ? 'bg-green-100 text-green-800'
                                                                 : 'bg-red-100 text-red-800'
                                                         "
@@ -449,6 +498,97 @@ const breadcrumbs = [
                                             </TableRow>
                                         </TableBody>
                                     </Table>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Accounting Simulation -->
+                    <Card v-if="accountingSimulation">
+                        <CardHeader>
+                            <CardTitle>Simulación Contable</CardTitle>
+                            <CardDescription>
+                                Asiento contable generado para este pago
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <!-- Balance Summary -->
+                            <div class="mb-6 grid grid-cols-3 gap-4 rounded-lg bg-muted p-4">
+                                <div class="text-center">
+                                    <div class="text-sm font-medium text-blue-600">Total Débitos</div>
+                                    <div class="font-mono text-lg font-bold text-blue-800">
+                                        {{ formatCurrency(accountingSimulation.totalDebits) }}
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-sm font-medium text-blue-600">Total Créditos</div>
+                                    <div class="font-mono text-lg font-bold text-blue-800">
+                                        {{ formatCurrency(accountingSimulation.totalCredits) }}
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-sm font-medium text-blue-600">Estado</div>
+                                    <Badge :class="accountingSimulation.isBalanced ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                                        {{ accountingSimulation.isBalanced ? 'Balanceado' : 'Desbalanceado' }}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <!-- Accounting Entries -->
+                            <div class="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Cuenta</TableHead>
+                                            <TableHead>Descripción</TableHead>
+                                            <TableHead class="text-right">Débito</TableHead>
+                                            <TableHead class="text-right">Crédito</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        <TableRow v-for="(entry, index) in accountingSimulation.entries" :key="index">
+                                            <TableCell>
+                                                <div class="space-y-1">
+                                                    <div class="font-mono text-sm font-medium">{{ entry.account.code }}</div>
+                                                    <div class="text-xs text-muted-foreground">{{ entry.account.name }}</div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div class="text-sm">{{ entry.description }}</div>
+                                            </TableCell>
+                                            <TableCell class="text-right">
+                                                <div v-if="entry.type === 'debit'" class="font-mono text-sm font-medium text-red-600">
+                                                    {{ formatCurrency(entry.amount) }}
+                                                </div>
+                                                <div v-else class="text-sm text-muted-foreground">—</div>
+                                            </TableCell>
+                                            <TableCell class="text-right">
+                                                <div v-if="entry.type === 'credit'" class="font-mono text-sm font-medium text-green-600">
+                                                    {{ formatCurrency(entry.amount) }}
+                                                </div>
+                                                <div v-else class="text-sm text-muted-foreground">—</div>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            <!-- Accounting Note -->
+                            <div class="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <AlertCircle class="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Registro Contable</p>
+                                        <p class="mt-1 text-sm text-gray-700">
+                                            Este asiento contable se generó automáticamente cuando se aplicó el pago. Se debitó la cuenta
+                                            {{ accountingSimulation.entries[0].account.code }} ({{ accountingSimulation.entries[0].account.name }}) y
+                                            se acreditó la cuenta {{ accountingSimulation.entries[1].account.code }} ({{
+                                                accountingSimulation.entries[1].account.name
+                                            }}).
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -493,7 +633,7 @@ const breadcrumbs = [
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Aplicaciones:</span>
-                                    <span>{{ payment.applications.filter((app) => app.status === 'active').length }}</span>
+                                    <span>{{ payment.applications.filter((app) => app.status === 'activo' || app.status === 'active').length }}</span>
                                 </div>
                             </div>
                         </CardContent>

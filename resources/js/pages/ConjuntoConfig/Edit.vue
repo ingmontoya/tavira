@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
@@ -22,7 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Building, CheckCircle, Home, Info, Plus, Save, Settings, Trash2, X } from 'lucide-vue-next';
+import { ArrowLeft, Building, CheckCircle, ChevronDown, ChevronRight, Home, Info, Plus, Save, Settings, Trash2, X } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import type { ApartmentType, ConfigurationMetadata, ConjuntoConfig } from '@/types';
@@ -67,7 +68,7 @@ const form = useForm<FormData>({
     number_of_towers: props.conjunto.number_of_towers,
     floors_per_tower: props.conjunto.floors_per_tower,
     apartments_per_floor: props.conjunto.apartments_per_floor,
-    is_active: props.conjunto.is_active,
+    is_active: Boolean(props.conjunto.is_active),
     tower_names: [...props.conjunto.tower_names],
     apartment_types: props.conjunto.apartment_types.map((type) => ({
         id: type.id,
@@ -85,11 +86,20 @@ const form = useForm<FormData>({
             ? type.floor_positions.map((pos) => parseInt(String(pos), 10)).filter((pos) => !isNaN(pos))
             : [1],
     })),
+    configuration_metadata: props.conjunto.configuration_metadata || {
+        architect: '',
+        construction_year: '',
+        common_areas: [],
+        security_features: [],
+        floor_configuration: {},
+        penthouse_configuration: undefined,
+    },
 });
 
 // UI state
 const currentStep = ref(0);
 const isUnsavedChanges = ref(false);
+const showAdvancedConfig = ref(false);
 
 const steps = [
     {
@@ -110,6 +120,12 @@ const steps = [
         description: 'Definición de tipos y características',
         icon: Settings,
     },
+    {
+        id: 3,
+        title: 'Configuración Avanzada',
+        description: 'Configuraciones especiales por piso',
+        icon: Settings,
+    },
 ];
 
 // Computed properties
@@ -117,26 +133,43 @@ const isLastStep = computed(() => currentStep.value === steps.length - 1);
 const isFirstStep = computed(() => currentStep.value === 0);
 
 const totalApartments = computed(() => {
-    return form.number_of_towers * form.floors_per_tower * form.apartments_per_floor;
+    let totalPerTower = 0;
+
+    // Calculate apartments per tower considering special configurations
+    for (let floor = 1; floor <= form.floors_per_tower; floor++) {
+        const floorConfig = form.configuration_metadata.floor_configuration?.[floor];
+        if (floorConfig?.apartments_count !== undefined) {
+            totalPerTower += floorConfig.apartments_count;
+        } else if (floor === form.floors_per_tower && form.configuration_metadata.penthouse_configuration) {
+            totalPerTower += form.configuration_metadata.penthouse_configuration.apartments_count;
+        } else {
+            totalPerTower += form.apartments_per_floor;
+        }
+    }
+
+    return form.number_of_towers * totalPerTower;
 });
 
 const formProgress = computed(() => {
     let progress = 0;
 
-    // Step 1: Basic info (40%)
+    // Step 1: Basic info (30%)
     if (form.name && form.number_of_towers && form.floors_per_tower && form.apartments_per_floor) {
-        progress += 40;
+        progress += 30;
     }
 
-    // Step 2: Tower configuration (30%)
+    // Step 2: Tower configuration (25%)
     if (form.tower_names.length === form.number_of_towers) {
-        progress += 30;
+        progress += 25;
     }
 
     // Step 3: Apartment types (30%)
     if (form.apartment_types.length > 0) {
         progress += 30;
     }
+
+    // Step 4: Advanced configuration (15%) - always considered complete
+    progress += 15;
 
     return Math.min(progress, 100);
 });
@@ -149,6 +182,8 @@ const canProceedToNext = computed(() => {
             return form.tower_names.length === form.number_of_towers;
         case 2:
             return form.apartment_types.length > 0;
+        case 3:
+            return true; // Advanced config is optional
         default:
             return true;
     }
@@ -233,6 +268,54 @@ const updateFloorPositions = (typeIndex: number, position: number, checked: bool
     isUnsavedChanges.value = true;
 };
 
+// Advanced configuration methods
+const setFloorApartmentCount = (floor: number, count: number) => {
+    if (!form.configuration_metadata.floor_configuration) {
+        form.configuration_metadata.floor_configuration = {};
+    }
+    if (!form.configuration_metadata.floor_configuration[floor]) {
+        form.configuration_metadata.floor_configuration[floor] = {};
+    }
+    form.configuration_metadata.floor_configuration[floor].apartments_count = count;
+    isUnsavedChanges.value = true;
+};
+
+const clearFloorConfiguration = (floor: number) => {
+    if (form.configuration_metadata.floor_configuration?.[floor]) {
+        delete form.configuration_metadata.floor_configuration[floor];
+        isUnsavedChanges.value = true;
+    }
+};
+
+const enablePenthouseConfiguration = (enabled: boolean) => {
+    if (enabled) {
+        form.configuration_metadata.penthouse_configuration = {
+            apartments_count: Math.ceil(form.apartments_per_floor / 2),
+        };
+    } else {
+        form.configuration_metadata.penthouse_configuration = undefined;
+    }
+    isUnsavedChanges.value = true;
+};
+
+const getFloorApartmentCount = (floor: number): number => {
+    const floorConfig = form.configuration_metadata.floor_configuration?.[floor];
+    if (floorConfig?.apartments_count !== undefined) {
+        return floorConfig.apartments_count;
+    }
+    if (floor === form.floors_per_tower && form.configuration_metadata.penthouse_configuration) {
+        return form.configuration_metadata.penthouse_configuration.apartments_count;
+    }
+    return form.apartments_per_floor;
+};
+
+const hasCustomFloorConfiguration = (floor: number): boolean => {
+    return (
+        form.configuration_metadata.floor_configuration?.[floor]?.apartments_count !== undefined ||
+        (floor === form.floors_per_tower && form.configuration_metadata.penthouse_configuration !== undefined)
+    );
+};
+
 const submit = () => {
     if (canProceedToNext.value) {
         // Clean the data before submission to ensure floor_positions are integers
@@ -246,8 +329,7 @@ const submit = () => {
             })),
         };
 
-        form.put(route('conjunto-config.update'), {
-            data: cleanedData,
+        form.transform(() => cleanedData).put(route('conjunto-config.update'), {
             onSuccess: () => {
                 isUnsavedChanges.value = false;
                 showSuccess('Configuración del conjunto actualizada exitosamente', 'Guardado exitoso', { duration: 3000 });
@@ -345,7 +427,7 @@ const breadcrumbs = [
             </Card>
 
             <!-- Step Navigation -->
-            <div class="mb-8 grid grid-cols-3 gap-4">
+            <div class="mb-8 grid grid-cols-4 gap-4">
                 <div
                     v-for="(step, index) in steps"
                     :key="step.id"
@@ -734,6 +816,139 @@ const breadcrumbs = [
                                                 </p>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Step 4: Advanced Configuration -->
+                        <Card v-if="currentStep === 3">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Settings class="h-5 w-5" />
+                                    Configuración Avanzada (Opcional)
+                                </CardTitle>
+                                <CardDescription> Define configuraciones especiales para pisos específicos o penthouses </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-6">
+                                <!-- Penthouse Configuration -->
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <Label class="text-base font-medium">Configuración de Penthouse</Label>
+                                            <p class="text-sm text-muted-foreground">
+                                                Configura el último piso como penthouse con menos apartamentos
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            :checked="form.configuration_metadata.penthouse_configuration !== undefined"
+                                            @update:checked="enablePenthouseConfiguration"
+                                        />
+                                    </div>
+
+                                    <div v-if="form.configuration_metadata.penthouse_configuration" class="space-y-4 rounded-lg border p-4">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="space-y-2">
+                                                <Label>Piso Penthouse</Label>
+                                                <Input :value="form.floors_per_tower" disabled class="bg-muted" />
+                                            </div>
+                                            <div class="space-y-2">
+                                                <Label>Número de Penthouses</Label>
+                                                <Input
+                                                    v-model.number="form.configuration_metadata.penthouse_configuration.apartments_count"
+                                                    type="number"
+                                                    min="1"
+                                                    :max="form.apartments_per_floor"
+                                                />
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-muted-foreground">
+                                            En lugar de {{ form.apartments_per_floor }} apartamentos regulares, este piso tendrá
+                                            {{ form.configuration_metadata.penthouse_configuration.apartments_count }} penthouses más amplios.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                <!-- Floor-specific Configuration -->
+                                <div class="space-y-4">
+                                    <div>
+                                        <Label class="text-base font-medium">Configuración por Piso</Label>
+                                        <p class="text-sm text-muted-foreground">Personaliza el número de apartamentos para pisos específicos</p>
+                                    </div>
+
+                                    <Collapsible v-model:open="showAdvancedConfig">
+                                        <CollapsibleTrigger as-child>
+                                            <Button variant="outline" class="w-full justify-between">
+                                                <span>Configurar pisos específicos</span>
+                                                <ChevronDown v-if="showAdvancedConfig" class="h-4 w-4" />
+                                                <ChevronRight v-else class="h-4 w-4" />
+                                            </Button>
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent class="mt-4 space-y-4">
+                                            <div class="grid gap-4">
+                                                <div
+                                                    v-for="floor in form.floors_per_tower"
+                                                    :key="floor"
+                                                    class="flex items-center gap-4 rounded-lg border p-3"
+                                                >
+                                                    <div class="flex-1">
+                                                        <Label>Piso {{ floor }}</Label>
+                                                        <p class="text-xs text-muted-foreground">
+                                                            {{ hasCustomFloorConfiguration(floor) ? 'Personalizado' : 'Configuración estándar' }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <Input
+                                                            :value="getFloorApartmentCount(floor)"
+                                                            type="number"
+                                                            min="1"
+                                                            max="10"
+                                                            class="w-20"
+                                                            @input="
+                                                                setFloorApartmentCount(floor, parseInt(($event.target as HTMLInputElement).value))
+                                                            "
+                                                        />
+                                                        <span class="text-sm text-muted-foreground">aptos</span>
+                                                        <Button
+                                                            v-if="hasCustomFloorConfiguration(floor)"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            @click="clearFloorConfiguration(floor)"
+                                                        >
+                                                            <X class="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="text-xs text-muted-foreground">
+                                                Por defecto, cada piso tiene {{ form.apartments_per_floor }} apartamentos. Modifica los valores para
+                                                personalizar pisos específicos.
+                                            </p>
+                                        </CollapsibleContent>
+                                    </Collapsible>
+                                </div>
+
+                                <!-- Configuration Summary -->
+                                <div class="rounded-lg bg-muted/50 p-4">
+                                    <div class="mb-2 flex items-center gap-2">
+                                        <Info class="h-4 w-4 text-blue-600" />
+                                        <p class="text-sm font-medium">Resumen de Configuración Avanzada</p>
+                                    </div>
+                                    <div class="space-y-1 text-sm text-muted-foreground">
+                                        <p>
+                                            <strong>Total apartamentos por torre:</strong> {{ Math.floor(totalApartments / form.number_of_towers) }}
+                                        </p>
+                                        <p><strong>Total conjunto:</strong> {{ totalApartments }} apartamentos</p>
+                                        <p v-if="form.configuration_metadata.penthouse_configuration">
+                                            <strong>Penthouses:</strong> {{ form.configuration_metadata.penthouse_configuration.apartments_count }} en
+                                            piso {{ form.floors_per_tower }}
+                                        </p>
+                                        <p v-if="Object.keys(form.configuration_metadata.floor_configuration || {}).length > 0">
+                                            <strong>Pisos personalizados:</strong>
+                                            {{ Object.keys(form.configuration_metadata.floor_configuration || {}).length }}
+                                        </p>
                                     </div>
                                 </div>
                             </CardContent>

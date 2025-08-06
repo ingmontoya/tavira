@@ -198,13 +198,17 @@ class PaymentManagementController extends Controller
         // Load related accounting transactions
         $accountingTransactions = \App\Models\AccountingTransaction::where('reference_type', 'payment_application')
             ->whereIn('reference_id', $payment->applications->pluck('id'))
-            ->with(['entries.account', 'createdBy'])
+            ->with(['entries.account', 'entries.thirdParty', 'createdBy', 'reference.payment'])
             ->orderBy('transaction_date', 'desc')
             ->get();
+
+        // Get accounting accounts for simulation
+        $accountingAccounts = $this->getAccountingAccountsForSimulation($payment->conjunto_config_id);
 
         return Inertia::render('Finance/Payments/Show', [
             'payment' => $payment,
             'accountingTransactions' => $accountingTransactions,
+            'accountingAccounts' => $accountingAccounts,
         ]);
     }
 

@@ -15,7 +15,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { CheckCircle, ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Plus, Receipt, Search, Trash2, X, XCircle } from 'lucide-vue-next';
+import { CheckCircle, ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Mail, Plus, Receipt, Search, Trash2, X, XCircle } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 
@@ -156,9 +156,15 @@ const columns = [
         header: 'Apartamento',
         cell: ({ row }) => {
             const apartment = row.original.apartment;
+            if (!apartment) {
+                return h('div', { class: 'flex flex-col' }, [
+                    h('span', { class: 'font-medium text-red-600' }, 'Sin apartamento'),
+                    h('span', { class: 'text-sm text-muted-foreground' }, 'N/A'),
+                ]);
+            }
             return h('div', { class: 'flex flex-col' }, [
-                h('span', { class: 'font-medium' }, apartment.full_address),
-                h('span', { class: 'text-sm text-muted-foreground' }, `#${apartment.number}`),
+                h('span', { class: 'font-medium' }, apartment.full_address || 'Dirección no disponible'),
+                h('span', { class: 'text-sm text-muted-foreground' }, `#${apartment.number || 'N/A'}`),
             ]);
         },
     }),
@@ -620,6 +626,13 @@ const typeOptions = [
                     <Link href="/payments">
                         <Receipt class="mr-2 h-4 w-4" />
                         Volver a Pagos
+                    </Link>
+                </Button>
+
+                <Button asChild variant="outline">
+                    <Link href="/invoices/email">
+                        <Mail class="mr-2 h-4 w-4" />
+                        Envío por Email
                     </Link>
                 </Button>
 

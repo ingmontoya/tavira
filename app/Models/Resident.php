@@ -56,6 +56,11 @@ class Resident extends Model
         return "{$this->apartment->tower}-{$this->apartment->number}";
     }
 
+    public function getIsOwnerAttribute(): bool
+    {
+        return $this->resident_type === 'Owner';
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'Active');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoiceEmailController;
 use App\Http\Controllers\PaymentAgreementController;
 use App\Http\Controllers\PaymentConceptController;
 use App\Http\Controllers\PaymentController;
@@ -21,10 +22,33 @@ Route::get('fees', function () {
 // Payments Management
 Route::get('payments', [PaymentController::class, 'index'])->name('payments.index')->middleware(['rate.limit:default', 'can:view_payments']);
 
-// Invoices Management
-Route::resource('invoices', InvoiceController::class)->middleware('can:view_payments');
-Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid')->middleware('can:edit_payments');
+// Invoice Email Management (Batch Email System) - MUST BE BEFORE resource routes
+Route::prefix('invoices/email')->name('invoices.email.')->group(function () {
+    Route::get('/', [InvoiceEmailController::class, 'index'])->name('index')->middleware('can:view_payments');
+    Route::get('create', [InvoiceEmailController::class, 'create'])->name('create')->middleware('can:edit_payments');
+    Route::post('/', [InvoiceEmailController::class, 'store'])->name('store')->middleware('can:edit_payments');
+    Route::get('{batch}', [InvoiceEmailController::class, 'show'])->name('show')->middleware('can:view_payments');
+    Route::put('{batch}', [InvoiceEmailController::class, 'update'])->name('update')->middleware('can:edit_payments');
+    Route::delete('{batch}', [InvoiceEmailController::class, 'destroy'])->name('destroy')->middleware('can:edit_payments');
+    
+    // Batch Operations
+    Route::post('preview', [InvoiceEmailController::class, 'previewInvoices'])->name('preview')->middleware('can:view_payments');
+    Route::post('{batch}/send', [InvoiceEmailController::class, 'send'])->name('send')->middleware('can:edit_payments');
+    Route::post('{batch}/cancel', [InvoiceEmailController::class, 'cancel'])->name('cancel')->middleware('can:edit_payments');
+    Route::post('{batch}/retry', [InvoiceEmailController::class, 'retry'])->name('retry')->middleware('can:edit_payments');
+    
+    // Delivery Management
+    Route::get('{batch}/deliveries', [InvoiceEmailController::class, 'deliveries'])->name('deliveries')->middleware('can:view_payments');
+});
+
+// Static Invoice Routes - MUST BE BEFORE resource routes
 Route::post('invoices/generate-monthly', [InvoiceController::class, 'generateMonthly'])->name('invoices.generate-monthly')->middleware('can:create_payments');
+
+// Invoices Management - Resource routes
+Route::resource('invoices', InvoiceController::class)->middleware('can:view_payments');
+
+// Dynamic Invoice Routes - MUST BE AFTER resource routes
+Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid')->middleware('can:edit_payments');
 Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf')->middleware('can:view_payments');
 Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByEmail'])->name('invoices.send-email')->middleware('can:edit_payments');
 
@@ -56,3 +80,9 @@ Route::post('payment-agreements/{paymentAgreement}/record-payment', [PaymentAgre
 Route::get('providers', function () {
     return Inertia::render('Providers/Index');
 })->name('providers.index')->middleware(['rate.limit:default', 'can:view_payments']);
+
+// Email Provider Webhooks (no auth required)
+Route::post('webhooks/email/{provider}', [InvoiceEmailController::class, 'webhook'])
+    ->name('webhooks.email')
+    ->middleware(['rate.limit:strict'])
+    ->where('provider', 'sendgrid|ses|mailgun|smtp');

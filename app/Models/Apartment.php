@@ -33,6 +33,16 @@ class Apartment extends Model
         'outstanding_balance' => 'decimal:2',
     ];
 
+    protected $appends = [
+        'identifier',
+        'full_address',
+        'is_occupied',
+        'is_available',
+        'days_overdue',
+        'payment_status_badge',
+        'is_delinquent'
+    ];
+
     public function conjuntoConfig(): BelongsTo
     {
         return $this->belongsTo(ConjuntoConfig::class);
@@ -61,6 +71,11 @@ class Apartment extends Model
     public function getFullAddressAttribute(): string
     {
         return $this->tower ? "Torre {$this->tower} - Apt {$this->number}" : "Apt {$this->number}";
+    }
+
+    public function getIdentifierAttribute(): string
+    {
+        return $this->tower ? "{$this->tower}{$this->number}" : $this->number;
     }
 
     public function getIsOccupiedAttribute(): bool

@@ -428,7 +428,7 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-4">
-                                <!-- Payment Applications Summary -->
+                                <!-- Resumen de Aplicaciones de Pago -->
                                 <div class="grid grid-cols-2 gap-4 rounded-lg bg-muted p-4">
                                     <div class="text-center">
                                         <p class="text-sm text-muted-foreground">Total Aplicado</p>
@@ -450,7 +450,7 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                                     </div>
                                 </div>
 
-                                <!-- Payment Applications Table -->
+                                <!-- Tabla de Aplicaciones de Pago -->
                                 <div class="rounded-md border">
                                     <Table>
                                         <TableHeader>

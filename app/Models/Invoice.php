@@ -65,6 +65,11 @@ class Invoice extends Model
         return $this->hasMany(PaymentApplication::class);
     }
 
+    public function emailDeliveries(): HasMany
+    {
+        return $this->hasMany(InvoiceEmailDelivery::class);
+    }
+
     public function scopeForPeriod($query, int $year, int $month)
     {
         return $query->where('billing_period_year', $year)
@@ -278,22 +283,28 @@ class Invoice extends Model
 
         static::creating(function ($invoice) {
             if (empty($invoice->invoice_number)) {
-                $invoice->invoice_number = self::generateInvoiceNumber();
+                $invoice->invoice_number = self::generateInvoiceNumber($invoice);
             }
         });
     }
 
-    private static function generateInvoiceNumber(): string
+    private static function generateInvoiceNumber($invoice): string
     {
         $year = now()->year;
         $month = now()->format('m');
+        
+        // Get apartment identifier (tower + apartment number)
+        $apartment = Apartment::find($invoice->apartment_id);
+        $apartmentIdentifier = $apartment ? $apartment->identifier : '0000';
+        
         $lastInvoice = self::whereYear('created_at', $year)
             ->whereMonth('created_at', now()->month)
+            ->where('apartment_id', $invoice->apartment_id)
             ->orderBy('id', 'desc')
             ->first();
 
-        $sequence = $lastInvoice ? ((int) substr($lastInvoice->invoice_number, -4)) + 1 : 1;
+        $sequence = $lastInvoice ? ((int) substr($lastInvoice->invoice_number, -2)) + 1 : 1;
 
-        return sprintf('INV-%s%s-%04d', $year, $month, $sequence);
+        return sprintf('INV-%s%s-%s-%02d', $year, $month, $apartmentIdentifier, $sequence);
     }
 }
