@@ -177,12 +177,12 @@ class ConjuntoConfigController extends Controller
 
             // Update conjunto configuration (excluding apartment_types)
             $configData = collect($validated)->except(['apartment_types'])->toArray();
-            
+
             // Ensure is_active is properly cast to boolean
             if (isset($configData['is_active'])) {
                 $configData['is_active'] = (bool) $configData['is_active'];
             }
-            
+
             $conjunto->update($configData);
 
             // Handle apartment types if provided

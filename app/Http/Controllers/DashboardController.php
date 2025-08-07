@@ -170,15 +170,15 @@ class DashboardController extends Controller
         $towers = collect();
         $colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
         $residents = [89, 76, 65, 82, 94, 71]; // Mock residents data
-        
+
         foreach ($towerNames as $index => $towerName) {
             $towers->push([
                 'name' => "Torre {$towerName} - {$conjuntoName}",
                 'residents' => $residents[$index] ?? 50 + ($index * 10), // Fallback calculation
-                'color' => $colors[$index] ?? '#6b7280' // Default gray color
+                'color' => $colors[$index] ?? '#6b7280', // Default gray color
             ]);
         }
-        
+
         return $towers;
     }
 

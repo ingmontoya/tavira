@@ -40,7 +40,7 @@ class Apartment extends Model
         'is_available',
         'days_overdue',
         'payment_status_badge',
-        'is_delinquent'
+        'is_delinquent',
     ];
 
     public function conjuntoConfig(): BelongsTo

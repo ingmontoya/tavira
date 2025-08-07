@@ -10,12 +10,12 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import {
     AlertCircle,
     ArrowLeft,
-    CheckCircle,
     CreditCard,
     DollarSign,
     Edit,
     FileText,
     Hash,
+    Mail,
     Receipt,
     RefreshCw,
     RotateCcw,
@@ -109,19 +109,19 @@ const props = defineProps<{
 const statusInfo = computed(() => {
     const statusMap = {
         pendiente: {
-            label: 'Pendiente',
-            color: 'bg-yellow-100 text-yellow-800',
-            icon: AlertCircle,
-            description: 'Pago registrado pero no aplicado a facturas',
+            label: 'Procesado',
+            color: 'bg-green-100 text-green-800',
+            icon: Receipt,
+            description: 'Pago registrado y aplicado automáticamente a facturas',
         },
         aplicado: {
-            label: 'Aplicado',
+            label: 'Aplicado Completamente',
             color: 'bg-green-100 text-green-800',
-            icon: CheckCircle,
+            icon: Receipt,
             description: 'Pago completamente aplicado a facturas',
         },
         parcialmente_aplicado: {
-            label: 'Parcialmente Aplicado',
+            label: 'Aplicado Parcialmente',
             color: 'bg-blue-100 text-blue-800',
             icon: RefreshCw,
             description: 'Pago parcialmente aplicado a facturas',
@@ -166,9 +166,6 @@ const canEdit = computed(() => {
     return props.payment.is_pending;
 });
 
-const canApply = computed(() => {
-    return props.payment.can_be_applied;
-});
 
 const canReverse = computed(() => {
     return parseFloat((props.payment.applied_amount as string) || '0') > 0;
@@ -228,21 +225,32 @@ const formatDateTime = (dateString: string) => {
     });
 };
 
-const applyPayment = () => {
-    router.post(
-        `/finance/payments/${props.payment.id}/apply`,
-        {},
-        {
-            preserveScroll: true,
-        },
-    );
-};
 
 const reversePayment = () => {
     if (confirm('¿Está seguro de que desea reversar las aplicaciones de este pago?')) {
         router.post(
             `/finance/payments/${props.payment.id}/reverse`,
             {},
+            {
+                preserveScroll: true,
+            },
+        );
+    }
+};
+
+const sendByEmail = () => {
+    const recipientEmail = prompt('Ingrese el email del destinatario (dejar vacío para usar el email del propietario):');
+    if (recipientEmail !== null) { // User didn't cancel
+        const includeApplications = confirm('¿Desea incluir el detalle de aplicaciones del pago?');
+        const customMessage = prompt('Mensaje personalizado (opcional):');
+        
+        router.post(
+            `/finance/payments/${props.payment.id}/send-email`,
+            {
+                recipient_email: recipientEmail || undefined,
+                include_applications: includeApplications,
+                custom_message: customMessage || undefined,
+            },
             {
                 preserveScroll: true,
             },
@@ -287,13 +295,13 @@ const breadcrumbs = [
                         <Edit class="h-4 w-4" />
                         Editar
                     </Button>
-                    <Button v-if="canApply" variant="outline" class="gap-2" @click="applyPayment">
-                        <CheckCircle class="h-4 w-4" />
-                        Aplicar Pago
-                    </Button>
                     <Button v-if="canReverse" variant="destructive" class="gap-2" @click="reversePayment">
                         <RotateCcw class="h-4 w-4" />
                         Reversar
+                    </Button>
+                    <Button variant="outline" class="gap-2" @click="sendByEmail">
+                        <Mail class="h-4 w-4" />
+                        Enviar por Email
                     </Button>
                 </div>
             </div>
@@ -408,11 +416,7 @@ const breadcrumbs = [
                             <div v-if="payment.applications.length === 0" class="py-8 text-center text-muted-foreground">
                                 <Receipt class="mx-auto mb-4 h-12 w-12 opacity-50" />
                                 <p class="mb-2 text-lg font-medium">Sin Aplicaciones</p>
-                                <p class="text-sm">Este pago aún no se ha aplicado a ninguna factura.</p>
-                                <Button v-if="canApply" class="mt-4 gap-2" @click="applyPayment">
-                                    <CheckCircle class="h-4 w-4" />
-                                    Aplicar Pago Ahora
-                                </Button>
+                                <p class="text-sm">Este pago no tiene aplicaciones a facturas. Esto puede suceder si no había facturas pendientes al momento del registro.</p>
                             </div>
 
                             <div v-else class="space-y-4">
@@ -699,10 +703,6 @@ const breadcrumbs = [
                                 Editar Pago
                             </Button>
 
-                            <Button v-if="canApply" variant="outline" class="w-full justify-start gap-2" @click="applyPayment">
-                                <CheckCircle class="h-4 w-4" />
-                                Aplicar a Facturas
-                            </Button>
 
                             <Button
                                 v-if="canReverse"
@@ -712,6 +712,11 @@ const breadcrumbs = [
                             >
                                 <RotateCcw class="h-4 w-4" />
                                 Reversar Aplicaciones
+                            </Button>
+
+                            <Button variant="outline" class="w-full justify-start gap-2" @click="sendByEmail">
+                                <Mail class="h-4 w-4" />
+                                Enviar por Correo Electrónico
                             </Button>
 
                             <Button variant="outline" class="w-full justify-start gap-2" @click="window.print()">

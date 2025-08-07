@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PaymentReceiptMail;
 use App\Models\Apartment;
 use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Resident;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class PaymentManagementController extends Controller
@@ -218,6 +221,8 @@ class PaymentManagementController extends Controller
             return back()->withErrors(['payment' => 'Solo se pueden editar pagos pendientes.']);
         }
 
+        $payment->load(['apartment']);
+
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $apartments = Apartment::whereIn('apartment_type_id', function ($query) use ($conjunto) {
@@ -368,6 +373,141 @@ class PaymentManagementController extends Controller
             });
 
         return response()->json(['invoices' => $invoices]);
+    }
+
+    public function getInvoicesForEdit(Request $request, Payment $payment)
+    {
+        $apartmentId = $request->get('apartment_id', $payment->apartment_id);
+
+        if (! $apartmentId) {
+            return response()->json(['invoices' => []]);
+        }
+
+        // Start with a simpler approach - get all invoices for the apartment
+        $allInvoices = Invoice::where('apartment_id', $apartmentId)
+            ->with(['items.paymentConcept', 'paymentApplications'])
+            ->orderBy('billing_date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $invoices = $allInvoices->map(function ($invoice) use ($payment) {
+            // Calculate current applications from this payment
+            $currentApplicationAmount = $invoice->paymentApplications
+                ->where('payment_id', $payment->id)
+                ->where('status', 'activo')
+                ->sum('amount_applied');
+            
+            // Calculate what the balance would be WITHOUT this payment's applications
+            $adjustedPaidAmount = $invoice->paid_amount - $currentApplicationAmount;
+            $adjustedBalance = $invoice->total_amount - $adjustedPaidAmount;
+            
+            return [
+                'id' => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'billing_date' => $invoice->billing_date,
+                'due_date' => $invoice->due_date,
+                'total_amount' => $invoice->total_amount,
+                'paid_amount' => $adjustedPaidAmount,
+                'balance_amount' => max(0, $adjustedBalance),
+                'status' => $adjustedBalance > 0 ? ($invoice->due_date->isPast() ? 'overdue' : 'pending') : 'paid',
+                'status_label' => $adjustedBalance > 0 ? ($invoice->due_date->isPast() ? 'Vencida' : 'Pendiente') : 'Pagada',
+                'days_overdue' => $invoice->due_date->isPast() && $adjustedBalance > 0 ? $invoice->due_date->diffInDays(now()) : 0,
+                'current_application_amount' => $currentApplicationAmount,
+                'items' => $invoice->items->map(function ($item) {
+                    return [
+                        'description' => $item->description,
+                        'amount' => $item->total_price,
+                        'concept' => $item->paymentConcept->name ?? 'Sin concepto',
+                    ];
+                }),
+            ];
+        })
+        // Only show invoices that would have a balance available for payment
+        ->filter(function ($invoice) {
+            return $invoice['balance_amount'] > 0;
+        })
+        ->values();
+
+        return response()->json([
+            'invoices' => $invoices,
+            'debug' => [
+                'apartment_id' => $apartmentId,
+                'payment_id' => $payment->id,
+                'total_invoices_found' => $allInvoices->count(),
+                'filtered_invoices' => $invoices->count(),
+                'all_invoice_ids' => $allInvoices->pluck('id'),
+                'all_invoice_statuses' => $allInvoices->pluck('status'),
+                'payment_applications_count' => $payment->applications()->count(),
+                'raw_invoices' => $allInvoices->take(2)->map(function($invoice) use ($payment) {
+                    $appAmount = $invoice->paymentApplications
+                        ->where('payment_id', $payment->id)
+                        ->where('status', 'activo')
+                        ->sum('amount_applied');
+                    
+                    return [
+                        'id' => $invoice->id,
+                        'number' => $invoice->invoice_number,
+                        'status' => $invoice->status,
+                        'total_amount' => $invoice->total_amount,
+                        'paid_amount' => $invoice->paid_amount,
+                        'balance' => $invoice->total_amount - $invoice->paid_amount,
+                        'current_app_amount' => $appAmount,
+                        'adjusted_balance' => $invoice->total_amount - ($invoice->paid_amount - $appAmount)
+                    ];
+                })
+            ]
+        ]);
+    }
+
+    public function sendByEmail(Request $request, Payment $payment)
+    {
+        $validated = $request->validate([
+            'recipient_email' => 'nullable|email',
+            'include_applications' => 'boolean',
+            'custom_message' => 'nullable|string|max:1000',
+        ]);
+
+        $payment->load([
+            'apartment',
+            'createdBy',
+            'appliedBy',
+            'applications.invoice.items.paymentConcept',
+            'applications.createdBy',
+        ]);
+
+        // Try to get recipient email from resident if not provided
+        $recipientEmail = $validated['recipient_email'];
+        if (! $recipientEmail) {
+            $resident = Resident::where('apartment_id', $payment->apartment_id)
+                ->where('is_owner', true)
+                ->where('email', '!=', '')
+                ->whereNotNull('email')
+                ->first();
+
+            if (! $resident) {
+                return back()->withErrors(['email' => 'No se encontró un email de contacto para este apartamento. Por favor, especifique una dirección de correo.']);
+            }
+
+            $recipientEmail = $resident->email;
+        }
+
+        try {
+            Mail::to($recipientEmail)->send(new PaymentReceiptMail([
+                'payment' => $payment,
+                'includeApplications' => $validated['include_applications'] ?? false,
+                'customMessage' => $validated['custom_message'] ?? null,
+            ]));
+
+            return back()->with('success', [
+                'message' => 'Comprobante de pago enviado exitosamente.',
+                'details' => [
+                    'recipient' => $recipientEmail,
+                    'payment_number' => $payment->payment_number,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['email' => 'Error al enviar el comprobante: '.$e->getMessage()]);
+        }
     }
 
     private function getAccountingAccountsForSimulation(int $conjuntoConfigId): array

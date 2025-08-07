@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\InvoiceEmailService;
+use App\Models\Apartment;
+use App\Models\Invoice;
 use App\Models\InvoiceEmailBatch;
 use App\Models\InvoiceEmailDelivery;
-use App\Models\Invoice;
-use App\Models\Apartment;
-use Illuminate\Http\Request;
+use App\Services\InvoiceEmailService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
 
 class InvoiceEmailController extends Controller
 {
@@ -57,8 +56,8 @@ class InvoiceEmailController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('batch_number', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('batch_number', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -110,44 +109,44 @@ class InvoiceEmailController extends Controller
             },
             'apartment.residents' => function ($query) {
                 $query->whereNotNull('email')
-                      ->where(function ($q) {
-                          $q->where('email_notifications', true)
+                    ->where(function ($q) {
+                        $q->where('email_notifications', true)
                             ->orWhere('resident_type', 'Owner');
-                      })
-                      ->select('id', 'apartment_id', 'first_name', 'last_name', 'email', 'resident_type', 'email_notifications');
-            }
+                    })
+                    ->select('id', 'apartment_id', 'first_name', 'last_name', 'email', 'resident_type', 'email_notifications');
+            },
         ])
-        ->whereHas('apartment.residents', function ($query) {
-            $query->whereNotNull('email')
-                  ->where(function ($q) {
-                      $q->where('email_notifications', true)
-                        ->orWhere('resident_type', 'Owner');
-                  });
-        })
-        ->orderBy('invoice_number')
-        ->get()
-        ->map(function ($invoice) {
-            return [
-                'id' => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
-                'apartment_number' => $invoice->apartment->number,
-                'apartment_id' => $invoice->apartment_id,
-                'status' => $invoice->status,
-                'type' => $invoice->type ?? 'monthly',
-                'total_amount' => $invoice->total_amount,
-                'due_date' => $invoice->due_date,
-                'billing_period_year' => $invoice->billing_period_year,
-                'billing_period_month' => $invoice->billing_period_month,
-                'billing_period_label' => $invoice->billing_period_label,
-                'recipients' => $invoice->apartment->residents->map(function ($resident) {
-                    return [
-                        'name' => $resident->full_name,
-                        'email' => $resident->email,
-                        'type' => $resident->resident_type,
-                    ];
-                })->toArray(),
-            ];
-        });
+            ->whereHas('apartment.residents', function ($query) {
+                $query->whereNotNull('email')
+                    ->where(function ($q) {
+                        $q->where('email_notifications', true)
+                            ->orWhere('resident_type', 'Owner');
+                    });
+            })
+            ->orderBy('invoice_number')
+            ->get()
+            ->map(function ($invoice) {
+                return [
+                    'id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'apartment_number' => $invoice->apartment->number,
+                    'apartment_id' => $invoice->apartment_id,
+                    'status' => $invoice->status,
+                    'type' => $invoice->type ?? 'monthly',
+                    'total_amount' => $invoice->total_amount,
+                    'due_date' => $invoice->due_date,
+                    'billing_period_year' => $invoice->billing_period_year,
+                    'billing_period_month' => $invoice->billing_period_month,
+                    'billing_period_label' => $invoice->billing_period_label,
+                    'recipients' => $invoice->apartment->residents->map(function ($resident) {
+                        return [
+                            'name' => $resident->full_name,
+                            'email' => $resident->email,
+                            'type' => $resident->resident_type,
+                        ];
+                    })->toArray(),
+                ];
+            });
 
         return Inertia::render('Payments/Invoices/Email/Create', [
             'apartments' => $apartments,
@@ -216,11 +215,11 @@ class InvoiceEmailController extends Controller
             Log::error('Error creating email batch', [
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
-                'data' => $validated
+                'data' => $validated,
             ]);
 
             return response()->json([
-                'message' => 'Error creando el lote de emails: ' . $e->getMessage(),
+                'message' => 'Error creando el lote de emails: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -235,8 +234,8 @@ class InvoiceEmailController extends Controller
             'updater',
             'deliveries' => function ($query) {
                 $query->with(['invoice', 'apartment'])
-                      ->orderBy('created_at', 'desc');
-            }
+                    ->orderBy('created_at', 'desc');
+            },
         ]);
 
         $statistics = $this->emailService->getBatchStatistics($batch);
@@ -252,7 +251,7 @@ class InvoiceEmailController extends Controller
      */
     public function update(Request $request, InvoiceEmailBatch $batch): JsonResponse
     {
-        if (!$batch->is_editable) {
+        if (! $batch->is_editable) {
             return response()->json([
                 'message' => 'El lote no puede ser editado en su estado actual',
             ], 422);
@@ -288,7 +287,7 @@ class InvoiceEmailController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Error actualizando el lote: ' . $e->getMessage(),
+                'message' => 'Error actualizando el lote: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -298,7 +297,7 @@ class InvoiceEmailController extends Controller
      */
     public function destroy(InvoiceEmailBatch $batch): JsonResponse
     {
-        if (!$batch->is_editable) {
+        if (! $batch->is_editable) {
             return response()->json([
                 'message' => 'El lote no puede ser eliminado en su estado actual',
             ], 422);
@@ -319,7 +318,7 @@ class InvoiceEmailController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Error eliminando el lote: ' . $e->getMessage(),
+                'message' => 'Error eliminando el lote: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -351,7 +350,7 @@ class InvoiceEmailController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Error obteniendo la vista previa: ' . $e->getMessage(),
+                'message' => 'Error obteniendo la vista previa: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -361,7 +360,7 @@ class InvoiceEmailController extends Controller
      */
     public function send(InvoiceEmailBatch $batch): JsonResponse
     {
-        if (!in_array($batch->status, ['draft', 'scheduled'])) {
+        if (! in_array($batch->status, ['draft', 'scheduled'])) {
             return response()->json([
                 'message' => 'El lote no puede ser enviado en su estado actual',
             ], 422);
@@ -370,7 +369,7 @@ class InvoiceEmailController extends Controller
         try {
             // If it's a draft, prepare it first
             if ($batch->status === 'draft') {
-                if (!$this->emailService->prepareBatch($batch)) {
+                if (! $this->emailService->prepareBatch($batch)) {
                     return response()->json([
                         'message' => 'Error preparando el lote para envío',
                     ], 500);
@@ -396,7 +395,7 @@ class InvoiceEmailController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Error enviando el lote: ' . $e->getMessage(),
+                'message' => 'Error enviando el lote: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -406,7 +405,7 @@ class InvoiceEmailController extends Controller
      */
     public function cancel(InvoiceEmailBatch $batch, Request $request): JsonResponse
     {
-        if (!$batch->can_be_cancelled) {
+        if (! $batch->can_be_cancelled) {
             return response()->json([
                 'message' => 'El lote no puede ser cancelado en su estado actual',
             ], 422);
@@ -432,7 +431,7 @@ class InvoiceEmailController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Error cancelando el lote: ' . $e->getMessage(),
+                'message' => 'Error cancelando el lote: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -442,7 +441,7 @@ class InvoiceEmailController extends Controller
      */
     public function retry(InvoiceEmailBatch $batch): JsonResponse
     {
-        if (!$batch->can_be_restarted) {
+        if (! $batch->can_be_restarted) {
             return response()->json([
                 'message' => 'El lote no puede ser reintentado en su estado actual',
             ], 422);
@@ -489,7 +488,7 @@ class InvoiceEmailController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Error reintentando el lote: ' . $e->getMessage(),
+                'message' => 'Error reintentando el lote: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -512,8 +511,8 @@ class InvoiceEmailController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('recipient_email', 'like', "%{$search}%")
-                  ->orWhere('recipient_name', 'like', "%{$search}%")
-                  ->orWhere('apartment_number', 'like', "%{$search}%");
+                    ->orWhere('recipient_name', 'like', "%{$search}%")
+                    ->orWhere('apartment_number', 'like', "%{$search}%");
             });
         }
 
@@ -532,7 +531,7 @@ class InvoiceEmailController extends Controller
         try {
             // This would handle webhooks from email services like SendGrid, SES, etc.
             // to update delivery status based on provider events
-            
+
             Log::info('Email webhook received', [
                 'provider' => $provider,
                 'payload' => $request->all(),
@@ -561,7 +560,7 @@ class InvoiceEmailController extends Controller
     {
         // This would be implemented based on the specific email service provider
         // Each provider has different webhook formats and event types
-        
+
         // Example implementation structure:
         // - Extract message ID and event type from payload
         // - Find the corresponding InvoiceEmailDelivery record

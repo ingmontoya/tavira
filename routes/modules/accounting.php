@@ -15,12 +15,13 @@ Route::prefix('accounting')->name('accounting.')->middleware('can:view_accountin
     Route::get('accounts/hierarchical', [ChartOfAccountsController::class, 'getHierarchical'])->name('accounts.hierarchical');
 
     // Accounting Transactions
-    Route::resource('transactions', AccountingTransactionController::class, ['as' => 'accounting-transactions']);
-    Route::post('transactions/{accountingTransaction}/post', [AccountingTransactionController::class, 'post'])->name('transactions.post');
-    Route::post('transactions/{accountingTransaction}/cancel', [AccountingTransactionController::class, 'cancel'])->name('transactions.cancel');
-    Route::post('transactions/{accountingTransaction}/entries', [AccountingTransactionController::class, 'addEntry'])->name('transactions.add-entry');
-    Route::delete('transactions/{accountingTransaction}/entries/{entry}', [AccountingTransactionController::class, 'removeEntry'])->name('transactions.remove-entry');
+    Route::get('transactions/{transaction}/duplicate', [AccountingTransactionController::class, 'duplicate'])->name('transactions.duplicate');
+    Route::post('transactions/{transaction}/post', [AccountingTransactionController::class, 'post'])->name('transactions.post');
+    Route::post('transactions/{transaction}/cancel', [AccountingTransactionController::class, 'cancel'])->name('transactions.cancel');
+    Route::post('transactions/{transaction}/entries', [AccountingTransactionController::class, 'addEntry'])->name('transactions.add-entry');
+    Route::delete('transactions/{transaction}/entries/{entry}', [AccountingTransactionController::class, 'removeEntry'])->name('transactions.remove-entry');
     Route::post('transactions/validate-double-entry', [AccountingTransactionController::class, 'validateDoubleEntry'])->name('transactions.validate-double-entry');
+    Route::resource('transactions', AccountingTransactionController::class, ['as' => 'accounting-transactions']);
 
     // Budgets
     Route::resource('budgets', BudgetController::class);

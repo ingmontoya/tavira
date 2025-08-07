@@ -50,7 +50,7 @@ return [
             'view' => 'emails.invoices.standard',
             'variables' => [
                 'invoice_number',
-                'apartment_number', 
+                'apartment_number',
                 'resident_name',
                 'total_amount',
                 'due_date',
@@ -189,7 +189,7 @@ return [
             'cost_per_email' => 0.00095,
             'webhook_events' => [
                 'processed', 'delivered', 'open', 'click',
-                'bounce', 'dropped', 'spamreport', 'unsubscribe'
+                'bounce', 'dropped', 'spamreport', 'unsubscribe',
             ],
         ],
         'ses' => [
@@ -199,7 +199,7 @@ return [
             'cost_per_email' => 0.0001,
             'webhook_events' => [
                 'send', 'delivery', 'open', 'click',
-                'bounce', 'complaint', 'reject'
+                'bounce', 'complaint', 'reject',
             ],
         ],
         'mailgun' => [
@@ -209,7 +209,7 @@ return [
             'cost_per_email' => 0.0008,
             'webhook_events' => [
                 'delivered', 'opened', 'clicked',
-                'bounced', 'dropped', 'complained', 'unsubscribed'
+                'bounced', 'dropped', 'complained', 'unsubscribed',
             ],
         ],
     ],

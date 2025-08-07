@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\InvoiceEmailSetting;
+use Illuminate\Database\Seeder;
 
 class InvoiceEmailSettingsSeeder extends Seeder
 {

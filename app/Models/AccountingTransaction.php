@@ -74,28 +74,28 @@ class AccountingTransaction extends Model
     {
         // Get apartment through the referenced object
         $reference = $this->reference;
-        
-        if (!$reference) {
+
+        if (! $reference) {
             return null;
         }
-        
+
         // Handle different reference types
         if ($this->reference_type === 'invoice' && method_exists($reference, 'apartment')) {
             return $reference->apartment();
         }
-        
+
         if ($this->reference_type === 'payment' && method_exists($reference, 'apartment')) {
             return $reference->apartment();
         }
-        
+
         if ($this->reference_type === 'payment_application' && method_exists($reference, 'invoice')) {
             return $reference->invoice->apartment();
         }
-        
+
         if ($this->reference_type === 'payment_application_reversal' && method_exists($reference, 'invoice')) {
             return $reference->invoice->apartment();
         }
-        
+
         return null;
     }
 
@@ -103,28 +103,28 @@ class AccountingTransaction extends Model
     {
         // Get apartment through the referenced object
         $reference = $this->reference;
-        
-        if (!$reference) {
+
+        if (! $reference) {
             return null;
         }
-        
+
         // Handle different reference types
         if ($this->reference_type === 'invoice' && $reference->apartment) {
             return $reference->apartment;
         }
-        
+
         if ($this->reference_type === 'payment' && $reference->apartment) {
             return $reference->apartment;
         }
-        
+
         if ($this->reference_type === 'payment_application' && $reference->invoice && $reference->invoice->apartment) {
             return $reference->invoice->apartment;
         }
-        
+
         if ($this->reference_type === 'payment_application_reversal' && $reference->invoice && $reference->invoice->apartment) {
             return $reference->invoice->apartment;
         }
-        
+
         return null;
     }
 

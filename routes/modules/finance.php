@@ -30,13 +30,13 @@ Route::prefix('invoices/email')->name('invoices.email.')->group(function () {
     Route::get('{batch}', [InvoiceEmailController::class, 'show'])->name('show')->middleware('can:view_payments');
     Route::put('{batch}', [InvoiceEmailController::class, 'update'])->name('update')->middleware('can:edit_payments');
     Route::delete('{batch}', [InvoiceEmailController::class, 'destroy'])->name('destroy')->middleware('can:edit_payments');
-    
+
     // Batch Operations
     Route::post('preview', [InvoiceEmailController::class, 'previewInvoices'])->name('preview')->middleware('can:view_payments');
     Route::post('{batch}/send', [InvoiceEmailController::class, 'send'])->name('send')->middleware('can:edit_payments');
     Route::post('{batch}/cancel', [InvoiceEmailController::class, 'cancel'])->name('cancel')->middleware('can:edit_payments');
     Route::post('{batch}/retry', [InvoiceEmailController::class, 'retry'])->name('retry')->middleware('can:edit_payments');
-    
+
     // Delivery Management
     Route::get('{batch}/deliveries', [InvoiceEmailController::class, 'deliveries'])->name('deliveries')->middleware('can:view_payments');
 });
@@ -65,7 +65,9 @@ Route::prefix('finance')->name('finance.')->group(function () {
     Route::resource('payments', PaymentManagementController::class)->middleware('can:view_payments');
     Route::post('payments/{payment}/apply', [PaymentManagementController::class, 'apply'])->name('payments.apply')->middleware('can:edit_payments');
     Route::post('payments/{payment}/reverse', [PaymentManagementController::class, 'reverse'])->name('payments.reverse')->middleware('can:edit_payments');
+    Route::post('payments/{payment}/send-email', [PaymentManagementController::class, 'sendByEmail'])->name('payments.send-email')->middleware('can:edit_payments');
     Route::get('payments/pending-invoices', [PaymentManagementController::class, 'getPendingInvoices'])->name('payments.pending-invoices')->middleware('can:view_payments');
+    Route::get('payments/{payment}/edit-invoices', [PaymentManagementController::class, 'getInvoicesForEdit'])->name('payments.edit-invoices')->middleware('can:view_payments');
 });
 
 // Payment Agreements Management

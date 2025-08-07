@@ -40,14 +40,25 @@ interface Account {
 
 const props = defineProps<{
     accounts: Account[];
+    duplicateFrom?: {
+        description: string;
+        reference_type: string;
+        entries: TransactionEntry[];
+    };
 }>();
 
 // Form state
 const form = useForm<FormData>({
     reference: '',
-    description: '',
+    description: props.duplicateFrom?.description || '',
     transaction_date: new Date().toISOString().split('T')[0],
-    entries: [
+    entries: props.duplicateFrom?.entries.map(entry => ({
+        account_id: entry.account_id,
+        account: entry.account,
+        description: entry.description,
+        debit_amount: entry.debit_amount,
+        credit_amount: entry.credit_amount,
+    })) || [
         { account_id: null, description: '', debit_amount: 0, credit_amount: 0 },
         { account_id: null, description: '', debit_amount: 0, credit_amount: 0 },
     ],

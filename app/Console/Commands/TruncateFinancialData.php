@@ -30,9 +30,10 @@ class TruncateFinancialData extends Command
      */
     public function handle()
     {
-        if (!$this->option('force')) {
-            if (!$this->confirm('This will permanently delete ALL financial data. Are you sure?')) {
+        if (! $this->option('force')) {
+            if (! $this->confirm('This will permanently delete ALL financial data. Are you sure?')) {
                 $this->info('Operation cancelled.');
+
                 return 0;
             }
         }
@@ -55,9 +56,11 @@ class TruncateFinancialData extends Command
             });
 
             $this->info('✅ Financial data truncated successfully!');
+
             return 0;
         } catch (\Exception $e) {
-            $this->error('❌ Error truncating financial data: ' . $e->getMessage());
+            $this->error('❌ Error truncating financial data: '.$e->getMessage());
+
             return 1;
         }
     }

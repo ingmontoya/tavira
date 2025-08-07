@@ -47,6 +47,7 @@ class AccountingTransactionController extends Controller
                 // Add apartment information to each transaction
                 $apartment = $transaction->apartment;
                 $transaction->apartment_number = $apartment ? $apartment->number : null;
+
                 return $transaction;
             });
 
@@ -252,6 +253,48 @@ class AccountingTransactionController extends Controller
         return redirect()
             ->route('accounting-transactions.index')
             ->with('success', 'Transacción contable eliminada exitosamente.');
+    }
+
+    public function duplicate(AccountingTransaction $transaction)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $accounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
+        // Load the transaction entries for duplication
+        $transaction->load('entries.account');
+
+        // Prepare entries data for the form
+        $entriesData = $transaction->entries->map(function ($entry) {
+            return [
+                'account_id' => $entry->account_id,
+                'account' => $entry->account,
+                'description' => $entry->description,
+                'debit_amount' => $entry->debit_amount,
+                'credit_amount' => $entry->credit_amount,
+                'third_party_type' => $entry->third_party_type,
+                'third_party_id' => $entry->third_party_id,
+            ];
+        });
+
+        return Inertia::render('Accounting/Transactions/Create', [
+            'accounts' => $accounts,
+            'referenceTypes' => [
+                'manual' => 'Manual',
+                'adjustment' => 'Ajuste',
+                'opening' => 'Apertura',
+                'closing' => 'Cierre',
+            ],
+            'duplicateFrom' => [
+                'description' => $transaction->description.' (Copia)',
+                'reference_type' => $transaction->reference_type,
+                'entries' => $entriesData,
+            ],
+        ]);
     }
 
     public function post(AccountingTransaction $transaction)

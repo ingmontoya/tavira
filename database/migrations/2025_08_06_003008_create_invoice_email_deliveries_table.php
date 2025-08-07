@@ -13,23 +13,23 @@ return new class extends Migration
     {
         Schema::create('invoice_email_deliveries', function (Blueprint $table) {
             $table->id();
-            
+
             // Relationships
             $table->foreignId('batch_id')->constrained('invoice_email_batches')->onDelete('cascade');
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
             $table->foreignId('apartment_id')->constrained('apartments');
-            
+
             // Recipient information
             $table->string('recipient_email');
             $table->string('recipient_name');
             $table->string('apartment_number');
-            
+
             // Email details
             $table->string('email_subject');
             $table->text('email_template_used');
             $table->json('email_variables')->nullable(); // Template variables used
             $table->json('attachments')->nullable(); // List of attached files
-            
+
             // Delivery status and tracking
             $table->enum('status', [
                 'pending',      // Queued but not sent
@@ -42,9 +42,9 @@ return new class extends Migration
                 'failed',       // Failed to send
                 'rejected',     // Rejected by email server
                 'complained',   // Marked as spam
-                'unsubscribed'  // Recipient unsubscribed
+                'unsubscribed',  // Recipient unsubscribed
             ])->default('pending');
-            
+
             // Timing information
             $table->timestamp('queued_at')->nullable();
             $table->timestamp('sent_at')->nullable();
@@ -53,28 +53,28 @@ return new class extends Migration
             $table->timestamp('clicked_at')->nullable();
             $table->timestamp('bounced_at')->nullable();
             $table->timestamp('failed_at')->nullable();
-            
+
             // Error tracking
             $table->text('failure_reason')->nullable();
             $table->string('bounce_type')->nullable(); // soft, hard
             $table->json('smtp_response')->nullable();
-            
+
             // Email service provider tracking
             $table->string('provider')->nullable(); // sendgrid, ses, mailgun, etc.
             $table->string('provider_message_id')->nullable();
             $table->json('provider_metadata')->nullable();
-            
+
             // Retry mechanism
             $table->integer('retry_count')->default(0);
             $table->timestamp('last_retry_at')->nullable();
             $table->timestamp('next_retry_at')->nullable();
-            
+
             // Cost tracking
             $table->decimal('cost', 8, 4)->default(0);
-            
+
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Indexes for performance
             $table->index(['batch_id', 'status']);
             $table->index(['invoice_id', 'status']);

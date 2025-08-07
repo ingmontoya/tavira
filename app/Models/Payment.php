@@ -117,9 +117,9 @@ class Payment extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pendiente', 'pending' => 'Pendiente',
-            'aplicado', 'applied' => 'Aplicado',
-            'parcialmente_aplicado', 'partially_applied' => 'Parcialmente Aplicado',
+            'pendiente', 'pending' => 'Procesado',
+            'aplicado', 'applied' => 'Aplicado Completamente',
+            'parcialmente_aplicado', 'partially_applied' => 'Aplicado Parcialmente',
             'reversado', 'reversed' => 'Reversado',
             default => 'Sin estado',
         };
@@ -128,9 +128,9 @@ class Payment extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'pendiente', 'pending' => ['text' => 'Pendiente', 'class' => 'bg-yellow-100 text-yellow-800'],
-            'aplicado', 'applied' => ['text' => 'Aplicado', 'class' => 'bg-green-100 text-green-800'],
-            'parcialmente_aplicado', 'partially_applied' => ['text' => 'Parcialmente Aplicado', 'class' => 'bg-blue-100 text-blue-800'],
+            'pendiente', 'pending' => ['text' => 'Procesado', 'class' => 'bg-green-100 text-green-800'],
+            'aplicado', 'applied' => ['text' => 'Aplicado Completamente', 'class' => 'bg-green-100 text-green-800'],
+            'parcialmente_aplicado', 'partially_applied' => ['text' => 'Aplicado Parcialmente', 'class' => 'bg-blue-100 text-blue-800'],
             'reversado', 'reversed' => ['text' => 'Reversado', 'class' => 'bg-red-100 text-red-800'],
             default => ['text' => 'Sin estado', 'class' => 'bg-gray-100 text-gray-800'],
         };
@@ -369,11 +369,11 @@ class Payment extends Model
     {
         $year = now()->year;
         $month = now()->format('m');
-        
+
         // Get apartment identifier (tower + apartment number)
         $apartment = Apartment::find($payment->apartment_id);
         $apartmentIdentifier = $apartment ? $apartment->identifier : '0000';
-        
+
         $lastPayment = self::whereYear('created_at', $year)
             ->whereMonth('created_at', now()->month)
             ->where('apartment_id', $payment->apartment_id)

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Crypt;
 
 class InvoiceEmailSetting extends Model
@@ -98,7 +98,7 @@ class InvoiceEmailSetting extends Model
     {
         return $query->where(function ($q) use ($environment) {
             $q->whereJsonContains('environments', $environment)
-              ->orWhereNull('environments');
+                ->orWhereNull('environments');
         });
     }
 
@@ -127,6 +127,7 @@ class InvoiceEmailSetting extends Model
 
         if ($this->type === 'select' && $this->options) {
             $option = collect($this->options)->firstWhere('value', $this->value);
+
             return $option['label'] ?? $this->value;
         }
 
@@ -148,13 +149,13 @@ class InvoiceEmailSetting extends Model
 
     public function getIsDefaultAttribute(): bool
     {
-        return $this->value === $this->default_value || 
+        return $this->value === $this->default_value ||
                ($this->value === null && $this->default_value === null);
     }
 
     public function getValidationRulesArrayAttribute(): array
     {
-        if (!$this->validation_rules) {
+        if (! $this->validation_rules) {
             return [];
         }
 
@@ -164,7 +165,7 @@ class InvoiceEmailSetting extends Model
     // Value Management
     public function getRawValue(): mixed
     {
-        if (!$this->value) {
+        if (! $this->value) {
             return $this->getDefaultValue();
         }
 
@@ -222,7 +223,7 @@ class InvoiceEmailSetting extends Model
             return false;
         }
 
-        if (!$this->validation_rules) {
+        if (! $this->validation_rules) {
             return true;
         }
 
@@ -230,12 +231,12 @@ class InvoiceEmailSetting extends Model
             'value' => $this->validation_rules_array,
         ]);
 
-        return !$validator->fails();
+        return ! $validator->fails();
     }
 
     public function validateAndSet(mixed $value, ?int $userId = null): bool
     {
-        if (!$this->isValidValue($value)) {
+        if (! $this->isValidValue($value)) {
             return false;
         }
 
@@ -269,7 +270,7 @@ class InvoiceEmailSetting extends Model
     {
         $setting = self::where('key', $key)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             return $default;
         }
 
@@ -280,7 +281,7 @@ class InvoiceEmailSetting extends Model
     {
         $setting = self::where('key', $key)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             return false;
         }
 

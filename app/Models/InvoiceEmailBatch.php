@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
 
 class InvoiceEmailBatch extends Model
 {
@@ -213,12 +213,12 @@ class InvoiceEmailBatch extends Model
 
     public function getDurationAttribute(): ?string
     {
-        if (!$this->started_at) {
+        if (! $this->started_at) {
             return null;
         }
 
         $end = $this->completed_at ?? now();
-        
+
         return $this->started_at->diffForHumans($end, true);
     }
 
@@ -280,7 +280,7 @@ class InvoiceEmailBatch extends Model
     public function markAsCompleted(): void
     {
         $this->updateStatistics();
-        
+
         $this->update([
             'status' => 'completed',
             'completed_at' => now(),
@@ -296,7 +296,7 @@ class InvoiceEmailBatch extends Model
         ]);
     }
 
-    public function markAsCancelled(string $reason = null): void
+    public function markAsCancelled(?string $reason = null): void
     {
         $this->update([
             'status' => 'cancelled',

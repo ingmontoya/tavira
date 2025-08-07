@@ -220,12 +220,6 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                         Eliminar
                     </Button>
 
-                    <Button asChild variant="outline" size="sm">
-                        <Link :href="`/finance/payments/create?apartment_id=${invoice.apartment.id}`">
-                            <CreditCard class="mr-2 h-4 w-4" />
-                            Registrar Pago
-                        </Link>
-                    </Button>
                 </div>
             </div>
 
@@ -561,69 +555,12 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                             <CardDescription> Registra un pago para esta factura </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Dialog v-model:open="showPaymentDialog">
-                                <DialogTrigger asChild>
-                                    <Button class="w-full">
-                                        <CreditCard class="mr-2 h-4 w-4" />
-                                        Registrar Pago
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Registrar Pago</DialogTitle>
-                                        <DialogDescription> Registra un pago para la factura {{ invoice.invoice_number }} </DialogDescription>
-                                    </DialogHeader>
-
-                                    <form @submit.prevent="submitPayment" class="space-y-4">
-                                        <div>
-                                            <Label for="amount">Monto del Pago</Label>
-                                            <Input
-                                                id="amount"
-                                                type="number"
-                                                step="0.01"
-                                                min="0.01"
-                                                :max="invoice.balance_due"
-                                                v-model="paymentForm.amount"
-                                                required
-                                            />
-                                            <p class="mt-1 text-xs text-muted-foreground">Máximo: {{ formatCurrency(invoice.balance_due) }}</p>
-                                        </div>
-
-                                        <div>
-                                            <Label for="payment_method">Método de Pago</Label>
-                                            <Select v-model="paymentForm.payment_method" required>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Selecciona método de pago" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="efectivo">Efectivo</SelectItem>
-                                                    <SelectItem value="transferencia">Transferencia Bancaria</SelectItem>
-                                                    <SelectItem value="cheque">Cheque</SelectItem>
-                                                    <SelectItem value="tarjeta">Tarjeta de Crédito/Débito</SelectItem>
-                                                    <SelectItem value="pse">PSE</SelectItem>
-                                                    <SelectItem value="otro">Otro</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div>
-                                            <Label for="payment_reference">Referencia (Opcional)</Label>
-                                            <Textarea
-                                                id="payment_reference"
-                                                placeholder="Número de referencia, comprobante, etc."
-                                                v-model="paymentForm.payment_reference"
-                                            />
-                                        </div>
-
-                                        <DialogFooter>
-                                            <Button type="button" variant="outline" @click="showPaymentDialog = false"> Cancelar </Button>
-                                            <Button type="submit" :disabled="paymentForm.processing">
-                                                {{ paymentForm.processing ? 'Procesando...' : 'Registrar Pago' }}
-                                            </Button>
-                                        </DialogFooter>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
+                            <Button asChild class="w-full" >
+                                <Link :href="`/finance/payments/create?apartment_id=${invoice.apartment.id}`">
+                                    <CreditCard class="mr-2 h-4 w-4" />
+                                    Registrar Pago
+                                </Link>
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>

@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -95,7 +96,7 @@ const isBalanced = computed(() => {
 });
 
 const canEdit = computed(() => {
-    return props.transaction.status === 'draft';
+    return props.transaction.status === 'borrador';
 });
 
 const referenceDisplay = computed(() => {
@@ -159,6 +160,10 @@ const formatDateTime = (dateString: string) => {
     });
 };
 
+const printTransaction = () => {
+    window.print();
+};
+
 // Breadcrumbs
 const breadcrumbs = [
     { title: 'Escritorio', href: '/dashboard' },
@@ -185,7 +190,7 @@ const breadcrumbs = [
                     </div>
                     <p class="text-muted-foreground">{{ transaction.description }}</p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 no-print">
                     <Link href="/accounting/transactions">
                         <Button variant="outline" class="gap-2">
                             <ArrowLeft class="h-4 w-4" />
@@ -280,13 +285,13 @@ const breadcrumbs = [
                             <div class="mb-6 grid grid-cols-3 gap-4 rounded-lg bg-muted p-4">
                                 <div class="text-center">
                                     <p class="text-sm text-muted-foreground">Total Débitos</p>
-                                    <p class="text-xl font-bold text-red-600">
+                                    <p class="text-xl font-bold text-green-600">
                                         {{ formatCurrency(totalDebits) }}
                                     </p>
                                 </div>
                                 <div class="text-center">
                                     <p class="text-sm text-muted-foreground">Total Créditos</p>
-                                    <p class="text-xl font-bold text-green-600">
+                                    <p class="text-xl font-bold text-red-600">
                                         {{ formatCurrency(totalCredits) }}
                                     </p>
                                 </div>
@@ -349,7 +354,7 @@ const breadcrumbs = [
                 </div>
 
                 <!-- Sidebar -->
-                <div class="space-y-6">
+                <div class="space-y-6 no-print">
                     <!-- Transaction Summary -->
                     <Card>
                         <CardHeader>
@@ -411,11 +416,11 @@ const breadcrumbs = [
                     </Card>
 
                     <!-- Quick Actions -->
-                    <Card>
+                    <!-- <Card>
                         <CardHeader>
                             <CardTitle>Acciones Rápidas</CardTitle>
                         </CardHeader>
-                        <CardContent class="space-y-2">
+                        <CardContent class="space-y-2 gao-2">
                             <Button
                                 v-if="canEdit"
                                 variant="outline"
@@ -426,23 +431,123 @@ const breadcrumbs = [
                                 Editar Transacción
                             </Button>
 
-                            <Button
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/transactions/${transaction.id}/duplicate`)"
-                            >
-                                <FileText class="h-4 w-4" />
-                                Duplicar Transacción
-                            </Button>
+                            <Link :href="`/accounting/transactions/${transaction.id}/duplicate`">
+                                <Button
+                                    variant="outline"
+                                    class="w-full justify-start gap-2"
+                                >
+                                    <FileText class="h-4 w-4" />
+                                    Duplicar Transacción
+                                </Button>
+                            </Link>
 
-                            <Button variant="outline" class="w-full justify-start gap-2" @click="window.print()">
-                                <Calendar class="h-4 w-4" />
+                            <Button variant="outline" class="w-full justify-start gap-2 mt-3" @click="printTransaction">
+                                <FileText class="h-4 w-4" />
                                 Imprimir Comprobante
                             </Button>
                         </CardContent>
-                    </Card>
+                    </Card> -->
                 </div>
             </div>
         </div>
     </AppLayout>
 </template>
+
+<style>
+@media print {
+    /* Hide non-essential elements when printing */
+    .no-print,
+    .no-print *,
+    nav,
+    .breadcrumbs {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Reset body and page setup */
+    body {
+        font-size: 12pt !important;
+        line-height: 1.4 !important;
+        color: black !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Optimize layout for printing */
+    .container {
+        max-width: none !important;
+        width: 100% !important;
+        padding: 20px !important;
+        margin: 0 !important;
+    }
+
+    /* Force single column layout */
+    .grid.grid-cols-1.gap-8.lg\\:grid-cols-3 {
+        display: block !important;
+        grid-template-columns: none !important;
+    }
+
+    .space-y-6.lg\\:col-span-2 {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Ensure all cards and content are visible */
+    .space-y-6,
+    .card,
+    [class*="Card"] {
+        display: block !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+
+    /* Style tables for print */
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin: 10px 0 !important;
+    }
+
+    th, td {
+        border: 1px solid #000 !important;
+        padding: 8px !important;
+        text-align: left !important;
+        font-size: 11pt !important;
+    }
+
+    th {
+        background-color: #f5f5f5 !important;
+        font-weight: bold !important;
+    }
+
+    /* Hide interactive elements */
+    button,
+    .cursor-pointer {
+        display: none !important;
+    }
+
+    /* Ensure text content is visible */
+    h1, h2, h3, h4, h5, h6,
+    p, span, div, label {
+        color: black !important;
+        background: transparent !important;
+    }
+
+    /* Style badges */
+    .badge,
+    [class*="bg-gray"],
+    [class*="bg-green"],
+    [class*="bg-red"] {
+        border: 1px solid #000 !important;
+        padding: 2px 6px !important;
+        background: #f5f5f5 !important;
+        color: black !important;
+    }
+
+    /* Page breaks */
+    .transaction-details,
+    .transaction-entries {
+        page-break-inside: avoid;
+    }
+}</style>

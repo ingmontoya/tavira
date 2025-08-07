@@ -2,19 +2,16 @@
 
 namespace App\Services;
 
+use App\Mail\InvoiceMail;
 use App\Models\Invoice;
 use App\Models\InvoiceEmailBatch;
 use App\Models\InvoiceEmailDelivery;
 use App\Models\InvoiceEmailSetting;
-use App\Models\Apartment;
-use App\Models\Resident;
-use App\Mail\InvoiceMail;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class InvoiceEmailService
 {
@@ -38,7 +35,7 @@ class InvoiceEmailService
     public function createBatch(array $data): InvoiceEmailBatch
     {
         DB::beginTransaction();
-        
+
         try {
             $batch = InvoiceEmailBatch::create([
                 'name' => $data['name'],
@@ -57,12 +54,12 @@ class InvoiceEmailService
             DB::commit();
 
             return $batch;
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating invoice email batch', [
                 'error' => $e->getMessage(),
-                'data' => $data
+                'data' => $data,
             ]);
             throw $e;
         }
@@ -74,12 +71,12 @@ class InvoiceEmailService
     public function previewBatchInvoices(array $filters): Collection
     {
         $query = $this->buildInvoiceQuery($filters);
-        
+
         return $query->with([
             'apartment',
             'apartment.residents' => function ($q) {
                 $q->where('resident_type', 'Owner')->orWhere('email_notifications', true);
-            }
+            },
         ])->limit(100)->get();
     }
 
@@ -108,33 +105,35 @@ class InvoiceEmailService
         ];
 
         $emailMap = [];
-        
+
         foreach ($invoices as $invoice) {
             $recipients = $this->getInvoiceRecipients($invoice);
-            
+
             if (empty($recipients)) {
                 $summary['missing_emails']++;
                 $summary['issues'][] = [
                     'type' => 'no_email',
                     'invoice_id' => $invoice->id,
                     'apartment_number' => $invoice->apartment->number,
-                    'message' => 'No se encontró email válido para el apartamento'
+                    'message' => 'No se encontró email válido para el apartamento',
                 ];
+
                 continue;
             }
 
             foreach ($recipients as $recipient) {
                 $email = strtolower($recipient['email']);
-                
-                if (!filter_var($recipient['email'], FILTER_VALIDATE_EMAIL)) {
+
+                if (! filter_var($recipient['email'], FILTER_VALIDATE_EMAIL)) {
                     $summary['invalid_recipients']++;
                     $summary['issues'][] = [
                         'type' => 'invalid_email',
                         'invoice_id' => $invoice->id,
                         'apartment_number' => $invoice->apartment->number,
                         'email' => $recipient['email'],
-                        'message' => 'Formato de email inválido'
+                        'message' => 'Formato de email inválido',
                     ];
+
                     continue;
                 }
 
@@ -146,7 +145,7 @@ class InvoiceEmailService
                         'apartment_number' => $invoice->apartment->number,
                         'email' => $recipient['email'],
                         'previous_apartment' => $emailMap[$email]['apartment_number'],
-                        'message' => 'Email duplicado en múltiples apartamentos'
+                        'message' => 'Email duplicado en múltiples apartamentos',
                     ];
                 } else {
                     $summary['valid_recipients']++;
@@ -191,6 +190,7 @@ class InvoiceEmailService
             if ($invoices->isEmpty()) {
                 $batch->markAsFailed('No se encontraron facturas que coincidan con los filtros');
                 DB::rollBack();
+
                 return false;
             }
 
@@ -199,12 +199,12 @@ class InvoiceEmailService
             // Create delivery records
             $deliveries = [];
             $totalCost = 0;
-            
+
             foreach ($invoices as $invoice) {
                 $recipients = $this->getInvoiceRecipients($invoice);
-                
+
                 foreach ($recipients as $recipient) {
-                    if (!filter_var($recipient['email'], FILTER_VALIDATE_EMAIL)) {
+                    if (! filter_var($recipient['email'], FILTER_VALIDATE_EMAIL)) {
                         continue;
                     }
 
@@ -224,7 +224,7 @@ class InvoiceEmailService
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
-                    
+
                     $deliveries[] = $delivery;
                     $totalCost += $delivery['cost'];
                 }
@@ -233,6 +233,7 @@ class InvoiceEmailService
             if (empty($deliveries)) {
                 $batch->markAsFailed('No se encontraron destinatarios válidos');
                 DB::rollBack();
+
                 return false;
             }
 
@@ -253,15 +254,17 @@ class InvoiceEmailService
             ]);
 
             DB::commit();
+
             return true;
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $batch->markAsFailed('Error preparando el lote: ' . $e->getMessage());
+            $batch->markAsFailed('Error preparando el lote: '.$e->getMessage());
             Log::error('Error preparing email batch', [
                 'batch_id' => $batch->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -269,14 +272,14 @@ class InvoiceEmailService
     /**
      * Schedule a batch for sending
      */
-    public function scheduleBatch(InvoiceEmailBatch $batch, Carbon $scheduledAt = null): bool
+    public function scheduleBatch(InvoiceEmailBatch $batch, ?Carbon $scheduledAt = null): bool
     {
         if ($batch->status !== 'draft') {
             throw new \InvalidArgumentException('Solo los lotes en borrador pueden ser programados');
         }
 
         if ($batch->total_recipients === 0) {
-            if (!$this->prepareBatch($batch)) {
+            if (! $this->prepareBatch($batch)) {
                 return false;
             }
             $batch->refresh();
@@ -285,7 +288,7 @@ class InvoiceEmailService
         $scheduledAt = $scheduledAt ?? now();
 
         $batch->markAsScheduled($scheduledAt);
-        
+
         $batch->addToProcessingLog('Lote programado para envío', [
             'scheduled_at' => $scheduledAt->toISOString(),
         ]);
@@ -298,7 +301,7 @@ class InvoiceEmailService
      */
     public function processBatch(InvoiceEmailBatch $batch): bool
     {
-        if (!in_array($batch->status, ['scheduled', 'draft'])) {
+        if (! in_array($batch->status, ['scheduled', 'draft'])) {
             throw new \InvalidArgumentException('El lote no está en estado válido para procesamiento');
         }
 
@@ -313,6 +316,7 @@ class InvoiceEmailService
 
             if ($deliveries->isEmpty()) {
                 $batch->markAsCompleted();
+
                 return true;
             }
 
@@ -323,17 +327,17 @@ class InvoiceEmailService
                 try {
                     $this->sendSingleEmail($delivery);
                     $processed++;
-                    
+
                     // Add small delay to avoid overwhelming email service
                     usleep(100000); // 0.1 seconds
-                    
+
                 } catch (\Exception $e) {
-                    $delivery->markAsFailed('Error enviando email: ' . $e->getMessage());
+                    $delivery->markAsFailed('Error enviando email: '.$e->getMessage());
                     $failed++;
                     Log::error('Error sending single email', [
                         'delivery_id' => $delivery->id,
                         'batch_id' => $batch->id,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
 
@@ -345,7 +349,7 @@ class InvoiceEmailService
 
             $batch->updateStatistics();
             $batch->markAsCompleted();
-            
+
             $batch->addToProcessingLog('Lote procesado completamente', [
                 'processed' => $processed,
                 'failed' => $failed,
@@ -354,11 +358,12 @@ class InvoiceEmailService
             return true;
 
         } catch (\Exception $e) {
-            $batch->markAsFailed('Error procesando el lote: ' . $e->getMessage());
+            $batch->markAsFailed('Error procesando el lote: '.$e->getMessage());
             Log::error('Error processing email batch', [
                 'batch_id' => $batch->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -400,11 +405,12 @@ class InvoiceEmailService
             return true;
 
         } catch (\Exception $e) {
-            $delivery->markAsFailed('Error enviando email: ' . $e->getMessage());
+            $delivery->markAsFailed('Error enviando email: '.$e->getMessage());
             Log::error('Error sending email delivery', [
                 'delivery_id' => $delivery->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -412,9 +418,9 @@ class InvoiceEmailService
     /**
      * Cancel a batch
      */
-    public function cancelBatch(InvoiceEmailBatch $batch, string $reason = null): bool
+    public function cancelBatch(InvoiceEmailBatch $batch, ?string $reason = null): bool
     {
-        if (!$batch->can_be_cancelled) {
+        if (! $batch->can_be_cancelled) {
             throw new \InvalidArgumentException('El lote no puede ser cancelado en su estado actual');
         }
 
@@ -423,12 +429,12 @@ class InvoiceEmailService
             ->where('status', 'pending')
             ->update([
                 'status' => 'failed',
-                'failure_reason' => 'Lote cancelado: ' . ($reason ?? 'Sin razón especificada'),
+                'failure_reason' => 'Lote cancelado: '.($reason ?? 'Sin razón especificada'),
                 'failed_at' => now(),
             ]);
 
         $batch->markAsCancelled($reason);
-        
+
         $batch->addToProcessingLog('Lote cancelado', [
             'reason' => $reason,
             'cancelled_by' => auth()->user()->name ?? 'Sistema',
@@ -477,42 +483,42 @@ class InvoiceEmailService
     {
         $query = Invoice::query();
 
-        if (!empty($filters['apartment_ids'])) {
+        if (! empty($filters['apartment_ids'])) {
             $query->whereIn('apartment_id', $filters['apartment_ids']);
         }
 
-        if (!empty($filters['invoice_periods'])) {
+        if (! empty($filters['invoice_periods'])) {
             $query->where(function ($q) use ($filters) {
                 foreach ($filters['invoice_periods'] as $period) {
                     $q->orWhere(function ($subQ) use ($period) {
                         $subQ->where('billing_period_year', $period['year'])
-                             ->where('billing_period_month', $period['month']);
+                            ->where('billing_period_month', $period['month']);
                     });
                 }
             });
         }
 
-        if (!empty($filters['invoice_types'])) {
+        if (! empty($filters['invoice_types'])) {
             $query->whereIn('type', $filters['invoice_types']);
         }
 
-        if (!empty($filters['statuses'])) {
+        if (! empty($filters['statuses'])) {
             $query->whereIn('status', $filters['statuses']);
         }
 
-        if (!empty($filters['amount_min'])) {
+        if (! empty($filters['amount_min'])) {
             $query->where('total_amount', '>=', $filters['amount_min']);
         }
 
-        if (!empty($filters['amount_max'])) {
+        if (! empty($filters['amount_max'])) {
             $query->where('total_amount', '<=', $filters['amount_max']);
         }
 
-        if (!empty($filters['due_date_from'])) {
+        if (! empty($filters['due_date_from'])) {
             $query->whereDate('due_date', '>=', $filters['due_date_from']);
         }
 
-        if (!empty($filters['due_date_to'])) {
+        if (! empty($filters['due_date_to'])) {
             $query->whereDate('due_date', '<=', $filters['due_date_to']);
         }
 
@@ -525,7 +531,7 @@ class InvoiceEmailService
     private function getInvoiceRecipients(Invoice $invoice): array
     {
         $recipients = [];
-        
+
         foreach ($invoice->apartment->residents as $resident) {
             if ($resident->email && ($resident->resident_type === 'Owner' || $resident->email_notifications)) {
                 $recipients[] = [
@@ -545,9 +551,9 @@ class InvoiceEmailService
     private function parseTemplate(string $template, Invoice $invoice, array $recipient): string
     {
         $variables = $this->getTemplateVariables($invoice, $recipient);
-        
+
         foreach ($variables as $key => $value) {
-            $template = str_replace('{{' . $key . '}}', $value, $template);
+            $template = str_replace('{{'.$key.'}}', $value, $template);
         }
 
         return $template;

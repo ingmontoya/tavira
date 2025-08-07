@@ -15,9 +15,10 @@ class PaymentMethodAccountMappingSeeder extends Seeder
     public function run(): void
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
-        
-        if (!$conjunto) {
+
+        if (! $conjunto) {
             $this->command->error('No active conjunto configuration found. Please run ConjuntoSeeder first.');
+
             return;
         }
 

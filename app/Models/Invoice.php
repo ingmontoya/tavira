@@ -292,11 +292,11 @@ class Invoice extends Model
     {
         $year = now()->year;
         $month = now()->format('m');
-        
+
         // Get apartment identifier (tower + apartment number)
         $apartment = Apartment::find($invoice->apartment_id);
         $apartmentIdentifier = $apartment ? $apartment->identifier : '0000';
-        
+
         $lastInvoice = self::whereYear('created_at', $year)
             ->whereMonth('created_at', now()->month)
             ->where('apartment_id', $invoice->apartment_id)

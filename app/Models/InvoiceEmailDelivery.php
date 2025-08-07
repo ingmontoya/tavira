@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
 
 class InvoiceEmailDelivery extends Model
 {
@@ -167,7 +167,7 @@ class InvoiceEmailDelivery extends Model
             ->where('retry_count', '<', 3)
             ->where(function ($q) {
                 $q->whereNull('next_retry_at')
-                  ->orWhere('next_retry_at', '<=', now());
+                    ->orWhere('next_retry_at', '<=', now());
             });
     }
 
@@ -215,7 +215,7 @@ class InvoiceEmailDelivery extends Model
 
     public function getDeliveryDurationAttribute(): ?string
     {
-        if (!$this->sent_at || !$this->delivered_at) {
+        if (! $this->sent_at || ! $this->delivered_at) {
             return null;
         }
 
@@ -224,14 +224,14 @@ class InvoiceEmailDelivery extends Model
 
     public function getCanRetryAttribute(): bool
     {
-        return in_array($this->status, ['failed', 'bounced']) 
+        return in_array($this->status, ['failed', 'bounced'])
             && $this->bounce_type !== 'hard'
             && $this->retry_count < 3;
     }
 
     public function getFailureCategoryAttribute(): ?string
     {
-        if (!$this->failure_reason) {
+        if (! $this->failure_reason) {
             return null;
         }
 
@@ -272,7 +272,7 @@ class InvoiceEmailDelivery extends Model
         ]);
     }
 
-    public function markAsSent(string $provider = null, string $messageId = null, array $metadata = []): void
+    public function markAsSent(?string $provider = null, ?string $messageId = null, array $metadata = []): void
     {
         $this->update([
             'status' => 'sent',
@@ -364,12 +364,12 @@ class InvoiceEmailDelivery extends Model
 
     public function scheduleRetry(): void
     {
-        if (!$this->can_retry) {
+        if (! $this->can_retry) {
             return;
         }
 
         $this->increment('retry_count');
-        
+
         // Exponential backoff: 5min, 30min, 2hours
         $delays = [5, 30, 120]; // minutes
         $delay = $delays[min($this->retry_count - 1, count($delays) - 1)];
