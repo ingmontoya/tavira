@@ -396,11 +396,11 @@ class PaymentManagementController extends Controller
                 ->where('payment_id', $payment->id)
                 ->where('status', 'activo')
                 ->sum('amount_applied');
-            
+
             // Calculate what the balance would be WITHOUT this payment's applications
             $adjustedPaidAmount = $invoice->paid_amount - $currentApplicationAmount;
             $adjustedBalance = $invoice->total_amount - $adjustedPaidAmount;
-            
+
             return [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
@@ -423,10 +423,10 @@ class PaymentManagementController extends Controller
             ];
         })
         // Only show invoices that would have a balance available for payment
-        ->filter(function ($invoice) {
-            return $invoice['balance_amount'] > 0;
-        })
-        ->values();
+            ->filter(function ($invoice) {
+                return $invoice['balance_amount'] > 0;
+            })
+            ->values();
 
         return response()->json([
             'invoices' => $invoices,
@@ -438,12 +438,12 @@ class PaymentManagementController extends Controller
                 'all_invoice_ids' => $allInvoices->pluck('id'),
                 'all_invoice_statuses' => $allInvoices->pluck('status'),
                 'payment_applications_count' => $payment->applications()->count(),
-                'raw_invoices' => $allInvoices->take(2)->map(function($invoice) use ($payment) {
+                'raw_invoices' => $allInvoices->take(2)->map(function ($invoice) use ($payment) {
                     $appAmount = $invoice->paymentApplications
                         ->where('payment_id', $payment->id)
                         ->where('status', 'activo')
                         ->sum('amount_applied');
-                    
+
                     return [
                         'id' => $invoice->id,
                         'number' => $invoice->invoice_number,
@@ -452,10 +452,10 @@ class PaymentManagementController extends Controller
                         'paid_amount' => $invoice->paid_amount,
                         'balance' => $invoice->total_amount - $invoice->paid_amount,
                         'current_app_amount' => $appAmount,
-                        'adjusted_balance' => $invoice->total_amount - ($invoice->paid_amount - $appAmount)
+                        'adjusted_balance' => $invoice->total_amount - ($invoice->paid_amount - $appAmount),
                     ];
-                })
-            ]
+                }),
+            ],
         ]);
     }
 

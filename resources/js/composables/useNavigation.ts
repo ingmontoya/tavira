@@ -19,6 +19,7 @@ import {
     Send,
     Settings,
     Shield,
+    TrendingDown,
     TrendingUp,
     Truck,
     UserCheck,
@@ -139,6 +140,20 @@ export function useNavigation() {
             icon: Truck,
             tourId: 'nav-provider-proposals',
             visible: hasPermission('review_provider_proposals'),
+        },
+        {
+            title: 'Egresos',
+            href: '/expenses',
+            icon: TrendingDown,
+            tourId: 'nav-expenses',
+            visible: hasPermission('view_expenses'),
+        },
+        {
+            title: 'Categorías de Gastos',
+            href: '/expense-categories',
+            icon: Settings,
+            tourId: 'nav-expense-categories',
+            visible: hasPermission('manage_expense_categories'),
         },
         {
             title: 'Config. de Pagos',

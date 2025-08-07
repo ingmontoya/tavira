@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceEmailController;
 use App\Http\Controllers\PaymentAgreementController;
@@ -7,6 +9,7 @@ use App\Http\Controllers\PaymentConceptController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentManagementController;
 use App\Http\Controllers\PaymentMethodAccountMappingController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -79,12 +82,28 @@ Route::post('payment-agreements/{paymentAgreement}/submit-for-approval', [Paymen
 Route::post('payment-agreements/{paymentAgreement}/record-payment', [PaymentAgreementController::class, 'recordPayment'])->name('payment-agreements.record-payment')->middleware('can:edit_payments');
 
 // Providers
-Route::get('providers', function () {
-    return Inertia::render('Providers/Index');
-})->name('providers.index')->middleware(['rate.limit:default', 'can:view_payments']);
+Route::get('providers', [SupplierController::class, 'index'])->name('providers.index')->middleware(['rate.limit:default', 'can:view_payments']);
 
 // Email Provider Webhooks (no auth required)
 Route::post('webhooks/email/{provider}', [InvoiceEmailController::class, 'webhook'])
     ->name('webhooks.email')
     ->middleware(['rate.limit:strict'])
     ->where('provider', 'sendgrid|ses|mailgun|smtp');
+
+// Suppliers Management - Resource routes
+Route::resource('suppliers', SupplierController::class)->middleware('can:view_expenses');
+Route::post('suppliers/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status')->middleware('can:edit_expenses');
+
+// Expense Categories Management
+Route::resource('expense-categories', ExpenseCategoryController::class)->middleware('can:manage_expense_categories');
+
+// Expenses Management - Resource routes
+Route::resource('expenses', ExpenseController::class)->middleware('can:view_expenses');
+
+// Dynamic Expense Routes - MUST BE AFTER resource routes
+Route::post('expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve')->middleware('can:approve_expenses');
+Route::post('expenses/{expense}/approve-council', [ExpenseController::class, 'approveByCouncil'])->name('expenses.approve-council')->middleware('can:approve_expenses');
+Route::post('expenses/{expense}/reject', [ExpenseController::class, 'reject'])->name('expenses.reject')->middleware('can:approve_expenses');
+Route::post('expenses/{expense}/mark-as-paid', [ExpenseController::class, 'markAsPaid'])->name('expenses.mark-as-paid')->middleware('can:edit_expenses');
+Route::post('expenses/{expense}/cancel', [ExpenseController::class, 'cancel'])->name('expenses.cancel')->middleware('can:edit_expenses');
+Route::post('expenses/{expense}/duplicate', [ExpenseController::class, 'duplicate'])->name('expenses.duplicate')->middleware('can:create_expenses');

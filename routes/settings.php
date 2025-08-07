@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\ExpenseSettingsController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\PaymentConceptMappingController;
 use App\Http\Controllers\Settings\PaymentSettingsController;
@@ -32,6 +33,10 @@ Route::middleware('auth')->group(function () {
     // Payment Settings Routes
     Route::get('settings/payments', [PaymentSettingsController::class, 'index'])->name('settings.payments.index');
     Route::post('settings/payments', [PaymentSettingsController::class, 'update'])->name('settings.payments.update');
+
+    // Expense Settings Routes
+    Route::get('settings/expenses', [ExpenseSettingsController::class, 'index'])->name('settings.expenses.index')->middleware('can:manage_expense_settings');
+    Route::post('settings/expenses', [ExpenseSettingsController::class, 'update'])->name('settings.expenses.update')->middleware('can:manage_expense_settings');
 
     // User Permissions Routes
     Route::get('settings/permissions', [UserPermissionsController::class, 'index'])->name('permissions.index')->middleware('can:edit_users');

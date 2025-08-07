@@ -96,6 +96,11 @@ class AccountingTransaction extends Model
             return $reference->invoice->apartment();
         }
 
+        // Expenses don't have a direct apartment relationship
+        if ($this->reference_type === 'expense') {
+            return null;
+        }
+
         return null;
     }
 
@@ -123,6 +128,11 @@ class AccountingTransaction extends Model
 
         if ($this->reference_type === 'payment_application_reversal' && $reference->invoice && $reference->invoice->apartment) {
             return $reference->invoice->apartment;
+        }
+
+        // Expenses don't have a direct apartment relationship
+        if ($this->reference_type === 'expense') {
+            return null;
         }
 
         return null;
@@ -390,6 +400,12 @@ class AccountingTransaction extends Model
             $invoice = \App\Models\Invoice::find($transaction->reference_id);
             if ($invoice && $invoice->apartment) {
                 $apartmentCode = $invoice->apartment->number.'-';
+            }
+        } elseif ($transaction && $transaction->reference_type === 'expense' && $transaction->reference_id) {
+            // For expenses, use EXP- prefix instead of apartment code
+            $expense = \App\Models\Expense::find($transaction->reference_id);
+            if ($expense) {
+                $apartmentCode = 'EXP-';
             }
         }
 

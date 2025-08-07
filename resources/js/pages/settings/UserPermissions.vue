@@ -294,6 +294,12 @@ const getPermissionDisplayName = (permissionName: string) => {
         create_users: 'Crear Usuarios',
         edit_users: 'Editar Usuarios',
         delete_users: 'Eliminar Usuarios',
+        view_expenses: 'Ver Egresos',
+        create_expenses: 'Crear Egresos',
+        edit_expenses: 'Editar Egresos',
+        delete_expenses: 'Eliminar Egresos',
+        approve_expenses: 'Aprobar Egresos',
+        manage_expense_categories: 'Gestionar Categorías de Gastos',
     };
     return permissionNames[permissionName] || permissionName;
 };

@@ -14,6 +14,7 @@ import { formatCurrency } from '@/utils';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { AlertTriangle, Building, CheckCircle, CreditCard, Download, Edit, ExternalLink, Mail, Printer, Receipt, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { useToast } from '@/composables/useToast';
 
 // Breadcrumbs
 const breadcrumbs = [

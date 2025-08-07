@@ -37,6 +37,11 @@ const sidebarNavItems = computed((): NavItem[] =>
             visible: hasPermission('view_payments'),
         },
         {
+            title: 'Gastos',
+            href: '/settings/expenses',
+            visible: hasPermission('manage_expenses'),
+        },
+        {
             title: 'Permisos',
             href: '/settings/permissions',
             visible: hasPermission('edit_users'),

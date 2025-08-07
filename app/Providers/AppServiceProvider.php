@@ -35,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
             'payment' => \App\Models\Payment::class,
             'payment_application' => \App\Models\PaymentApplication::class,
             'payment_application_reversal' => \App\Models\PaymentApplication::class,
+            'expense' => \App\Models\Expense::class,
             'user' => \App\Models\User::class,
             'apartment' => \App\Models\Apartment::class,
             'resident' => \App\Models\Resident::class,

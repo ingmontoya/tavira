@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Copy, Download, QrCode, Share, User } from 'lucide-vue-next';
+import { useToast } from '@/composables/useToast';
 
 interface Props {
     invitation: {
@@ -28,6 +29,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const { success } = useToast();
+
 const breadcrumbs = [
     {
         title: 'Escritorio',
@@ -49,8 +52,7 @@ console.log('QR Code length:', props.qrCode?.length || 'undefined');
 const copyUrl = async () => {
     try {
         await navigator.clipboard.writeText(props.registrationUrl);
-        // You could add a toast notification here
-        alert('URL copiada al portapapeles');
+        success('URL copiada al portapapeles');
     } catch (err) {
         console.error('Error copying URL:', err);
     }
