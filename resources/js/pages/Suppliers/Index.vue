@@ -17,6 +17,7 @@ import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, g
 import { CheckCircle, ChevronDown, ChevronsUpDown, Copy, Edit, Eye, Filter, Plus, Search, Trash2, X, XCircle, Building2, Clock } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { valueUpdater } from '../../utils';
+import { formatCurrency } from '@/utils/format';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -358,7 +359,7 @@ const deleteSupplier = (supplierId: number) => {
                         <Clock class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold">{{ stats?.total_expenses || 0 }}</div>
+                        <div class="text-2xl font-bold">{{ formatCurrency(stats?.total_expenses || 0) }}</div>
                     </CardContent>
                 </Card>
             </div>

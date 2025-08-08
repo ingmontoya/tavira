@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
@@ -74,13 +73,19 @@ const form = useForm({
     contact_phone: props.supplier.contact_phone || '',
     contact_email: props.supplier.contact_email || '',
     notes: props.supplier.notes || '',
-    tax_regime: props.supplier.tax_regime || '',
+    tax_regime: props.supplier.tax_regime || 'ninguno',
     is_active: props.supplier.is_active,
 });
 
 // Submit form
 const submit = () => {
-    form.put(`/suppliers/${props.supplier.id}`, {
+    // Convert 'ninguno' back to empty string for backend
+    const formData = { ...form.data() };
+    if (formData.tax_regime === 'ninguno') {
+        formData.tax_regime = '';
+    }
+    
+    form.transform((_) => formData).put(`/suppliers/${props.supplier.id}`, {
         onSuccess: () => {
             // Will redirect to show page
         }
@@ -104,7 +109,7 @@ const documentTypes = [
 
 // Tax regimes for Colombian context
 const taxRegimes = [
-    { value: '', label: 'Seleccionar régimen' },
+    { value: 'ninguno', label: 'Seleccionar régimen' },
     { value: 'Responsable de IVA', label: 'Responsable de IVA' },
     { value: 'No responsable de IVA', label: 'No responsable de IVA' },
     { value: 'Gran Contribuyente', label: 'Gran Contribuyente' },
@@ -379,9 +384,12 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="flex items-center space-x-2">
-                                        <Checkbox
+                                        <input
+                                            type="checkbox"
                                             id="is_active"
-                                            v-model:checked="form.is_active"
+                                            :checked="form.is_active"
+                                            @change="(event) => { form.is_active = (event.target as HTMLInputElement).checked; }"
+                                            class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                         />
                                         <Label for="is_active">
                                             Proveedor activo

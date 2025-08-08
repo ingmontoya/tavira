@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ConjuntoConfig;
+use App\Models\Expense;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -58,6 +59,9 @@ class SupplierController extends Controller
             'total_suppliers' => Supplier::forConjunto($conjunto->id)->count(),
             'active_suppliers' => Supplier::forConjunto($conjunto->id)->active()->count(),
             'inactive_suppliers' => Supplier::forConjunto($conjunto->id)->where('is_active', false)->count(),
+            'total_expenses' => Expense::whereHas('supplier', function ($query) use ($conjunto) {
+                $query->forConjunto($conjunto->id);
+            })->sum('total_amount'),
         ];
 
         return Inertia::render('Suppliers/Index', [
@@ -160,7 +164,7 @@ class SupplierController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'document_type' => 'required|string|in:NIT,CC,CE,TI,PA',
+            'document_type' => 'required|string|in:NIT,CC,CE,TI,PA,RUT',
             'document_number' => [
                 'required',
                 'string',

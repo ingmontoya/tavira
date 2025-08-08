@@ -109,7 +109,7 @@ interface Stats {
 
 const props = defineProps<{
     supplier: Supplier;
-    expenses: {
+    expenses?: {
         data: Expense[];
         current_page: number;
         last_page: number;
@@ -118,7 +118,7 @@ const props = defineProps<{
         from: number;
         to: number;
     };
-    stats: Stats;
+    stats?: Stats;
 }>();
 
 // Get page data for errors and flash messages
