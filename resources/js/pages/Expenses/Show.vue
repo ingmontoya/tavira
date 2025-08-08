@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ExpenseApprovalFlow from '@/components/ExpenseApprovalFlow.vue';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -122,6 +123,7 @@ interface Expense {
     notes?: string;
     created_at: string;
     approved_at?: string;
+    council_approved_at?: string;
     can_be_approved: boolean;
     can_be_paid: boolean;
     can_be_cancelled: boolean;
@@ -130,12 +132,17 @@ interface Expense {
     credit_account?: Account;
     created_by: User;
     approved_by?: User;
+    council_approved_by?: User;
     accounting_transactions: AccountingTransaction[];
 }
 
 const props = defineProps<{
     expense: Expense;
     paymentMethods: Record<string, string>;
+    approvalSettings?: {
+        approval_threshold_amount: number;
+        council_approval_required: boolean;
+    };
 }>();
 
 // Get page data for errors and flash messages
@@ -311,6 +318,27 @@ const deleteExpense = () => {
                 </TabsList>
 
                 <TabsContent value="details" class="space-y-4">
+                    <!-- Approval Flow Card - First Card -->
+                    <Card class="mb-6">
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"/>
+                                    <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h18z"/>
+                                    <path d="M21 12v6c0 .552-.448 1-1 1H3c-.552 0-1-.448-1-1v-6"/>
+                                </svg>
+                                Flujo de Aprobación
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ExpenseApprovalFlow 
+                                :expense="expense"
+                                :approval-threshold="approvalSettings?.approval_threshold_amount || 4000000"
+                                :council-approval-required="approvalSettings?.council_approval_required || true"
+                            />
+                        </CardContent>
+                    </Card>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Main Details -->
                         <div class="lg:col-span-2 space-y-4">

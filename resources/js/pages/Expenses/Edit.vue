@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ExpenseApprovalFlow from '@/components/ExpenseApprovalFlow.vue';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,6 +98,9 @@ interface Expense {
     credit_account_id?: number;
     notes?: string;
     created_by: User;
+    created_at: string;
+    approved_at?: string;
+    council_approved_at?: string;
 }
 
 const props = defineProps<{
@@ -106,6 +110,10 @@ const props = defineProps<{
     assetAccounts: Account[];
     liabilityAccounts: Account[];
     suppliers: Supplier[];
+    approvalSettings?: {
+        approval_threshold_amount: number;
+        council_approval_required: boolean;
+    };
 }>();
 
 // Get page data for errors
@@ -602,17 +610,77 @@ const cancel = () => {
                 </div>
             </form>
 
-            <!-- If cannot edit, show view-only message -->
-            <div v-else class="text-center py-8">
-                <p class="text-muted-foreground mb-4">
-                    Este gasto no puede ser editado en su estado actual.
-                </p>
-                <Button asChild variant="outline">
-                    <Link :href="`/expenses/${expense.id}`">
-                        <ArrowLeft class="mr-2 h-4 w-4" />
-                        Ver Gasto
-                    </Link>
-                </Button>
+            <!-- If cannot edit, show view-only with approval flow -->
+            <div v-else class="space-y-6">
+                <div class="text-center py-4">
+                    <p class="text-muted-foreground mb-4">
+                        Este gasto no puede ser editado en su estado actual.
+                    </p>
+                    <Button asChild variant="outline">
+                        <Link :href="`/expenses/${expense.id}`">
+                            <ArrowLeft class="mr-2 h-4 w-4" />
+                            Ver Gasto
+                        </Link>
+                    </Button>
+                </div>
+
+                <!-- Show approval flow and summary for non-editable expenses -->
+                <div class="space-y-6">
+                    <!-- Approval Flow Card -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 12l2 2 4-4"/>
+                                    <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h18z"/>
+                                    <path d="M21 12v6c0 .552-.448 1-1 1H3c-.552 0-1-.448-1-1v-6"/>
+                                </svg>
+                                Flujo de Aprobación
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ExpenseApprovalFlow 
+                                :expense="expense"
+                                :approval-threshold="approvalSettings?.approval_threshold_amount || 4000000"
+                                :council-approval-required="approvalSettings?.council_approval_required || true"
+                            />
+                        </CardContent>
+                    </Card>
+
+                    <!-- Summary Card -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Receipt class="h-5 w-5" />
+                                    Resumen del Gasto
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent class="space-y-3">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <span class="text-sm text-muted-foreground">Número:</span>
+                                        <p class="font-medium">{{ expense.expense_number }}</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-muted-foreground">Estado:</span>
+                                        <Badge :class="expense.status_badge.class">{{ expense.status_badge.text }}</Badge>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-muted-foreground">Descripción:</span>
+                                    <p>{{ expense.description }}</p>
+                                </div>
+                                <div class="pt-2 border-t">
+                                    <div class="flex justify-between text-lg font-bold">
+                                        <span>Total:</span>
+                                        <span>{{ formatCurrency(expense.total_amount) }}</span>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
             </div>
         </div>
     </AppLayout>

@@ -195,7 +195,7 @@ class Expense extends Model
 
     public function canBypassApproval(): bool
     {
-        $settings = \App\Settings\ExpenseSettings::make();
+        $settings = app(\App\Settings\ExpenseSettings::class);
 
         // Check if auto-approval is enabled and amount is below threshold
         if ($settings->auto_approve_below_threshold &&

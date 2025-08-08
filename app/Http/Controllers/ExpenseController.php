@@ -90,8 +90,11 @@ class ExpenseController extends Controller
             'creditAccount',
             'createdBy',
             'approvedBy',
+            'councilApprovedBy',
             'accountingTransactions.entries.account',
         ]);
+
+        $expenseSettings = app(\App\Settings\ExpenseSettings::class);
 
         return Inertia::render('Expenses/Show', [
             'expense' => $expense,
@@ -103,6 +106,10 @@ class ExpenseController extends Controller
                 'debit_card' => 'Tarjeta Débito',
                 'online' => 'Pago Online',
                 'other' => 'Otro',
+            ],
+            'approvalSettings' => [
+                'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,
+                'council_approval_required' => $expenseSettings->council_approval_required,
             ],
         ]);
     }
@@ -208,12 +215,14 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense)
     {
-        if (! in_array($expense->status, ['borrador', 'pendiente', 'rechazado'])) {
-            return redirect()->route('expenses.show', $expense)
-                ->with('error', 'Este gasto no puede ser editado en su estado actual');
-        }
+        $expense->load([
+            'createdBy',
+            'approvedBy',
+            'councilApprovedBy',
+        ]);
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
+        $expenseSettings = app(\App\Settings\ExpenseSettings::class);
 
         $categories = ExpenseCategory::forConjunto($conjunto->id)
             ->active()
@@ -254,6 +263,10 @@ class ExpenseController extends Controller
             'assetAccounts' => $assetAccounts,
             'liabilityAccounts' => $liabilityAccounts,
             'suppliers' => $suppliers,
+            'approvalSettings' => [
+                'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,
+                'council_approval_required' => $expenseSettings->council_approval_required,
+            ],
         ]);
     }
 
