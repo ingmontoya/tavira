@@ -32,7 +32,7 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2);
 
             // Status and approval
-            $table->enum('status', ['borrador', 'pendiente', 'aprobado', 'pagado', 'rechazado', 'cancelado'])->default('borrador');
+            $table->enum('status', ['borrador', 'pendiente', 'pendiente_concejo', 'aprobado', 'pagado', 'rechazado', 'cancelado'])->default('borrador');
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->timestamp('approved_at')->nullable();

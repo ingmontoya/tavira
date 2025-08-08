@@ -47,7 +47,7 @@ class SupplierController extends Controller
             $supplier->loadCount(['expenses as expenses_count', 'expenses as active_expenses' => function ($query) {
                 $query->whereNotIn('status', ['cancelado']);
             }]);
-            
+
             // Load last expense date
             $lastExpense = $supplier->expenses()->orderBy('expense_date', 'desc')->first();
             $supplier->last_expense_date = $lastExpense ? $lastExpense->expense_date : null;

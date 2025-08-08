@@ -95,6 +95,15 @@ class ExpenseController extends Controller
 
         return Inertia::render('Expenses/Show', [
             'expense' => $expense,
+            'paymentMethods' => [
+                'cash' => 'Efectivo',
+                'bank_transfer' => 'Transferencia Bancaria',
+                'check' => 'Cheque',
+                'credit_card' => 'Tarjeta de Crédito',
+                'debit_card' => 'Tarjeta Débito',
+                'online' => 'Pago Online',
+                'other' => 'Otro',
+            ],
         ]);
     }
 
@@ -163,7 +172,6 @@ class ExpenseController extends Controller
             'debit_account_id' => 'required|exists:chart_of_accounts,id',
             'credit_account_id' => 'required|exists:chart_of_accounts,id',
             'notes' => 'nullable|string|max:1000',
-            'submit_for_approval' => 'boolean',
         ]);
 
         // Validate that we have either supplier or vendor information
@@ -175,15 +183,24 @@ class ExpenseController extends Controller
         $validated['created_by'] = auth()->id();
         $validated['tax_amount'] = $validated['tax_amount'] ?? 0;
 
-        // Set initial status
+        // Set initial status based on category approval requirements
         $category = ExpenseCategory::find($validated['expense_category_id']);
-        if ($request->boolean('submit_for_approval') && $category->requires_approval) {
+        if ($category->requires_approval) {
             $validated['status'] = 'pendiente';
         } else {
-            $validated['status'] = 'borrador';
+            // For categories that don't require approval, mark as approved automatically
+            $validated['status'] = 'aprobado';
+            $validated['approved_by'] = auth()->id();
+            $validated['approved_at'] = now();
         }
 
         $expense = $this->expenseService->create($validated);
+
+        // Send notification if expense requires approval
+        if ($expense->status === 'pendiente') {
+            $notificationService = app(\App\Services\ExpenseNotificationService::class);
+            $notificationService->notifyPendingApproval($expense);
+        }
 
         return redirect()->route('expenses.show', $expense)
             ->with('success', 'Gasto creado exitosamente');
@@ -263,7 +280,6 @@ class ExpenseController extends Controller
             'debit_account_id' => 'required|exists:chart_of_accounts,id',
             'credit_account_id' => 'required|exists:chart_of_accounts,id',
             'notes' => 'nullable|string|max:1000',
-            'submit_for_approval' => 'boolean',
         ]);
 
         // Validate that we have either supplier or vendor information
@@ -273,10 +289,19 @@ class ExpenseController extends Controller
 
         $validated['tax_amount'] = $validated['tax_amount'] ?? 0;
 
-        // Handle status change if needed
+        // Handle status change based on category approval requirements
         $category = ExpenseCategory::find($validated['expense_category_id']);
-        if ($request->boolean('submit_for_approval') && $category->requires_approval && $expense->status === 'borrador') {
-            $validated['status'] = 'pendiente';
+
+        // Only update status if we're changing from borrador or the category changed
+        if ($expense->status === 'borrador' || $expense->expense_category_id != $validated['expense_category_id']) {
+            if ($category->requires_approval) {
+                $validated['status'] = 'pendiente';
+            } else {
+                // For categories that don't require approval, mark as approved automatically
+                $validated['status'] = 'aprobado';
+                $validated['approved_by'] = auth()->id();
+                $validated['approved_at'] = now();
+            }
         }
 
         $expense = $this->expenseService->update($expense, $validated);

@@ -23,7 +23,7 @@ interface PaymentConcept {
     applicable_apartment_types?: number[];
     created_at: string;
     updated_at: string;
-    conjunto_config: {
+    conjunto_config?: {
         id: number;
         name: string;
     };
@@ -300,7 +300,7 @@ const breadcrumbs = [
                         <CardContent class="space-y-3">
                             <div>
                                 <Label class="text-sm font-medium text-muted-foreground">Conjunto</Label>
-                                <p class="text-sm">{{ concept.conjunto_config.name }}</p>
+                                <p class="text-sm">{{ concept.conjunto_config?.name || 'N/A' }}</p>
                             </div>
 
                             <div>

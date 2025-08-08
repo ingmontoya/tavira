@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentConcept extends Model
@@ -94,6 +95,11 @@ class PaymentConcept extends Model
             }
             // For concepts without specific type references, keep them as null (apply to all)
         }
+    }
+
+    public function conjuntoConfig(): BelongsTo
+    {
+        return $this->belongsTo(ConjuntoConfig::class);
     }
 
     public function getTypeLabelAttribute(): string

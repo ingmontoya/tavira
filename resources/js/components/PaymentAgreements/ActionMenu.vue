@@ -98,11 +98,13 @@
 import { Link, router } from '@inertiajs/vue3';
 import { Check, ChevronDown, Download, Edit, Play, Send, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useToast } from '@/composables/useToast';
 
 const props = defineProps({
     agreement: Object,
 });
 
+const { info } = useToast();
 const isOpen = ref(false);
 
 const canEdit = computed(() => {
@@ -154,7 +156,7 @@ const deleteAgreement = () => {
 
 const downloadPdf = () => {
     // TODO: Implement PDF download
-    alert('Funcionalidad de PDF en desarrollo');
+    info('Funcionalidad de PDF en desarrollo');
     isOpen.value = false;
 };
 </script>

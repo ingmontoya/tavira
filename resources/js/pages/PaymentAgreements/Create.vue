@@ -285,23 +285,23 @@ const submit = () => {
 function getDefaultTerms() {
     return `TÉRMINOS Y CONDICIONES DEL ACUERDO DE PAGO
 
-1. OBJETO DEL ACUERDO
-El presente acuerdo tiene por objeto establecer un plan de pagos para saldar la deuda pendiente por concepto de cuotas de administración.
+        1. OBJETO DEL ACUERDO
+        El presente acuerdo tiene por objeto establecer un plan de pagos para saldar la deuda pendiente por concepto de cuotas de administración.
 
-2. OBLIGACIONES DEL DEUDOR
-- Realizar los pagos puntualmente en las fechas establecidas
-- Mantener al día las cuotas corrientes de administración
-- Notificar cualquier dificultad de pago con anticipación
+        2. OBLIGACIONES DEL DEUDOR
+        - Realizar los pagos puntualmente en las fechas establecidas
+        - Mantener al día las cuotas corrientes de administración
+        - Notificar cualquier dificultad de pago con anticipación
 
-3. PENALIZACIONES POR INCUMPLIMIENTO
-- El incumplimiento de dos (2) cuotas consecutivas constituirá causal de terminación del acuerdo
-- Se aplicará la tasa de penalización establecida por mora en los pagos
-- La terminación del acuerdo por incumplimiento hará exigible la totalidad de la deuda
+        3. PENALIZACIONES POR INCUMPLIMIENTO
+        - El incumplimiento de dos (2) cuotas consecutivas constituirá causal de terminación del acuerdo
+        - Se aplicará la tasa de penalización establecida por mora en los pagos
+        - La terminación del acuerdo por incumplimiento hará exigible la totalidad de la deuda
 
-4. VIGENCIA
-El presente acuerdo entrará en vigencia una vez sea aprobado por la administración y tendrá la duración establecida en el cronograma de pagos.
+        4. VIGENCIA
+        El presente acuerdo entrará en vigencia una vez sea aprobado por la administración y tendrá la duración establecida en el cronograma de pagos.
 
-5. ACEPTACIÓN
-Las partes declaran conocer y aceptar los términos y condiciones establecidos en el presente acuerdo.`;
+        5. ACEPTACIÓN
+        Las partes declaran conocer y aceptar los términos y condiciones establecidos en el presente acuerdo.`;
 }
 </script>

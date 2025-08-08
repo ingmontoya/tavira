@@ -187,7 +187,7 @@ class Expense extends Model
 
     public function requiresCouncilApproval(): bool
     {
-        $settings = \App\Settings\ExpenseSettings::make();
+        $settings = app(\App\Settings\ExpenseSettings::class);
 
         return $settings->council_approval_required &&
                $this->total_amount >= $settings->approval_threshold_amount;
@@ -263,6 +263,10 @@ class Expense extends Model
 
             // Create accounting transaction if it doesn't exist
             $this->createAccountingTransaction();
+
+            // Notify creator about approval
+            $notificationService = app(\App\Services\ExpenseNotificationService::class);
+            $notificationService->notifyApproval($this);
         }
     }
 
@@ -280,16 +284,16 @@ class Expense extends Model
 
         // Create accounting transaction if it doesn't exist
         $this->createAccountingTransaction();
+
+        // Notify creator about approval
+        $notificationService = app(\App\Services\ExpenseNotificationService::class);
+        $notificationService->notifyApproval($this);
     }
 
     private function notifyCouncilForApproval(): void
     {
-        $settings = \App\Settings\ExpenseSettings::make();
-
-        if ($settings->notify_on_pending_approval && $settings->council_approval_notification_email) {
-            // TODO: Implement email notification to council
-            // This could be implemented using Laravel's notification system
-        }
+        $notificationService = app(\App\Services\ExpenseNotificationService::class);
+        $notificationService->notifyCouncilApproval($this);
     }
 
     public function markAsPaid(?string $paymentMethod = null, ?string $paymentReference = null): void
@@ -298,15 +302,20 @@ class Expense extends Model
             throw new \Exception('El gasto no puede ser marcado como pagado');
         }
 
-        $this->update([
-            'status' => 'pagado',
-            'payment_method' => $paymentMethod,
-            'payment_reference' => $paymentReference,
-            'paid_at' => now(),
-        ]);
+        \Illuminate\Support\Facades\DB::transaction(function () use ($paymentMethod, $paymentReference) {
+            $this->update([
+                'status' => 'pagado',
+                'payment_method' => $paymentMethod ?: 'bank_transfer',
+                'payment_reference' => $paymentReference,
+                'paid_at' => now(),
+            ]);
 
-        // Update accounting transaction status to posted
-        $this->postAccountingTransaction();
+            // Post the original accounting transaction (provision)
+            $this->postAccountingTransaction();
+
+            // Create the payment transaction
+            $this->createPaymentTransaction($paymentMethod ?: 'bank_transfer', $paymentReference);
+        });
     }
 
     public function cancel(?string $reason = null): void
@@ -332,6 +341,10 @@ class Expense extends Model
             'status' => 'rechazado',
             'notes' => $this->notes ? $this->notes."\n\nRechazado por: ".User::find($rejectedBy)->name.' - '.$reason : 'Rechazado por: '.User::find($rejectedBy)->name.' - '.$reason,
         ]);
+
+        // Notify creator about rejection
+        $notificationService = app(\App\Services\ExpenseNotificationService::class);
+        $notificationService->notifyRejection($this);
     }
 
     public function createAccountingTransaction(): void
@@ -374,12 +387,21 @@ class Expense extends Model
         ]);
 
         // Crédito: Cuenta de origen (caja/banco o cuentas por pagar)
-        $transaction->addEntry([
+        $creditEntry = [
             'account_id' => $this->credit_account_id,
             'description' => "Pago/Provisión: {$vendorName}",
             'debit_amount' => 0,
             'credit_amount' => $this->total_amount,
-        ]);
+        ];
+
+        // If credit account requires third party (like suppliers account), add supplier info
+        $creditAccount = ChartOfAccounts::find($this->credit_account_id);
+        if ($creditAccount && $creditAccount->requires_third_party && $this->supplier_id) {
+            $creditEntry['third_party_type'] = 'supplier';
+            $creditEntry['third_party_id'] = $this->supplier_id;
+        }
+
+        $transaction->addEntry($creditEntry);
     }
 
     public function getVendorDisplayName(): string
@@ -402,6 +424,73 @@ class Expense extends Model
         }
     }
 
+    private function createPaymentTransaction(string $paymentMethod, ?string $paymentReference = null): void
+    {
+        // Get vendor name for description
+        $vendorName = $this->getVendorDisplayName();
+
+        // Get cash account for the payment method
+        $cashAccount = PaymentMethodAccountMapping::getCashAccountForPaymentMethod(
+            $this->conjunto_config_id,
+            $paymentMethod
+        );
+
+        if (! $cashAccount) {
+            throw new \Exception("No se encontró mapeo de cuenta para el método de pago: {$paymentMethod}");
+        }
+
+        // For expense payments, we need to:
+        // 1. Debit the supplier account (reduce liability)
+        // 2. Credit the cash/bank account (reduce asset)
+
+        // Get the original credit account (should be the supplier/liability account)
+        $supplierAccount = ChartOfAccounts::find($this->credit_account_id);
+
+        if (! $supplierAccount) {
+            throw new \Exception('No se encontró la cuenta del proveedor para crear la transacción de pago');
+        }
+
+        // Create payment transaction
+        $paymentTransaction = AccountingTransaction::create([
+            'conjunto_config_id' => $this->conjunto_config_id,
+            'transaction_date' => now()->toDateString(),
+            'description' => "Pago de gasto: {$vendorName} - {$this->description}".
+                           ($paymentReference ? " (Ref: {$paymentReference})" : ''),
+            'reference_type' => 'expense_payment',
+            'reference_id' => $this->id,
+            'status' => 'borrador',
+            'created_by' => auth()->id(),
+        ]);
+
+        // Débito: Cuenta del proveedor (reducir pasivo - cuenta por pagar)
+        $debitEntry = [
+            'account_id' => $supplierAccount->id,
+            'description' => "Pago a {$vendorName} - {$this->expense_number}",
+            'debit_amount' => $this->total_amount,
+            'credit_amount' => 0,
+        ];
+
+        // If supplier account requires third party, add supplier info
+        if ($supplierAccount->requires_third_party && $this->supplier_id) {
+            $debitEntry['third_party_type'] = 'supplier';
+            $debitEntry['third_party_id'] = $this->supplier_id;
+        }
+
+        $paymentTransaction->addEntry($debitEntry);
+
+        // Crédito: Cuenta de efectivo/banco (reducir activo)
+        $paymentTransaction->addEntry([
+            'account_id' => $cashAccount->id,
+            'description' => "Pago efectuado - {$this->expense_number}".
+                           ($paymentReference ? " (Ref: {$paymentReference})" : ''),
+            'debit_amount' => 0,
+            'credit_amount' => $this->total_amount,
+        ]);
+
+        // Post the payment transaction immediately
+        $paymentTransaction->post();
+    }
+
     public static function generateExpenseNumber(int $conjuntoConfigId): string
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($conjuntoConfigId) {
@@ -413,12 +502,12 @@ class Expense extends Model
             $randomOffset = rand(0, 10);
 
             // Get max sequence without FOR UPDATE (PostgreSQL doesn't support FOR UPDATE with aggregates)
-            $result = \Illuminate\Support\Facades\DB::select("
+            $result = \Illuminate\Support\Facades\DB::select('
                 SELECT MAX(CAST(RIGHT(expense_number, 4) AS INTEGER)) as max_sequence
                 FROM expenses 
                 WHERE conjunto_config_id = ? 
                 AND expense_number LIKE ?
-            ", [$conjuntoConfigId, "{$prefix}%"]);
+            ', [$conjuntoConfigId, "{$prefix}%"]);
 
             $maxSequence = $result[0]->max_sequence ?? 0;
             $sequence = $maxSequence + 1 + $randomOffset;
@@ -426,16 +515,16 @@ class Expense extends Model
             // Try sequences until we find one that doesn't exist
             for ($i = 0; $i < 50; $i++) {
                 $expenseNumber = sprintf('%s%04d', $prefix, $sequence + $i);
-                
+
                 // Check if this number is available with a lock
-                $exists = \Illuminate\Support\Facades\DB::selectOne("
+                $exists = \Illuminate\Support\Facades\DB::selectOne('
                     SELECT 1 FROM expenses 
                     WHERE conjunto_config_id = ? 
                     AND expense_number = ? 
                     FOR UPDATE
-                ", [$conjuntoConfigId, $expenseNumber]);
+                ', [$conjuntoConfigId, $expenseNumber]);
 
-                if (!$exists) {
+                if (! $exists) {
                     return $expenseNumber;
                 }
             }
@@ -452,7 +541,7 @@ class Expense extends Model
             if (empty($expense->expense_number)) {
                 $maxAttempts = 10;
                 $attempts = 0;
-                
+
                 while ($attempts < $maxAttempts) {
                     try {
                         $expense->expense_number = self::generateExpenseNumber($expense->conjunto_config_id);
@@ -460,7 +549,7 @@ class Expense extends Model
                     } catch (\Exception $e) {
                         $attempts++;
                         if ($attempts >= $maxAttempts) {
-                            throw new \Exception("Failed to generate unique expense number after {$maxAttempts} attempts: " . $e->getMessage());
+                            throw new \Exception("Failed to generate unique expense number after {$maxAttempts} attempts: ".$e->getMessage());
                         }
                         // Small random delay to reduce collision probability
                         usleep(rand(1000, 5000)); // 1-5ms delay

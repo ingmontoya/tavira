@@ -6,10 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { Save, ArrowLeft, Calculator, CreditCard, Receipt, AlertTriangle } from 'lucide-vue-next';
+import { Save, ArrowLeft, Calculator, CreditCard, Receipt, AlertTriangle, CheckCircle } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { formatCurrency } from '../../utils';
 
@@ -97,7 +96,6 @@ const form = useForm({
     debit_account_id: '',
     credit_account_id: '',
     notes: '',
-    submit_for_approval: false,
 });
 
 // Computed properties
@@ -420,14 +418,23 @@ const cancel = () => {
                                         />
                                     </div>
 
-                                    <div v-if="selectedCategory?.requires_approval" class="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="submit_for_approval"
-                                            v-model:checked="form.submit_for_approval"
-                                        />
-                                        <Label for="submit_for_approval">
-                                            Enviar para aprobación inmediatamente
-                                        </Label>
+                                    <div v-if="selectedCategory?.requires_approval" class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <div class="flex items-center gap-2 text-amber-800">
+                                            <AlertTriangle class="h-4 w-4" />
+                                            <span class="text-sm font-medium">Aprobación Requerida</span>
+                                        </div>
+                                        <p class="text-sm text-amber-700 mt-1">
+                                            Este gasto será enviado automáticamente para aprobación debido a la categoría seleccionada.
+                                        </p>
+                                    </div>
+                                    <div v-else class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-center gap-2 text-green-800">
+                                            <CheckCircle class="h-4 w-4" />
+                                            <span class="text-sm font-medium">Aprobación Automática</span>
+                                        </div>
+                                        <p class="text-sm text-green-700 mt-1">
+                                            Este gasto será aprobado automáticamente y estará listo para ser pagado.
+                                        </p>
                                     </div>
                                 </CardContent>
                             </Card>

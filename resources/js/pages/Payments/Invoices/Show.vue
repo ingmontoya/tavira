@@ -114,6 +114,8 @@ const props = defineProps<{
     invoice: Invoice;
 }>();
 
+const { success, error } = useToast();
+
 const showPaymentDialog = ref(false);
 
 const paymentForm = useForm({
@@ -158,11 +160,11 @@ const sendByEmail = () => {
         {},
         {
             onSuccess: () => {
-                alert('Factura enviada por correo electrónico exitosamente');
+                success('Factura enviada por correo electrónico exitosamente');
             },
             onError: (errors) => {
                 console.error('Error sending email:', errors);
-                alert('Error al enviar la factura por correo electrónico');
+                error('Error al enviar la factura por correo electrónico');
             },
         },
     );

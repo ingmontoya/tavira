@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExpenseApprovalController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\InvoiceController;
@@ -99,6 +100,11 @@ Route::resource('expense-categories', ExpenseCategoryController::class)->middlew
 
 // Expenses Management - Resource routes
 Route::resource('expenses', ExpenseController::class)->middleware('can:view_expenses');
+
+// Expense Approval Dashboard
+Route::get('expenses/approvals/dashboard', [ExpenseApprovalController::class, 'dashboard'])->name('expenses.approvals.dashboard')->middleware('can:approve_expenses');
+Route::post('expenses/bulk-approve', [ExpenseApprovalController::class, 'bulkApprove'])->name('expenses.bulk-approve')->middleware('can:approve_expenses');
+Route::post('expenses/bulk-reject', [ExpenseApprovalController::class, 'bulkReject'])->name('expenses.bulk-reject')->middleware('can:approve_expenses');
 
 // Dynamic Expense Routes - MUST BE AFTER resource routes
 Route::post('expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve')->middleware('can:approve_expenses');

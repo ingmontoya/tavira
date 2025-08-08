@@ -14,7 +14,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { CalendarDays, CheckCircle, ChevronDown, ChevronsUpDown, Copy, CreditCard, Edit, Eye, Filter, Plus, Search, Settings, Trash2, X, XCircle, AlertTriangle } from 'lucide-vue-next';
+import { CalendarDays, CheckCircle, ChevronDown, ChevronsUpDown, Clock, Copy, CreditCard, Edit, Eye, Filter, Plus, Search, Settings, Trash2, X, XCircle, AlertTriangle } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { valueUpdater, formatCurrency } from '../../utils';
 
@@ -426,6 +426,12 @@ const deleteExpense = (expenseId: number) => {
                         </p>
                     </div>
                     <div class="flex items-center space-x-2">
+                        <Button asChild variant="outline" size="sm">
+                            <Link href="/expenses/approvals/dashboard">
+                                <Clock class="mr-2 h-4 w-4" />
+                                Aprobaciones
+                            </Link>
+                        </Button>
                         <Button asChild variant="outline" size="sm">
                             <Link href="/expense-categories">
                                 <Settings class="mr-2 h-4 w-4" />

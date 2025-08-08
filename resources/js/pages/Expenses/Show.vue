@@ -4,6 +4,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,7 +28,7 @@ import {
     Calendar,
     AccountingTransaction
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { formatCurrency } from '../../utils';
 
 // Breadcrumbs
@@ -131,6 +135,7 @@ interface Expense {
 
 const props = defineProps<{
     expense: Expense;
+    paymentMethods: Record<string, string>;
 }>();
 
 // Get page data for errors and flash messages
@@ -148,6 +153,9 @@ const markAsPaidForm = useForm({
     payment_method: '',
     payment_reference: '',
 });
+
+// Dialog state
+const isMarkAsPaidDialogOpen = ref(false);
 const cancelForm = useForm({
     reason: '',
 });
@@ -167,15 +175,18 @@ const rejectExpense = () => {
     }
 };
 
-const markAsPaid = () => {
-    const paymentMethod = prompt('Método de pago (opcional):');
-    const paymentReference = prompt('Referencia de pago (opcional):');
+const openMarkAsPaidDialog = () => {
+    // Reset form
+    markAsPaidForm.reset();
+    isMarkAsPaidDialogOpen.value = true;
+};
 
-    if (confirm('¿Está seguro de que desea marcar este gasto como pagado?')) {
-        markAsPaidForm.payment_method = paymentMethod || '';
-        markAsPaidForm.payment_reference = paymentReference || '';
-        markAsPaidForm.post(`/expenses/${props.expense.id}/mark-as-paid`);
-    }
+const markAsPaid = () => {
+    markAsPaidForm.post(`/expenses/${props.expense.id}/mark-as-paid`, {
+        onSuccess: () => {
+            isMarkAsPaidDialogOpen.value = false;
+        }
+    });
 };
 
 const cancelExpense = () => {
@@ -265,7 +276,7 @@ const deleteExpense = () => {
                     </template>
 
                     <template v-if="expense.status === 'aprobado'">
-                        <Button @click="markAsPaid" size="sm">
+                        <Button @click="openMarkAsPaidDialog" size="sm">
                             <CreditCard class="mr-2 h-4 w-4" />
                             Marcar como Pagado
                         </Button>
@@ -600,6 +611,68 @@ const deleteExpense = () => {
                 </TabsContent>
             </Tabs>
         </div>
+
+        <!-- Mark as Paid Dialog -->
+        <Dialog v-model:open="isMarkAsPaidDialogOpen">
+            <DialogContent class="sm:max-w-[425px]">
+                <form @submit.prevent="markAsPaid">
+                    <DialogHeader>
+                        <DialogTitle>Marcar como Pagado</DialogTitle>
+                        <DialogDescription>
+                            Registre la información del pago para el gasto {{ expense.expense_number }}
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div class="grid gap-4 py-4">
+                        <div class="grid gap-2">
+                            <Label for="payment_method">Método de Pago (opcional)</Label>
+                            <Select v-model="markAsPaidForm.payment_method">
+                                <SelectTrigger id="payment_method">
+                                    <SelectValue placeholder="Seleccionar método de pago" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="">Sin especificar</SelectItem>
+                                    <SelectItem v-for="(label, value) in paymentMethods" :key="value" :value="value">
+                                        {{ label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="payment_reference">Referencia de Pago (opcional)</Label>
+                            <Input
+                                id="payment_reference"
+                                v-model="markAsPaidForm.payment_reference"
+                                placeholder="ej: Comprobante, Número de cheque, Referencia"
+                                maxlength="255"
+                            />
+                        </div>
+                        <div class="rounded-md bg-muted p-3">
+                            <div class="text-sm font-medium text-muted-foreground mb-1">Monto a Pagar</div>
+                            <div class="text-lg font-bold">{{ formatCurrency(expense.total_amount) }}</div>
+                        </div>
+                    </div>
+                    
+                    <DialogFooter>
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            @click="isMarkAsPaidDialogOpen = false"
+                            :disabled="markAsPaidForm.processing"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            :disabled="markAsPaidForm.processing"
+                        >
+                            <CreditCard class="mr-2 h-4 w-4" />
+                            {{ markAsPaidForm.processing ? 'Procesando...' : 'Marcar como Pagado' }}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
     </div>
     </AppLayout>
 </template>
