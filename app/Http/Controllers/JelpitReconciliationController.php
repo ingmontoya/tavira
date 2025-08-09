@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JelpitPaymentImport;
+use App\Imports\JelpitPaymentImport as JelpitImportClass;
 use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
-use App\Imports\JelpitPaymentImport as JelpitImportClass;
+use App\Models\JelpitPaymentImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,7 +18,7 @@ class JelpitReconciliationController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
         $conjuntoId = $conjunto->id;
-        
+
         $query = JelpitPaymentImport::forConjunto($conjuntoId)
             ->with(['apartment', 'payment', 'createdBy', 'processedBy'])
             ->orderBy('created_at', 'desc');
@@ -81,7 +81,7 @@ class JelpitReconciliationController extends Controller
 
             // Create the import instance
             $import = new JelpitImportClass($conjuntoId, $batchId, $userId);
-            
+
             // Process the Excel file
             Excel::import($import, $request->file('file'));
 
@@ -95,9 +95,9 @@ class JelpitReconciliationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
-                ->withErrors(['file' => 'Error procesando el archivo: ' . $e->getMessage()]);
+                ->withErrors(['file' => 'Error procesando el archivo: '.$e->getMessage()]);
         }
     }
 
@@ -109,21 +109,21 @@ class JelpitReconciliationController extends Controller
 
         // Get potential matches for manual reconciliation
         $potentialMatches = [];
-        
+
         if ($import->reconciliation_status === 'manual_review') {
             // Try apartment number matches (partial)
             if ($import->reference_number) {
                 $apartmentMatches = Apartment::forConjunto($import->conjunto_config_id)
-                    ->where('number', 'LIKE', '%' . $import->reference_number . '%')
+                    ->where('number', 'LIKE', '%'.$import->reference_number.'%')
                     ->with('apartmentType')
                     ->get();
-                    
+
                 foreach ($apartmentMatches as $apartment) {
                     $potentialMatches[] = [
                         'type' => 'apartment',
                         'apartment' => $apartment,
                         'confidence' => 'medium',
-                        'reason' => 'Coincidencia parcial por número de apartamento'
+                        'reason' => 'Coincidencia parcial por número de apartamento',
                     ];
                 }
             }
@@ -132,12 +132,12 @@ class JelpitReconciliationController extends Controller
             if ($import->cleaned_nit) {
                 $nitMatches = Apartment::forConjunto($import->conjunto_config_id)
                     ->whereHas('residents', function ($query) use ($import) {
-                        $query->where('document_number', 'LIKE', '%' . $import->cleaned_nit . '%')
-                              ->where('status', 'Active');
+                        $query->where('document_number', 'LIKE', '%'.$import->cleaned_nit.'%')
+                            ->where('status', 'Active');
                     })
                     ->with(['apartmentType', 'residents' => function ($query) use ($import) {
-                        $query->where('document_number', 'LIKE', '%' . $import->cleaned_nit . '%')
-                              ->where('status', 'Active');
+                        $query->where('document_number', 'LIKE', '%'.$import->cleaned_nit.'%')
+                            ->where('status', 'Active');
                     }])
                     ->get();
 
@@ -148,7 +148,7 @@ class JelpitReconciliationController extends Controller
                             'apartment' => $apartment,
                             'resident' => $resident,
                             'confidence' => 'high',
-                            'reason' => "Coincidencia por documento: {$resident->full_name}"
+                            'reason' => "Coincidencia por documento: {$resident->full_name}",
                         ];
                     }
                 }
@@ -183,7 +183,7 @@ class JelpitReconciliationController extends Controller
             DB::beginTransaction();
 
             $apartment = Apartment::findOrFail($request->apartment_id);
-            
+
             // Verify apartment belongs to same conjunto
             if ($apartment->conjunto_config_id !== $import->conjunto_config_id) {
                 throw new \Exception('El apartamento seleccionado no pertenece al mismo conjunto.');
@@ -203,9 +203,9 @@ class JelpitReconciliationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
-                ->withErrors(['apartment_id' => 'Error en la conciliación manual: ' . $e->getMessage()]);
+                ->withErrors(['apartment_id' => 'Error en la conciliación manual: '.$e->getMessage()]);
         }
     }
 
@@ -213,7 +213,7 @@ class JelpitReconciliationController extends Controller
     {
         $this->authorizeImport('update', $import);
 
-        if (!$import->can_create_payment) {
+        if (! $import->can_create_payment) {
             return redirect()->back()
                 ->withErrors(['payment' => 'No se puede crear el pago. Verificar que esté conciliado.']);
         }
@@ -230,9 +230,9 @@ class JelpitReconciliationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
-                ->withErrors(['payment' => 'Error creando el pago: ' . $e->getMessage()]);
+                ->withErrors(['payment' => 'Error creando el pago: '.$e->getMessage()]);
         }
     }
 
@@ -296,19 +296,19 @@ class JelpitReconciliationController extends Controller
             DB::commit();
 
             $actionText = $request->action === 'create_payments' ? 'pagos creados' : 'registros rechazados';
+
             return redirect()->back()
                 ->with('success', "{$processedCount} {$actionText} exitosamente.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
-                ->withErrors(['batch' => 'Error en el procesamiento por lotes: ' . $e->getMessage()]);
+                ->withErrors(['batch' => 'Error en el procesamiento por lotes: '.$e->getMessage()]);
         }
     }
 
-
-    private function authorizeImport(string $action, JelpitPaymentImport $import = null)
+    private function authorizeImport(string $action, ?JelpitPaymentImport $import = null)
     {
         // Basic authorization - ensure user belongs to same conjunto
         if ($import) {

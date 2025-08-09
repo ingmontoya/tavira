@@ -275,7 +275,7 @@ class Payment extends Model
 
         // Check if this payment comes from Jelpit import (historical payment)
         $isFromJelpit = \App\Models\JelpitPaymentImport::where('payment_id', $this->id)->exists();
-        
+
         $transaction->post($isFromJelpit);
     }
 

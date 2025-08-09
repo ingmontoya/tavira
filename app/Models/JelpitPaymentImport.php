@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 
 class JelpitPaymentImport extends Model
 {
@@ -117,10 +117,10 @@ class JelpitPaymentImport extends Model
 
     public function getCleanedNitAttribute(): ?string
     {
-        if (!$this->originator_nit) {
+        if (! $this->originator_nit) {
             return null;
         }
-        
+
         // Remove leading zeros and any non-numeric characters
         return ltrim(preg_replace('/[^0-9]/', '', $this->originator_nit), '0') ?: '0';
     }
@@ -132,8 +132,8 @@ class JelpitPaymentImport extends Model
 
     public function getCanCreatePaymentAttribute(): bool
     {
-        return $this->apartment_id !== null && 
-               $this->reconciliation_status === 'matched' && 
+        return $this->apartment_id !== null &&
+               $this->reconciliation_status === 'matched' &&
                $this->payment_id === null;
     }
 
@@ -170,6 +170,7 @@ class JelpitPaymentImport extends Model
             $this->reconciliation_status = 'matched';
             $this->match_notes = "Coincidencia por número de apartamento: {$apartment->number}";
             $this->save();
+
             return true;
         }
 
@@ -179,15 +180,15 @@ class JelpitPaymentImport extends Model
     private function tryMatchByNit(): bool
     {
         $cleanedNit = $this->cleaned_nit;
-        
-        if (!$cleanedNit || $cleanedNit === '0') {
+
+        if (! $cleanedNit || $cleanedNit === '0') {
             return false;
         }
 
         // Find resident with matching document number
         $resident = Resident::whereHas('apartment', function ($query) {
-                $query->where('conjunto_config_id', $this->conjunto_config_id);
-            })
+            $query->where('conjunto_config_id', $this->conjunto_config_id);
+        })
             ->where('document_number', $cleanedNit)
             ->where('status', 'Active')
             ->where('resident_type', 'Owner') // Only match owners for payments
@@ -199,6 +200,7 @@ class JelpitPaymentImport extends Model
             $this->reconciliation_status = 'matched';
             $this->match_notes = "Coincidencia por NIT del propietario: {$resident->full_name} - Apartamento {$resident->apartment->number}";
             $this->save();
+
             return true;
         }
 
@@ -207,7 +209,7 @@ class JelpitPaymentImport extends Model
 
     public function createPayment(): Payment
     {
-        if (!$this->can_create_payment) {
+        if (! $this->can_create_payment) {
             throw new \Exception('No se puede crear el pago. Verificar que esté conciliado y tenga apartamento asignado.');
         }
 
@@ -246,12 +248,12 @@ class JelpitPaymentImport extends Model
 
     private function buildPaymentNotes(): string
     {
-        $notes = ["Pago importado desde Jelpit"];
-        
+        $notes = ['Pago importado desde Jelpit'];
+
         if ($this->payment_detail) {
             $notes[] = "Detalle: {$this->payment_detail}";
         }
-        
+
         if ($this->approval_number) {
             $notes[] = "Número aprobación: {$this->approval_number}";
         }
@@ -319,6 +321,7 @@ class JelpitPaymentImport extends Model
 
         // Remove any non-numeric characters except decimal point
         $cleaned = preg_replace('/[^0-9.]/', '', $amountString);
+
         return (float) $cleaned;
     }
 }

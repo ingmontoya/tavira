@@ -55,4 +55,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->notify(new ResetPasswordNotification($token));
     }
+
+    /**
+     * Get the resident associated with this user based on email matching.
+     */
+    public function resident()
+    {
+        return $this->hasOne(Resident::class, 'email', 'email');
+    }
+
+    /**
+     * Get the apartment through the resident relationship.
+     */
+    public function apartment()
+    {
+        return $this->hasOneThrough(Apartment::class, Resident::class, 'email', 'id', 'email', 'apartment_id');
+    }
 }

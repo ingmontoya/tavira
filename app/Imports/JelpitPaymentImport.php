@@ -3,17 +3,20 @@
 namespace App\Imports;
 
 use App\Models\JelpitPaymentImport as JelpitPaymentImportModel;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithStartRow;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class JelpitPaymentImport implements ToCollection, WithStartRow
 {
     private $conjuntoId;
+
     private $batchId;
+
     private $userId;
+
     private $processedCount = 0;
+
     private $matchedCount = 0;
 
     public function __construct(int $conjuntoId, string $batchId, int $userId)
@@ -40,16 +43,16 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
                 $import = $this->createImportFromRow($row);
                 if ($import) {
                     $this->processedCount++;
-                    
+
                     // Attempt automatic reconciliation
                     if ($import->attemptAutomaticReconciliation()) {
                         $this->matchedCount++;
                     }
                 }
             } catch (\Exception $e) {
-                \Log::warning("Error procesando fila de Excel Jelpit", [
+                \Log::warning('Error procesando fila de Excel Jelpit', [
                     'error' => $e->getMessage(),
-                    'row_data' => $row->toArray()
+                    'row_data' => $row->toArray(),
                 ]);
             }
         }
@@ -62,7 +65,7 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
 
         foreach ($importantIndices as $index) {
             $value = $row[$index] ?? null;
-            if (!empty($value) && $value !== 'NaN' && $value !== 'N/A') {
+            if (! empty($value) && $value !== 'NaN' && $value !== 'N/A') {
                 return false;
             }
         }
@@ -74,10 +77,11 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
     {
         // Check if this row contains header values instead of data
         $tipoPago = $row[0] ?? '';
+
         return in_array($tipoPago, [
             'Tipo de pago',
             'tipo_de_pago',
-            'TIPO DE PAGO'
+            'TIPO DE PAGO',
         ]);
     }
 
@@ -87,7 +91,7 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
         $data = $this->mapRowData($row);
 
         // Skip if no transaction amount
-        if (empty($data['transaction_amount']) || !is_numeric($data['transaction_amount'])) {
+        if (empty($data['transaction_amount']) || ! is_numeric($data['transaction_amount'])) {
             return null;
         }
 
@@ -115,7 +119,7 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
     {
         // Map Excel columns by index position:
         // 0: Tipo de pago
-        // 1: No. Ref  
+        // 1: No. Ref
         // 2: Fecha de transacción
         // 3: Hora de transacción
         // 4: Valor transacción
@@ -127,7 +131,7 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
         // 10: NIT Originador
         // 11: Referencia 2
         // 12: Detalle del pago
-        
+
         return [
             'payment_type' => $this->cleanValue($row[0]),
             'reference_number' => $this->cleanValue($row[1]),
@@ -165,6 +169,7 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
             if (is_numeric($value)) {
                 // Excel serial date
                 $date = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value);
+
                 return $date->format('Y-m-d');
             }
 
@@ -217,6 +222,7 @@ class JelpitPaymentImport implements ToCollection, WithStartRow
         try {
             // Remove any formatting and convert to float
             $cleanValue = str_replace([',', '$', ' '], '', $value);
+
             return (float) $cleanValue;
         } catch (\Exception $e) {
             return null;

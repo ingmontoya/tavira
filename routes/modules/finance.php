@@ -72,7 +72,7 @@ Route::prefix('finance')->name('finance.')->group(function () {
     Route::post('payments/{payment}/send-email', [PaymentManagementController::class, 'sendByEmail'])->name('payments.send-email')->middleware('can:edit_payments');
     Route::get('payments/pending-invoices', [PaymentManagementController::class, 'getPendingInvoices'])->name('payments.pending-invoices')->middleware('can:view_payments');
     Route::get('payments/{payment}/edit-invoices', [PaymentManagementController::class, 'getInvoicesForEdit'])->name('payments.edit-invoices')->middleware('can:view_payments');
-    
+
     // Jelpit Reconciliation
     Route::get('jelpit-reconciliation', [\App\Http\Controllers\JelpitReconciliationController::class, 'index'])->name('jelpit-reconciliation.index')->middleware('can:view_payments');
     Route::post('jelpit-reconciliation/upload', [\App\Http\Controllers\JelpitReconciliationController::class, 'upload'])->name('jelpit-reconciliation.upload')->middleware('can:edit_payments');

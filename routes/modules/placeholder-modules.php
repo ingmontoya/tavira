@@ -9,9 +9,13 @@ Route::get('solicitar-acceso', [AccessRequestController::class, 'create'])->name
 Route::post('solicitar-acceso', [AccessRequestController::class, 'store'])->name('access-request.store');
 
 // New modules - Under construction
-Route::get('account-statement', function () {
-    return Inertia::render('AccountStatement/Index');
-})->name('account-statement.index')->middleware('can:view_account_statement');
+Route::get('account-statement', [\App\Http\Controllers\AccountStatementController::class, 'index'])
+    ->name('account-statement.index')
+    ->middleware('can:view_account_statement');
+
+Route::get('account-statement/invoice/{invoice}', [\App\Http\Controllers\AccountStatementController::class, 'showInvoice'])
+    ->name('account-statement.invoice')
+    ->middleware('can:view_account_statement');
 
 Route::get('visitor-invitations', function () {
     return Inertia::render('VisitorInvitations/Index');

@@ -39,7 +39,7 @@ class AccountingValidationService
         }
 
         // VALIDACIÓN 2: Período cerrado (saltear si se especifica)
-        if (!$skipPeriodValidation) {
+        if (! $skipPeriodValidation) {
             $periodValidation = $this->validatePeriodOpen($transaction);
             if (! $periodValidation['is_valid']) {
                 $errors[] = $periodValidation['message'];

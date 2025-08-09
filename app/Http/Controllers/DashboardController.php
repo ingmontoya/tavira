@@ -16,12 +16,18 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+
+        // Check if user is a resident or propietario (should use resident dashboard)
+        if ($user->hasRole(['residente', 'propietario'])) {
+            return redirect()->route('resident.dashboard');
+        }
+
         $selectedMonth = $request->get('month', now()->format('Y-m'));
         [$selectedYear, $selectedMonthNum] = explode('-', $selectedMonth);
         $selectedYear = (int) $selectedYear;
         $selectedMonthNum = (int) $selectedMonthNum;
 
-        // Check user permissions to determine what data to show
+        // Check user permissions to determine what data to show (for admin users)
         $canViewFullAdmin = $user->can('view_residents') && $user->can('view_apartments');
         $canViewPayments = $user->can('view_payments');
         $canViewReports = $user->can('view_reports');
