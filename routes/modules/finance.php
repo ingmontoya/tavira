@@ -72,6 +72,15 @@ Route::prefix('finance')->name('finance.')->group(function () {
     Route::post('payments/{payment}/send-email', [PaymentManagementController::class, 'sendByEmail'])->name('payments.send-email')->middleware('can:edit_payments');
     Route::get('payments/pending-invoices', [PaymentManagementController::class, 'getPendingInvoices'])->name('payments.pending-invoices')->middleware('can:view_payments');
     Route::get('payments/{payment}/edit-invoices', [PaymentManagementController::class, 'getInvoicesForEdit'])->name('payments.edit-invoices')->middleware('can:view_payments');
+    
+    // Jelpit Reconciliation
+    Route::get('jelpit-reconciliation', [\App\Http\Controllers\JelpitReconciliationController::class, 'index'])->name('jelpit-reconciliation.index')->middleware('can:view_payments');
+    Route::post('jelpit-reconciliation/upload', [\App\Http\Controllers\JelpitReconciliationController::class, 'upload'])->name('jelpit-reconciliation.upload')->middleware('can:edit_payments');
+    Route::get('jelpit-reconciliation/{import}', [\App\Http\Controllers\JelpitReconciliationController::class, 'show'])->name('jelpit-reconciliation.show')->middleware('can:view_payments');
+    Route::post('jelpit-reconciliation/{import}/manual-match', [\App\Http\Controllers\JelpitReconciliationController::class, 'manualMatch'])->name('jelpit-reconciliation.manual-match')->middleware('can:edit_payments');
+    Route::post('jelpit-reconciliation/{import}/create-payment', [\App\Http\Controllers\JelpitReconciliationController::class, 'createPayment'])->name('jelpit-reconciliation.create-payment')->middleware('can:edit_payments');
+    Route::post('jelpit-reconciliation/{import}/reject', [\App\Http\Controllers\JelpitReconciliationController::class, 'reject'])->name('jelpit-reconciliation.reject')->middleware('can:edit_payments');
+    Route::post('jelpit-reconciliation/batch-process', [\App\Http\Controllers\JelpitReconciliationController::class, 'batchProcess'])->name('jelpit-reconciliation.batch-process')->middleware('can:edit_payments');
 });
 
 // Payment Agreements Management

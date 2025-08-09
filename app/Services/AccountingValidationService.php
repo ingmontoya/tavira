@@ -24,9 +24,10 @@ class AccountingValidationService
      * Valida la integridad completa de una transacción contable
      *
      * @param  AccountingTransaction  $transaction  Transacción a validar
+     * @param  bool  $skipPeriodValidation  Si true, omite la validación de períodos (para importaciones históricas)
      * @return array Resultado de la validación con errores y advertencias
      */
-    public function validateTransactionIntegrity(AccountingTransaction $transaction): array
+    public function validateTransactionIntegrity(AccountingTransaction $transaction, bool $skipPeriodValidation = false): array
     {
         $errors = [];
         $warnings = [];
@@ -37,10 +38,14 @@ class AccountingValidationService
             $errors[] = "La transacción no cumple con la partida doble: Débitos({$transaction->total_debit}) ≠ Créditos({$transaction->total_credit})";
         }
 
-        // VALIDACIÓN 2: Período cerrado
-        $periodValidation = $this->validatePeriodOpen($transaction);
-        if (! $periodValidation['is_valid']) {
-            $errors[] = $periodValidation['message'];
+        // VALIDACIÓN 2: Período cerrado (saltear si se especifica)
+        if (!$skipPeriodValidation) {
+            $periodValidation = $this->validatePeriodOpen($transaction);
+            if (! $periodValidation['is_valid']) {
+                $errors[] = $periodValidation['message'];
+            }
+        } else {
+            $warnings[] = 'Validación de períodos omitida (importación histórica)';
         }
 
         // VALIDACIÓN 3: Naturaleza de las cuentas

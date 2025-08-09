@@ -65,12 +65,12 @@ const page = usePage();
                             <SidebarMenuButton
                                 :tooltip="item.title"
                             >
-                                <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium w-full">
-                                    <component :is="item.icon" class="h-4 w-4" />
-                                    <span>
+                                <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium w-full min-w-0">
+                                    <component :is="item.icon" class="h-4 w-4 flex-shrink-0" />
+                                    <span class="truncate flex-1">
                                         {{ item.title }}
                                     </span>
-                                    <ChevronRight class="ml-auto h-4 w-4" />
+                                    <ChevronRight class="ml-auto h-4 w-4 flex-shrink-0" />
                                 </div>
                             </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -104,10 +104,10 @@ const page = usePage();
                                             >
                                                 <CollapsibleTrigger as-child>
                                                     <SidebarMenuSubButton>
-                                                        <div class="flex items-center gap-3 w-full">
-                                                            <component :is="subItem.icon" class="h-3.5 w-3.5" />
-                                                            <span>{{ subItem.title }}</span>
-                                                            <ChevronRight class="ml-auto h-3 w-3" />
+                                                        <div class="flex items-center gap-3 w-full min-w-0">
+                                                            <component :is="subItem.icon" class="h-3.5 w-3.5 flex-shrink-0" />
+                                                            <span class="truncate flex-1">{{ subItem.title }}</span>
+                                                            <ChevronRight class="ml-auto h-3 w-3 flex-shrink-0" />
                                                         </div>
                                                     </SidebarMenuSubButton>
                                                 </CollapsibleTrigger>

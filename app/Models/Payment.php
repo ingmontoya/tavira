@@ -273,7 +273,10 @@ class Payment extends Model
             'third_party_id' => $this->apartment_id,
         ]);
 
-        $transaction->post();
+        // Check if this payment comes from Jelpit import (historical payment)
+        $isFromJelpit = \App\Models\JelpitPaymentImport::where('payment_id', $this->id)->exists();
+        
+        $transaction->post($isFromJelpit);
     }
 
     private function getAccountByCode(string $code): int

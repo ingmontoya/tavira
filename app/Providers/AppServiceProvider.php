@@ -36,9 +36,11 @@ class AppServiceProvider extends ServiceProvider
             'payment_application' => \App\Models\PaymentApplication::class,
             'payment_application_reversal' => \App\Models\PaymentApplication::class,
             'expense' => \App\Models\Expense::class,
+            'expense_payment' => \App\Models\Expense::class,
             'user' => \App\Models\User::class,
             'apartment' => \App\Models\Apartment::class,
             'resident' => \App\Models\Resident::class,
+            'supplier' => \App\Models\Supplier::class,
         ]);
 
         Event::listen(Verified::class, SendWelcomeEmail::class);

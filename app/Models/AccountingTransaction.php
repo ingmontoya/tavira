@@ -227,7 +227,7 @@ class AccountingTransaction extends Model
         return $this->is_balanced && $this->total_debit > 0;
     }
 
-    public function post(): void
+    public function post(bool $skipPeriodValidation = false): void
     {
         if (! $this->can_be_posted) {
             throw new \Exception('La transacción no puede ser contabilizada');
@@ -239,7 +239,7 @@ class AccountingTransaction extends Model
 
         // Ejecutar validaciones adicionales de integridad
         $validationService = new \App\Services\AccountingValidationService;
-        $validation = $validationService->validateTransactionIntegrity($this);
+        $validation = $validationService->validateTransactionIntegrity($this, $skipPeriodValidation);
 
         if (! $validation['is_valid']) {
             $errors = implode('; ', $validation['errors']);

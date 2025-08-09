@@ -88,6 +88,11 @@ class Apartment extends Model
         return $this->status === 'Available';
     }
 
+    public function scopeForConjunto($query, int $conjuntoId)
+    {
+        return $query->where('conjunto_config_id', $conjuntoId);
+    }
+
     public function scopeByTower($query, string $tower)
     {
         return $query->where('tower', $tower);
