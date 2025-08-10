@@ -71,6 +71,14 @@ class RolePermissionSeeder extends Seeder
             'delete_announcements',
             'send_notifications',
 
+            // Correspondence Management
+            'view_correspondence',
+            'create_correspondence',
+            'edit_correspondence',
+            'delete_correspondence',
+            'deliver_correspondence',
+            'manage_correspondence_attachments',
+
             // Security & Access
             'view_access_logs',
             'manage_visitors',
@@ -113,6 +121,7 @@ class RolePermissionSeeder extends Seeder
             'view_expenses', 'create_expenses', 'edit_expenses', 'delete_expenses', 'approve_expenses', 'manage_expense_categories',
             'view_accounting', 'create_accounting', 'edit_accounting', 'delete_accounting', 'approve_accounting', 'manage_accounting',
             'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',
+            'view_correspondence', 'create_correspondence', 'edit_correspondence', 'delete_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
             'view_access_logs', 'manage_visitors', 'view_security_reports',
         ]);
 
@@ -132,18 +141,21 @@ class RolePermissionSeeder extends Seeder
         $propietario->givePermissionTo([
             'view_dashboard', 'view_account_statement',
             'view_announcements',
+            'view_correspondence',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
         ]);
 
         $residente->givePermissionTo([
             'view_dashboard', 'view_account_statement',
             'view_announcements',
+            'view_correspondence',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
         ]);
 
         $porteria->givePermissionTo([
             'view_access_logs',
             'manage_visitors',
+            'view_correspondence', 'create_correspondence', 'edit_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
         ]);
     }
 }

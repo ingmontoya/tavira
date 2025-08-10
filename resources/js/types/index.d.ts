@@ -265,3 +265,119 @@ export interface BatchProgressData {
     percentage: number;
     current_status: string;
 }
+
+// Correspondence System Types
+export interface CorrespondenceAttachment {
+    id: number;
+    correspondence_id: number;
+    filename: string;
+    original_filename: string;
+    file_path: string;
+    file_size: number;
+    mime_type: string;
+    type: 'photo' | 'signature' | 'document';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Correspondence {
+    id: number;
+    tracking_number: string;
+    sender_name: string;
+    sender_company?: string | null;
+    type: 'package' | 'letter' | 'document' | 'other';
+    type_label: string;
+    description: string;
+    apartment: {
+        id: number;
+        number: string;
+        tower: string;
+        floor: number;
+        full_address: string;
+        residents?: Array<{
+            id: number;
+            first_name: string;
+            last_name: string;
+            full_name: string;
+            resident_type: string;
+            status: string;
+        }>;
+    } | null;
+    status: 'received' | 'delivered' | 'pending_signature' | 'returned';
+    status_label: string;
+    status_badge: {
+        text: string;
+        class: string;
+    };
+    received_at: string;
+    delivered_at?: string | null;
+    returned_at?: string | null;
+    requires_signature: boolean;
+    recipient_name?: string | null;
+    recipient_document?: string | null;
+    notes?: string | null;
+    received_by: User;
+    delivered_by?: User | null;
+    attachments: CorrespondenceAttachment[];
+    created_at: string;
+    updated_at: string;
+    can_edit: boolean;
+    can_deliver: boolean;
+    can_return: boolean;
+    days_pending?: number;
+}
+
+export interface CorrespondenceFilters {
+    search?: string;
+    apartment_id?: string;
+    tower?: string;
+    type?: string;
+    status?: string;
+    date_from?: string;
+    date_to?: string;
+    received_by?: string;
+    requires_signature?: boolean;
+}
+
+export interface CorrespondenceResponse {
+    data: Correspondence[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+    prev_page_url?: string;
+    next_page_url?: string;
+}
+
+export interface CreateCorrespondenceData {
+    sender_name: string;
+    sender_company?: string;
+    type: 'package' | 'letter' | 'document' | 'other';
+    description: string;
+    apartment_id?: number;
+    requires_signature: boolean;
+    recipient_name?: string;
+    recipient_document?: string;
+    notes?: string;
+    attachments?: File[];
+}
+
+export interface DeliveryData {
+    recipient_name?: string;
+    recipient_document?: string;
+    signature?: string;
+    notes?: string;
+    delivered_at: string;
+}
+
+export interface CorrespondenceStats {
+    total: number;
+    received: number;
+    delivered: number;
+    pending_signature: number;
+    returned: number;
+    pending_percentage: number;
+    delivered_percentage: number;
+}

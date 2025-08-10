@@ -60,7 +60,7 @@ const copyUrl = async () => {
 
 const downloadQR = () => {
     const blob = new Blob([props.qrCode], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `qr-invitation-${props.invitation.email}.svg`;

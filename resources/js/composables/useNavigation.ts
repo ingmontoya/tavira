@@ -28,7 +28,6 @@ import {
     UserCog,
     Users,
     Wallet,
-    Eye,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -254,14 +253,14 @@ export function useNavigation() {
         {
             title: 'Comunicación',
             icon: MessageSquare,
-            visible: hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors'),
+            visible: hasPermission('view_correspondence') || hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors'),
             items: [
                 {
                     title: 'Correspondencia',
                     href: '/correspondence',
                     icon: Mail,
                     tourId: 'nav-correspondence',
-                    visible: hasPermission('view_announcements'),
+                    visible: hasPermission('view_correspondence'),
                 },
                 {
                     title: 'Anuncios',

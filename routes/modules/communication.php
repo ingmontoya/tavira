@@ -1,15 +1,18 @@
 <?php
 
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\ResidentAnnouncementController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Communication
-Route::get('correspondence', function () {
-    return Inertia::render('Correspondence/Index');
-})->name('correspondence.index')->middleware(['rate.limit:default', 'can:view_announcements']);
+// Correspondence Management
+Route::resource('correspondence', CorrespondenceController::class)->middleware(['rate.limit:default']);
+Route::post('correspondence/{correspondence}/deliver', [CorrespondenceController::class, 'markAsDelivered'])
+    ->name('correspondence.deliver')->middleware(['rate.limit:default']);
+Route::delete('correspondence/attachments/{attachment}', [CorrespondenceController::class, 'deleteAttachment'])
+    ->name('correspondence.attachments.destroy')->middleware(['rate.limit:default']);
 
 Route::get('announcements', function () {
     return Inertia::render('Announcements/Index');
