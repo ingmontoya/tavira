@@ -97,7 +97,7 @@ class DashboardController extends Controller
                 'id' => 1,
                 'title' => 'Corte de agua programado',
                 'recipients_count' => 45,
-                'type' => 'Comunicado',
+                'type' => 'Anuncio',
                 'created_at' => now()->subDays(2),
             ],
             [
@@ -267,7 +267,7 @@ class DashboardController extends Controller
                 ],
                 [
                     'type' => 'communication',
-                    'message' => 'Comunicado enviado: Corte de agua programado',
+                    'message' => 'Anuncio enviado: Corte de agua programado',
                     'time' => 'hace 3 horas',
                     'icon' => 'bell',
                 ],
@@ -304,7 +304,7 @@ class DashboardController extends Controller
             ],
             [
                 'type' => 'communication',
-                'message' => 'Comunicado enviado: Asamblea general',
+                'message' => 'Anuncio enviado: Asamblea general',
                 'time' => 'hace 2 horas',
                 'icon' => 'bell',
             ],

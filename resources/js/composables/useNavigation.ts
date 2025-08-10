@@ -28,6 +28,7 @@ import {
     UserCog,
     Users,
     Wallet,
+    Eye,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -249,6 +250,7 @@ export function useNavigation() {
                 },
             ],
         },
+
         {
             title: 'Comunicación',
             icon: MessageSquare,
@@ -262,11 +264,18 @@ export function useNavigation() {
                     visible: hasPermission('view_announcements'),
                 },
                 {
-                    title: 'Comunicados',
+                    title: 'Anuncios',
+                    href: '/resident/announcements',
+                    icon: MessageSquare,
+                    tourId: 'nav-announcements-resident',
+                    visible: !hasPermission('create_announcements') && !hasPermission('edit_announcements'),
+                },
+                {
+                    title: 'Gestionar Anuncios',
                     href: '/announcements',
                     icon: MessageSquare,
-                    tourId: 'nav-announcements',
-                    visible: hasPermission('view_announcements'),
+                    tourId: 'nav-announcements-admin',
+                    visible: hasPermission('create_announcements') || hasPermission('edit_announcements'),
                 },
                 {
                     title: 'Visitantes',

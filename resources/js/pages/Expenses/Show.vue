@@ -659,7 +659,6 @@ const deleteExpense = () => {
                                     <SelectValue placeholder="Seleccionar método de pago" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Sin especificar</SelectItem>
                                     <SelectItem v-for="(label, value) in paymentMethods" :key="value" :value="value">
                                         {{ label }}
                                     </SelectItem>
