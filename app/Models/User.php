@@ -65,6 +65,14 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
+     * Get all residents associated with this user based on email matching.
+     */
+    public function residents()
+    {
+        return $this->hasMany(Resident::class, 'email', 'email');
+    }
+
+    /**
      * Get the apartment through the resident relationship.
      */
     public function apartment()

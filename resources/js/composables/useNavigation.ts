@@ -17,6 +17,7 @@ import {
     MapPin,
     MessageSquare,
     Phone,
+    QrCode,
     Receipt,
     Send,
     Settings,
@@ -283,7 +284,7 @@ export function useNavigation() {
                     items: [
                         {
                             title: 'Invitar Visitantes',
-                            href: '/visitor-invitations',
+                            href: '/visits',
                             icon: UserCheck,
                             tourId: 'nav-visitor-invitations',
                             visible: hasPermission('invite_visitors'),
@@ -338,6 +339,27 @@ export function useNavigation() {
                     icon: FileText,
                     tourId: 'nav-minutes',
                     visible: hasPermission('view_announcements'),
+                },
+            ],
+        },
+        {
+            title: 'Seguridad',
+            icon: Shield,
+            visible: hasPermission('manage_visitors') || hasPermission('view_access_logs'),
+            items: [
+                {
+                    title: 'Escáner de Visitas',
+                    href: '/security/visits/scanner',
+                    icon: QrCode,
+                    tourId: 'nav-visit-scanner',
+                    visible: hasPermission('manage_visitors'),
+                },
+                {
+                    title: 'Entradas Recientes',
+                    href: '/security/visits/recent-entries',
+                    icon: Clock,
+                    tourId: 'nav-recent-entries',
+                    visible: hasPermission('manage_visitors'),
                 },
             ],
         },

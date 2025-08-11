@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcement;
 use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
+use App\Models\Correspondence;
 use App\Models\Resident;
+use App\Models\Visit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ResidentDashboardController extends Controller
@@ -20,13 +24,12 @@ class ResidentDashboardController extends Controller
             return redirect()->route('dashboard')->with('error', 'Acceso denegado. Este dashboard es solo para residentes y propietarios.');
         }
 
-        // Get resident and apartment information
-        $resident = $user->resident;
-        $apartment = $resident?->apartment;
+        // Get apartment information
+        $apartment = $user->apartment;
         $conjuntoConfig = ConjuntoConfig::first();
 
-        if (! $resident || ! $apartment) {
-            return redirect()->route('dashboard')->with('error', 'No se encontró información del residente o apartamento.');
+        if (! $apartment) {
+            return redirect()->route('dashboard')->with('error', 'No se encontró información del apartamento asignado.');
         }
 
         // Get account status for this apartment
@@ -38,13 +41,13 @@ class ResidentDashboardController extends Controller
         // Get payment status
         $paymentStatus = $this->getPaymentStatus($apartment);
 
-        // Get communications/announcements (mock data for now)
+        // Get communications/announcements (real data)
         $communications = $this->getCommunications();
 
-        // Get visits information (mock data for now)
+        // Get visits information (real data)
         $visits = $this->getVisits($apartment);
 
-        // Get package information (mock data for now)
+        // Get package information (real data)
         $packages = $this->getPackages($apartment);
 
         // Get recent account transactions
@@ -155,82 +158,78 @@ class ResidentDashboardController extends Controller
 
     private function getCommunications(): array
     {
-        // Mock data for communications - replace with real data later
-        return [
-            [
-                'id' => 1,
-                'title' => 'Corte de agua programado',
-                'content' => 'Se realizará mantenimiento en las redes de agua el próximo sábado de 8:00 AM a 2:00 PM. Se recomienda almacenar agua suficiente.',
-                'date' => now()->subDays(1)->toISOString(),
-                'isNew' => true,
-            ],
-            [
-                'id' => 2,
-                'title' => 'Nueva política de visitantes',
-                'content' => 'A partir del próximo mes, todos los visitantes deberán registrarse con documento de identidad en la recepción.',
-                'date' => now()->subDays(3)->toISOString(),
-                'isNew' => false,
-            ],
-            [
-                'id' => 3,
-                'title' => 'Asamblea general',
-                'content' => 'Se convoca a asamblea general para el día 15 del mes en curso a las 7:00 PM en el salón comunal.',
-                'date' => now()->subDays(5)->toISOString(),
-                'isNew' => false,
-            ],
-        ];
+        $userId = Auth::id();
+
+        $announcements = Announcement::with(['createdBy'])
+            ->forUser($userId)
+            ->take(5)
+            ->get()
+            ->map(function ($announcement) use ($userId) {
+                return [
+                    'id' => $announcement->id,
+                    'title' => $announcement->title,
+                    'content' => $announcement->content,
+                    'date' => $announcement->published_at?->toISOString() ?? $announcement->created_at->toISOString(),
+                    'isNew' => ! $announcement->isReadBy($userId),
+                ];
+            })
+            ->toArray();
+
+        return $announcements;
     }
 
     private function getVisits(Apartment $apartment): array
     {
-        // Mock data for visits - replace with real data later
-        return [
-            [
-                'id' => 1,
-                'visitorName' => 'Carlos Rodríguez',
-                'purpose' => 'Visita familiar',
-                'date' => now()->addDays(1)->format('d M Y'),
-                'time' => '14:00',
-                'status' => 'Autorizada',
-            ],
-            [
-                'id' => 2,
-                'visitorName' => 'María González',
-                'purpose' => 'Técnico de internet',
-                'date' => now()->format('d M Y'),
-                'time' => '10:30',
-                'status' => 'Completada',
-            ],
-            [
-                'id' => 3,
-                'visitorName' => 'Pedro Martínez',
-                'purpose' => 'Domicilio',
-                'date' => now()->addDays(2)->format('d M Y'),
-                'time' => '18:00',
-                'status' => 'Pendiente',
-            ],
-        ];
+        $visits = Visit::where('apartment_id', $apartment->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($visit) {
+                $statusMap = [
+                    'pending' => 'Pendiente',
+                    'active' => 'Autorizada',
+                    'used' => 'Completada',
+                    'expired' => 'Expirada',
+                    'cancelled' => 'Cancelada',
+                ];
+
+                return [
+                    'id' => $visit->id,
+                    'visitorName' => $visit->visitor_name,
+                    'purpose' => $visit->visit_reason ?? 'Visita general',
+                    'date' => $visit->valid_from->format('d M Y'),
+                    'time' => $visit->valid_from->format('H:i'),
+                    'status' => $statusMap[$visit->status] ?? ucfirst($visit->status),
+                ];
+            })
+            ->toArray();
+
+        return $visits;
     }
 
     private function getPackages(Apartment $apartment): array
     {
-        // Mock data for packages - replace with real data later
-        return [
-            [
-                'id' => 1,
-                'sender' => 'Amazon',
-                'description' => 'Paquete pequeño',
-                'receivedDate' => now()->subDays(1)->toISOString(),
-                'status' => 'Pendiente',
-            ],
-            [
-                'id' => 2,
-                'sender' => 'MercadoLibre',
-                'description' => 'Electrodoméstico',
-                'receivedDate' => now()->subDays(3)->toISOString(),
-                'status' => 'Entregado',
-            ],
-        ];
+        $packages = Correspondence::where('apartment_id', $apartment->id)
+            ->orderBy('received_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($correspondence) {
+                $statusMap = [
+                    'received' => 'Pendiente',
+                    'delivered' => 'Entregado',
+                ];
+
+                return [
+                    'id' => $correspondence->id,
+                    'sender' => $correspondence->sender_company ?? $correspondence->sender_name,
+                    'description' => $correspondence->description ?? ucfirst($correspondence->type),
+                    'receivedDate' => $correspondence->received_at->toISOString(),
+                    'status' => $statusMap[$correspondence->status] ?? ucfirst($correspondence->status),
+                ];
+            })
+            ->toArray();
+
+        return $packages;
     }
 
     private function getAccountTransactions(Apartment $apartment): array
