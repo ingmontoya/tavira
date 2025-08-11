@@ -35,6 +35,7 @@ class Budget extends Model
         'budget_balance',
         'can_be_approved',
         'can_be_activated',
+        'can_approve',
     ];
 
     public function conjuntoConfig(): BelongsTo
@@ -119,6 +120,17 @@ class Budget extends Model
         return $this->status === 'approved';
     }
 
+    public function getCanApproveAttribute(): bool
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+
+        // Only users with 'concejo' role can approve budgets
+        return $user->hasRole('concejo') && $this->status === 'draft' && $this->items()->count() > 0;
+    }
+
     public function calculateTotals(): void
     {
         $this->total_budgeted_income = $this->incomeItems()->sum('budgeted_amount');
@@ -130,6 +142,11 @@ class Budget extends Model
     {
         if (! $this->can_be_approved) {
             throw new \Exception('El presupuesto no puede ser aprobado');
+        }
+
+        $user = auth()->user();
+        if (! $user || ! $user->hasRole('concejo')) {
+            throw new \Exception('Solo el Concejo de Administración puede aprobar presupuestos');
         }
 
         $this->update([
@@ -228,6 +245,127 @@ class Budget extends Model
         $newBudget->calculateTotals();
 
         return $newBudget;
+    }
+
+    public static function createWithDefaultTemplate(int $conjuntoConfigId, string $name, int $fiscalYear, string $startDate, string $endDate): self
+    {
+        $budget = self::create([
+            'conjunto_config_id' => $conjuntoConfigId,
+            'name' => $name,
+            'fiscal_year' => $fiscalYear,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'status' => 'draft',
+        ]);
+
+        $budget->createDefaultBudgetItems();
+
+        return $budget;
+    }
+
+    public function createDefaultBudgetItems(): void
+    {
+        $defaultAccounts = $this->getDefaultBudgetAccountsTemplate();
+
+        foreach ($defaultAccounts as $accountData) {
+            $account = ChartOfAccounts::forConjunto($this->conjunto_config_id)
+                ->where('code', $accountData['code'])
+                ->where('is_active', true)
+                ->where('accepts_posting', true)
+                ->first();
+
+            if ($account) {
+                $this->items()->create([
+                    'account_id' => $account->id,
+                    'category' => $accountData['category'],
+                    'budgeted_amount' => $accountData['default_amount'] ?? 0,
+                    'notes' => $accountData['notes'] ?? null,
+                ]);
+            }
+        }
+
+        $this->calculateTotals();
+    }
+
+    private function getDefaultBudgetAccountsTemplate(): array
+    {
+        return [
+            // Income Accounts
+            [
+                'code' => '413501',
+                'category' => 'income',
+                'default_amount' => 0,
+                'notes' => 'Ingresos por cuotas ordinarias de administración',
+            ],
+            [
+                'code' => '413502',
+                'category' => 'income',
+                'default_amount' => 0,
+                'notes' => 'Ingresos por cuotas extraordinarias',
+            ],
+            [
+                'code' => '413503',
+                'category' => 'income',
+                'default_amount' => 0,
+                'notes' => 'Ingresos por concepto de parqueaderos',
+            ],
+            [
+                'code' => '413505',
+                'category' => 'income',
+                'default_amount' => 0,
+                'notes' => 'Ingresos por multas y sanciones',
+            ],
+            [
+                'code' => '413506',
+                'category' => 'income',
+                'default_amount' => 0,
+                'notes' => 'Ingresos por intereses de mora',
+            ],
+
+            // Expense Accounts
+            [
+                'code' => '510501',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por sueldos y salarios del personal',
+            ],
+            [
+                'code' => '513501',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por servicio de energía eléctrica',
+            ],
+            [
+                'code' => '513502',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por servicios de agua y alcantarillado',
+            ],
+            [
+                'code' => '513508',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por servicios de vigilancia',
+            ],
+            [
+                'code' => '513509',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por servicios de jardinería',
+            ],
+            [
+                'code' => '513510',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por limpieza de zonas comunes',
+            ],
+            [
+                'code' => '530501',
+                'category' => 'expense',
+                'default_amount' => 0,
+                'notes' => 'Gastos por servicios bancarios',
+            ],
+        ];
     }
 
     public function getBudgetAlerts(?int $month = null, ?int $year = null): array

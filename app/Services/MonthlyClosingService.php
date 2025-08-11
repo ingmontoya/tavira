@@ -2,19 +2,16 @@
 
 namespace App\Services;
 
-use App\Models\AccountingTransaction;
-use App\Models\ChartOfAccounts;
-use App\Models\ConjuntoConfig;
 use App\Events\AccountingPeriodClosed;
-use App\Console\Commands\ProcessLateFees;
+use App\Models\AccountingTransaction;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Artisan;
 
 /**
  * Servicio para cierre contable mensual automatizado
- * 
+ *
  * Ejecuta todas las tareas necesarias para el cierre de un período contable:
  * - Validación de integridad contable
  * - Cálculo de intereses de mora
@@ -25,6 +22,7 @@ use Illuminate\Support\Facades\Artisan;
 class MonthlyClosingService
 {
     private int $conjuntoConfigId;
+
     private ReserveFundService $reserveFundService;
 
     public function __construct(int $conjuntoConfigId)
@@ -35,20 +33,20 @@ class MonthlyClosingService
 
     /**
      * Ejecuta el cierre contable mensual completo
-     * 
-     * @param int $month Mes a cerrar (1-12)
-     * @param int $year Año a cerrar
-     * @param array $options Opciones adicionales de cierre
+     *
+     * @param  int  $month  Mes a cerrar (1-12)
+     * @param  int  $year  Año a cerrar
+     * @param  array  $options  Opciones adicionales de cierre
      * @return array Resultado del cierre con detalles
      */
     public function executeMonthlyClosing(int $month, int $year, array $options = []): array
     {
         DB::beginTransaction();
-        
+
         try {
             $startTime = microtime(true);
             $closingDate = Carbon::create($year, $month)->endOfMonth();
-            
+
             Log::info('Iniciando cierre contable mensual', [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'month' => $month,
@@ -74,17 +72,17 @@ class MonthlyClosingService
             $results['steps']['integrity_validation'] = $this->validateAccountingIntegrity($month, $year);
 
             // PASO 2: Calcular y registrar intereses de mora
-            if (!($options['skip_late_fees'] ?? false)) {
+            if (! ($options['skip_late_fees'] ?? false)) {
                 $results['steps']['late_fees'] = $this->processLateFees($month, $year);
             }
 
             // PASO 3: Apropiar fondo de reserva
-            if (!($options['skip_reserve_fund'] ?? false)) {
+            if (! ($options['skip_reserve_fund'] ?? false)) {
                 $results['steps']['reserve_fund'] = $this->processReserveFund($month, $year);
             }
 
             // PASO 4: Generar y calcular depreciaciones (placeholder para futura implementación)
-            if (!($options['skip_depreciation'] ?? false)) {
+            if (! ($options['skip_depreciation'] ?? false)) {
                 $results['steps']['depreciation'] = $this->processDepreciation($month, $year);
             }
 
@@ -118,7 +116,7 @@ class MonthlyClosingService
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('Error durante cierre contable mensual', [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'month' => $month,
@@ -175,7 +173,7 @@ class MonthlyClosingService
             ->where('status', 'contabilizado')
             ->get()
             ->filter(function ($transaction) {
-                return !$transaction->is_balanced;
+                return ! $transaction->is_balanced;
             });
 
         if ($unbalancedTransactions->count() > 0) {
@@ -214,7 +212,7 @@ class MonthlyClosingService
     private function processLateFees(int $month, int $year): array
     {
         $startTime = microtime(true);
-        
+
         try {
             // Ejecutar el comando existente de procesamiento de mora
             $exitCode = Artisan::call('process:late-fees', [
@@ -249,7 +247,7 @@ class MonthlyClosingService
     private function processReserveFund(int $month, int $year): array
     {
         $startTime = microtime(true);
-        
+
         try {
             $transaction = $this->reserveFundService->executeMonthlyAppropriation($month, $year);
 
@@ -258,8 +256,8 @@ class MonthlyClosingService
                 'duration' => round(microtime(true) - $startTime, 2),
                 'transaction_id' => $transaction?->id,
                 'appropriated_amount' => $transaction ? (float) $transaction->total_debit : 0,
-                'message' => $transaction 
-                    ? "Fondo de reserva apropiado: $" . number_format($transaction->total_debit, 2)
+                'message' => $transaction
+                    ? 'Fondo de reserva apropiado: $'.number_format($transaction->total_debit, 2)
                     : 'No hubo monto para apropiar al fondo de reserva',
             ];
 
@@ -279,10 +277,10 @@ class MonthlyClosingService
     private function processDepreciation(int $month, int $year): array
     {
         $startTime = microtime(true);
-        
+
         // TODO: Implementar cálculo automático de depreciaciones
         // Por ahora, retornar placeholder para futura implementación
-        
+
         return [
             'status' => 'skipped',
             'duration' => round(microtime(true) - $startTime, 2),
@@ -344,11 +342,12 @@ class MonthlyClosingService
         try {
             // TODO: Integrar con el sistema de reportes existente
             // Por ahora, simular la generación de reportes
-            
+
+            $monthFormatted = str_pad($month, 2, '0', STR_PAD_LEFT);
             $reportsGenerated = [
-                'balance_sheet' => "balance_sheet_{$this->conjuntoConfigId}_{$year}_{$month:02d}.pdf",
-                'income_statement' => "income_statement_{$this->conjuntoConfigId}_{$year}_{$month:02d}.pdf",
-                'trial_balance' => "trial_balance_{$this->conjuntoConfigId}_{$year}_{$month:02d}.pdf",
+                'balance_sheet' => "balance_sheet_{$this->conjuntoConfigId}_{$year}_{$monthFormatted}.pdf",
+                'income_statement' => "income_statement_{$this->conjuntoConfigId}_{$year}_{$monthFormatted}.pdf",
+                'trial_balance' => "trial_balance_{$this->conjuntoConfigId}_{$year}_{$monthFormatted}.pdf",
             ];
 
             return [
@@ -377,7 +376,7 @@ class MonthlyClosingService
 
         // Crear registro de cierre en tabla de control
         // TODO: Crear tabla accounting_period_closures para control
-        
+
         // Por ahora, usar un método simple de control
         $closureRecord = [
             'conjunto_config_id' => $this->conjuntoConfigId,

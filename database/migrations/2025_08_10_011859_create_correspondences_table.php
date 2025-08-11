@@ -31,7 +31,7 @@ return new class extends Migration
             $table->string('recipient_name')->nullable();
             $table->string('recipient_document')->nullable();
             $table->timestamps();
-            
+
             $table->index(['conjunto_config_id', 'apartment_id']);
             $table->index(['status', 'received_at']);
         });

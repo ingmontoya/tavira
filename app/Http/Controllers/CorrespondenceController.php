@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCorrespondenceRequest;
 use App\Http\Requests\UpdateCorrespondenceRequest;
 use App\Models\Apartment;
+use App\Models\ConjuntoConfig;
 use App\Models\Correspondence;
 use App\Models\CorrespondenceAttachment;
-use App\Models\ConjuntoConfig;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -28,7 +28,7 @@ class CorrespondenceController extends Controller
         $query = Correspondence::with(['apartment', 'receivedBy', 'deliveredBy', 'attachments']);
 
         $user = Auth::user();
-        
+
         // Role-based filtering
         if ($user->hasRole('residente') || $user->hasRole('propietario')) {
             // Residents and owners can only see correspondence for their apartment
@@ -44,8 +44,8 @@ class CorrespondenceController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('tracking_number', 'like', '%'.$request->search.'%')
-                  ->orWhere('sender_name', 'like', '%'.$request->search.'%')
-                  ->orWhere('description', 'like', '%'.$request->search.'%');
+                    ->orWhere('sender_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -103,7 +103,7 @@ class CorrespondenceController extends Controller
     public function store(StoreCorrespondenceRequest $request)
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
+
         $correspondence = Correspondence::create([
             'conjunto_config_id' => $conjuntoConfig->id,
             'sender_name' => $request->sender_name,
@@ -120,7 +120,7 @@ class CorrespondenceController extends Controller
         // Handle photo attachments
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                $filename = time().'_'.uniqid().'.'.$photo->getClientOriginalExtension();
                 $path = $photo->storeAs('correspondence/photos', $filename, 'public');
 
                 CorrespondenceAttachment::create([
@@ -192,7 +192,7 @@ class CorrespondenceController extends Controller
         // Handle new photo attachments
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
-                $filename = time() . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
+                $filename = time().'_'.uniqid().'.'.$photo->getClientOriginalExtension();
                 $path = $photo->storeAs('correspondence/photos', $filename, 'public');
 
                 CorrespondenceAttachment::create([
@@ -239,7 +239,7 @@ class CorrespondenceController extends Controller
             // Handle signature upload
             if ($request->hasFile('signature')) {
                 $signature = $request->file('signature');
-                $filename = 'signature_' . time() . '.' . $signature->getClientOriginalExtension();
+                $filename = 'signature_'.time().'.'.$signature->getClientOriginalExtension();
                 $path = $signature->storeAs('correspondence/signatures', $filename, 'public');
 
                 $updateData['signature_path'] = $path;

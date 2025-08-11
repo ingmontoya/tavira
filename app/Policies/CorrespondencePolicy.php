@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Correspondence;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CorrespondencePolicy
 {
@@ -66,7 +65,7 @@ class CorrespondencePolicy
     public function deliver(User $user, Correspondence $correspondence): bool
     {
         // Only admins and security guards can mark as delivered
-        return $user->hasAnyRole(['admin_conjunto', 'superadmin', 'porteria']) 
+        return $user->hasAnyRole(['admin_conjunto', 'superadmin', 'porteria'])
             && $correspondence->status === 'received';
     }
 

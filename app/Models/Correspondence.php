@@ -75,10 +75,10 @@ class Correspondence extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($correspondence) {
             if (empty($correspondence->tracking_number)) {
-                $correspondence->tracking_number = 'CORR-' . date('Y') . '-' . str_pad(
+                $correspondence->tracking_number = 'CORR-'.date('Y').'-'.str_pad(
                     static::whereYear('created_at', now()->year)->count() + 1,
                     6,
                     '0',

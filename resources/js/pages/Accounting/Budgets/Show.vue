@@ -2,14 +2,26 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, DollarSign, Edit, Hash, TrendingDown, TrendingUp } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, DollarSign, Edit, Hash, Play, TrendingDown, TrendingUp, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface BudgetItem {
     id: number;
@@ -46,6 +58,8 @@ interface Budget {
 const props = defineProps<{
     budget: Budget;
 }>();
+
+const deleteDialogOpen = ref(false);
 
 // Computed properties
 const statusInfo = computed(() => {
@@ -88,8 +102,52 @@ const isOverBudget = computed(() => {
 });
 
 const canEdit = computed(() => {
+    return props.budget.status === 'Draft'; // Only allow editing for draft budgets
+});
+
+const canApprove = computed(() => {
     return props.budget.status === 'Draft';
 });
+
+const canActivate = computed(() => {
+    return props.budget.status === 'Approved';
+});
+
+const canClose = computed(() => {
+    return props.budget.status === 'Active';
+});
+
+const canDelete = computed(() => {
+    return props.budget.status !== 'Active';
+});
+
+// Budget actions
+const approveBudget = () => {
+    if (confirm('¿Está seguro que desea aprobar este presupuesto?')) {
+        router.post(`/accounting/budgets/${props.budget.id}/approve`);
+    }
+};
+
+const activateBudget = () => {
+    if (confirm('¿Está seguro que desea activar este presupuesto? Esto desactivará otros presupuestos activos del mismo año.')) {
+        router.post(`/accounting/budgets/${props.budget.id}/activate`);
+    }
+};
+
+const closeBudget = () => {
+    if (confirm('¿Está seguro que desea cerrar este presupuesto?')) {
+        router.post(`/accounting/budgets/${props.budget.id}/close`);
+    }
+};
+
+const confirmDeleteBudget = () => {
+    deleteDialogOpen.value = false;
+    router.delete(`/accounting/budgets/${props.budget.id}`, {
+        onSuccess: () => {
+            router.visit('/accounting/budgets');
+        }
+    });
+};
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-CO', {
@@ -142,12 +200,51 @@ const breadcrumbs = [
                             Volver
                         </Button>
                     </Link>
+                    
+                    <!-- Botones de estado -->
+                    <Button v-if="canApprove" @click="approveBudget" variant="outline" class="gap-2 text-blue-600 border-blue-600 hover:bg-blue-50">
+                        <CheckCircle class="h-4 w-4" />
+                        Aprobar
+                    </Button>
+                    
+                    <Button v-if="canActivate" @click="activateBudget" class="gap-2 bg-green-600 hover:bg-green-700">
+                        <Play class="h-4 w-4" />
+                        Activar
+                    </Button>
+                    
+                    <Button v-if="canClose" @click="closeBudget" variant="outline" class="gap-2 text-orange-600 border-orange-600 hover:bg-orange-50">
+                        <Clock class="h-4 w-4" />
+                        Cerrar
+                    </Button>
+                    
                     <Link v-if="canEdit" :href="`/accounting/budgets/${budget.id}/edit`">
                         <Button class="gap-2">
                             <Edit class="h-4 w-4" />
                             Editar
                         </Button>
                     </Link>
+                    
+                    <AlertDialog v-model:open="deleteDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canDelete" variant="outline" class="gap-2 text-red-600 border-red-600 hover:bg-red-50">
+                                <Trash2 class="h-4 w-4" />
+                                Eliminar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br><br>
+                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas presupuestales asociadas.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700">Eliminar Presupuesto</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
             </div>
 

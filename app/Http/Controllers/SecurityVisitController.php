@@ -26,15 +26,15 @@ class SecurityVisitController extends Controller
             ->where('qr_code', $request->qr_code)
             ->first();
 
-        if (!$visit) {
+        if (! $visit) {
             return response()->json([
                 'valid' => false,
                 'message' => 'Código QR no válido',
             ]);
         }
 
-        if (!$visit->canBeUsed()) {
-            $message = match($visit->status) {
+        if (! $visit->canBeUsed()) {
+            $message = match ($visit->status) {
                 'used' => 'Esta visita ya fue utilizada',
                 'expired' => 'Esta visita ha expirado',
                 'cancelled' => 'Esta visita fue cancelada',
@@ -64,7 +64,7 @@ class SecurityVisitController extends Controller
 
         $visit = Visit::where('qr_code', $request->qr_code)->first();
 
-        if (!$visit || !$visit->canBeUsed()) {
+        if (! $visit || ! $visit->canBeUsed()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Código QR no válido o visita no disponible',
@@ -72,7 +72,7 @@ class SecurityVisitController extends Controller
         }
 
         $visit->markAsUsed(Auth::id());
-        
+
         if ($request->security_notes) {
             $visit->update(['security_notes' => $request->security_notes]);
         }

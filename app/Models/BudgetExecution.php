@@ -114,15 +114,30 @@ class BudgetExecution extends Model
             ->with('budgetItem.account')
             ->get();
 
+        // Format items for the Vue component
+        $items = $executions->map(function ($execution) {
+            return [
+                'account_code' => $execution->budgetItem->account->code,
+                'account_name' => $execution->budgetItem->account->name,
+                'budgeted_amount' => (float) $execution->budgeted_amount,
+                'actual_amount' => (float) $execution->actual_amount,
+                'variance' => (float) $execution->variance_amount,
+                'variance_percentage' => (float) $execution->variance_percentage,
+                'execution_percentage' => $execution->execution_percentage,
+            ];
+        })->values()->toArray();
+
+        $totalBudgeted = $executions->sum('budgeted_amount');
+        $totalActual = $executions->sum('actual_amount');
+        $totalVariance = $totalActual - $totalBudgeted;
+        $executionPercentage = $totalBudgeted > 0 ? ($totalActual / $totalBudgeted) * 100 : 0;
+
         return [
-            'income' => $executions->where('budgetItem.category', 'income'),
-            'expenses' => $executions->where('budgetItem.category', 'expense'),
-            'total_income_budgeted' => $executions->where('budgetItem.category', 'income')->sum('budgeted_amount'),
-            'total_income_actual' => $executions->where('budgetItem.category', 'income')->sum('actual_amount'),
-            'total_expenses_budgeted' => $executions->where('budgetItem.category', 'expense')->sum('budgeted_amount'),
-            'total_expenses_actual' => $executions->where('budgetItem.category', 'expense')->sum('actual_amount'),
-            'net_budgeted' => $executions->where('budgetItem.category', 'income')->sum('budgeted_amount') - $executions->where('budgetItem.category', 'expense')->sum('budgeted_amount'),
-            'net_actual' => $executions->where('budgetItem.category', 'income')->sum('actual_amount') - $executions->where('budgetItem.category', 'expense')->sum('actual_amount'),
+            'items' => $items,
+            'total_budgeted' => (float) $totalBudgeted,
+            'total_actual' => (float) $totalActual,
+            'total_variance' => (float) $totalVariance,
+            'execution_percentage' => round($executionPercentage, 2),
         ];
     }
 
@@ -136,15 +151,36 @@ class BudgetExecution extends Model
             ->with('budgetItem.account')
             ->get();
 
+        // Group by account and sum up the amounts
+        $groupedExecutions = $executions->groupBy('budget_item_id')->map(function ($executionsForItem) {
+            $first = $executionsForItem->first();
+
+            return [
+                'account_code' => $first->budgetItem->account->code,
+                'account_name' => $first->budgetItem->account->name,
+                'budgeted_amount' => (float) $executionsForItem->sum('budgeted_amount'),
+                'actual_amount' => (float) $executionsForItem->sum('actual_amount'),
+                'variance' => (float) ($executionsForItem->sum('actual_amount') - $executionsForItem->sum('budgeted_amount')),
+                'variance_percentage' => $executionsForItem->sum('budgeted_amount') > 0
+                    ? (($executionsForItem->sum('actual_amount') - $executionsForItem->sum('budgeted_amount')) / $executionsForItem->sum('budgeted_amount')) * 100
+                    : 0,
+                'execution_percentage' => $executionsForItem->sum('budgeted_amount') > 0
+                    ? ($executionsForItem->sum('actual_amount') / $executionsForItem->sum('budgeted_amount')) * 100
+                    : 0,
+            ];
+        })->values()->toArray();
+
+        $totalBudgeted = $executions->sum('budgeted_amount');
+        $totalActual = $executions->sum('actual_amount');
+        $totalVariance = $totalActual - $totalBudgeted;
+        $executionPercentage = $totalBudgeted > 0 ? ($totalActual / $totalBudgeted) * 100 : 0;
+
         return [
-            'income' => $executions->where('budgetItem.category', 'income'),
-            'expenses' => $executions->where('budgetItem.category', 'expense'),
-            'total_income_budgeted' => $executions->where('budgetItem.category', 'income')->sum('budgeted_amount'),
-            'total_income_actual' => $executions->where('budgetItem.category', 'income')->sum('actual_amount'),
-            'total_expenses_budgeted' => $executions->where('budgetItem.category', 'expense')->sum('budgeted_amount'),
-            'total_expenses_actual' => $executions->where('budgetItem.category', 'expense')->sum('actual_amount'),
-            'net_budgeted' => $executions->where('budgetItem.category', 'income')->sum('budgeted_amount') - $executions->where('budgetItem.category', 'expense')->sum('budgeted_amount'),
-            'net_actual' => $executions->where('budgetItem.category', 'income')->sum('actual_amount') - $executions->where('budgetItem.category', 'expense')->sum('actual_amount'),
+            'items' => $groupedExecutions,
+            'total_budgeted' => (float) $totalBudgeted,
+            'total_actual' => (float) $totalActual,
+            'total_variance' => (float) $totalVariance,
+            'execution_percentage' => round($executionPercentage, 2),
         ];
     }
 

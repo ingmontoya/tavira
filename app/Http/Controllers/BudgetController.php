@@ -78,11 +78,19 @@ class BudgetController extends Controller
                 ->first();
         }
 
+        // Get available years for copying from previous
+        $availablePreviousYears = Budget::forConjunto($conjunto->id)
+            ->selectRaw('DISTINCT fiscal_year')
+            ->orderBy('fiscal_year', 'desc')
+            ->pluck('fiscal_year')
+            ->toArray();
+
         return Inertia::render('Accounting/Budgets/Create', [
             'incomeAccounts' => $incomeAccounts,
             'expenseAccounts' => $expenseAccounts,
             'previousBudget' => $previousBudget,
             'suggestedYear' => now()->year + 1,
+            'availablePreviousYears' => $availablePreviousYears,
         ]);
     }
 
@@ -95,7 +103,7 @@ class BudgetController extends Controller
             'fiscal_year' => 'required|integer|min:2020|max:2050|unique:budgets,fiscal_year,NULL,id,conjunto_config_id,'.$conjunto->id,
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
-            'items' => 'required|array|min:1',
+            'items' => 'nullable|array',
             'items.*.account_id' => 'required|exists:chart_of_accounts,id',
             'items.*.category' => 'required|in:income,expense',
             'items.*.budgeted_amount' => 'required|numeric|min:0',
@@ -103,6 +111,7 @@ class BudgetController extends Controller
             'items.*.monthly_distribution' => 'nullable|array',
             'copy_from_previous' => 'boolean',
             'previous_year' => 'nullable|integer|exists:budgets,fiscal_year',
+            'use_default_template' => 'boolean',
         ]);
 
         DB::transaction(function () use ($validated, $conjunto) {
@@ -118,6 +127,14 @@ class BudgetController extends Controller
                     'start_date' => $validated['start_date'],
                     'end_date' => $validated['end_date'],
                 ]);
+            } elseif ($validated['use_default_template'] ?? false) {
+                $budget = Budget::createWithDefaultTemplate(
+                    $conjunto->id,
+                    $validated['name'],
+                    $validated['fiscal_year'],
+                    $validated['start_date'],
+                    $validated['end_date']
+                );
             } else {
                 $budget = Budget::create([
                     'conjunto_config_id' => $conjunto->id,
@@ -128,18 +145,21 @@ class BudgetController extends Controller
                     'status' => 'draft',
                 ]);
 
-                foreach ($validated['items'] as $itemData) {
-                    $item = $budget->items()->create([
-                        'account_id' => $itemData['account_id'],
-                        'category' => $itemData['category'],
-                        'budgeted_amount' => $itemData['budgeted_amount'],
-                        'notes' => $itemData['notes'] ?? null,
-                    ]);
+                // Only process items if they were provided
+                if (! empty($validated['items'])) {
+                    foreach ($validated['items'] as $itemData) {
+                        $item = $budget->items()->create([
+                            'account_id' => $itemData['account_id'],
+                            'category' => $itemData['category'],
+                            'budgeted_amount' => $itemData['budgeted_amount'],
+                            'notes' => $itemData['notes'] ?? null,
+                        ]);
 
-                    if (isset($itemData['monthly_distribution'])) {
-                        $this->updateMonthlyDistribution($item, $itemData['monthly_distribution']);
-                    } else {
-                        $item->distributeEqually();
+                        if (isset($itemData['monthly_distribution'])) {
+                            $this->updateMonthlyDistribution($item, $itemData['monthly_distribution']);
+                        } else {
+                            $item->distributeEqually();
+                        }
                     }
                 }
 
@@ -148,7 +168,7 @@ class BudgetController extends Controller
         });
 
         return redirect()
-            ->route('budgets.index')
+            ->route('accounting.budgets.index')
             ->with('success', 'Presupuesto creado exitosamente.');
     }
 
@@ -165,8 +185,11 @@ class BudgetController extends Controller
 
         $executionSummary = $budget->getExecutionSummary($currentMonth, $currentYear);
 
+        // Transform budget data to match frontend expectations
+        $transformedBudget = $this->transformBudgetForFrontend($budget, $executionSummary);
+
         return Inertia::render('Accounting/Budgets/Show', [
-            'budget' => $budget,
+            'budget' => $transformedBudget,
             'executionSummary' => $executionSummary,
             'currentPeriod' => [
                 'month' => $currentMonth,
@@ -178,9 +201,6 @@ class BudgetController extends Controller
 
     public function edit(Budget $budget)
     {
-        if ($budget->status !== 'draft') {
-            return back()->withErrors(['budget' => 'Solo se pueden editar presupuestos en borrador.']);
-        }
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
@@ -209,9 +229,6 @@ class BudgetController extends Controller
 
     public function update(Request $request, Budget $budget)
     {
-        if ($budget->status !== 'draft') {
-            return back()->withErrors(['budget' => 'Solo se pueden editar presupuestos en borrador.']);
-        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:200',
@@ -269,16 +286,21 @@ class BudgetController extends Controller
         $budget->delete();
 
         return redirect()
-            ->route('budgets.index')
+            ->route('accounting.budgets.index')
             ->with('success', 'Presupuesto eliminado exitosamente.');
     }
 
     public function approve(Budget $budget)
     {
+        // Additional permission check at controller level
+        if (! auth()->user()->can('approve_budgets')) {
+            abort(403, 'No tiene permisos para aprobar presupuestos');
+        }
+
         try {
             $budget->approve();
 
-            return back()->with('success', 'Presupuesto aprobado exitosamente.');
+            return back()->with('success', 'Presupuesto aprobado exitosamente por el Concejo de Administración.');
         } catch (\Exception $e) {
             return back()->withErrors(['budget' => $e->getMessage()]);
         }
@@ -375,6 +397,50 @@ class BudgetController extends Controller
         }
     }
 
+    public function createWithTemplate(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:200',
+            'fiscal_year' => 'required|integer|min:2020|max:2050|unique:budgets,fiscal_year,NULL,id,conjunto_config_id,'.$conjunto->id,
+        ]);
+
+        try {
+            $startDate = $validated['fiscal_year'].'-01-01';
+            $endDate = $validated['fiscal_year'].'-12-31';
+
+            $budget = Budget::createWithDefaultTemplate(
+                $conjunto->id,
+                $validated['name'],
+                $validated['fiscal_year'],
+                $startDate,
+                $endDate
+            );
+
+            return redirect()
+                ->route('accounting.budgets.edit', $budget)
+                ->with('success', 'Presupuesto creado con plantilla estándar. Configure los montos presupuestados.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['template' => $e->getMessage()]);
+        }
+    }
+
+    public function addDefaultItems(Budget $budget)
+    {
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden modificar presupuestos activos.']);
+        }
+
+        try {
+            $budget->createDefaultBudgetItems();
+
+            return back()->with('success', 'Partidas presupuestales estándar agregadas exitosamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['budget' => 'Error al agregar partidas: '.$e->getMessage()]);
+        }
+    }
+
     private function getAvailableYears(int $conjuntoConfigId): array
     {
         $years = Budget::forConjunto($conjuntoConfigId)
@@ -451,5 +517,139 @@ class BudgetController extends Controller
                 'name' => $this->getAvailableMonths()[$month].' '.$year,
             ],
         ]);
+    }
+
+    public function createItem(Budget $budget)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $incomeAccounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->byType('income')
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
+        $expenseAccounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->byType('expense')
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
+        // Get already used accounts to avoid duplicates
+        $usedAccountIds = $budget->items()->pluck('account_id')->toArray();
+
+        return Inertia::render('Accounting/Budgets/Items/Create', [
+            'budget' => $budget,
+            'incomeAccounts' => $incomeAccounts,
+            'expenseAccounts' => $expenseAccounts,
+            'usedAccountIds' => $usedAccountIds,
+        ]);
+    }
+
+    public function storeItem(Request $request, Budget $budget)
+    {
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden agregar partidas a presupuestos activos.']);
+        }
+
+        $validated = $request->validate([
+            'account_id' => 'required|exists:chart_of_accounts,id',
+            'category' => 'required|in:income,expense',
+            'budgeted_amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:500',
+            'monthly_distribution' => 'nullable|array',
+            'monthly_distribution.*' => 'nullable|numeric|min:0',
+        ]);
+
+        // Check if account is already used in this budget
+        if ($budget->items()->where('account_id', $validated['account_id'])->exists()) {
+            return back()->withErrors(['account_id' => 'Esta cuenta ya está incluida en el presupuesto.']);
+        }
+
+        DB::transaction(function () use ($validated, $budget) {
+            $item = $budget->items()->create([
+                'account_id' => $validated['account_id'],
+                'category' => $validated['category'],
+                'budgeted_amount' => $validated['budgeted_amount'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            if (isset($validated['monthly_distribution'])) {
+                $this->updateMonthlyDistribution($item, $validated['monthly_distribution']);
+            } else {
+                $item->distributeEqually();
+            }
+
+            $budget->calculateTotals();
+        });
+
+        return redirect()
+            ->route('accounting.budgets.show', $budget)
+            ->with('success', 'Partida presupuestal agregada exitosamente.');
+    }
+
+    private function transformBudgetForFrontend(Budget $budget, array $executionSummary): array
+    {
+        // Calculate totals
+        $totalBudget = $budget->total_budgeted_income + $budget->total_budgeted_expenses;
+        $totalExecuted = $executionSummary['total_income_actual'] + $executionSummary['total_expenses_actual'];
+        $executionPercentage = $totalBudget > 0 ? round(($totalExecuted / $totalBudget) * 100, 2) : 0;
+
+        // Map status to frontend format
+        $statusMapping = [
+            'draft' => 'Draft',
+            'approved' => 'Active', // Map approved to Active for frontend compatibility
+            'active' => 'Active',
+            'closed' => 'Closed',
+        ];
+
+        // Transform budget items with execution data
+        $transformedItems = $budget->items->map(function ($item) use ($executionSummary) {
+            // Find execution data for this item from the summary
+            $itemExecutions = collect([
+                ...$executionSummary['income']->where('budgetItem.id', $item->id),
+                ...$executionSummary['expenses']->where('budgetItem.id', $item->id),
+            ]);
+
+            $executedAmount = $itemExecutions->sum('actual_amount');
+            $varianceAmount = $executedAmount - $item->budgeted_amount;
+            $variancePercentage = $item->budgeted_amount > 0
+                ? round(($varianceAmount / $item->budgeted_amount) * 100, 2)
+                : 0;
+
+            return [
+                'id' => $item->id,
+                'account' => [
+                    'id' => $item->account->id,
+                    'code' => $item->account->code,
+                    'name' => $item->account->name,
+                    'account_type' => $item->account->account_type,
+                ],
+                'budgeted_amount' => (float) $item->budgeted_amount,
+                'executed_amount' => (float) $executedAmount,
+                'variance_amount' => (float) $varianceAmount,
+                'variance_percentage' => (float) $variancePercentage,
+                'description' => $item->notes,
+            ];
+        });
+
+        return [
+            'id' => $budget->id,
+            'name' => $budget->name,
+            'description' => null, // Add if you have a description field
+            'year' => $budget->fiscal_year,
+            'start_date' => $budget->start_date->toDateString(),
+            'end_date' => $budget->end_date->toDateString(),
+            'total_budget' => (float) $totalBudget,
+            'total_executed' => (float) $totalExecuted,
+            'status' => $statusMapping[$budget->status] ?? 'Draft',
+            'approval_date' => $budget->approved_at?->toDateString(),
+            'execution_percentage' => (float) $executionPercentage,
+            'items' => $transformedItems->toArray(),
+            'created_at' => $budget->created_at->toISOString(),
+            'updated_at' => $budget->updated_at->toISOString(),
+        ];
     }
 }

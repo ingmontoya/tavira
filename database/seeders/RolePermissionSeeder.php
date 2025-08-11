@@ -64,6 +64,15 @@ class RolePermissionSeeder extends Seeder
             'approve_accounting',
             'manage_accounting',
 
+            // Budget Management
+            'view_budgets',
+            'create_budgets',
+            'edit_budgets',
+            'delete_budgets',
+            'approve_budgets',
+            'activate_budgets',
+            'close_budgets',
+
             // Communication
             'view_announcements',
             'create_announcements',
@@ -120,6 +129,7 @@ class RolePermissionSeeder extends Seeder
             'view_payments', 'create_payments', 'edit_payments', 'view_reports',
             'view_expenses', 'create_expenses', 'edit_expenses', 'delete_expenses', 'approve_expenses', 'manage_expense_categories',
             'view_accounting', 'create_accounting', 'edit_accounting', 'delete_accounting', 'approve_accounting', 'manage_accounting',
+            'view_budgets', 'create_budgets', 'edit_budgets', 'delete_budgets', 'activate_budgets', 'close_budgets',
             'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',
             'view_correspondence', 'create_correspondence', 'edit_correspondence', 'delete_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
             'view_access_logs', 'manage_visitors', 'view_security_reports',
@@ -132,6 +142,7 @@ class RolePermissionSeeder extends Seeder
             'view_payments', 'view_reports',
             'view_expenses', 'create_expenses', 'edit_expenses', 'approve_expenses',
             'view_accounting', 'create_accounting', 'edit_accounting', 'manage_accounting',
+            'view_budgets', 'approve_budgets', // Council can view and approve budgets only
             'view_announcements', 'create_announcements',
             'view_access_logs',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',

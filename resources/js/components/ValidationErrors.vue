@@ -5,7 +5,7 @@ import { AlertCircle, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
 
 interface Props {
-    errors: Record<string, string | string[]>;
+    errors?: Record<string, string | string[]>;
     show?: boolean;
 }
 
@@ -19,6 +19,8 @@ const emit = defineEmits<{
 
 const errorList = computed(() => {
     const errors: { field: string; message: string }[] = [];
+
+    if (!props.errors) return errors;
 
     Object.entries(props.errors).forEach(([field, messages]) => {
         if (Array.isArray(messages)) {

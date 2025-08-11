@@ -7,7 +7,6 @@ use App\Models\Visit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -88,12 +87,12 @@ class VisitController extends Controller
             'visitor_phone' => ['nullable', 'string', 'max:20'],
             'visit_reason' => ['nullable', 'string', 'max:500'],
             'valid_from' => [
-                'required', 
+                'required',
                 'date',
                 function ($attribute, $value, $fail) {
                     $validFrom = \Carbon\Carbon::parse($value);
                     $now = \Carbon\Carbon::now()->subMinutes(5); // Allow 5 minutes tolerance
-                    
+
                     if ($validFrom->lt($now)) {
                         $fail('La fecha de inicio debe ser posterior o igual al momento actual.');
                     }
@@ -104,7 +103,7 @@ class VisitController extends Controller
 
         if ($user->hasRole('residente') || $user->hasRole('propietario')) {
             $apartment = $user->residents->first()?->apartment;
-            if (!$apartment || $apartment->id != $request->apartment_id) {
+            if (! $apartment || $apartment->id != $request->apartment_id) {
                 abort(403, 'No tienes permiso para crear visitas para este apartamento.');
             }
         }
@@ -132,7 +131,7 @@ class VisitController extends Controller
 
         if ($user->hasRole('residente') || $user->hasRole('propietario')) {
             $apartment = $user->residents->first()?->apartment;
-            if (!$apartment || $visit->apartment_id !== $apartment->id) {
+            if (! $apartment || $visit->apartment_id !== $apartment->id) {
                 abort(403);
             }
         }
@@ -150,7 +149,7 @@ class VisitController extends Controller
 
         if ($user->hasRole('residente') || $user->hasRole('propietario')) {
             $apartment = $user->residents->first()?->apartment;
-            if (!$apartment || $visit->apartment_id !== $apartment->id) {
+            if (! $apartment || $visit->apartment_id !== $apartment->id) {
                 abort(403);
             }
         }

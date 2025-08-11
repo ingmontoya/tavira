@@ -30,6 +30,12 @@ Route::prefix('accounting')->name('accounting.')->middleware('can:view_accountin
     Route::post('budgets/{budget}/close', [BudgetController::class, 'close'])->name('budgets.close');
     Route::get('budgets/{budget}/execution', [BudgetController::class, 'execution'])->name('budgets.execution');
     Route::post('budgets/copy-from-previous', [BudgetController::class, 'copyFromPrevious'])->name('budgets.copy-from-previous');
+    Route::post('budgets/create-with-template', [BudgetController::class, 'createWithTemplate'])->name('budgets.create-with-template');
+    Route::post('budgets/{budget}/add-default-items', [BudgetController::class, 'addDefaultItems'])->name('budgets.add-default-items');
+
+    // Budget Items
+    Route::get('budgets/{budget}/items/create', [BudgetController::class, 'createItem'])->name('budgets.items.create');
+    Route::post('budgets/{budget}/items', [BudgetController::class, 'storeItem'])->name('budgets.items.store');
 
     // Accounting Reports
     Route::prefix('reports')->name('reports.')->group(function () {

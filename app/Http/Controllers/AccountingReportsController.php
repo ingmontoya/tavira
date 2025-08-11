@@ -54,22 +54,22 @@ class AccountingReportsController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $validated = $request->validate([
-            'as_of_date' => 'required|date',
+            'as_of_date' => 'nullable|date',
         ]);
 
-        $asOfDate = $validated['as_of_date'];
+        $asOfDate = $validated['as_of_date'] ?? now()->toDateString();
 
         // Assets
         $assets = $this->getAccountBalances($conjunto->id, 'asset', null, $asOfDate);
-        $totalAssets = $assets->sum('balance');
+        $totalAssets = array_sum(array_column($assets, 'balance'));
 
         // Liabilities
         $liabilities = $this->getAccountBalances($conjunto->id, 'liability', null, $asOfDate);
-        $totalLiabilities = $liabilities->sum('balance');
+        $totalLiabilities = array_sum(array_column($liabilities, 'balance'));
 
         // Equity
         $equity = $this->getAccountBalances($conjunto->id, 'equity', null, $asOfDate);
-        $totalEquity = $equity->sum('balance');
+        $totalEquity = array_sum(array_column($equity, 'balance'));
 
         return Inertia::render('Accounting/Reports/BalanceSheet', [
             'report' => [
@@ -94,20 +94,20 @@ class AccountingReportsController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $startDate = $validated['start_date'];
-        $endDate = $validated['end_date'];
+        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+        $endDate = $validated['end_date'] ?? now()->toDateString();
 
         // Income
         $income = $this->getAccountBalances($conjunto->id, 'income', $startDate, $endDate);
-        $totalIncome = $income->sum('balance');
+        $totalIncome = array_sum(array_column($income, 'balance'));
 
         // Expenses
         $expenses = $this->getAccountBalances($conjunto->id, 'expense', $startDate, $endDate);
-        $totalExpenses = $expenses->sum('balance');
+        $totalExpenses = array_sum(array_column($expenses, 'balance'));
 
         $netIncome = $totalIncome - $totalExpenses;
 
@@ -136,16 +136,16 @@ class AccountingReportsController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $validated = $request->validate([
-            'as_of_date' => 'required|date',
+            'as_of_date' => 'nullable|date',
         ]);
 
-        $asOfDate = $validated['as_of_date'];
+        $asOfDate = $validated['as_of_date'] ?? now()->toDateString();
 
         $accounts = ChartOfAccounts::forConjunto($conjunto->id)
             ->active()
             ->with(['transactionEntries' => function ($query) use ($asOfDate) {
                 $query->whereHas('transaction', function ($q) use ($asOfDate) {
-                    $q->where('status', 'posted')
+                    $q->where('status', 'contabilizado')
                         ->where('transaction_date', '<=', $asOfDate);
                 });
             }])
@@ -166,13 +166,14 @@ class AccountingReportsController extends Controller
             })
             ->filter(fn ($account) => $account['balance'] != 0);
 
-        $totalDebits = $accounts->sum('debit_balance');
-        $totalCredits = $accounts->sum('credit_balance');
+        $accountsArray = $accounts->toArray();
+        $totalDebits = array_sum(array_column($accountsArray, 'debit_balance'));
+        $totalCredits = array_sum(array_column($accountsArray, 'credit_balance'));
 
         return Inertia::render('Accounting/Reports/TrialBalance', [
             'report' => [
                 'as_of_date' => $asOfDate,
-                'accounts' => $accounts,
+                'accounts' => $accountsArray,
                 'total_debits' => $totalDebits,
                 'total_credits' => $totalCredits,
                 'is_balanced' => abs($totalDebits - $totalCredits) < 0.01,
@@ -188,14 +189,24 @@ class AccountingReportsController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $validated = $request->validate([
-            'account_id' => 'required|exists:chart_of_accounts,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'account_id' => 'nullable|exists:chart_of_accounts,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $account = ChartOfAccounts::forConjunto($conjunto->id)->findOrFail($validated['account_id']);
-        $startDate = $validated['start_date'];
-        $endDate = $validated['end_date'];
+        // Get default account if none provided
+        $accountId = $validated['account_id'] ?? null;
+        if (! $accountId) {
+            $defaultAccount = ChartOfAccounts::forConjunto($conjunto->id)->active()->first();
+            if (! $defaultAccount) {
+                return back()->withErrors(['account' => 'No hay cuentas contables disponibles.']);
+            }
+            $accountId = $defaultAccount->id;
+        }
+
+        $account = ChartOfAccounts::forConjunto($conjunto->id)->findOrFail($accountId);
+        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+        $endDate = $validated['end_date'] ?? now()->toDateString();
 
         // Get opening balance
         $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate.' -1 day')));
@@ -203,7 +214,7 @@ class AccountingReportsController extends Controller
         // Get transactions for the period
         $entries = $account->transactionEntries()
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
-                $query->where('status', 'posted')
+                $query->where('status', 'contabilizado')
                     ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
             ->with(['transaction'])
@@ -242,7 +253,7 @@ class AccountingReportsController extends Controller
                 'total_credits' => $entries->sum('credit_amount'),
             ],
             'filters' => [
-                'account_id' => $validated['account_id'],
+                'account_id' => $accountId,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
             ],
@@ -264,8 +275,9 @@ class AccountingReportsController extends Controller
         ]);
 
         $budget = null;
-        if ($validated['budget_id']) {
-            $budget = Budget::forConjunto($conjunto->id)->findOrFail($validated['budget_id']);
+        $budgetId = $validated['budget_id'] ?? null;
+        if ($budgetId) {
+            $budget = Budget::forConjunto($conjunto->id)->findOrFail($budgetId);
         } else {
             $budget = Budget::forConjunto($conjunto->id)->active()->first();
         }
@@ -308,12 +320,12 @@ class AccountingReportsController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $startDate = $validated['start_date'];
-        $endDate = $validated['end_date'];
+        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+        $endDate = $validated['end_date'] ?? now()->toDateString();
 
         // Get cash and bank accounts (typically accounts starting with 111)
         $cashAccounts = ChartOfAccounts::forConjunto($conjunto->id)
@@ -328,7 +340,7 @@ class AccountingReportsController extends Controller
 
             $entries = $account->transactionEntries()
                 ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
-                    $query->where('status', 'posted')
+                    $query->where('status', 'contabilizado')
                         ->whereBetween('transaction_date', [$startDate, $endDate]);
                 })
                 ->with('transaction')
@@ -375,7 +387,7 @@ class AccountingReportsController extends Controller
             ->active()
             ->with(['transactionEntries' => function ($query) use ($startDate, $endDate) {
                 $query->whereHas('transaction', function ($q) use ($startDate, $endDate) {
-                    $q->where('status', 'posted');
+                    $q->where('status', 'contabilizado');
 
                     if ($startDate) {
                         $q->where('transaction_date', '>=', $startDate);
@@ -401,7 +413,9 @@ class AccountingReportsController extends Controller
                     'balance' => $balance,
                 ];
             })
-            ->filter(fn ($account) => $account['balance'] != 0);
+            ->filter(fn ($account) => $account['balance'] != 0)
+            ->values()
+            ->toArray(); // Convierte Collection a array PHP
     }
 
     private function getMonthName(int $month): string

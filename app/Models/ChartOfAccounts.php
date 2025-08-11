@@ -126,7 +126,7 @@ class ChartOfAccounts extends Model
     {
         $query = $this->transactionEntries()
             ->whereHas('transaction', function ($q) {
-                $q->where('status', 'posted');
+                $q->where('status', 'contabilizado');
             });
 
         if ($startDate) {

@@ -55,7 +55,7 @@ class BudgetOverspendAlert extends Notification implements ShouldQueue
         }
 
         $message->line('Se recomienda revisar estas cuentas y tomar las medidas necesarias.')
-            ->action('Ver Presupuesto', route('budgets.index'))
+            ->action('Ver Presupuesto', route('accounting.budgets.index'))
             ->line('Este es un mensaje automático del sistema de gestión presupuestal.');
 
         return $message;

@@ -11,21 +11,57 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Save, Wallet } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
+// Props
+interface Props {
+    incomeAccounts: Array<{
+        id: string;
+        code: string;
+        name: string;
+    }>;
+    expenseAccounts: Array<{
+        id: string;
+        code: string;
+        name: string;
+    }>;
+    previousBudget?: any;
+    suggestedYear: number;
+}
+
+const props = defineProps<Props>();
+
 interface FormData {
     name: string;
     description: string;
-    year: number;
+    fiscal_year: number;
     start_date: string;
     end_date: string;
+    items: Array<{
+        account_id: string;
+        category: string;
+        budgeted_amount: number;
+        notes?: string;
+    }>;
+    copy_from_previous: boolean;
+    previous_year?: number;
 }
 
 // Form state
 const form = useForm<FormData>({
     name: '',
     description: '',
-    year: new Date().getFullYear() + 1,
+    fiscal_year: props.suggestedYear,
     start_date: '',
     end_date: '',
+    items: [
+        {
+            account_id: props.incomeAccounts[0]?.id || '',
+            category: 'income',
+            budgeted_amount: 0,
+            notes: '',
+        },
+    ],
+    copy_from_previous: false,
+    previous_year: undefined,
 });
 
 // UI state
@@ -64,9 +100,9 @@ watch(
     { deep: true },
 );
 
-// Auto-set dates when year changes
+// Auto-set dates when fiscal_year changes
 watch(
-    () => form.year,
+    () => form.fiscal_year,
     (newYear) => {
         if (newYear) {
             form.start_date = `${newYear}-01-01`;
@@ -79,7 +115,7 @@ watch(
 const breadcrumbs = [
     { title: 'Escritorio', href: '/dashboard' },
     { title: 'Contabilidad', href: '/accounting' },
-    { title: 'Presupuestos', href: '/accounting/budgets' },
+    { title: 'Presupuestos', href: route('accounting.budgets.index') },
     { title: 'Nuevo Presupuesto', href: '/accounting/budgets/create' },
 ];
 </script>
@@ -96,7 +132,7 @@ const breadcrumbs = [
                     <p class="text-muted-foreground">Crear un nuevo presupuesto anual</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <Link href="/accounting/budgets">
+                    <Link :href="route('accounting.budgets.index')">
                         <Button variant="outline" class="gap-2">
                             <ArrowLeft class="h-4 w-4" />
                             Volver
@@ -135,8 +171,8 @@ const breadcrumbs = [
                             </div>
 
                             <div class="space-y-2">
-                                <Label for="year">Año *</Label>
-                                <Select v-model="form.year">
+                                <Label for="fiscal_year">Año *</Label>
+                                <Select v-model="form.fiscal_year">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecciona el año" />
                                     </SelectTrigger>
@@ -146,8 +182,8 @@ const breadcrumbs = [
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p v-if="form.errors.year" class="text-sm text-red-600">
-                                    {{ form.errors.year }}
+                                <p v-if="form.errors.fiscal_year" class="text-sm text-red-600">
+                                    {{ form.errors.fiscal_year }}
                                 </p>
                             </div>
                         </div>

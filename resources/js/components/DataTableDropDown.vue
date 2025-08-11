@@ -8,14 +8,30 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { router } from '@inertiajs/vue3';
-import { Copy, Edit, Eye, MoreHorizontal, QrCode, RefreshCw, Trash2 } from 'lucide-vue-next';
+import { CheckCircle, Clock, Copy, Edit, Eye, MoreHorizontal, Play, QrCode, RefreshCw, Trash2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 const props = defineProps<{
     resident?: any;
     apartment?: any;
     invitation?: any;
+    budget?: any;
 }>();
+
+const deleteDialogOpen = ref(false);
+const approveDialogOpen = ref(false);
 
 // Resident actions
 const viewResident = () => {
@@ -72,6 +88,41 @@ const deleteInvitation = () => {
     if (confirm('¿Está seguro que desea eliminar esta invitación?')) {
         router.delete(`/invitations/${props.invitation.id}`);
     }
+};
+
+// Budget actions
+const viewBudget = () => {
+    router.visit(`/accounting/budgets/${props.budget.id}`);
+};
+
+const editBudget = () => {
+    router.visit(`/accounting/budgets/${props.budget.id}/edit`);
+};
+
+const confirmApproveBudget = () => {
+    approveDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/approve`);
+};
+
+const activateBudget = () => {
+    if (confirm('¿Está seguro que desea activar este presupuesto? Esto desactivará otros presupuestos activos del mismo año.')) {
+        router.post(`/accounting/budgets/${props.budget.id}/activate`);
+    }
+};
+
+const closeBudget = () => {
+    if (confirm('¿Está seguro que desea cerrar este presupuesto?')) {
+        router.post(`/accounting/budgets/${props.budget.id}/close`);
+    }
+};
+
+const confirmDeleteBudget = () => {
+    deleteDialogOpen.value = false;
+    router.delete(`/accounting/budgets/${props.budget.id}`);
+};
+
+const viewBudgetExecution = () => {
+    router.visit(`/accounting/budgets/${props.budget.id}/execution`);
 };
 </script>
 
@@ -148,6 +199,82 @@ const deleteInvitation = () => {
                     <Trash2 class="mr-2 h-4 w-4" />
                     Eliminar
                 </DropdownMenuItem>
+            </template>
+
+            <!-- Budget actions -->
+            <template v-if="budget">
+                <DropdownMenuItem @click="viewBudget">
+                    <Eye class="mr-2 h-4 w-4" />
+                    Ver presupuesto
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="editBudget" v-if="budget.status === 'Draft'">
+                    <Edit class="mr-2 h-4 w-4" />
+                    Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem @click="viewBudgetExecution">
+                    <RefreshCw class="mr-2 h-4 w-4" />
+                    Ver ejecución
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                
+                <!-- Estado: Aprobar (Draft -> Approved) - Solo para usuarios del Concejo -->
+                <AlertDialog v-model:open="approveDialogOpen">
+                    <AlertDialogTrigger as-child>
+                        <DropdownMenuItem @click="$event.preventDefault()" v-if="budget.status === 'Draft' && budget.can_approve" class="text-blue-600">
+                            <CheckCircle class="mr-2 h-4 w-4" />
+                            Aprobar
+                        </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Aprobar Presupuesto</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br><br>
+                                Esta acción marcará el presupuesto como aprobado por el Concejo de Administración y permitirá su posterior activación.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction @click="confirmApproveBudget" class="bg-blue-600 hover:bg-blue-700">Aprobar Presupuesto</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                
+                <!-- Estado: Activar (Approved -> Active) -->
+                <DropdownMenuItem @click="activateBudget" v-if="budget.status === 'Approved'" class="text-green-600">
+                    <Play class="mr-2 h-4 w-4" />
+                    Activar
+                </DropdownMenuItem>
+                
+                <!-- Estado: Cerrar (Active -> Closed) -->
+                <DropdownMenuItem @click="closeBudget" v-if="budget.status === 'Active'" class="text-orange-600">
+                    <Clock class="mr-2 h-4 w-4" />
+                    Cerrar
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator v-if="budget.status !== 'Active'" />
+                <!-- Eliminar con AlertDialog -->
+                <AlertDialog v-model:open="deleteDialogOpen">
+                    <AlertDialogTrigger as-child>
+                        <DropdownMenuItem @click="$event.preventDefault()" v-if="budget.status !== 'Active'" class="text-red-600">
+                            <Trash2 class="mr-2 h-4 w-4" />
+                            Eliminar
+                        </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br><br>
+                                <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas presupuestales asociadas.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700">Eliminar Presupuesto</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </template>
         </DropdownMenuContent>
     </DropdownMenu>

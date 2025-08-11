@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,7 +39,7 @@ class Visit extends Model
     public static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($visit) {
             if (empty($visit->qr_code)) {
                 $visit->qr_code = self::generateUniqueQrCode();
@@ -53,7 +52,7 @@ class Visit extends Model
         do {
             $code = strtoupper(Str::random(12));
         } while (self::where('qr_code', $code)->exists());
-        
+
         return $code;
     }
 
@@ -85,9 +84,10 @@ class Visit extends Model
     public function scopeValid(Builder $query): Builder
     {
         $now = now();
+
         return $query->where('valid_from', '<=', $now)
-                    ->where('valid_until', '>=', $now)
-                    ->whereIn('status', ['pending', 'active']);
+            ->where('valid_until', '>=', $now)
+            ->whereIn('status', ['pending', 'active']);
     }
 
     public function scopeByApartment(Builder $query, int $apartmentId): Builder
@@ -98,8 +98,9 @@ class Visit extends Model
     public function isValid(): bool
     {
         $now = now();
-        return $this->valid_from <= $now 
-            && $this->valid_until >= $now 
+
+        return $this->valid_from <= $now
+            && $this->valid_until >= $now
             && in_array($this->status, ['pending', 'active']);
     }
 

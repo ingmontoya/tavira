@@ -69,7 +69,7 @@ const customFilters = ref({
 
 // Computed values for filter options
 const uniqueYears = computed(() => {
-    const years = [...new Set(data.map((budget) => budget.year))].sort((a, b) => b - a);
+    const years = [...new Set(data.map((budget) => budget.year).filter(year => year != null))].sort((a, b) => b - a);
     return years;
 });
 
@@ -195,7 +195,7 @@ const columns = [
                 {
                     class: 'text-right font-mono text-sm font-medium',
                 },
-                `$${amount.toLocaleString()}`,
+                `$${(amount || 0).toLocaleString()}`,
             );
         },
     }),
@@ -204,14 +204,16 @@ const columns = [
         header: 'Ejecución',
         cell: ({ row }) => {
             const budget = row.original;
-            const percentage = budget.execution_percentage;
-            const variance = budget.total_executed - budget.total_budget;
+            const percentage = budget.execution_percentage || 0;
+            const totalExecuted = budget.total_executed || 0;
+            const totalBudget = budget.total_budget || 0;
+            const variance = totalExecuted - totalBudget;
             const isOverBudget = variance > 0;
 
             return h('div', { class: 'space-y-2 min-w-[120px]' }, [
                 h('div', { class: 'flex items-center justify-between text-xs' }, [
                     h('span', `${percentage}%`),
-                    h('span', { class: 'font-mono' }, `$${budget.total_executed.toLocaleString()}`),
+                    h('span', { class: 'font-mono' }, `$${totalExecuted.toLocaleString()}`),
                 ]),
                 h(Progress, {
                     value: Math.min(percentage, 100),
