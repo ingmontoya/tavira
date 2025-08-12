@@ -378,11 +378,16 @@ class InvoiceController extends Controller
 
     public function downloadPdf(Invoice $invoice)
     {
-        $invoice->load(['apartment.apartmentType', 'items.paymentConcept']);
+        $invoice->load([
+            'apartment.apartmentType', 
+            'apartment.conjuntoConfig',
+            'apartment.residents',
+            'items.paymentConcept'
+        ]);
 
-        $pdf = PDF::loadView('invoices.pdf', compact('invoice'));
+        $pdf = PDF::loadView('invoices.recibo', compact('invoice'));
 
-        return $pdf->download("factura-{$invoice->invoice_number}.pdf");
+        return $pdf->download("recibo-{$invoice->invoice_number}.pdf");
     }
 
     public function sendByEmail(Invoice $invoice)

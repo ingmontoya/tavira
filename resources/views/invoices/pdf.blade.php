@@ -7,31 +7,32 @@
     <style>
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.2;
             color: #333;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 20px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #2563eb;
+            padding-bottom: 10px;
         }
         .header h1 {
             color: #2563eb;
-            margin: 0 0 10px 0;
-            font-size: 24px;
+            margin: 0 0 5px 0;
+            font-size: 16px;
         }
         .header p {
-            margin: 5px 0;
+            margin: 2px 0;
             color: #666;
+            font-size: 9px;
         }
         .invoice-details {
             display: table;
             width: 100%;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
         .invoice-left, .invoice-right {
             display: table-cell;
@@ -43,42 +44,46 @@
         }
         .info-box {
             background-color: #f8fafc;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            padding: 8px;
+            border-radius: 3px;
+            margin-bottom: 10px;
         }
         .info-box h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 5px 0;
             color: #1e40af;
-            font-size: 14px;
+            font-size: 11px;
         }
         .info-row {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .label {
             font-weight: bold;
             color: #4b5563;
             display: inline-block;
-            width: 140px;
+            width: 100px;
+            font-size: 9px;
         }
         .value {
             color: #1f2937;
+            font-size: 9px;
         }
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
         .items-table th {
             background-color: #2563eb;
             color: white;
-            padding: 12px;
+            padding: 6px 8px;
             text-align: left;
             font-weight: bold;
+            font-size: 10px;
         }
         .items-table td {
-            padding: 10px 12px;
+            padding: 5px 8px;
             border-bottom: 1px solid #e5e7eb;
+            font-size: 9px;
         }
         .items-table tr:nth-child(even) {
             background-color: #f9fafb;
@@ -91,21 +96,22 @@
         }
         .totals-section {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 10px;
         }
         .totals-table {
-            width: 300px;
+            width: 250px;
             margin-left: auto;
             border-collapse: collapse;
         }
         .totals-table td {
-            padding: 8px 15px;
+            padding: 4px 8px;
             border-bottom: 1px solid #e5e7eb;
+            font-size: 9px;
         }
         .totals-table .label {
             font-weight: bold;
             color: #4b5563;
-            width: 200px;
+            width: 150px;
         }
         .totals-table .value {
             text-align: right;
@@ -115,7 +121,7 @@
             background-color: #2563eb;
             color: white;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 10px;
         }
         .balance-row {
             background-color: #dc2626;
@@ -128,10 +134,10 @@
         }
         .status-badge {
             display: inline-block;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 3px 6px;
+            border-radius: 3px;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 8px;
             text-transform: uppercase;
         }
         .status-pending {
@@ -151,25 +157,27 @@
             color: white;
         }
         .footer {
-            margin-top: 40px;
-            padding-top: 20px;
+            margin-top: 15px;
+            padding-top: 10px;
             border-top: 1px solid #e5e7eb;
             text-align: center;
             color: #6b7280;
-            font-size: 11px;
+            font-size: 8px;
         }
         .notes {
             background-color: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 15px;
-            margin: 20px 0;
+            border-left: 3px solid #f59e0b;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 9px;
         }
         .overdue-alert {
             background-color: #fee2e2;
-            border-left: 4px solid #ef4444;
-            padding: 15px;
-            margin: 20px 0;
+            border-left: 3px solid #ef4444;
+            padding: 8px;
+            margin: 10px 0;
             color: #991b1b;
+            font-size: 9px;
         }
     </style>
 </head>
