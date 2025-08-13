@@ -69,7 +69,7 @@ const flashError = computed(() => page.props.flash?.error);
 
 const deleteCategory = (categoryId: number) => {
     const category = props.categories.find(c => c.id === categoryId);
-    
+
     if (category && category.expenses_count > 0) {
         error('No se puede eliminar una categoría que tiene gastos asociados');
         return;
@@ -86,7 +86,7 @@ const deleteCategory = (categoryId: number) => {
 
     <AppLayout title="Categorías de Gastos" :breadcrumbs="breadcrumbs">
         <ValidationErrors :errors="errors" />
-        
+
         <!-- Success Alert -->
         <Alert v-if="flashSuccess" class="mb-6 border-green-200 bg-green-50">
             <CheckCircle class="h-4 w-4 text-green-600" />
@@ -103,7 +103,7 @@ const deleteCategory = (categoryId: number) => {
             </AlertDescription>
         </Alert>
 
-        <div class="space-y-4">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header with actions -->
             <div class="flex items-center justify-between">
                 <div class="space-y-1">
@@ -129,12 +129,12 @@ const deleteCategory = (categoryId: number) => {
                 </CardHeader>
                 <CardContent>
                     <div v-if="categories.length === 0" class="text-center py-8 text-muted-foreground">
-                        No hay categorías configuradas. 
+                        No hay categorías configuradas.
                         <Link href="/expense-categories/create" class="text-blue-600 hover:underline">
                             Crear la primera categoría
                         </Link>
                     </div>
-                    
+
                     <Table v-else>
                         <TableHeader>
                             <TableRow>
@@ -150,7 +150,7 @@ const deleteCategory = (categoryId: number) => {
                             <TableRow v-for="category in categories" :key="category.id">
                                 <TableCell>
                                     <div class="flex items-center gap-3">
-                                        <div 
+                                        <div
                                             class="w-4 h-4 rounded-full"
                                             :style="{ backgroundColor: category.color }"
                                         ></div>
@@ -162,7 +162,7 @@ const deleteCategory = (categoryId: number) => {
                                         </div>
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <div class="max-w-xs">
                                         <p class="text-sm text-muted-foreground truncate">
@@ -170,7 +170,7 @@ const deleteCategory = (categoryId: number) => {
                                         </p>
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <div class="space-y-1 text-xs">
                                         <div v-if="category.default_debit_account">
@@ -190,24 +190,24 @@ const deleteCategory = (categoryId: number) => {
                                         </div>
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <div class="text-center">
                                         <span class="font-medium">{{ category.expenses_count }}</span>
                                         <div class="text-xs text-muted-foreground">gastos</div>
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
-                                    <Badge 
-                                        :class="category.is_active 
-                                            ? 'bg-green-100 text-green-800' 
+                                    <Badge
+                                        :class="category.is_active
+                                            ? 'bg-green-100 text-green-800'
                                             : 'bg-gray-100 text-gray-800'"
                                     >
                                         {{ category.is_active ? 'Activa' : 'Inactiva' }}
                                     </Badge>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <div class="flex items-center gap-2">
                                         <Button asChild variant="ghost" size="sm">
@@ -215,15 +215,15 @@ const deleteCategory = (categoryId: number) => {
                                                 <Eye class="w-4 h-4" />
                                             </Link>
                                         </Button>
-                                        
+
                                         <Button asChild variant="ghost" size="sm">
                                             <Link :href="`/expense-categories/${category.id}/edit`">
                                                 <Edit class="w-4 h-4" />
                                             </Link>
                                         </Button>
-                                        
-                                        <Button 
-                                            variant="ghost" 
+
+                                        <Button
+                                            variant="ghost"
                                             size="sm"
                                             @click="deleteCategory(category.id)"
                                             :disabled="category.expenses_count > 0"

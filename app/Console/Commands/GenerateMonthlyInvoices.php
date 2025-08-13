@@ -130,14 +130,21 @@ class GenerateMonthlyInvoices extends Command
         $periodEnd = $periodStart->copy()->endOfMonth();
         $dueDate = $periodEnd->copy(); // Due date is the last day of the billing period month
 
-        // Obtener el concepto de Administración Mensual
-        $monthlyAdminConcept = PaymentConcept::where('type', 'monthly_administration')
-            ->where('is_active', true)
-            ->first();
-
-        if (! $monthlyAdminConcept) {
-            throw new InvoiceGenerationException('No se encontró el concepto de Administración Mensual activo. Ejecute el seeder PaymentConceptSeeder.');
-        }
+        // Obtener o crear el concepto de Administración Mensual
+        $monthlyAdminConcept = PaymentConcept::firstOrCreate(
+            [
+                'name' => 'Administración Mensual',
+                'type' => 'monthly_administration',
+            ],
+            [
+                'description' => 'Cuota de administración mensual base por tipo de apartamento',
+                'default_amount' => 0,
+                'is_recurring' => true,
+                'is_active' => true,
+                'billing_cycle' => 'monthly',
+                'applicable_apartment_types' => null,
+            ]
+        );
 
         $generatedCount = 0;
         $skippedCount = 0;
@@ -149,50 +156,58 @@ class GenerateMonthlyInvoices extends Command
         $progressBar = $this->output->createProgressBar($apartments->count());
         $progressBar->start();
 
-        foreach ($apartments as $apartment) {
-            try {
-                // Skip apartments without administration fee
-                if (! $apartment->monthly_fee || $apartment->monthly_fee <= 0) {
-                    $this->warn("Apartamento {$apartment->number} no tiene cuota de administración configurada.");
-                    $skippedCount++;
-                    $progressBar->advance();
+        // Process apartments in chunks to avoid memory issues
+        $apartments->chunk(50)->each(function ($apartmentChunk) use (
+            &$generatedCount, &$skippedCount, &$errorCount, $progressBar,
+            $billingDate, $dueDate, $year, $month, $periodStart, $periodEnd, $monthlyAdminConcept
+        ) {
+            foreach ($apartmentChunk as $apartment) {
+                try {
+                    // Skip apartments without administration fee
+                    if (! $apartment->monthly_fee || $apartment->monthly_fee <= 0) {
+                        $this->warn("Apartamento {$apartment->number} no tiene cuota de administración configurada.");
+                        $skippedCount++;
+                        $progressBar->advance();
+                        continue;
+                    }
 
-                    continue;
+                    $invoice = Invoice::create([
+                        'apartment_id' => $apartment->id,
+                        'type' => 'monthly',
+                        'billing_date' => $billingDate,
+                        'due_date' => $dueDate,
+                        'billing_period_year' => $year,
+                        'billing_period_month' => $month,
+                    ]);
+
+                    // Create invoice item for administration fee using the monthly administration concept
+                    InvoiceItem::create([
+                        'invoice_id' => $invoice->id,
+                        'payment_concept_id' => $monthlyAdminConcept->id,
+                        'description' => "Cuota de Administración - {$apartment->apartmentType->name}",
+                        'quantity' => 1,
+                        'unit_price' => $apartment->monthly_fee,
+                        'period_start' => $periodStart,
+                        'period_end' => $periodEnd,
+                    ]);
+
+                    $invoice->calculateTotals();
+
+                    // Fire the InvoiceCreated event after invoice is fully populated
+                    event(new InvoiceCreated($invoice));
+
+                    $generatedCount++;
+                } catch (\Exception $e) {
+                    $this->error("Error generando factura para apartamento {$apartment->number}: {$e->getMessage()}");
+                    $errorCount++;
                 }
 
-                $invoice = Invoice::create([
-                    'apartment_id' => $apartment->id,
-                    'type' => 'monthly',
-                    'billing_date' => $billingDate,
-                    'due_date' => $dueDate,
-                    'billing_period_year' => $year,
-                    'billing_period_month' => $month,
-                ]);
-
-                // Create invoice item for administration fee using the monthly administration concept
-                InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
-                    'payment_concept_id' => $monthlyAdminConcept->id,
-                    'description' => "Cuota de Administración - {$apartment->apartmentType->name}",
-                    'quantity' => 1,
-                    'unit_price' => $apartment->monthly_fee,
-                    'period_start' => $periodStart,
-                    'period_end' => $periodEnd,
-                ]);
-
-                $invoice->calculateTotals();
-
-                // Fire the InvoiceCreated event after invoice is fully populated
-                event(new InvoiceCreated($invoice));
-
-                $generatedCount++;
-            } catch (\Exception $e) {
-                $this->error("Error generando factura para apartamento {$apartment->number}: {$e->getMessage()}");
-                $errorCount++;
+                $progressBar->advance();
             }
-
-            $progressBar->advance();
-        }
+            
+            // Clean up memory after each chunk
+            gc_collect_cycles();
+        });
 
         $progressBar->finish();
         $this->newLine();
