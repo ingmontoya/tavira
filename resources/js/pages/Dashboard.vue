@@ -1,6 +1,9 @@
 <template>
     <AppLayout>
         <AppContent class="space-y-6 p-6" data-tour="dashboard">
+            <!-- Setup Banner -->
+            <ConjuntoSetupBanner />
+            
             <!-- Header with Month Selector and Tour Button -->
             <div class="mb-8">
                 <div class="flex items-start justify-between">
@@ -373,6 +376,7 @@
 
 <script setup lang="ts">
 import AppContent from '@/components/AppContent.vue';
+import ConjuntoSetupBanner from '@/components/ConjuntoSetupBanner.vue';
 import Icon from '@/components/Icon.vue';
 import { Card } from '@/components/ui/card';
 import VirtualTour from '@/components/VirtualTour.vue';

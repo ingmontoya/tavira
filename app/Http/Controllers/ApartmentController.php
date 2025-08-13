@@ -73,10 +73,22 @@ class ApartmentController extends Controller
 
         // Payment statistics - calculate dynamically like Dashboard/Payments
         $conjuntoConfig = ConjuntoConfig::first();
-        $totalApartments = Apartment::where('conjunto_config_id', $conjuntoConfig->id)->count();
-
-        // Use same dynamic calculation as Dashboard
-        $paymentStatusBreakdown = $this->getPaymentStatusBreakdown($conjuntoConfig->id);
+        
+        if (!$conjuntoConfig) {
+            // If no conjunto config exists, return with empty statistics
+            $totalApartments = 0;
+            $paymentStatusBreakdown = [
+                'current' => 0,
+                'overdue_30' => 0,
+                'overdue_60' => 0,
+                'overdue_90' => 0,
+                'overdue_90_plus' => 0,
+            ];
+        } else {
+            $totalApartments = Apartment::where('conjunto_config_id', $conjuntoConfig->id)->count();
+            // Use same dynamic calculation as Dashboard
+            $paymentStatusBreakdown = $this->getPaymentStatusBreakdown($conjuntoConfig->id);
+        }
         $currentPayments = $paymentStatusBreakdown['current'];
         $overdue30 = $paymentStatusBreakdown['overdue_30'];
         $overdue60 = $paymentStatusBreakdown['overdue_60'];

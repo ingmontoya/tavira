@@ -19,6 +19,7 @@ export interface NavItem {
     items?: NavItem[];
     tourId?: string;
     visible?: boolean;
+    disabled?: boolean;
 }
 
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

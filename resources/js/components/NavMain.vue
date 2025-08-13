@@ -39,6 +39,7 @@ const page = usePage();
                 <!-- Regular menu item (no children) -->
                 <template v-if="!item.items || item.items.length === 0">
                     <SidebarMenuButton
+                        v-if="!item.disabled"
                         as-child
                         :is-active="item.href === page.url"
                         :tooltip="item.title"
@@ -53,6 +54,19 @@ const page = usePage();
                                 {{ item.title }}
                             </span>
                         </Link>
+                    </SidebarMenuButton>
+                    <SidebarMenuButton
+                        v-else
+                        :tooltip="`${item.title} (Configuración requerida)`"
+                        class="cursor-not-allowed opacity-50"
+                        disabled
+                    >
+                        <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium">
+                            <component :is="item.icon" class="h-4 w-4" />
+                            <span>
+                                {{ item.title }}
+                            </span>
+                        </div>
                     </SidebarMenuButton>
                 </template>
 
@@ -81,6 +95,7 @@ const page = usePage();
                                     <template v-if="!subItem.items || subItem.items.length === 0">
                                         <SidebarMenuSubItem>
                                             <SidebarMenuSubButton
+                                                v-if="!subItem.disabled"
                                                 as-child
                                                 :is-active="subItem.href === page.url"
                                             >
@@ -92,6 +107,16 @@ const page = usePage();
                                                     <component :is="subItem.icon" class="h-3.5 w-3.5" />
                                                     <span>{{ subItem.title }}</span>
                                                 </Link>
+                                            </SidebarMenuSubButton>
+                                            <SidebarMenuSubButton
+                                                v-else
+                                                class="cursor-not-allowed opacity-50"
+                                                disabled
+                                            >
+                                                <div class="flex items-center gap-3">
+                                                    <component :is="subItem.icon" class="h-3.5 w-3.5" />
+                                                    <span>{{ subItem.title }}</span>
+                                                </div>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                     </template>
@@ -118,6 +143,7 @@ const page = usePage();
                                                             :key="nestedItem.title"
                                                         >
                                                             <SidebarMenuSubButton
+                                                                v-if="!nestedItem.disabled"
                                                                 as-child
                                                                 :is-active="nestedItem.href === page.url"
                                                             >
@@ -129,6 +155,16 @@ const page = usePage();
                                                                     <component :is="nestedItem.icon" class="h-3 w-3" />
                                                                     <span class="text-xs">{{ nestedItem.title }}</span>
                                                                 </Link>
+                                                            </SidebarMenuSubButton>
+                                                            <SidebarMenuSubButton
+                                                                v-else
+                                                                class="cursor-not-allowed opacity-50"
+                                                                disabled
+                                                            >
+                                                                <div class="flex items-center gap-3">
+                                                                    <component :is="nestedItem.icon" class="h-3 w-3" />
+                                                                    <span class="text-xs">{{ nestedItem.title }}</span>
+                                                                </div>
                                                             </SidebarMenuSubButton>
                                                         </SidebarMenuSubItem>
                                                     </SidebarMenuSub>

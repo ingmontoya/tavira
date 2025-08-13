@@ -37,6 +37,7 @@ export function useNavigation() {
     const user = computed(() => page.props.auth?.user);
     const permissions = computed(() => page.props.auth?.permissions || []);
     const roles = computed(() => page.props.auth?.roles || []);
+    const conjuntoConfigured = computed(() => page.props.conjuntoConfigured || { exists: false, isActive: false });
 
     const hasPermission = (permission: string): boolean => {
         // Ensure permissions array exists and is not empty
@@ -44,6 +45,27 @@ export function useNavigation() {
         const hasPerms = Array.isArray(permsArray) && permsArray.includes(permission);
 
         return hasPerms;
+    };
+
+    // Check if navigation should be enabled (conjunto configured OR accessing allowed routes)
+    const isNavigationEnabled = (item: any): boolean => {
+        // Always allow dashboard and configuration routes
+        const alwaysAllowedRoutes = [
+            '/dashboard',
+            '/conjunto-config',
+            '/settings',
+            '/profile',
+            '/support',
+            '/docs'
+        ];
+        
+        // Check if the item href matches any always allowed route
+        if (item.href && alwaysAllowedRoutes.some(route => item.href.startsWith(route))) {
+            return true;
+        }
+        
+        // For other routes, require conjunto to be configured
+        return conjuntoConfigured.value.exists;
     };
 
     const mainNavItems = computed((): NavItem[] => [
@@ -412,6 +434,13 @@ export function useNavigation() {
     const filterVisibleItems = (items: NavItem[]): NavItem[] => {
         return items.filter((item) => {
             if (item.visible === false) return false;
+            
+            // Check if navigation is enabled for this item
+            if (!isNavigationEnabled(item)) {
+                // Add disabled property for styling purposes
+                item.disabled = true;
+            }
+            
             if (item.items) {
                 item.items = filterVisibleItems(item.items);
                 // Show parent if any children are visible

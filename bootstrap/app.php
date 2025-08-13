@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AuditLogMiddleware;
 use App\Http\Middleware\EnsureCanCreateMultipleConjuntos;
+use App\Http\Middleware\EnsureConjuntoConfigured;
 use App\Http\Middleware\EnsureUserIsCompany;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -35,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             SharePermissions::class,
+            EnsureConjuntoConfigured::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 

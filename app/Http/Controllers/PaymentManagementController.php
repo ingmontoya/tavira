@@ -20,6 +20,30 @@ class PaymentManagementController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
+        if (!$conjunto) {
+            // If no active conjunto config exists, return empty results
+            return Inertia::render('Finance/Payments/Index', [
+                'payments' => collect([]),
+                'apartments' => collect([]),
+                'filters' => $request->only(['status', 'apartment_id', 'start_date', 'end_date', 'search']),
+                'statuses' => [
+                    'pending' => 'Pendiente',
+                    'aplicado' => 'Aplicado',
+                    'parcialmente_aplicado' => 'Parcialmente Aplicado',
+                    'reversado' => 'Reversado',
+                ],
+                'paymentMethods' => [
+                    'cash' => 'Efectivo',
+                    'bank_transfer' => 'Transferencia Bancaria',
+                    'check' => 'Cheque',
+                    'credit_card' => 'Tarjeta de Crédito',
+                    'debit_card' => 'Tarjeta Débito',
+                    'online' => 'Pago Online',
+                    'other' => 'Otro',
+                ],
+            ]);
+        }
+
         $query = Payment::forConjunto($conjunto->id)
             ->with(['apartment', 'createdBy', 'appliedBy', 'applications.invoice']);
 
@@ -82,6 +106,12 @@ class PaymentManagementController extends Controller
     public function create(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        if (!$conjunto) {
+            // If no active conjunto config exists, redirect with error
+            return redirect()->route('finance.payments.index')
+                ->with('error', 'No se encontró una configuración de conjunto activa.');
+        }
 
         $apartments = Apartment::whereIn('apartment_type_id', function ($query) use ($conjunto) {
             $query->select('id')
@@ -148,6 +178,11 @@ class PaymentManagementController extends Controller
     public function store(Request $request)
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        if (!$conjunto) {
+            return redirect()->route('finance.payments.index')
+                ->with('error', 'No se encontró una configuración de conjunto activa.');
+        }
 
         $validated = $request->validate([
             'apartment_id' => 'required|exists:apartments,id',
@@ -224,6 +259,11 @@ class PaymentManagementController extends Controller
         $payment->load(['apartment']);
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        if (!$conjunto) {
+            return redirect()->route('finance.payments.index')
+                ->with('error', 'No se encontró una configuración de conjunto activa.');
+        }
 
         $apartments = Apartment::whereIn('apartment_type_id', function ($query) use ($conjunto) {
             $query->select('id')
