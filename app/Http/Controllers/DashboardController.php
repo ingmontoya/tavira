@@ -729,6 +729,14 @@ class DashboardController extends Controller
                 'type' => 'Sistema',
                 'created_at' => now()->subHours(12),
             ]);
+        } else {
+            $notifications->push([
+                'id' => 'accounting-setup-needed',
+                'title' => 'Configurar sistema contable',
+                'recipients_count' => 0,
+                'type' => 'Configuración',
+                'created_at' => now()->subMinutes(30),
+            ]);
         }
 
         // Si no hay notificaciones, crear una de estado

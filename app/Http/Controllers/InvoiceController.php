@@ -379,10 +379,10 @@ class InvoiceController extends Controller
     public function downloadPdf(Invoice $invoice)
     {
         $invoice->load([
-            'apartment.apartmentType', 
+            'apartment.apartmentType',
             'apartment.conjuntoConfig',
             'apartment.residents',
-            'items.paymentConcept'
+            'items.paymentConcept',
         ]);
 
         $pdf = PDF::loadView('invoices.recibo', compact('invoice'));

@@ -20,7 +20,7 @@ class PaymentManagementController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             // If no active conjunto config exists, return empty results
             return Inertia::render('Finance/Payments/Index', [
                 'payments' => collect([]),
@@ -107,7 +107,7 @@ class PaymentManagementController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             // If no active conjunto config exists, redirect with error
             return redirect()->route('finance.payments.index')
                 ->with('error', 'No se encontró una configuración de conjunto activa.');
@@ -179,7 +179,7 @@ class PaymentManagementController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             return redirect()->route('finance.payments.index')
                 ->with('error', 'No se encontró una configuración de conjunto activa.');
         }
@@ -260,7 +260,7 @@ class PaymentManagementController extends Controller
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             return redirect()->route('finance.payments.index')
                 ->with('error', 'No se encontró una configuración de conjunto activa.');
         }

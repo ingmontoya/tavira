@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\AccountingSettingsController;
 use App\Http\Controllers\Settings\ExpenseSettingsController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\PaymentConceptMappingController;
@@ -51,4 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('settings/payment-concept-mapping/{mapping}', [PaymentConceptMappingController::class, 'destroy'])->name('settings.payment-concept-mapping.destroy')->middleware('can:manage_accounting');
     Route::post('settings/payment-concept-mapping/create-defaults', [PaymentConceptMappingController::class, 'createDefaultMappings'])->name('settings.payment-concept-mapping.create-defaults')->middleware('can:manage_accounting');
     Route::post('settings/payment-concept-mapping/{mapping}/toggle-active', [PaymentConceptMappingController::class, 'toggleActive'])->name('settings.payment-concept-mapping.toggle-active')->middleware('can:manage_accounting');
+
+    // Accounting Settings Routes
+    Route::get('settings/accounting', [AccountingSettingsController::class, 'index'])->name('settings.accounting.index')->middleware('can:manage_accounting');
+    Route::post('settings/accounting/initialize-accounts', [AccountingSettingsController::class, 'initializeAccounts'])->name('settings.accounting.initialize-accounts')->middleware('can:manage_accounting');
 });

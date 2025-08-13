@@ -16,19 +16,19 @@ class EnsureConjuntoConfigured
     public function handle(Request $request, Closure $next): Response
     {
         // Only apply this middleware to authenticated routes
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return $next($request);
         }
 
         $conjunto = ConjuntoConfig::first();
-        
+
         // Share the conjunto configuration status with all Inertia responses
         Inertia::share([
             'conjuntoConfigured' => [
                 'exists' => $conjunto !== null,
                 'isActive' => $conjunto ? $conjunto->is_active : false,
                 'name' => $conjunto ? $conjunto->name : null,
-            ]
+            ],
         ]);
 
         // Allow access to specific routes even if no conjunto is configured
@@ -47,7 +47,7 @@ class EnsureConjuntoConfigured
         }
 
         // If no conjunto is configured, redirect to dashboard
-        if (!$conjunto) {
+        if (! $conjunto) {
             return redirect()->route('dashboard');
         }
 

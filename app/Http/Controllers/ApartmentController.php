@@ -73,8 +73,8 @@ class ApartmentController extends Controller
 
         // Payment statistics - calculate dynamically like Dashboard/Payments
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             // If no conjunto config exists, return with empty statistics
             $totalApartments = 0;
             $paymentStatusBreakdown = [

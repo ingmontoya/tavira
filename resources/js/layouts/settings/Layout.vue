@@ -47,6 +47,11 @@ const sidebarNavItems = computed((): NavItem[] =>
             visible: hasPermission('edit_users'),
         },
         {
+            title: 'Configuración Contable',
+            href: '/settings/accounting',
+            visible: hasPermission('manage_accounting'),
+        },
+        {
             title: 'Mapeo Contable',
             href: '/settings/payment-concept-mapping',
             visible: hasPermission('manage_accounting'),
