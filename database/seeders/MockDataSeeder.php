@@ -2,10 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Apartment;
-use App\Models\ApartmentType;
-use App\Models\ConjuntoConfig;
-use App\Models\Resident;
 use Illuminate\Database\Seeder;
 
 class MockDataSeeder extends Seeder
