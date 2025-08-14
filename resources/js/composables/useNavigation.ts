@@ -276,7 +276,7 @@ export function useNavigation() {
         {
             title: 'Comunicación',
             icon: MessageSquare,
-            visible: hasPermission('view_correspondence') || hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors'),
+            visible: hasPermission('view_correspondence') || hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors') || hasPermission('view_admin_email') || hasPermission('view_council_email'),
             items: [
                 {
                     title: 'Correspondencia',
@@ -284,6 +284,27 @@ export function useNavigation() {
                     icon: Mail,
                     tourId: 'nav-correspondence',
                     visible: hasPermission('view_correspondence'),
+                },
+                {
+                    title: 'Correo Electrónico',
+                    icon: Mail,
+                    visible: hasPermission('view_admin_email') || hasPermission('view_council_email'),
+                    items: [
+                        {
+                            title: 'Correo Administración',
+                            href: '/email/admin',
+                            icon: Mail,
+                            tourId: 'nav-email-admin',
+                            visible: hasPermission('view_admin_email'),
+                        },
+                        {
+                            title: 'Correo Concejo',
+                            href: '/email/concejo',
+                            icon: Mail,
+                            tourId: 'nav-email-concejo',
+                            visible: hasPermission('view_council_email'),
+                        },
+                    ],
                 },
                 {
                     title: 'Anuncios',

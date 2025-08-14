@@ -248,23 +248,23 @@ const navigateToShow = (id: number) => {
             <Card class="overflow-hidden">
                 <div class="overflow-x-auto">
                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Número de Seguimiento</TableHead>
-                                <TableHead>Tipo</TableHead>
-                                <TableHead>Remitente</TableHead>
-                                <TableHead>Apartamento</TableHead>
-                                <TableHead>Estado</TableHead>
-                                <TableHead>Fecha Recepción</TableHead>
-                                <TableHead>Evidencia</TableHead>
-                                <TableHead class="text-right">Acciones</TableHead>
+                        <TableHeader class="bg-gray-50">
+                            <TableRow class="border-b-2 border-gray-200">
+                                <TableHead class="font-semibold text-gray-900 py-4">Número de Seguimiento</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4">Tipo</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4">Remitente</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4">Apartamento</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4">Estado</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4">Fecha Recepción</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4">Evidencia</TableHead>
+                                <TableHead class="font-semibold text-gray-900 py-4 text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow
                                 v-for="correspondence in correspondences.data"
                                 :key="correspondence.id"
-                                class="hover:bg-gray-50 cursor-pointer"
+                                class="hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors"
                                 @click="navigateToShow(correspondence.id)"
                             >
                                 <TableCell class="font-medium">

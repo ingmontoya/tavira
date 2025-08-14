@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Head, Link, useForm } from '@inertiajs/vue3'
+import { ref, computed, watch } from 'vue'
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import ToastContainer from '@/components/ToastContainer.vue'
+import { useToast } from '@/composables/useToast'
 import {
   ArrowLeft,
   Check,
@@ -91,6 +93,27 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Get page data for flash messages  
+const page = usePage()
+const flashSuccess = computed(() => page.props.flash?.success)
+const flashError = computed(() => page.props.flash?.error)
+
+// Toast notifications
+const { success, error } = useToast()
+
+// Watch for flash messages and convert to toasts
+watch(flashSuccess, (message) => {
+  if (message) {
+    success(message, 'Éxito')
+  }
+})
+
+watch(flashError, (message) => {
+  if (message) {
+    error(message, 'Error')
+  }
+})
+
 const showManualMatchDialog = ref(false)
 const showRejectDialog = ref(false)
 
@@ -102,6 +125,8 @@ const manualMatchForm = useForm({
 const rejectForm = useForm({
   reason: ''
 })
+
+const createPaymentForm = useForm({})
 
 function manualMatch() {
   if (!props.importItem?.id) return
@@ -122,6 +147,31 @@ function rejectImport() {
     onSuccess: () => {
       showRejectDialog.value = false
       rejectForm.reset()
+    },
+    onError: (errors) => {
+      // Handle form validation errors through toast
+      const firstErrorKey = Object.keys(errors)[0]
+      if (firstErrorKey && errors[firstErrorKey]) {
+        error(errors[firstErrorKey], 'Error al rechazar')
+      }
+    },
+    preserveScroll: true
+  })
+}
+
+function createPayment() {
+  if (!props.importItem?.id) return
+
+  createPaymentForm.post(route('finance.jelpit-reconciliation.create-payment', props.importItem.id), {
+    onSuccess: () => {
+      success('Pago creado exitosamente', 'Éxito')
+    },
+    onError: (errors) => {
+      // Handle form validation errors through toast
+      const firstErrorKey = Object.keys(errors)[0]
+      if (firstErrorKey && errors[firstErrorKey]) {
+        error(errors[firstErrorKey], 'Error creando el pago')
+      }
     },
     preserveScroll: true
   })
@@ -160,6 +210,7 @@ function getConfidenceColor(confidence: string): string {
 
 <template>
   <AppLayout>
+    <ToastContainer />
     <Head title="Detalle Importación Jelpit" />
 
     <div v-if="!importItem" class="flex items-center justify-center min-h-64">
@@ -380,11 +431,12 @@ function getConfidenceColor(confidence: string): string {
             <CardContent class="space-y-3">
               <Button
                 v-if="importItem?.can_create_payment && importItem?.id"
-                @click="() => $inertia.post(route('finance.jelpit-reconciliation.create-payment', importItem.id))"
-                class="w-full bg-green-600 text-white hover:bg-green-700"
+                @click="createPayment"
+                :disabled="createPaymentForm.processing"
+                class="w-full bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
               >
                 <Check class="h-4 w-4 mr-2" />
-                Crear Pago
+                {{ createPaymentForm.processing ? 'Creando...' : 'Crear Pago' }}
               </Button>
 
               <Button

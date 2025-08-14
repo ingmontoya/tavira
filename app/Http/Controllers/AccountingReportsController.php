@@ -101,8 +101,8 @@ class AccountingReportsController extends Controller
         $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
         $endDate = $validated['end_date'] ?? now()->toDateString();
 
-        // Income
-        $income = $this->getAccountBalances($conjunto->id, 'income', $startDate, $endDate);
+        // Income - Solo incluir ingresos de pagos efectivamente recibidos
+        $income = $this->getCashBasisIncome($conjunto->id, $startDate, $endDate);
         $totalIncome = array_sum(array_column($income, 'balance'));
 
         // Expenses
@@ -152,6 +152,7 @@ class AccountingReportsController extends Controller
             ->orderBy('code')
             ->get()
             ->map(function ($account) use ($asOfDate) {
+                // Balance de Prueba usa contabilidad por causación (base devengado)
                 $balance = $account->getBalance(null, $asOfDate);
 
                 return [
@@ -197,16 +198,50 @@ class AccountingReportsController extends Controller
         // Get default account if none provided
         $accountId = $validated['account_id'] ?? null;
         if (! $accountId) {
-            $defaultAccount = ChartOfAccounts::forConjunto($conjunto->id)->active()->first();
+            // Find a postable account that has transaction entries
+            $accountIds = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($q) use ($conjunto) {
+                $q->where('status', 'contabilizado')
+                    ->where('conjunto_config_id', $conjunto->id);
+            })->distinct()->pluck('account_id');
+
+            $defaultAccount = ChartOfAccounts::forConjunto($conjunto->id)
+                ->whereIn('id', $accountIds)
+                ->postable()
+                ->active()
+                ->orderBy('code')
+                ->first();
+
             if (! $defaultAccount) {
-                return back()->withErrors(['account' => 'No hay cuentas contables disponibles.']);
+                return back()->withErrors(['account' => 'No hay cuentas contables con movimientos disponibles.']);
             }
             $accountId = $defaultAccount->id;
         }
 
         $account = ChartOfAccounts::forConjunto($conjunto->id)->findOrFail($accountId);
-        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
-        $endDate = $validated['end_date'] ?? now()->toDateString();
+
+        // If no date filters provided, use a range that includes all transactions for this account
+        if (! isset($validated['start_date']) && ! isset($validated['end_date'])) {
+            $transactionDates = $account->transactionEntries()
+                ->whereHas('transaction', function ($q) use ($conjunto) {
+                    $q->where('status', 'contabilizado')
+                        ->where('conjunto_config_id', $conjunto->id);
+                })
+                ->with('transaction:id,transaction_date')
+                ->get()
+                ->pluck('transaction.transaction_date')
+                ->filter();
+
+            if ($transactionDates->isNotEmpty()) {
+                $startDate = $transactionDates->min()->toDateString();
+                $endDate = $transactionDates->max()->toDateString();
+            } else {
+                $startDate = now()->startOfYear()->toDateString();
+                $endDate = now()->toDateString();
+            }
+        } else {
+            $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+            $endDate = $validated['end_date'] ?? now()->toDateString();
+        }
 
         // Get opening balance
         $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate.' -1 day')));
@@ -378,6 +413,123 @@ class AccountingReportsController extends Controller
                 'end_date' => $endDate,
             ],
         ]);
+    }
+
+    private function getCashBasisIncome(int $conjuntoConfigId, string $startDate, string $endDate)
+    {
+        // Obtener ingresos basados en los montos de aplicaciones de pago
+        $incomeAccounts = ChartOfAccounts::forConjunto($conjuntoConfigId)
+            ->byType('income')
+            ->active()
+            ->orderBy('code')
+            ->get()
+            ->map(function ($account) use ($startDate, $endDate) {
+                // Calcular ingresos de esta cuenta basado en aplicaciones de pago
+                $cashBasisBalance = $account->transactionEntries()
+                    ->whereHas('transaction', function ($q) {
+                        $q->where('status', 'contabilizado')
+                            ->where('reference_type', 'invoice');
+                    })
+                    ->get()
+                    ->sum(function ($entry) use ($startDate, $endDate) {
+                        // Por cada entry de factura, calcular qué proporción fue pagada en el período
+                        $invoice = $entry->transaction->reference;
+                        if (! $invoice) {
+                            return 0;
+                        }
+
+                        $paymentsInPeriod = $invoice->paymentApplications()
+                            ->where('status', 'activo')
+                            ->whereBetween('applied_date', [$startDate, $endDate])
+                            ->sum('amount_applied');
+
+                        if ($paymentsInPeriod == 0) {
+                            return 0;
+                        }
+
+                        // Calcular la proporción de este entry que fue pagada
+                        $entryAmount = $entry->credit_amount - $entry->debit_amount;
+                        $proportion = $paymentsInPeriod / $invoice->total_amount;
+
+                        return $entryAmount * $proportion;
+                    });
+
+                return [
+                    'id' => $account->id,
+                    'code' => $account->code,
+                    'name' => $account->name,
+                    'full_name' => $account->full_name,
+                    'account_type' => $account->account_type,
+                    'nature' => $account->nature,
+                    'balance' => round($cashBasisBalance, 2),
+                ];
+            })
+            ->filter(fn ($account) => $account['balance'] > 0)
+            ->values()
+            ->toArray();
+
+        return $incomeAccounts;
+    }
+
+    private function getCashBasisBalance(ChartOfAccounts $account, string $asOfDate): float
+    {
+        // Para cuentas de ingreso: solo reconocer ingresos de facturas que han sido cobradas
+        if ($account->account_type === 'income') {
+            return $account->transactionEntries()
+                ->whereHas('transaction', function ($q) use ($asOfDate) {
+                    $q->where('status', 'contabilizado')
+                        ->where('reference_type', 'invoice')
+                        ->where('transaction_date', '<=', $asOfDate);
+                })
+                ->get()
+                ->sum(function ($entry) use ($asOfDate) {
+                    $invoice = $entry->transaction->reference;
+                    if (! $invoice) {
+                        return 0;
+                    }
+
+                    // Calcular qué proporción de esta factura fue cobrada hasta la fecha
+                    $totalPaid = $invoice->paymentApplications()
+                        ->where('status', 'activo')
+                        ->where('applied_date', '<=', $asOfDate)
+                        ->sum('amount_applied');
+
+                    if ($totalPaid == 0) {
+                        return 0;
+                    }
+
+                    $entryAmount = $entry->credit_amount - $entry->debit_amount;
+                    $proportion = min(1, $totalPaid / $invoice->total_amount);
+
+                    return $entryAmount * $proportion;
+                });
+        }
+
+        // Para cuentas de cartera (130501): representa facturas pendientes de pago
+        if ($account->code === '130501') {
+            // La cartera siempre representa facturas emitidas pendientes de cobro
+            // independientemente del método contable (caja vs devengado)
+            $totalInvoiced = $account->transactionEntries()
+                ->whereHas('transaction', function ($q) use ($asOfDate) {
+                    $q->where('status', 'contabilizado')
+                        ->where('reference_type', 'invoice')
+                        ->where('transaction_date', '<=', $asOfDate);
+                })
+                ->sum('debit_amount');
+
+            $totalCollected = $account->transactionEntries()
+                ->whereHas('transaction', function ($q) use ($asOfDate) {
+                    $q->where('status', 'contabilizado')
+                        ->where('reference_type', 'payment_application')
+                        ->where('transaction_date', '<=', $asOfDate);
+                })
+                ->sum('credit_amount');
+
+            return $totalInvoiced - $totalCollected;
+        }
+
+        // Para el resto de cuentas: usar balance normal
+        return $account->getBalance(null, $asOfDate);
     }
 
     private function getAccountBalances(int $conjuntoConfigId, string $accountType, ?string $startDate = null, ?string $endDate = null)

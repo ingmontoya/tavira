@@ -27,6 +27,11 @@ const sidebarNavItems = computed((): NavItem[] =>
             visible: true,
         },
         {
+            title: 'Correo Electrónico',
+            href: '/settings/email',
+            visible: hasPermission('edit_conjunto_config'),
+        },
+        {
             title: 'Apariencia',
             href: '/settings/appearance',
             visible: true,

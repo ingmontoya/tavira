@@ -98,8 +98,14 @@ const groupedAccounts = computed(() => {
         expense: { name: 'Gastos', accounts: [], color: 'text-orange-700' },
     };
     
-    if (props.report.accounts && Array.isArray(props.report.accounts)) {
-        props.report.accounts.forEach(account => {
+    // Convert object to array if needed
+    let accounts = props.report.accounts;
+    if (accounts && !Array.isArray(accounts)) {
+        accounts = Object.values(accounts);
+    }
+    
+    if (accounts && Array.isArray(accounts)) {
+        accounts.forEach(account => {
             if (groups[account.account_type]) {
                 groups[account.account_type].accounts.push(account);
             }
@@ -260,31 +266,67 @@ const visibleGroups = computed(() => {
                 </CardContent>
             </Card>
 
-            <!-- Trial Balance by Account Type -->
-            <div class="space-y-6">
-                <div v-for="(group, type) in visibleGroups" :key="type">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle class="text-xl flex items-center justify-between" :class="group.color">
-                                <span>{{ group.name }}</span>
-                                <div class="text-sm font-normal text-muted-foreground">
-                                    {{ group.accounts.length }} cuenta{{ group.accounts.length !== 1 ? 's' : '' }}
-                                </div>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead class="w-24">Código</TableHead>
-                                        <TableHead>Nombre de la Cuenta</TableHead>
-                                        <TableHead class="text-right">Saldo Deudor</TableHead>
-                                        <TableHead class="text-right">Saldo Acreedor</TableHead>
-                                        <TableHead class="text-right">Saldo</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    <TableRow v-for="account in group.accounts" :key="account.code">
+            <!-- Traditional Trial Balance Format -->
+            <Card>
+                <CardHeader>
+                    <CardTitle class="text-xl flex items-center gap-2">
+                        <Scale class="h-5 w-5" />
+                        Balance de Prueba Detallado
+                    </CardTitle>
+                    <p class="text-sm text-muted-foreground">
+                        Contabilidad por Causación (Base Devengado) - Al {{ formatDate(report.as_of_date) }}
+                    </p>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow class="border-b-2">
+                                <TableHead class="w-20">Código</TableHead>
+                                <TableHead class="min-w-[300px]">Nombre de la Cuenta</TableHead>
+                                <TableHead class="text-right w-32">Débito (COP)</TableHead>
+                                <TableHead class="text-right w-32">Crédito (COP)</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <!-- Assets Section -->
+                            <TableRow class="bg-blue-50">
+                                <TableCell colspan="4" class="font-bold text-blue-700 text-lg py-3">
+                                    ACTIVOS
+                                </TableCell>
+                            </TableRow>
+                            <template v-for="account in groupedAccounts.asset.accounts" :key="account.code">
+                                <TableRow class="hover:bg-muted/50">
+                                    <TableCell class="font-mono text-sm">{{ account.code }}</TableCell>
+                                    <TableCell class="font-medium">{{ account.name }}</TableCell>
+                                    <TableCell class="text-right font-mono">
+                                        {{ account.debit_balance > 0 ? formatCurrency(account.debit_balance) : '-' }}
+                                    </TableCell>
+                                    <TableCell class="text-right font-mono">
+                                        {{ account.credit_balance > 0 ? formatCurrency(account.credit_balance) : '-' }}
+                                    </TableCell>
+                                </TableRow>
+                            </template>
+                            <TableRow class="border-t bg-blue-100">
+                                <TableCell colspan="2" class="font-bold text-blue-700">
+                                    Subtotal Activos
+                                </TableCell>
+                                <TableCell class="text-right font-bold font-mono text-blue-700">
+                                    {{ formatCurrency(accountTypeTotals.asset?.debits || 0) }}
+                                </TableCell>
+                                <TableCell class="text-right font-bold font-mono text-blue-700">
+                                    {{ formatCurrency(accountTypeTotals.asset?.credits || 0) }}
+                                </TableCell>
+                            </TableRow>
+
+                            <!-- Liabilities Section -->
+                            <template v-if="groupedAccounts.liability.accounts.length > 0">
+                                <TableRow class="bg-red-50">
+                                    <TableCell colspan="4" class="font-bold text-red-700 text-lg py-3">
+                                        PASIVOS
+                                    </TableCell>
+                                </TableRow>
+                                <template v-for="account in groupedAccounts.liability.accounts" :key="account.code">
+                                    <TableRow class="hover:bg-muted/50">
                                         <TableCell class="font-mono text-sm">{{ account.code }}</TableCell>
                                         <TableCell class="font-medium">{{ account.name }}</TableCell>
                                         <TableCell class="text-right font-mono">
@@ -293,31 +335,120 @@ const visibleGroups = computed(() => {
                                         <TableCell class="text-right font-mono">
                                             {{ account.credit_balance > 0 ? formatCurrency(account.credit_balance) : '-' }}
                                         </TableCell>
-                                        <TableCell class="text-right font-mono font-medium">
-                                            {{ formatCurrency(Math.abs(account.balance)) }}
+                                    </TableRow>
+                                </template>
+                                <TableRow class="border-t bg-red-100">
+                                    <TableCell colspan="2" class="font-bold text-red-700">
+                                        Subtotal Pasivos
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-red-700">
+                                        {{ formatCurrency(accountTypeTotals.liability?.debits || 0) }}
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-red-700">
+                                        {{ formatCurrency(accountTypeTotals.liability?.credits || 0) }}
+                                    </TableCell>
+                                </TableRow>
+                            </template>
+
+                            <!-- Equity Section -->
+                            <template v-if="groupedAccounts.equity.accounts.length > 0">
+                                <TableRow class="bg-purple-50">
+                                    <TableCell colspan="4" class="font-bold text-purple-700 text-lg py-3">
+                                        PATRIMONIO
+                                    </TableCell>
+                                </TableRow>
+                                <template v-for="account in groupedAccounts.equity.accounts" :key="account.code">
+                                    <TableRow class="hover:bg-muted/50">
+                                        <TableCell class="font-mono text-sm">{{ account.code }}</TableCell>
+                                        <TableCell class="font-medium">{{ account.name }}</TableCell>
+                                        <TableCell class="text-right font-mono">
+                                            {{ account.debit_balance > 0 ? formatCurrency(account.debit_balance) : '-' }}
+                                        </TableCell>
+                                        <TableCell class="text-right font-mono">
+                                            {{ account.credit_balance > 0 ? formatCurrency(account.credit_balance) : '-' }}
                                         </TableCell>
                                     </TableRow>
-                                    <!-- Subtotal for this account type -->
-                                    <TableRow class="border-t-2 bg-muted/50">
-                                        <TableCell colspan="2" class="font-bold" :class="group.color">
-                                            Subtotal {{ group.name }}
+                                </template>
+                                <TableRow class="border-t bg-purple-100">
+                                    <TableCell colspan="2" class="font-bold text-purple-700">
+                                        Subtotal Patrimonio
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-purple-700">
+                                        {{ formatCurrency(accountTypeTotals.equity?.debits || 0) }}
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-purple-700">
+                                        {{ formatCurrency(accountTypeTotals.equity?.credits || 0) }}
+                                    </TableCell>
+                                </TableRow>
+                            </template>
+
+                            <!-- Income Section -->
+                            <template v-if="groupedAccounts.income.accounts.length > 0">
+                                <TableRow class="bg-green-50">
+                                    <TableCell colspan="4" class="font-bold text-green-700 text-lg py-3">
+                                        INGRESOS
+                                    </TableCell>
+                                </TableRow>
+                                <template v-for="account in groupedAccounts.income.accounts" :key="account.code">
+                                    <TableRow class="hover:bg-muted/50">
+                                        <TableCell class="font-mono text-sm">{{ account.code }}</TableCell>
+                                        <TableCell class="font-medium">{{ account.name }}</TableCell>
+                                        <TableCell class="text-right font-mono">
+                                            {{ account.debit_balance > 0 ? formatCurrency(account.debit_balance) : '-' }}
                                         </TableCell>
-                                        <TableCell class="text-right font-bold font-mono" :class="group.color">
-                                            {{ formatCurrency(accountTypeTotals[type].debits) }}
-                                        </TableCell>
-                                        <TableCell class="text-right font-bold font-mono" :class="group.color">
-                                            {{ formatCurrency(accountTypeTotals[type].credits) }}
-                                        </TableCell>
-                                        <TableCell class="text-right font-bold font-mono" :class="group.color">
-                                            {{ formatCurrency(accountTypeTotals[type].debits + accountTypeTotals[type].credits) }}
+                                        <TableCell class="text-right font-mono">
+                                            {{ account.credit_balance > 0 ? formatCurrency(account.credit_balance) : '-' }}
                                         </TableCell>
                                     </TableRow>
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+                                </template>
+                                <TableRow class="border-t bg-green-100">
+                                    <TableCell colspan="2" class="font-bold text-green-700">
+                                        Subtotal Ingresos
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-green-700">
+                                        {{ formatCurrency(accountTypeTotals.income?.debits || 0) }}
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-green-700">
+                                        {{ formatCurrency(accountTypeTotals.income?.credits || 0) }}
+                                    </TableCell>
+                                </TableRow>
+                            </template>
+
+                            <!-- Expenses Section -->
+                            <template v-if="groupedAccounts.expense.accounts.length > 0">
+                                <TableRow class="bg-orange-50">
+                                    <TableCell colspan="4" class="font-bold text-orange-700 text-lg py-3">
+                                        GASTOS
+                                    </TableCell>
+                                </TableRow>
+                                <template v-for="account in groupedAccounts.expense.accounts" :key="account.code">
+                                    <TableRow class="hover:bg-muted/50">
+                                        <TableCell class="font-mono text-sm">{{ account.code }}</TableCell>
+                                        <TableCell class="font-medium">{{ account.name }}</TableCell>
+                                        <TableCell class="text-right font-mono">
+                                            {{ account.debit_balance > 0 ? formatCurrency(account.debit_balance) : '-' }}
+                                        </TableCell>
+                                        <TableCell class="text-right font-mono">
+                                            {{ account.credit_balance > 0 ? formatCurrency(account.credit_balance) : '-' }}
+                                        </TableCell>
+                                    </TableRow>
+                                </template>
+                                <TableRow class="border-t bg-orange-100">
+                                    <TableCell colspan="2" class="font-bold text-orange-700">
+                                        Subtotal Gastos
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-orange-700">
+                                        {{ formatCurrency(accountTypeTotals.expense?.debits || 0) }}
+                                    </TableCell>
+                                    <TableCell class="text-right font-bold font-mono text-orange-700">
+                                        {{ formatCurrency(accountTypeTotals.expense?.credits || 0) }}
+                                    </TableCell>
+                                </TableRow>
+                            </template>
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
             <!-- Grand Totals -->
             <Card class="border-2" :class="report.is_balanced ? 'border-green-300' : 'border-red-300'">
@@ -326,8 +457,16 @@ const visibleGroups = computed(() => {
                 </CardHeader>
                 <CardContent>
                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead></TableHead>
+                                <TableHead class="text-right">Saldo Deudor</TableHead>
+                                <TableHead class="text-right">Saldo Acreedor</TableHead>
+                                <TableHead class="text-right">Diferencia</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
-                            <TableRow class="text-lg font-bold">
+                            <TableRow class="text-lg font-bold border-t-2">
                                 <TableCell>TOTALES</TableCell>
                                 <TableCell class="text-right font-mono text-blue-600">
                                     {{ formatCurrency(report.total_debits) }}
@@ -335,14 +474,8 @@ const visibleGroups = computed(() => {
                                 <TableCell class="text-right font-mono text-green-600">
                                     {{ formatCurrency(report.total_credits) }}
                                 </TableCell>
-                                <TableCell class="text-right font-mono">
-                                    {{ formatCurrency(report.total_debits + report.total_credits) }}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow v-if="!report.is_balanced" class="text-red-600 font-semibold">
-                                <TableCell>DIFERENCIA</TableCell>
-                                <TableCell colspan="3" class="text-right font-mono">
-                                    {{ formatCurrency(difference) }}
+                                <TableCell class="text-right font-mono" :class="report.is_balanced ? 'text-green-600' : 'text-red-600'">
+                                    {{ formatCurrency(Math.abs(report.total_debits - report.total_credits)) }}
                                 </TableCell>
                             </TableRow>
                         </TableBody>

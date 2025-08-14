@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\AccountingSettingsController;
+use App\Http\Controllers\Settings\EmailSettingsController;
 use App\Http\Controllers\Settings\ExpenseSettingsController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\PaymentConceptMappingController;
@@ -30,6 +31,14 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/security', [SecuritySettingsController::class, 'update'])->name('security.update');
     Route::post('settings/security/apply-level', [SecuritySettingsController::class, 'applySecurityLevel'])->name('security.apply-level');
     Route::post('settings/security/reset-defaults', [SecuritySettingsController::class, 'resetToDefaults'])->name('security.reset-defaults');
+
+    // Email Settings Routes
+    Route::get('settings/email', [EmailSettingsController::class, 'index'])->name('settings.email.index')->middleware('can:edit_conjunto_config');
+    Route::post('settings/email', [EmailSettingsController::class, 'update'])->name('settings.email.update')->middleware('can:edit_conjunto_config');
+    Route::post('settings/email/test-connection', [EmailSettingsController::class, 'testConnection'])->name('settings.email.test-connection')->middleware('can:edit_conjunto_config');
+    Route::post('settings/email/test-email', [EmailSettingsController::class, 'testEmail'])->name('settings.email.test-email')->middleware('can:edit_conjunto_config');
+    Route::post('settings/email/apply-preset', [EmailSettingsController::class, 'applyPreset'])->name('settings.email.apply-preset')->middleware('can:edit_conjunto_config');
+    Route::post('settings/email/reset-defaults', [EmailSettingsController::class, 'resetToDefaults'])->name('settings.email.reset-defaults')->middleware('can:edit_conjunto_config');
 
     // Payment Settings Routes
     Route::get('settings/payments', [PaymentSettingsController::class, 'index'])->name('settings.payments.index');

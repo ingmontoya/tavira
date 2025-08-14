@@ -168,6 +168,7 @@ class GenerateMonthlyInvoices extends Command
                         $this->warn("Apartamento {$apartment->number} no tiene cuota de administración configurada.");
                         $skippedCount++;
                         $progressBar->advance();
+
                         continue;
                     }
 
@@ -204,7 +205,7 @@ class GenerateMonthlyInvoices extends Command
 
                 $progressBar->advance();
             }
-            
+
             // Clean up memory after each chunk
             gc_collect_cycles();
         });

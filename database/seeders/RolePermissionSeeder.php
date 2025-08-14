@@ -88,6 +88,16 @@ class RolePermissionSeeder extends Seeder
             'deliver_correspondence',
             'manage_correspondence_attachments',
 
+            // Email Management
+            'view_admin_email',
+            'create_admin_email',
+            'edit_admin_email',
+            'delete_admin_email',
+            'view_council_email',
+            'create_council_email',
+            'edit_council_email',
+            'delete_council_email',
+
             // Security & Access
             'view_access_logs',
             'manage_visitors',
@@ -132,6 +142,7 @@ class RolePermissionSeeder extends Seeder
             'view_budgets', 'create_budgets', 'edit_budgets', 'delete_budgets', 'activate_budgets', 'close_budgets',
             'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',
             'view_correspondence', 'create_correspondence', 'edit_correspondence', 'delete_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
+            'view_admin_email', 'create_admin_email', 'edit_admin_email', 'delete_admin_email', // Admin solo puede ver su email
             'view_access_logs', 'manage_visitors', 'view_security_reports',
         ]);
 
@@ -144,6 +155,8 @@ class RolePermissionSeeder extends Seeder
             'view_accounting', 'create_accounting', 'edit_accounting', 'manage_accounting',
             'view_budgets', 'approve_budgets', // Council can view and approve budgets only
             'view_announcements', 'create_announcements',
+            'view_correspondence', // Mantienen correspondencia física
+            'view_council_email', 'create_council_email', 'edit_council_email', 'delete_council_email', // Concejo solo puede ver su email
             'view_access_logs',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
             'review_provider_proposals',

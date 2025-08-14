@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CorrespondenceController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\ResidentAnnouncementController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,31 @@ Route::prefix('resident')->name('resident.')->group(function () {
         ->name('announcements.show')->middleware(['rate.limit:default']);
     Route::post('announcements/{announcement}/confirm', [ResidentAnnouncementController::class, 'confirm'])
         ->name('announcements.confirm')->middleware(['rate.limit:default']);
+});
+
+// Email Management
+Route::prefix('email')->name('email.')->group(function () {
+    // Admin Email Routes
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', [EmailController::class, 'adminIndex'])->name('index')->middleware(['rate.limit:default', 'can:view_admin_email']);
+        Route::get('/compose', [EmailController::class, 'adminCompose'])->name('compose')->middleware(['rate.limit:default', 'can:create_admin_email']);
+        Route::post('/send', [EmailController::class, 'send'])->name('send')->middleware(['rate.limit:default', 'can:create_admin_email']);
+        Route::get('/{id}', [EmailController::class, 'adminShow'])->name('show')->middleware(['rate.limit:default', 'can:view_admin_email']);
+        Route::delete('/{id}', [EmailController::class, 'destroy'])->name('destroy')->middleware(['rate.limit:default', 'can:delete_admin_email']);
+        Route::post('/{id}/read', [EmailController::class, 'markAsRead'])->name('read')->middleware(['rate.limit:default', 'can:edit_admin_email']);
+        Route::post('/{id}/unread', [EmailController::class, 'markAsUnread'])->name('unread')->middleware(['rate.limit:default', 'can:edit_admin_email']);
+    });
+    
+    // Concejo Email Routes
+    Route::prefix('concejo')->name('concejo.')->group(function () {
+        Route::get('/', [EmailController::class, 'concejoIndex'])->name('index')->middleware(['rate.limit:default', 'can:view_council_email']);
+        Route::get('/compose', [EmailController::class, 'concejoCompose'])->name('compose')->middleware(['rate.limit:default', 'can:create_council_email']);
+        Route::post('/send', [EmailController::class, 'send'])->name('send')->middleware(['rate.limit:default', 'can:create_council_email']);
+        Route::get('/{id}', [EmailController::class, 'concejoShow'])->name('show')->middleware(['rate.limit:default', 'can:view_council_email']);
+        Route::delete('/{id}', [EmailController::class, 'destroy'])->name('destroy')->middleware(['rate.limit:default', 'can:delete_council_email']);
+        Route::post('/{id}/read', [EmailController::class, 'markAsRead'])->name('read')->middleware(['rate.limit:default', 'can:edit_council_email']);
+        Route::post('/{id}/unread', [EmailController::class, 'markAsUnread'])->name('unread')->middleware(['rate.limit:default', 'can:edit_council_email']);
+    });
 });
 
 // Invitations Management
