@@ -17,6 +17,8 @@ class MockDataSeeder extends Seeder
 
         return;
 
+        /* Disabled code - uncomment only in development with Faker available
+        
         // Crear tipos de apartamento para el conjunto único
         $apartmentTypes = [
             [
@@ -201,5 +203,7 @@ class MockDataSeeder extends Seeder
                 ]
             );
         }
+        
+        */ // End disabled code
     }
 }
