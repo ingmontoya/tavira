@@ -9,6 +9,7 @@ use App\Http\Controllers\Settings\PaymentSettingsController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecuritySettingsController;
 use App\Http\Controllers\Settings\UserPermissionsController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -65,4 +66,13 @@ Route::middleware('auth')->group(function () {
     // Accounting Settings Routes
     Route::get('settings/accounting', [AccountingSettingsController::class, 'index'])->name('settings.accounting.index')->middleware('can:manage_accounting');
     Route::post('settings/accounting/initialize-accounts', [AccountingSettingsController::class, 'initializeAccounts'])->name('settings.accounting.initialize-accounts')->middleware('can:manage_accounting');
+
+    // User Management Routes in Settings
+    Route::get('settings/users', [UserController::class, 'index'])->name('settings.users.index')->middleware('can:view_users');
+    Route::get('settings/users/create', [UserController::class, 'create'])->name('settings.users.create')->middleware('can:create_users');
+    Route::post('settings/users', [UserController::class, 'store'])->name('settings.users.store')->middleware('can:create_users');
+    Route::get('settings/users/{user}', [UserController::class, 'show'])->name('settings.users.show')->middleware('can:view_users');
+    Route::get('settings/users/{user}/edit', [UserController::class, 'edit'])->name('settings.users.edit')->middleware('can:edit_users');
+    Route::put('settings/users/{user}', [UserController::class, 'update'])->name('settings.users.update')->middleware('can:edit_users');
+    Route::delete('settings/users/{user}', [UserController::class, 'destroy'])->name('settings.users.destroy')->middleware('can:delete_users');
 });

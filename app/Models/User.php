@@ -23,6 +23,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'phone',
+        'position',
+        'department',
+        'is_active',
+        'avatar',
     ];
 
     /**
@@ -45,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -78,5 +84,39 @@ class User extends Authenticatable implements MustVerifyEmail
     public function apartment()
     {
         return $this->hasOneThrough(Apartment::class, Resident::class, 'email', 'id', 'email', 'apartment_id');
+    }
+
+    /**
+     * Scope to get only active users.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to get only administrative users.
+     */
+    public function scopeAdministrative($query)
+    {
+        return $query->whereHas('roles', function ($query) {
+            $query->whereIn('name', ['superadmin', 'admin_conjunto', 'consejo']);
+        });
+    }
+
+    /**
+     * Check if user is an administrative user.
+     */
+    public function isAdministrative(): bool
+    {
+        return $this->hasAnyRole(['superadmin', 'admin_conjunto', 'consejo']);
+    }
+
+    /**
+     * Get full name with position.
+     */
+    public function getFullNameWithPositionAttribute(): string
+    {
+        return $this->position ? "{$this->name} - {$this->position}" : $this->name;
     }
 }

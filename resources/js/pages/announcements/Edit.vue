@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { CalendarIcon, Save, Send } from 'lucide-vue-next';
@@ -23,10 +24,29 @@ interface Announcement {
     published_at: string | null;
     expires_at: string | null;
     attachments: any[];
+    target_scope: string;
+    target_towers: string[] | null;
+    target_apartment_type_ids: number[] | null;
+    target_apartment_ids: number[] | null;
+}
+
+interface ApartmentType {
+    id: number;
+    name: string;
+}
+
+interface Apartment {
+    id: number;
+    label: string;
+    tower: string;
+    apartment_type_id: number;
 }
 
 interface Props {
     announcement: Announcement;
+    towers: string[];
+    apartmentTypes: ApartmentType[];
+    apartments: Apartment[];
 }
 
 const props = defineProps<Props>();
@@ -42,15 +62,30 @@ const form = useForm({
     published_at: props.announcement.published_at ? props.announcement.published_at.slice(0, 16) : '',
     expires_at: props.announcement.expires_at ? props.announcement.expires_at.slice(0, 16) : '',
     attachments: props.announcement.attachments || [],
+    target_scope: props.announcement.target_scope || 'general',
+    target_towers: props.announcement.target_towers || [],
+    target_apartment_type_ids: props.announcement.target_apartment_type_ids || [],
+    target_apartment_ids: props.announcement.target_apartment_ids || [],
 });
 
 const submit = () => {
     // Ensure boolean values are properly converted
-    form.transform((data) => ({
-        ...data,
-        is_pinned: Boolean(data.is_pinned),
-        requires_confirmation: Boolean(data.requires_confirmation),
-    })).put(route('announcements.update', props.announcement.id));
+    const transformedData = {
+        ...form.data(),
+        is_pinned: Boolean(form.is_pinned),
+        requires_confirmation: Boolean(form.requires_confirmation),
+    };
+
+    // Only include the targeting fields that are relevant for the selected scope
+    if (form.target_scope === 'tower') {
+        transformedData.target_towers = form.target_towers;
+    } else if (form.target_scope === 'apartment_type') {
+        transformedData.target_apartment_type_ids = form.target_apartment_type_ids;
+    } else if (form.target_scope === 'apartment') {
+        transformedData.target_apartment_ids = form.target_apartment_ids;
+    }
+
+    form.transform(() => transformedData).put(route('announcements.update', props.announcement.id));
 };
 
 const publishAndSend = () => {
@@ -58,12 +93,26 @@ const publishAndSend = () => {
     if (!form.published_at) {
         form.published_at = new Date().toISOString().slice(0, 16);
     }
+
     // Ensure boolean values are properly converted
-    form.transform((data) => ({
-        ...data,
-        is_pinned: Boolean(data.is_pinned),
-        requires_confirmation: Boolean(data.requires_confirmation),
-    })).put(route('announcements.update', props.announcement.id));
+    const transformedData = {
+        ...form.data(),
+        is_pinned: Boolean(form.is_pinned),
+        requires_confirmation: Boolean(form.requires_confirmation),
+        status: 'published',
+        published_at: form.published_at,
+    };
+
+    // Only include the targeting fields that are relevant for the selected scope
+    if (form.target_scope === 'tower') {
+        transformedData.target_towers = form.target_towers;
+    } else if (form.target_scope === 'apartment_type') {
+        transformedData.target_apartment_type_ids = form.target_apartment_type_ids;
+    } else if (form.target_scope === 'apartment') {
+        transformedData.target_apartment_ids = form.target_apartment_ids;
+    }
+
+    form.transform(() => transformedData).put(route('announcements.update', props.announcement.id));
 };
 
 const breadcrumbs = [
@@ -200,6 +249,114 @@ const breadcrumbs = [
                             />
                             <p v-if="form.errors.content" class="text-sm text-red-600">
                                 {{ form.errors.content }}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Alcance del Anuncio</CardTitle>
+                        <CardDescription>
+                            Define a quién va dirigido este anuncio
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                        <div class="space-y-2">
+                            <Label for="target_scope">Tipo de Alcance *</Label>
+                            <Select v-model="form.target_scope">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona el alcance" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="general">General (Todo el conjunto)</SelectItem>
+                                    <SelectItem value="tower">Por Torre(s)</SelectItem>
+                                    <SelectItem value="apartment_type">Por Tipo de Apartamento</SelectItem>
+                                    <SelectItem value="apartment">Apartamento Específico</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p v-if="form.errors.target_scope" class="text-sm text-red-600">
+                                {{ form.errors.target_scope }}
+                            </p>
+                        </div>
+
+                        <!-- Tower Selection -->
+                        <div v-if="form.target_scope === 'tower'" class="space-y-2">
+                            <Label>Torres *</Label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div v-for="tower in props.towers" :key="tower" class="flex items-center space-x-2">
+                                    <Checkbox 
+                                        :id="`tower-${tower}`"
+                                        :checked="form.target_towers.includes(tower)"
+                                        @update:checked="(checked) => {
+                                            if (checked) {
+                                                if (!form.target_towers.includes(tower)) {
+                                                    form.target_towers = [...form.target_towers, tower];
+                                                }
+                                            } else {
+                                                form.target_towers = form.target_towers.filter(t => t !== tower);
+                                            }
+                                        }"
+                                    />
+                                    <Label :for="`tower-${tower}`" class="text-sm">Torre {{ tower }}</Label>
+                                </div>
+                            </div>
+                            <p v-if="form.errors.target_towers" class="text-sm text-red-600">
+                                {{ form.errors.target_towers }}
+                            </p>
+                        </div>
+
+                        <!-- Apartment Type Selection -->
+                        <div v-if="form.target_scope === 'apartment_type'" class="space-y-2">
+                            <Label>Tipos de Apartamento *</Label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div v-for="type in props.apartmentTypes" :key="type.id" class="flex items-center space-x-2">
+                                    <Checkbox 
+                                        :id="`type-${type.id}`"
+                                        :checked="form.target_apartment_type_ids.includes(type.id)"
+                                        @update:checked="(checked) => {
+                                            if (checked) {
+                                                if (!form.target_apartment_type_ids.includes(type.id)) {
+                                                    form.target_apartment_type_ids = [...form.target_apartment_type_ids, type.id];
+                                                }
+                                            } else {
+                                                form.target_apartment_type_ids = form.target_apartment_type_ids.filter(t => t !== type.id);
+                                            }
+                                        }"
+                                    />
+                                    <Label :for="`type-${type.id}`" class="text-sm">{{ type.name }}</Label>
+                                </div>
+                            </div>
+                            <p v-if="form.errors.target_apartment_type_ids" class="text-sm text-red-600">
+                                {{ form.errors.target_apartment_type_ids }}
+                            </p>
+                        </div>
+
+                        <!-- Apartment Selection -->
+                        <div v-if="form.target_scope === 'apartment'" class="space-y-2">
+                            <Label>Apartamentos *</Label>
+                            <div class="max-h-40 overflow-y-auto border rounded p-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                                    <div v-for="apartment in props.apartments" :key="apartment.id" class="flex items-center space-x-2">
+                                        <Checkbox 
+                                            :id="`apt-${apartment.id}`"
+                                            :checked="form.target_apartment_ids.includes(apartment.id)"
+                                            @update:checked="(checked) => {
+                                                if (checked) {
+                                                    if (!form.target_apartment_ids.includes(apartment.id)) {
+                                                        form.target_apartment_ids = [...form.target_apartment_ids, apartment.id];
+                                                    }
+                                                } else {
+                                                    form.target_apartment_ids = form.target_apartment_ids.filter(a => a !== apartment.id);
+                                                }
+                                            }"
+                                        />
+                                        <Label :for="`apt-${apartment.id}`" class="text-sm">{{ apartment.label }}</Label>
+                                    </div>
+                                </div>
+                            </div>
+                            <p v-if="form.errors.target_apartment_ids" class="text-sm text-red-600">
+                                {{ form.errors.target_apartment_ids }}
                             </p>
                         </div>
                     </CardContent>

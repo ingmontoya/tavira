@@ -28,6 +28,9 @@ interface Announcement {
     created_by_name?: string;
     priority_color: string;
     type_color: string;
+    target_scope: string;
+    target_scope_display?: string;
+    target_details?: string;
 }
 
 interface Props {
@@ -285,6 +288,7 @@ const breadcrumbs = [
                             <TableHead>Título</TableHead>
                             <TableHead>Prioridad</TableHead>
                             <TableHead>Tipo</TableHead>
+                            <TableHead>Alcance</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead>Publicado</TableHead>
                             <TableHead>Creado por</TableHead>
@@ -320,6 +324,14 @@ const breadcrumbs = [
                                 </Badge>
                             </TableCell>
                             <TableCell>
+                                <div class="text-sm">
+                                    <div class="font-medium">{{ announcement.target_scope_display || 'General' }}</div>
+                                    <div v-if="announcement.target_details" class="text-gray-500 text-xs">
+                                        {{ announcement.target_details }}
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell>
                                 <Badge :variant="announcement.status === 'published' ? 'default' : announcement.status === 'draft' ? 'secondary' : 'outline'">
                                     {{ statusLabels[announcement.status] }}
                                 </Badge>
@@ -335,7 +347,7 @@ const breadcrumbs = [
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="announcements.data.length === 0">
-                            <TableCell :colspan="7" class="text-center py-8 text-gray-500">
+                            <TableCell :colspan="8" class="text-center py-8 text-gray-500">
                                 No se encontraron anuncios
                             </TableCell>
                         </TableRow>

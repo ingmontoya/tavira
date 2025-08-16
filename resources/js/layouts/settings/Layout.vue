@@ -47,6 +47,11 @@ const sidebarNavItems = computed((): NavItem[] =>
             visible: hasPermission('manage_expenses'),
         },
         {
+            title: 'Usuarios',
+            href: '/settings/users',
+            visible: hasPermission('view_users'),
+        },
+        {
             title: 'Permisos',
             href: '/settings/permissions',
             visible: hasPermission('edit_users'),

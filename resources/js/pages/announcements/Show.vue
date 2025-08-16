@@ -16,7 +16,9 @@ import {
     Copy,
     Users,
     AlertTriangle,
-    FileText
+    FileText,
+    Building,
+    Home
 } from 'lucide-vue-next';
 
 interface Announcement {
@@ -36,6 +38,9 @@ interface Announcement {
     updated_by: any;
     priority_color: string;
     type_color: string;
+    target_scope: string;
+    target_scope_display?: string;
+    target_details?: string;
 }
 
 interface ConfirmationStats {
@@ -171,13 +176,21 @@ const breadcrumbs = [
 
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium">Tipo</CardTitle>
+                        <CardTitle class="text-sm font-medium">Alcance</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Badge :variant="announcement.type_color" class="text-sm">
-                            <FileText class="mr-1 h-3 w-3" />
-                            {{ typeLabels[announcement.type] }}
-                        </Badge>
+                        <div class="space-y-1">
+                            <div class="flex items-center text-sm font-medium">
+                                <component 
+                                    :is="announcement.target_scope === 'general' ? Users : announcement.target_scope === 'tower' ? Building : Home" 
+                                    class="mr-1 h-3 w-3" 
+                                />
+                                {{ announcement.target_scope_display || 'General' }}
+                            </div>
+                            <div v-if="announcement.target_details" class="text-xs text-gray-600">
+                                {{ announcement.target_details }}
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -190,6 +203,17 @@ const breadcrumbs = [
                             <Clock class="mr-1 h-3 w-3" />
                             {{ formatDate(announcement.expires_at) }}
                         </div>
+                    </CardContent>
+                </Card>
+                <Card v-else>
+                    <CardHeader class="pb-3">
+                        <CardTitle class="text-sm font-medium">Tipo</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Badge :variant="announcement.type_color" class="text-sm">
+                            <FileText class="mr-1 h-3 w-3" />
+                            {{ typeLabels[announcement.type] }}
+                        </Badge>
                     </CardContent>
                 </Card>
             </div>

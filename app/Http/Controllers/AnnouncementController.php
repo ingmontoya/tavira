@@ -51,6 +51,13 @@ class AnnouncementController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // Add computed attributes to each announcement
+        $announcements->through(function ($announcement) {
+            $announcement->target_scope_display = $announcement->target_scope_display;
+            $announcement->target_details = $announcement->target_details;
+            return $announcement;
+        });
+
         return Inertia::render('announcements/Index', [
             'announcements' => $announcements,
             'filters' => $request->only(['search', 'status', 'priority', 'type', 'pinned']),
@@ -65,7 +72,28 @@ class AnnouncementController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('announcements/Create');
+        // Get available towers and apartment types for targeting
+        $towers = \App\Models\Apartment::distinct()->pluck('tower')->filter()->sort()->values();
+        $apartmentTypes = \App\Models\ApartmentType::select('id', 'name')->get();
+        $apartments = \App\Models\Apartment::with('apartmentType')
+            ->select('id', 'number', 'tower', 'apartment_type_id')
+            ->orderBy('tower')
+            ->orderBy('number')
+            ->get()
+            ->map(function ($apt) {
+                return [
+                    'id' => $apt->id,
+                    'label' => $apt->full_address,
+                    'tower' => $apt->tower,
+                    'apartment_type_id' => $apt->apartment_type_id,
+                ];
+            });
+
+        return Inertia::render('announcements/Create', [
+            'towers' => $towers,
+            'apartmentTypes' => $apartmentTypes,
+            'apartments' => $apartments,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -85,7 +113,18 @@ class AnnouncementController extends Controller
             'attachments.*.name' => ['required', 'string'],
             'attachments.*.url' => ['required', 'string'],
             'attachments.*.size' => ['nullable', 'integer'],
+            'target_scope' => ['required', 'in:general,tower,apartment_type,apartment'],
+            'target_towers' => ['nullable', 'array'],
+            'target_towers.*' => ['string'],
+            'target_apartment_type_ids' => ['nullable', 'array'],
+            'target_apartment_type_ids.*' => ['integer', 'exists:apartment_types,id'],
+            'target_apartment_ids' => ['nullable', 'array'],
+            'target_apartment_ids.*' => ['integer', 'exists:apartments,id'],
         ]);
+
+
+        // Conditional validation based on target_scope
+        $this->validateTargetingFields($validated);
 
         $validated['created_by'] = Auth::id();
 
@@ -127,6 +166,10 @@ class AnnouncementController extends Controller
             ];
         }
 
+        // Add computed attributes for target scope display
+        $announcement->target_scope_display = $announcement->target_scope_display;
+        $announcement->target_details = $announcement->target_details;
+
         return Inertia::render('announcements/Show', [
             'announcement' => $announcement,
             'confirmationStats' => $confirmationStats,
@@ -135,8 +178,28 @@ class AnnouncementController extends Controller
 
     public function edit(Announcement $announcement): Response
     {
+        // Get available towers and apartment types for targeting
+        $towers = \App\Models\Apartment::distinct()->pluck('tower')->filter()->sort()->values();
+        $apartmentTypes = \App\Models\ApartmentType::select('id', 'name')->get();
+        $apartments = \App\Models\Apartment::with('apartmentType')
+            ->select('id', 'number', 'tower', 'apartment_type_id')
+            ->orderBy('tower')
+            ->orderBy('number')
+            ->get()
+            ->map(function ($apt) {
+                return [
+                    'id' => $apt->id,
+                    'label' => $apt->full_address,
+                    'tower' => $apt->tower,
+                    'apartment_type_id' => $apt->apartment_type_id,
+                ];
+            });
+
         return Inertia::render('announcements/Edit', [
             'announcement' => $announcement,
+            'towers' => $towers,
+            'apartmentTypes' => $apartmentTypes,
+            'apartments' => $apartments,
         ]);
     }
 
@@ -157,7 +220,17 @@ class AnnouncementController extends Controller
             'attachments.*.name' => ['required', 'string'],
             'attachments.*.url' => ['required', 'string'],
             'attachments.*.size' => ['nullable', 'integer'],
+            'target_scope' => ['required', 'in:general,tower,apartment_type,apartment'],
+            'target_towers' => ['nullable', 'array'],
+            'target_towers.*' => ['string'],
+            'target_apartment_type_ids' => ['nullable', 'array'],
+            'target_apartment_type_ids.*' => ['integer', 'exists:apartment_types,id'],
+            'target_apartment_ids' => ['nullable', 'array'],
+            'target_apartment_ids.*' => ['integer', 'exists:apartments,id'],
         ]);
+
+        // Conditional validation based on target_scope
+        $this->validateTargetingFields($validated);
 
         $validated['updated_by'] = Auth::id();
 
@@ -208,5 +281,39 @@ class AnnouncementController extends Controller
 
         return redirect()->route('announcements.edit', $newAnnouncement)
             ->with('success', 'Anuncio duplicado exitosamente.');
+    }
+
+    private function validateTargetingFields(array $data): void
+    {
+        $targetScope = $data['target_scope'] ?? 'general';
+
+
+        $validator = validator($data, []);
+
+        switch ($targetScope) {
+            case 'tower':
+                $towers = $data['target_towers'] ?? [];
+                if (!is_array($towers) || count($towers) === 0) {
+                    $validator->errors()->add('target_towers', 'Debe seleccionar al menos una torre.');
+                    throw new \Illuminate\Validation\ValidationException($validator);
+                }
+                break;
+
+            case 'apartment_type':
+                $types = $data['target_apartment_type_ids'] ?? [];
+                if (!is_array($types) || count($types) === 0) {
+                    $validator->errors()->add('target_apartment_type_ids', 'Debe seleccionar al menos un tipo de apartamento.');
+                    throw new \Illuminate\Validation\ValidationException($validator);
+                }
+                break;
+
+            case 'apartment':
+                $apartments = $data['target_apartment_ids'] ?? [];
+                if (!is_array($apartments) || count($apartments) === 0) {
+                    $validator->errors()->add('target_apartment_ids', 'Debe seleccionar al menos un apartamento.');
+                    throw new \Illuminate\Validation\ValidationException($validator);
+                }
+                break;
+        }
     }
 }

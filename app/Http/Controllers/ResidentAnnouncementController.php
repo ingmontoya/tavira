@@ -14,8 +14,20 @@ class ResidentAnnouncementController extends Controller
     public function index(Request $request): Response
     {
         $userId = Auth::id();
-        $query = Announcement::with(['createdBy'])
-            ->forUser($userId);
+        $user = Auth::user();
+        
+        // Get user's apartment if they are a resident
+        $apartment = $user->apartment;
+        
+        $query = Announcement::with(['createdBy']);
+        
+        if ($apartment) {
+            // Filter announcements based on user's apartment
+            $query->forResident($apartment->id);
+        } else {
+            // If no apartment, show only general announcements
+            $query->active()->where('target_scope', 'general');
+        }
 
         if ($request->filled('search')) {
             $search = $request->get('search');
@@ -69,14 +81,22 @@ class ResidentAnnouncementController extends Controller
             return $announcement;
         });
 
+        // Calculate stats based on announcements visible to this resident
+        $statsQuery = Announcement::query();
+        if ($apartment) {
+            $statsQuery->forResident($apartment->id);
+        } else {
+            $statsQuery->active()->where('target_scope', 'general');
+        }
+
         $stats = [
-            'total' => Announcement::active()->count(),
-            'unread' => Announcement::active()
+            'total' => (clone $statsQuery)->count(),
+            'unread' => (clone $statsQuery)
                 ->whereDoesntHave('confirmations', function ($q) use ($userId) {
                     $q->where('user_id', $userId)->whereNotNull('read_at');
                 })
                 ->count(),
-            'requiring_confirmation' => Announcement::active()
+            'requiring_confirmation' => (clone $statsQuery)
                 ->where('requires_confirmation', true)
                 ->whereDoesntHave('confirmations', function ($q) use ($userId) {
                     $q->where('user_id', $userId)->whereNotNull('confirmed_at');
@@ -99,6 +119,15 @@ class ResidentAnnouncementController extends Controller
         }
 
         $userId = Auth::id();
+        $user = Auth::user();
+        $apartment = $user->apartment;
+
+        // Check if user can see this announcement
+        if ($apartment && !$announcement->isVisibleToApartment($apartment->id)) {
+            abort(404, 'Anuncio no disponible');
+        } elseif (!$apartment && $announcement->target_scope !== 'general') {
+            abort(404, 'Anuncio no disponible');
+        }
         $announcement->load(['createdBy']);
 
         // Mark as read
