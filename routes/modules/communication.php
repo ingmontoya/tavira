@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\ResidentAnnouncementController;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +79,13 @@ Route::prefix('email')->name('email.')->group(function () {
         Route::post('/{id}/unread', [EmailController::class, 'markAsUnread'])->name('unread')->middleware(['rate.limit:default', 'can:edit_council_email']);
     });
 });
+
+// Email Templates Management
+Route::resource('email-templates', EmailTemplateController::class)->middleware(['rate.limit:default', 'can:manage_email_templates']);
+Route::post('email-templates/{emailTemplate}/preview', [EmailTemplateController::class, 'preview'])->name('email-templates.preview')->middleware(['rate.limit:default', 'can:manage_email_templates']);
+Route::post('email-templates/{emailTemplate}/set-default', [EmailTemplateController::class, 'setDefault'])->name('email-templates.set-default')->middleware(['rate.limit:default', 'can:manage_email_templates']);
+Route::post('email-templates/{emailTemplate}/toggle-status', [EmailTemplateController::class, 'toggleStatus'])->name('email-templates.toggle-status')->middleware(['rate.limit:default', 'can:manage_email_templates']);
+Route::post('email-templates/{emailTemplate}/duplicate', [EmailTemplateController::class, 'duplicate'])->name('email-templates.duplicate')->middleware(['rate.limit:default', 'can:manage_email_templates']);
 
 // Invitations Management
 Route::resource('invitations', InvitationController::class)->except(['edit', 'update'])->middleware('can:manage_invitations');

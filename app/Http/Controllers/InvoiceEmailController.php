@@ -9,6 +9,7 @@ use App\Models\InvoiceEmailDelivery;
 use App\Services\InvoiceEmailService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -148,6 +149,31 @@ class InvoiceEmailController extends Controller
                 ];
             });
 
+        // Basic email templates (you can move this to a model/service later)
+        $emailTemplates = [
+            [
+                'id' => 1, 
+                'name' => 'Template Básico', 
+                'subject' => 'Factura de Administración - {{apartment_number}}',
+                'body' => 'Estimado propietario, adjuntamos su factura de administración.',
+                'is_active' => true
+            ],
+            [
+                'id' => 2, 
+                'name' => 'Template Recordatorio', 
+                'subject' => 'Recordatorio de Pago - {{apartment_number}}',
+                'body' => 'Le recordamos que tiene una factura pendiente de pago.',
+                'is_active' => true
+            ],
+            [
+                'id' => 3, 
+                'name' => 'Template Urgente', 
+                'subject' => 'URGENTE: Factura Vencida - {{apartment_number}}',
+                'body' => 'Su factura está vencida. Por favor proceda con el pago inmediatamente.',
+                'is_active' => true
+            ],
+        ];
+
         return Inertia::render('Payments/Invoices/Email/Create', [
             'apartments' => $apartments,
             'invoicePeriods' => $invoicePeriods,
@@ -155,6 +181,7 @@ class InvoiceEmailController extends Controller
                 'data' => $eligibleInvoices,
                 'total' => $eligibleInvoices->count(),
             ],
+            'emailTemplates' => $emailTemplates,
             'invoiceTypes' => [
                 ['value' => 'monthly', 'label' => 'Administración mensual'],
                 ['value' => 'individual', 'label' => 'Factura individual'],
@@ -170,7 +197,7 @@ class InvoiceEmailController extends Controller
     /**
      * Store a newly created email batch
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -206,10 +233,8 @@ class InvoiceEmailController extends Controller
                 $this->emailService->scheduleBatch($batch, $scheduledAt);
             }
 
-            return response()->json([
-                'message' => 'Lote de emails creado exitosamente',
-                'batch' => $batch->load('creator'),
-            ]);
+            return redirect()->route('invoices.email.show', $batch)
+                ->with('success', 'Lote de emails creado exitosamente');
 
         } catch (\Exception $e) {
             Log::error('Error creating email batch', [
@@ -218,9 +243,9 @@ class InvoiceEmailController extends Controller
                 'data' => $validated,
             ]);
 
-            return response()->json([
-                'message' => 'Error creando el lote de emails: '.$e->getMessage(),
-            ], 500);
+            return redirect()->back()
+                ->withErrors(['message' => 'Error creando el lote de emails: '.$e->getMessage()])
+                ->withInput();
         }
     }
 
@@ -358,34 +383,30 @@ class InvoiceEmailController extends Controller
     /**
      * Send a batch immediately
      */
-    public function send(InvoiceEmailBatch $batch): JsonResponse
+    public function send(InvoiceEmailBatch $batch): RedirectResponse
     {
         if (! in_array($batch->status, ['draft', 'scheduled'])) {
-            return response()->json([
-                'message' => 'El lote no puede ser enviado en su estado actual',
-            ], 422);
+            return redirect()->route('invoices.email.show', $batch)
+                ->withErrors(['message' => 'El lote no puede ser enviado en su estado actual']);
         }
 
         try {
             // If it's a draft, prepare it first
             if ($batch->status === 'draft') {
                 if (! $this->emailService->prepareBatch($batch)) {
-                    return response()->json([
-                        'message' => 'Error preparando el lote para envío',
-                    ], 500);
+                    return redirect()->route('invoices.email.show', $batch)
+                        ->withErrors(['message' => 'Error preparando el lote para envío']);
                 }
                 $batch->refresh();
             }
 
-            // Queue the batch for processing
+            // Queue the batch for processing  
             dispatch(function () use ($batch) {
                 $this->emailService->processBatch($batch);
-            })->onQueue('emails');
+            });
 
-            return response()->json([
-                'message' => 'Lote puesto en cola para envío',
-                'batch' => $batch->fresh(),
-            ]);
+            return redirect()->route('invoices.email.show', $batch)
+                ->with('success', 'Lote puesto en cola para envío exitosamente');
 
         } catch (\Exception $e) {
             Log::error('Error sending email batch', [
@@ -394,21 +415,19 @@ class InvoiceEmailController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            return response()->json([
-                'message' => 'Error enviando el lote: '.$e->getMessage(),
-            ], 500);
+            return redirect()->route('invoices.email.show', $batch)
+                ->withErrors(['message' => 'Error enviando el lote: '.$e->getMessage()]);
         }
     }
 
     /**
      * Cancel a batch
      */
-    public function cancel(InvoiceEmailBatch $batch, Request $request): JsonResponse
+    public function cancel(InvoiceEmailBatch $batch, Request $request): RedirectResponse
     {
         if (! $batch->can_be_cancelled) {
-            return response()->json([
-                'message' => 'El lote no puede ser cancelado en su estado actual',
-            ], 422);
+            return redirect()->route('invoices.email.show', $batch)
+                ->withErrors(['message' => 'El lote no puede ser cancelado en su estado actual']);
         }
 
         $validated = $request->validate([
@@ -418,10 +437,8 @@ class InvoiceEmailController extends Controller
         try {
             $this->emailService->cancelBatch($batch, $validated['reason'] ?? null);
 
-            return response()->json([
-                'message' => 'Lote cancelado exitosamente',
-                'batch' => $batch->fresh(),
-            ]);
+            return redirect()->route('invoices.email.show', $batch)
+                ->with('success', 'Lote cancelado exitosamente');
 
         } catch (\Exception $e) {
             Log::error('Error cancelling email batch', [
@@ -430,21 +447,19 @@ class InvoiceEmailController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            return response()->json([
-                'message' => 'Error cancelando el lote: '.$e->getMessage(),
-            ], 500);
+            return redirect()->route('invoices.email.show', $batch)
+                ->withErrors(['message' => 'Error cancelando el lote: '.$e->getMessage()]);
         }
     }
 
     /**
      * Retry failed deliveries in a batch
      */
-    public function retry(InvoiceEmailBatch $batch): JsonResponse
+    public function retry(InvoiceEmailBatch $batch): RedirectResponse
     {
         if (! $batch->can_be_restarted) {
-            return response()->json([
-                'message' => 'El lote no puede ser reintentado en su estado actual',
-            ], 422);
+            return redirect()->route('invoices.email.show', $batch)
+                ->withErrors(['message' => 'El lote no puede ser reintentado en su estado actual']);
         }
 
         try {
@@ -453,9 +468,8 @@ class InvoiceEmailController extends Controller
                 ->count();
 
             if ($retriableDeliveries === 0) {
-                return response()->json([
-                    'message' => 'No hay envíos disponibles para reintentar',
-                ], 422);
+                return redirect()->route('invoices.email.show', $batch)
+                    ->withErrors(['message' => 'No hay envíos disponibles para reintentar']);
             }
 
             // Reset batch status and retry failed deliveries
@@ -473,12 +487,10 @@ class InvoiceEmailController extends Controller
 
             dispatch(function () use ($batch) {
                 $this->emailService->processBatch($batch);
-            })->onQueue('emails');
+            });
 
-            return response()->json([
-                'message' => "Reintentando {$retriableDeliveries} envíos",
-                'batch' => $batch->fresh(),
-            ]);
+            return redirect()->route('invoices.email.show', $batch)
+                ->with('success', "Reintentando {$retriableDeliveries} envíos exitosamente");
 
         } catch (\Exception $e) {
             Log::error('Error retrying email batch', [
@@ -487,9 +499,8 @@ class InvoiceEmailController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            return response()->json([
-                'message' => 'Error reintentando el lote: '.$e->getMessage(),
-            ], 500);
+            return redirect()->route('invoices.email.show', $batch)
+                ->withErrors(['message' => 'Error reintentando el lote: '.$e->getMessage()]);
         }
     }
 

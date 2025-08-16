@@ -222,14 +222,28 @@ export interface InvoiceEmailBatchResponse {
     to: number;
 }
 
+export interface EligibleInvoice {
+    id: number;
+    invoice_number: string;
+    apartment_number: string;
+    apartment_id: number;
+    status: 'pending' | 'partial' | 'paid' | 'overdue' | 'cancelled';
+    type: 'monthly' | 'individual' | 'late_fee';
+    total_amount: number;
+    due_date: string;
+    billing_period_year: number;
+    billing_period_month: number;
+    billing_period_label: string;
+    recipients: {
+        name: string;
+        email: string;
+        type: string;
+    }[];
+}
+
 export interface EligibleInvoicesResponse {
-    data: Invoice[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
+    data: EligibleInvoice[];
     total: number;
-    from: number;
-    to: number;
 }
 
 // Filter interfaces
@@ -381,4 +395,71 @@ export interface CorrespondenceStats {
     returned: number;
     pending_percentage: number;
     delivered_percentage: number;
+}
+
+// Email Template Types
+export interface EmailTemplate {
+    id: number;
+    name: string;
+    description?: string;
+    type: 'invoice' | 'payment_receipt' | 'payment_reminder' | 'welcome' | 'announcement' | 'custom';
+    subject: string;
+    body: string;
+    variables: string[];
+    design_config: EmailTemplateDesignConfig;
+    is_active: boolean;
+    is_default: boolean;
+    created_by: number;
+    updated_by: number;
+    created_at: string;
+    updated_at: string;
+    deleted_at?: string;
+    created_by_user?: User;
+    updated_by_user?: User;
+}
+
+export interface EmailTemplateDesignConfig {
+    primary_color: string;
+    secondary_color: string;
+    accent_color?: string;
+    background_color: string;
+    text_color: string;
+    font_family: string;
+    header_style: 'modern' | 'classic' | 'gradient' | 'success' | 'warning';
+    footer_style: 'modern' | 'simple' | 'classic';
+    button_style: 'rounded' | 'square';
+    layout: 'centered' | 'full-width';
+    max_width: string;
+    show_logo: boolean;
+    show_contact_info: boolean;
+}
+
+export interface EmailTemplateResponse {
+    data: EmailTemplate[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+    prev_page_url?: string;
+    next_page_url?: string;
+}
+
+export interface CreateEmailTemplateData {
+    name: string;
+    description?: string;
+    type: string;
+    subject: string;
+    body: string;
+    variables?: string[];
+    design_config?: Partial<EmailTemplateDesignConfig>;
+    is_active?: boolean;
+    is_default?: boolean;
+}
+
+export interface EmailTemplatePreviewData {
+    subject: string;
+    body: string;
+    design_config: EmailTemplateDesignConfig;
 }

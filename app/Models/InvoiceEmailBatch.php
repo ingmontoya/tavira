@@ -177,38 +177,50 @@ class InvoiceEmailBatch extends Model
 
     public function getProgressPercentageAttribute(): float
     {
-        if ($this->total_recipients === 0) {
+        $totalRecipients = $this->total_recipients ?? 0;
+        $emailsSent = $this->emails_sent ?? 0;
+        
+        if ($totalRecipients === 0) {
             return 0;
         }
 
-        return round(($this->emails_sent / $this->total_recipients) * 100, 2);
+        return round(($emailsSent / $totalRecipients) * 100, 2);
     }
 
     public function getDeliveryRateAttribute(): float
     {
-        if ($this->emails_sent === 0) {
+        $emailsSent = $this->emails_sent ?? 0;
+        $emailsDelivered = $this->emails_delivered ?? 0;
+        
+        if ($emailsSent === 0) {
             return 0;
         }
 
-        return round(($this->emails_delivered / $this->emails_sent) * 100, 2);
+        return round(($emailsDelivered / $emailsSent) * 100, 2);
     }
 
     public function getOpenRateAttribute(): float
     {
-        if ($this->emails_delivered === 0) {
+        $emailsDelivered = $this->emails_delivered ?? 0;
+        $emailsOpened = $this->emails_opened ?? 0;
+        
+        if ($emailsDelivered === 0) {
             return 0;
         }
 
-        return round(($this->emails_opened / $this->emails_delivered) * 100, 2);
+        return round(($emailsOpened / $emailsDelivered) * 100, 2);
     }
 
     public function getClickRateAttribute(): float
     {
-        if ($this->emails_opened === 0) {
+        $emailsOpened = $this->emails_opened ?? 0;
+        $emailsClicked = $this->emails_clicked ?? 0;
+        
+        if ($emailsOpened === 0) {
             return 0;
         }
 
-        return round(($this->emails_clicked / $this->emails_opened) * 100, 2);
+        return round(($emailsClicked / $emailsOpened) * 100, 2);
     }
 
     public function getDurationAttribute(): ?string
@@ -241,14 +253,14 @@ class InvoiceEmailBatch extends Model
     public function updateStatistics(): void
     {
         $stats = $this->deliveries()
-            ->selectRaw('
+            ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN status IN ("sent", "delivered", "opened", "clicked") THEN 1 ELSE 0 END) as sent,
-                SUM(CASE WHEN status = "delivered" OR status = "opened" OR status = "clicked" THEN 1 ELSE 0 END) as delivered,
-                SUM(CASE WHEN status IN ("failed", "bounced", "rejected") THEN 1 ELSE 0 END) as failed,
-                SUM(CASE WHEN status IN ("opened", "clicked") THEN 1 ELSE 0 END) as opened,
-                SUM(CASE WHEN status = "clicked" THEN 1 ELSE 0 END) as clicked
-            ')
+                SUM(CASE WHEN status IN ('sent', 'delivered', 'opened', 'clicked') THEN 1 ELSE 0 END) as sent,
+                SUM(CASE WHEN status = 'delivered' OR status = 'opened' OR status = 'clicked' THEN 1 ELSE 0 END) as delivered,
+                SUM(CASE WHEN status IN ('failed', 'bounced', 'rejected') THEN 1 ELSE 0 END) as failed,
+                SUM(CASE WHEN status IN ('opened', 'clicked') THEN 1 ELSE 0 END) as opened,
+                SUM(CASE WHEN status = 'clicked' THEN 1 ELSE 0 END) as clicked
+            ")
             ->first();
 
         $this->update([
