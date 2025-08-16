@@ -95,10 +95,10 @@
 </template>
 
 <script setup lang="ts">
+import { useToast } from '@/composables/useToast';
 import { Link, router } from '@inertiajs/vue3';
 import { Check, ChevronDown, Download, Edit, Play, Send, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { useToast } from '@/composables/useToast';
 
 const props = defineProps({
     agreement: Object,

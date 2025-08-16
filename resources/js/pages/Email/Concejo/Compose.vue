@@ -1,26 +1,15 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import {
-    ArrowLeft,
-    Send,
-    Save,
-    Paperclip,
-    X,
-    FileText,
-    Image,
-    File,
-    Users,
-    Building2
-} from 'lucide-vue-next';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Building2, File, FileText, Image, Paperclip, Save, Send, Users, X } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface Props {
     view: string;
@@ -35,7 +24,7 @@ const form = useForm({
     subject: '',
     body: '',
     view: props.view,
-    attachments: [] as File[]
+    attachments: [] as File[],
 });
 
 const showCc = ref(false);
@@ -47,7 +36,7 @@ const sendEmail = () => {
     form.post(route('email.concejo.send'), {
         onSuccess: () => {
             // Email sent successfully
-        }
+        },
     });
 };
 
@@ -90,20 +79,24 @@ const getFileIcon = (file: File) => {
 const quickTemplates = [
     {
         name: 'Comunicado Oficial',
-        content: 'Estimada Administración,\n\nPor medio de la presente, el Concejo de Administración informa:\n\n[Contenido del comunicado]\n\nEste comunicado entra en vigencia a partir de [fecha].\n\nCordialmente,\nConcejo de Administración'
+        content:
+            'Estimada Administración,\n\nPor medio de la presente, el Concejo de Administración informa:\n\n[Contenido del comunicado]\n\nEste comunicado entra en vigencia a partir de [fecha].\n\nCordialmente,\nConcejo de Administración',
     },
     {
         name: 'Solicitud de Información',
-        content: 'Estimada Administración,\n\nEl Concejo de Administración solicita la siguiente información:\n\n• [Punto 1]\n• [Punto 2]\n• [Punto 3]\n\nSolicitamos respuesta en un plazo máximo de [X] días hábiles.\n\nCordialmente,\nConcejo de Administración'
+        content:
+            'Estimada Administración,\n\nEl Concejo de Administración solicita la siguiente información:\n\n• [Punto 1]\n• [Punto 2]\n• [Punto 3]\n\nSolicitamos respuesta en un plazo máximo de [X] días hábiles.\n\nCordialmente,\nConcejo de Administración',
     },
     {
         name: 'Aprobación de Propuesta',
-        content: 'Estimada Administración,\n\nDespués de revisar la propuesta presentada, el Concejo de Administración informa:\n\n✅ APROBADA la propuesta de [descripción]\n\nObservaciones:\n[Observaciones si las hay]\n\nCordialmente,\nConcejo de Administración'
+        content:
+            'Estimada Administración,\n\nDespués de revisar la propuesta presentada, el Concejo de Administración informa:\n\n✅ APROBADA la propuesta de [descripción]\n\nObservaciones:\n[Observaciones si las hay]\n\nCordialmente,\nConcejo de Administración',
     },
     {
         name: 'Convocatoria a Reunión',
-        content: 'Estimada Administración,\n\nEl Concejo de Administración convoca a reunión con los siguientes detalles:\n\n📅 Fecha: [fecha]\n🕐 Hora: [hora]\n📍 Lugar: [lugar]\n\nTemas a tratar:\n1. [Tema 1]\n2. [Tema 2]\n\nCordialmente,\nConcejo de Administración'
-    }
+        content:
+            'Estimada Administración,\n\nEl Concejo de Administración convoca a reunión con los siguientes detalles:\n\n📅 Fecha: [fecha]\n🕐 Hora: [hora]\n📍 Lugar: [lugar]\n\nTemas a tratar:\n1. [Tema 1]\n2. [Tema 2]\n\nCordialmente,\nConcejo de Administración',
+    },
 ];
 
 const useTemplate = (template: string) => {
@@ -113,7 +106,7 @@ const useTemplate = (template: string) => {
 const quickRecipients = [
     { name: 'Administración', email: 'admin@habitta.com' },
     { name: 'Gerencia', email: 'gerencia@habitta.com' },
-    { name: 'Contabilidad', email: 'contabilidad@habitta.com' }
+    { name: 'Contabilidad', email: 'contabilidad@habitta.com' },
 ];
 
 const addRecipient = (email: string) => {
@@ -127,46 +120,38 @@ const addRecipient = (email: string) => {
 
 <template>
     <Head title="Redactar Correo - Concejo" />
-    
+
     <AppLayout>
         <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Button 
-                        @click="$inertia.visit(route('email.concejo.index'))"
-                        variant="outline"
-                        size="sm"
-                    >
-                        <ArrowLeft class="w-4 h-4 mr-2" />
+                    <Button @click="$inertia.visit(route('email.concejo.index'))" variant="outline" size="sm">
+                        <ArrowLeft class="mr-2 h-4 w-4" />
                         Volver
                     </Button>
                     <div>
                         <h1 class="text-2xl font-bold tracking-tight">Redactar Correo</h1>
-                        <p class="text-muted-foreground flex items-center gap-2">
-                            <Users class="w-4 h-4" />
+                        <p class="flex items-center gap-2 text-muted-foreground">
+                            <Users class="h-4 w-4" />
                             Correo Electrónico - Concejo
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button @click="saveDraft" variant="outline" size="sm">
-                        <Save class="w-4 h-4 mr-2" />
+                        <Save class="mr-2 h-4 w-4" />
                         Guardar Borrador
                     </Button>
-                    <Button 
-                        @click="sendEmail" 
-                        :disabled="form.processing"
-                        size="sm"
-                    >
-                        <Send class="w-4 h-4 mr-2" />
+                    <Button @click="sendEmail" :disabled="form.processing" size="sm">
+                        <Send class="mr-2 h-4 w-4" />
                         {{ form.processing ? 'Enviando...' : 'Enviar' }}
                     </Button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
                 <!-- Templates & Recipients Sidebar -->
                 <Card class="lg:col-span-1">
                     <CardHeader>
@@ -180,19 +165,17 @@ const addRecipient = (email: string) => {
                                 :key="template.name"
                                 @click="useTemplate(template.content)"
                                 variant="ghost"
-                                class="w-full justify-start text-left h-auto p-2"
+                                class="h-auto w-full justify-start p-2 text-left"
                             >
                                 <div>
                                     <div class="text-sm font-medium">{{ template.name }}</div>
-                                    <div class="text-xs text-muted-foreground truncate">
-                                        {{ template.content.substring(0, 50) }}...
-                                    </div>
+                                    <div class="truncate text-xs text-muted-foreground">{{ template.content.substring(0, 50) }}...</div>
                                 </div>
                             </Button>
                         </div>
-                        
+
                         <Separator />
-                        
+
                         <!-- Quick Recipients -->
                         <div class="space-y-2">
                             <h4 class="text-sm font-medium">Destinatarios Frecuentes</h4>
@@ -205,7 +188,7 @@ const addRecipient = (email: string) => {
                                     size="sm"
                                     class="w-full justify-start"
                                 >
-                                    <Building2 class="w-3 h-3 mr-2" />
+                                    <Building2 class="mr-2 h-3 w-3" />
                                     <div class="text-left">
                                         <div class="text-xs font-medium">{{ recipient.name }}</div>
                                         <div class="text-xs text-muted-foreground">{{ recipient.email }}</div>
@@ -220,7 +203,7 @@ const addRecipient = (email: string) => {
                 <Card class="lg:col-span-3">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2">
-                            <Users class="w-5 h-5" />
+                            <Users class="h-5 w-5" />
                             Nuevo Correo del Concejo
                         </CardTitle>
                     </CardHeader>
@@ -244,44 +227,20 @@ const addRecipient = (email: string) => {
 
                                 <!-- CC/BCC Toggle -->
                                 <div class="flex gap-2">
-                                    <Button
-                                        @click="showCc = !showCc"
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                    >
-                                        CC
-                                    </Button>
-                                    <Button
-                                        @click="showBcc = !showBcc"
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                    >
-                                        CCO
-                                    </Button>
+                                    <Button @click="showCc = !showCc" type="button" variant="ghost" size="sm"> CC </Button>
+                                    <Button @click="showBcc = !showBcc" type="button" variant="ghost" size="sm"> CCO </Button>
                                 </div>
 
                                 <!-- CC -->
                                 <div v-if="showCc" class="space-y-2">
                                     <Label for="cc">CC (Con Copia)</Label>
-                                    <Input
-                                        id="cc"
-                                        v-model="form.cc"
-                                        type="email"
-                                        placeholder="copia@ejemplo.com"
-                                    />
+                                    <Input id="cc" v-model="form.cc" type="email" placeholder="copia@ejemplo.com" />
                                 </div>
 
                                 <!-- BCC -->
                                 <div v-if="showBcc" class="space-y-2">
                                     <Label for="bcc">CCO (Con Copia Oculta)</Label>
-                                    <Input
-                                        id="bcc"
-                                        v-model="form.bcc"
-                                        type="email"
-                                        placeholder="copia-oculta@ejemplo.com"
-                                    />
+                                    <Input id="bcc" v-model="form.bcc" type="email" placeholder="copia-oculta@ejemplo.com" />
                                 </div>
                             </div>
 
@@ -304,43 +263,23 @@ const addRecipient = (email: string) => {
                             <div class="space-y-2">
                                 <div class="flex items-center gap-2">
                                     <Label>Archivos Adjuntos</Label>
-                                    <Button
-                                        @click="addAttachment"
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                    >
-                                        <Paperclip class="w-4 h-4 mr-2" />
+                                    <Button @click="addAttachment" type="button" variant="outline" size="sm">
+                                        <Paperclip class="mr-2 h-4 w-4" />
                                         Adjuntar
                                     </Button>
                                 </div>
-                                
-                                <input
-                                    ref="fileInput"
-                                    type="file"
-                                    multiple
-                                    @change="handleFileSelect"
-                                    class="hidden"
-                                />
-                                
+
+                                <input ref="fileInput" type="file" multiple @change="handleFileSelect" class="hidden" />
+
                                 <div v-if="form.attachments.length > 0" class="space-y-2">
-                                    <div
-                                        v-for="(file, index) in form.attachments"
-                                        :key="index"
-                                        class="flex items-center gap-2 p-2 border rounded-lg"
-                                    >
-                                        <component :is="getFileIcon(file)" class="w-4 h-4 text-muted-foreground" />
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium truncate">{{ file.name }}</p>
+                                    <div v-for="(file, index) in form.attachments" :key="index" class="flex items-center gap-2 rounded-lg border p-2">
+                                        <component :is="getFileIcon(file)" class="h-4 w-4 text-muted-foreground" />
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate text-sm font-medium">{{ file.name }}</p>
                                             <p class="text-xs text-muted-foreground">{{ formatFileSize(file.size) }}</p>
                                         </div>
-                                        <Button
-                                            @click="removeAttachment(index)"
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                        >
-                                            <X class="w-4 h-4" />
+                                        <Button @click="removeAttachment(index)" type="button" variant="ghost" size="sm">
+                                            <X class="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
@@ -365,36 +304,21 @@ const addRecipient = (email: string) => {
                             <!-- Action Buttons -->
                             <div class="flex items-center justify-between pt-4">
                                 <div class="flex items-center gap-2">
-                                    <Badge v-if="isDraft" variant="secondary">
-                                        Borrador guardado
-                                    </Badge>
+                                    <Badge v-if="isDraft" variant="secondary"> Borrador guardado </Badge>
                                     <Badge variant="outline" class="flex items-center gap-1">
-                                        <Users class="w-3 h-3" />
+                                        <Users class="h-3 w-3" />
                                         Enviado desde: Concejo
                                     </Badge>
                                 </div>
-                                
+
                                 <div class="flex items-center gap-2">
-                                    <Button
-                                        @click="$inertia.visit(route('email.concejo.index'))"
-                                        type="button"
-                                        variant="outline"
-                                    >
-                                        Cancelar
-                                    </Button>
-                                    <Button
-                                        @click="saveDraft"
-                                        type="button"
-                                        variant="outline"
-                                    >
-                                        <Save class="w-4 h-4 mr-2" />
+                                    <Button @click="$inertia.visit(route('email.concejo.index'))" type="button" variant="outline"> Cancelar </Button>
+                                    <Button @click="saveDraft" type="button" variant="outline">
+                                        <Save class="mr-2 h-4 w-4" />
                                         Guardar Borrador
                                     </Button>
-                                    <Button 
-                                        type="submit"
-                                        :disabled="form.processing"
-                                    >
-                                        <Send class="w-4 h-4 mr-2" />
+                                    <Button type="submit" :disabled="form.processing">
+                                        <Send class="mr-2 h-4 w-4" />
                                         {{ form.processing ? 'Enviando...' : 'Enviar' }}
                                     </Button>
                                 </div>

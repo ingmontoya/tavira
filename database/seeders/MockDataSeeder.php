@@ -11,10 +11,8 @@ class MockDataSeeder extends Seeder
         $this->command->info('MockDataSeeder disabled - no default examples created.');
         $this->command->info('Users must create their own conjunto configurations first.');
 
-        return;
-
         /* Disabled code - uncomment only in development with Faker available
-        
+
         // Crear tipos de apartamento para el conjunto único
         $apartmentTypes = [
             [
@@ -199,7 +197,7 @@ class MockDataSeeder extends Seeder
                 ]
             );
         }
-        
+
         */ // End disabled code
     }
 }

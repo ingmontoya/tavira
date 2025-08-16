@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
 import Icon from '@/components/Icon.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -132,25 +132,27 @@ const formatDate = (dateString: string): string => {
 };
 
 const pendingInvoices = computed(() => {
-    return props.invoices?.filter(invoice => 
-        invoice.status === 'pendiente' || 
-        invoice.status === 'vencido' || 
-        invoice.status === 'pago_parcial'
-    ) || [];
+    return (
+        props.invoices?.filter((invoice) => invoice.status === 'pendiente' || invoice.status === 'vencido' || invoice.status === 'pago_parcial') || []
+    );
 });
 
 const paidInvoices = computed(() => {
-    return props.invoices?.filter(invoice => invoice.status === 'pagado') || [];
+    return props.invoices?.filter((invoice) => invoice.status === 'pagado') || [];
 });
 
 const updateDateRange = () => {
-    router.get(route('account-statement.index'), {
-        start_date: selectedDateRange.value.start,
-        end_date: selectedDateRange.value.end,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        route('account-statement.index'),
+        {
+            start_date: selectedDateRange.value.start,
+            end_date: selectedDateRange.value.end,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const downloadStatement = () => {
@@ -179,7 +181,7 @@ const downloadStatement = () => {
                 <!-- Header with Resident Info -->
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Resident Info -->
-                    <Card class="lg:col-span-2 p-6">
+                    <Card class="p-6 lg:col-span-2">
                         <div class="flex items-start justify-between">
                             <div>
                                 <h1 class="text-2xl font-bold text-gray-900">Estado de Cuenta</h1>
@@ -323,15 +325,9 @@ const downloadStatement = () => {
                 <!-- Invoices and Payments Tabs -->
                 <Tabs default-value="pending" class="space-y-4">
                     <TabsList class="grid w-full grid-cols-3">
-                        <TabsTrigger value="pending">
-                            Facturas Pendientes ({{ pendingInvoices.length }})
-                        </TabsTrigger>
-                        <TabsTrigger value="paid">
-                            Facturas Pagadas ({{ paidInvoices.length }})
-                        </TabsTrigger>
-                        <TabsTrigger value="payments">
-                            Pagos Realizados ({{ payments?.length || 0 }})
-                        </TabsTrigger>
+                        <TabsTrigger value="pending"> Facturas Pendientes ({{ pendingInvoices.length }}) </TabsTrigger>
+                        <TabsTrigger value="paid"> Facturas Pagadas ({{ paidInvoices.length }}) </TabsTrigger>
+                        <TabsTrigger value="payments"> Pagos Realizados ({{ payments?.length || 0 }}) </TabsTrigger>
                     </TabsList>
 
                     <!-- Pending Invoices -->
@@ -339,7 +335,7 @@ const downloadStatement = () => {
                         <Card>
                             <div class="p-6">
                                 <h3 class="mb-4 text-lg font-semibold">Facturas Pendientes</h3>
-                                <div v-if="pendingInvoices.length === 0" class="text-center py-8 text-gray-500">
+                                <div v-if="pendingInvoices.length === 0" class="py-8 text-center text-gray-500">
                                     <Icon name="check-circle" class="mx-auto mb-4 h-12 w-12 text-green-500" />
                                     <p>¡Excelente! No tienes facturas pendientes.</p>
                                 </div>
@@ -372,7 +368,7 @@ const downloadStatement = () => {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Link 
+                                                <Link
                                                     :href="route('account-statement.invoice', invoice.id)"
                                                     class="text-blue-600 hover:text-blue-800"
                                                 >
@@ -391,7 +387,7 @@ const downloadStatement = () => {
                         <Card>
                             <div class="p-6">
                                 <h3 class="mb-4 text-lg font-semibold">Facturas Pagadas</h3>
-                                <div v-if="paidInvoices.length === 0" class="text-center py-8 text-gray-500">
+                                <div v-if="paidInvoices.length === 0" class="py-8 text-center text-gray-500">
                                     <Icon name="file-text" class="mx-auto mb-4 h-12 w-12 text-gray-400" />
                                     <p>No se encontraron facturas pagadas en el período seleccionado.</p>
                                 </div>
@@ -420,7 +416,7 @@ const downloadStatement = () => {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Link 
+                                                <Link
                                                     :href="route('account-statement.invoice', invoice.id)"
                                                     class="text-blue-600 hover:text-blue-800"
                                                 >
@@ -439,7 +435,7 @@ const downloadStatement = () => {
                         <Card>
                             <div class="p-6">
                                 <h3 class="mb-4 text-lg font-semibold">Pagos Realizados</h3>
-                                <div v-if="!payments || payments.length === 0" class="text-center py-8 text-gray-500">
+                                <div v-if="!payments || payments.length === 0" class="py-8 text-center text-gray-500">
                                     <Icon name="credit-card" class="mx-auto mb-4 h-12 w-12 text-gray-400" />
                                     <p>No se encontraron pagos en el período seleccionado.</p>
                                 </div>

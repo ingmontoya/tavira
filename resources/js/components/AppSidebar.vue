@@ -7,30 +7,16 @@ import { useNavigation } from '@/composables/useNavigation';
 import { Link } from '@inertiajs/vue3';
 import AppLogo from './AppLogo.vue';
 
-const {
-    mainNavItems,
-    footerNavItems,
-} = useNavigation();
+const { mainNavItems, footerNavItems } = useNavigation();
 </script>
 
 <template>
-    <Sidebar
-        collapsible="icon"
-        variant="inset"
-        class="relative overflow-hidden"
-    >
-
+    <Sidebar collapsible="icon" variant="inset" class="relative overflow-hidden">
         <SidebarHeader class="relative z-10">
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton
-                        size="lg"
-                        as-child
-                    >
-                        <Link
-                            :href="route('dashboard')"
-                            class="flex items-center gap-3 rounded-lg p-3"
-                        >
+                    <SidebarMenuButton size="lg" as-child>
+                        <Link :href="route('dashboard')" class="flex items-center gap-3 rounded-lg p-3">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

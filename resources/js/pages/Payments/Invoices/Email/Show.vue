@@ -8,14 +8,25 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { InvoiceEmailBatch } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { 
-    AlertTriangle, ArrowLeft, CheckCircle, Clock, Edit, Eye, 
-    Mail, MailCheck, MailX, RefreshCw, Send, Trash2, 
-    User, XCircle 
+import {
+    AlertTriangle,
+    ArrowLeft,
+    CheckCircle,
+    Clock,
+    Edit,
+    Eye,
+    Mail,
+    MailCheck,
+    MailX,
+    RefreshCw,
+    Send,
+    Trash2,
+    User,
+    XCircle,
 } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import type { InvoiceEmailBatch } from '@/types';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -139,10 +150,10 @@ const getProgressPercentage = computed(() => {
 // Group deliveries by status
 const deliveriesByStatus = computed(() => {
     const groups = {
-        pending: props.batch.deliveries.filter(d => d.status === 'pendiente'),
-        sent: props.batch.deliveries.filter(d => d.status === 'enviado'),
-        failed: props.batch.deliveries.filter(d => d.status === 'fallido'),
-        bounced: props.batch.deliveries.filter(d => d.status === 'rebotado'),
+        pending: props.batch.deliveries.filter((d) => d.status === 'pendiente'),
+        sent: props.batch.deliveries.filter((d) => d.status === 'enviado'),
+        failed: props.batch.deliveries.filter((d) => d.status === 'fallido'),
+        bounced: props.batch.deliveries.filter((d) => d.status === 'rebotado'),
     };
     return groups;
 });
@@ -175,16 +186,20 @@ const openSendDialog = () => {
 
 const confirmSendBatch = () => {
     showSendDialog.value = false;
-    router.post(`/invoices/email/${props.batch.id}/send`, {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            // Auto-refresh will start if status changes to 'procesando'
-            refreshData();
+    router.post(
+        `/invoices/email/${props.batch.id}/send`,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Auto-refresh will start if status changes to 'procesando'
+                refreshData();
+            },
+            onError: (errors) => {
+                console.error('Error sending batch:', errors);
+            },
         },
-        onError: (errors) => {
-            console.error('Error sending batch:', errors);
-        }
-    });
+    );
 };
 
 // Cancel batch functions
@@ -194,12 +209,16 @@ const openCancelDialog = () => {
 
 const confirmCancelBatch = () => {
     showCancelDialog.value = false;
-    router.post(`/invoices/email/${props.batch.id}/cancel`, {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            refreshData();
-        }
-    });
+    router.post(
+        `/invoices/email/${props.batch.id}/cancel`,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                refreshData();
+            },
+        },
+    );
 };
 
 // Retry batch functions
@@ -209,12 +228,16 @@ const openRetryDialog = () => {
 
 const confirmRetryBatch = () => {
     showRetryDialog.value = false;
-    router.post(`/invoices/email/${props.batch.id}/retry`, {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            refreshData();
-        }
-    });
+    router.post(
+        `/invoices/email/${props.batch.id}/retry`,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                refreshData();
+            },
+        },
+    );
 };
 
 // Check if batch can be sent
@@ -249,39 +272,27 @@ const canRetry = computed(() => {
 
                 <div class="flex items-center gap-2">
                     <!-- Send Button -->
-                    <Button 
-                        v-if="canSend" 
-                        @click="openSendDialog" 
-                        class="bg-green-600 hover:bg-green-700"
-                    >
+                    <Button v-if="canSend" @click="openSendDialog" class="bg-green-600 hover:bg-green-700">
                         <Send class="mr-2 h-4 w-4" />
                         Enviar Lote
                     </Button>
-                    
+
                     <!-- Cancel Button -->
-                    <Button 
-                        v-if="canCancel" 
-                        @click="openCancelDialog" 
-                        variant="destructive"
-                    >
+                    <Button v-if="canCancel" @click="openCancelDialog" variant="destructive">
                         <XCircle class="mr-2 h-4 w-4" />
                         Cancelar
                     </Button>
-                    
+
                     <!-- Retry Button -->
-                    <Button 
-                        v-if="canRetry" 
-                        @click="openRetryDialog" 
-                        variant="outline"
-                    >
+                    <Button v-if="canRetry" @click="openRetryDialog" variant="outline">
                         <RefreshCw class="mr-2 h-4 w-4" />
                         Reintentar
                     </Button>
-                    
+
                     <Button @click="refreshData" variant="outline" size="sm">
                         <RefreshCw class="h-4 w-4" />
                     </Button>
-                    
+
                     <Button variant="outline" asChild>
                         <Link href="/invoices/email">
                             <ArrowLeft class="mr-2 h-4 w-4" />
@@ -312,18 +323,15 @@ const canRetry = computed(() => {
                     <CardHeader class="pb-3">
                         <div class="flex items-center justify-between">
                             <CardTitle class="text-lg">Estado</CardTitle>
-                            <component 
-                                :is="getStatusIcon(batch.status)" 
-                                class="h-5 w-5 text-muted-foreground" 
-                            />
+                            <component :is="getStatusIcon(batch.status)" class="h-5 w-5 text-muted-foreground" />
                         </div>
                     </CardHeader>
                     <CardContent>
                         <Badge :class="batch.status_badge.class" class="mb-2">
                             {{ batch.status_badge.text }}
                         </Badge>
-                        
-                        <div class="text-sm text-muted-foreground space-y-1">
+
+                        <div class="space-y-1 text-sm text-muted-foreground">
                             <div>Creado: {{ formatDate(batch.created_at) }}</div>
                             <div v-if="batch.sent_at">Enviado: {{ formatDate(batch.sent_at) }}</div>
                             <div v-if="batch.completed_at">Completado: {{ formatDate(batch.completed_at) }}</div>
@@ -343,9 +351,7 @@ const canRetry = computed(() => {
                                 <span>{{ batch.sent_count }} / {{ batch.total_invoices }}</span>
                             </div>
                             <Progress :value="getProgressPercentage" class="w-full" />
-                            <div class="text-xs text-muted-foreground text-center">
-                                {{ getProgressPercentage }}% completado
-                            </div>
+                            <div class="text-center text-xs text-muted-foreground">{{ getProgressPercentage }}% completado</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -359,21 +365,21 @@ const canRetry = computed(() => {
                         <div class="space-y-2">
                             <div class="flex justify-between text-sm">
                                 <span class="flex items-center">
-                                    <MailCheck class="h-3 w-3 mr-1 text-green-600" />
+                                    <MailCheck class="mr-1 h-3 w-3 text-green-600" />
                                     Enviadas
                                 </span>
                                 <span class="font-medium text-green-600">{{ batch.sent_count }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="flex items-center">
-                                    <MailX class="h-3 w-3 mr-1 text-red-600" />
+                                    <MailX class="mr-1 h-3 w-3 text-red-600" />
                                     Fallidas
                                 </span>
                                 <span class="font-medium text-red-600">{{ batch.failed_count }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="flex items-center">
-                                    <Clock class="h-3 w-3 mr-1 text-orange-600" />
+                                    <Clock class="mr-1 h-3 w-3 text-orange-600" />
                                     Pendientes
                                 </span>
                                 <span class="font-medium text-orange-600">{{ batch.pending_count }}</span>
@@ -386,23 +392,14 @@ const canRetry = computed(() => {
             <!-- Actions -->
             <Card v-if="batch.can_edit || batch.can_delete" class="p-4">
                 <div class="flex items-center gap-2">
-                    <Button 
-                        v-if="batch.can_edit"
-                        variant="outline"
-                        asChild
-                    >
+                    <Button v-if="batch.can_edit" variant="outline" asChild>
                         <Link :href="`/invoices/email/${batch.id}/edit`">
                             <Edit class="mr-2 h-4 w-4" />
                             Editar
                         </Link>
                     </Button>
 
-                    <Button 
-                        v-if="batch.can_delete"
-                        variant="outline"
-                        @click="openDeleteDialog"
-                        class="text-red-600 hover:text-red-700"
-                    >
+                    <Button v-if="batch.can_delete" variant="outline" @click="openDeleteDialog" class="text-red-600 hover:text-red-700">
                         <Trash2 class="mr-2 h-4 w-4" />
                         Eliminar
                     </Button>
@@ -412,9 +409,7 @@ const canRetry = computed(() => {
             <!-- Auto-refresh indicator -->
             <Alert v-if="batch.status === 'procesando'">
                 <RefreshCw class="h-4 w-4 animate-spin" />
-                <AlertDescription>
-                    El lote se está procesando. Esta página se actualiza automáticamente cada 5 segundos.
-                </AlertDescription>
+                <AlertDescription> El lote se está procesando. Esta página se actualiza automáticamente cada 5 segundos. </AlertDescription>
             </Alert>
 
             <!-- Delivery Details Table -->
@@ -424,11 +419,9 @@ const canRetry = computed(() => {
                         <Mail class="h-5 w-5" />
                         <span>Detalle de Entregas</span>
                     </CardTitle>
-                    <CardDescription>
-                        Estado detallado de cada envío de factura por email
-                    </CardDescription>
+                    <CardDescription> Estado detallado de cada envío de factura por email </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent>
                     <div class="rounded-md border">
                         <Table>
@@ -445,11 +438,7 @@ const canRetry = computed(() => {
                             </TableHeader>
                             <TableBody>
                                 <template v-if="batch.deliveries.length">
-                                    <TableRow
-                                        v-for="delivery in batch.deliveries"
-                                        :key="delivery.id"
-                                        class="transition-colors hover:bg-muted/50"
-                                    >
+                                    <TableRow v-for="delivery in batch.deliveries" :key="delivery.id" class="transition-colors hover:bg-muted/50">
                                         <TableCell>
                                             <div class="font-medium">{{ delivery.invoice.invoice_number }}</div>
                                             <div class="text-xs text-muted-foreground">
@@ -457,10 +446,10 @@ const canRetry = computed(() => {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div class="font-medium">{{ delivery.invoice.apartment?.full_address || 'Sin apartamento asignado' }}</div>
-                                            <div class="text-xs text-muted-foreground">
-                                                #{{ delivery.invoice.apartment?.number || 'N/A' }}
+                                            <div class="font-medium">
+                                                {{ delivery.invoice.apartment?.full_address || 'Sin apartamento asignado' }}
                                             </div>
+                                            <div class="text-xs text-muted-foreground">#{{ delivery.invoice.apartment?.number || 'N/A' }}</div>
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center space-x-2">
@@ -473,15 +462,12 @@ const canRetry = computed(() => {
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center space-x-2">
-                                                <component 
-                                                    :is="getDeliveryStatusIcon(delivery.status)" 
-                                                    class="h-4 w-4"
-                                                />
+                                                <component :is="getDeliveryStatusIcon(delivery.status)" class="h-4 w-4" />
                                                 <Badge :class="delivery.status_badge.class">
                                                     {{ delivery.status_badge.text }}
                                                 </Badge>
                                             </div>
-                                            <div v-if="delivery.error_message" class="text-xs text-red-600 mt-1">
+                                            <div v-if="delivery.error_message" class="mt-1 text-xs text-red-600">
                                                 {{ delivery.error_message }}
                                             </div>
                                         </TableCell>
@@ -489,25 +475,17 @@ const canRetry = computed(() => {
                                             <div v-if="delivery.sent_at" class="text-sm">
                                                 {{ formatDate(delivery.sent_at) }}
                                             </div>
-                                            <div v-else class="text-sm text-muted-foreground">
-                                                Pendiente
-                                            </div>
+                                            <div v-else class="text-sm text-muted-foreground">Pendiente</div>
                                         </TableCell>
                                         <TableCell>
-                                            <div class="text-sm">
-                                                {{ delivery.retry_count }} / {{ delivery.max_retries }}
-                                            </div>
+                                            <div class="text-sm">{{ delivery.retry_count }} / {{ delivery.max_retries }}</div>
                                         </TableCell>
                                         <TableCell>
                                             <div class="flex items-center gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    @click="router.visit(`/invoices/${delivery.invoice.id}`)"
-                                                >
+                                                <Button variant="ghost" size="sm" @click="router.visit(`/invoices/${delivery.invoice.id}`)">
                                                     <Eye class="h-3 w-3" />
                                                 </Button>
-                                                
+
                                                 <Button
                                                     v-if="delivery.can_retry && (delivery.status === 'fallido' || delivery.status === 'rebotado')"
                                                     variant="ghost"
@@ -523,9 +501,7 @@ const canRetry = computed(() => {
                                 </template>
                                 <template v-else>
                                     <TableRow>
-                                        <TableCell colSpan="7" class="h-24 text-center">
-                                            No hay entregas en este lote.
-                                        </TableCell>
+                                        <TableCell colSpan="7" class="h-24 text-center"> No hay entregas en este lote. </TableCell>
                                     </TableRow>
                                 </template>
                             </TableBody>
@@ -541,29 +517,22 @@ const canRetry = computed(() => {
                         <AlertTriangle class="h-5 w-5" />
                         <span>Resumen de Errores</span>
                     </CardTitle>
-                    <CardDescription>
-                        {{ batch.failed_count }} entregas fallaron en este lote
-                    </CardDescription>
+                    <CardDescription> {{ batch.failed_count }} entregas fallaron en este lote </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent>
                     <div class="space-y-2">
-                        <div 
-                            v-for="delivery in deliveriesByStatus.failed" 
+                        <div
+                            v-for="delivery in deliveriesByStatus.failed"
                             :key="delivery.id"
-                            class="flex items-center justify-between p-3 border rounded-lg bg-red-50"
+                            class="flex items-center justify-between rounded-lg border bg-red-50 p-3"
                         >
                             <div>
-                                <div class="font-medium text-sm">{{ delivery.invoice.invoice_number }}</div>
+                                <div class="text-sm font-medium">{{ delivery.invoice.invoice_number }}</div>
                                 <div class="text-xs text-muted-foreground">{{ delivery.recipient_email }}</div>
                                 <div class="text-xs text-red-600">{{ delivery.error_message }}</div>
                             </div>
-                            <Button
-                                v-if="delivery.can_retry"
-                                variant="outline"
-                                size="sm"
-                                @click="retryDelivery(delivery.id)"
-                            >
+                            <Button v-if="delivery.can_retry" variant="outline" size="sm" @click="retryDelivery(delivery.id)">
                                 <RefreshCw class="mr-2 h-3 w-3" />
                                 Reintentar
                             </Button>
@@ -577,7 +546,7 @@ const canRetry = computed(() => {
                 <CardHeader>
                     <CardTitle>Información del Lote</CardTitle>
                 </CardHeader>
-                
+
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
@@ -615,27 +584,17 @@ const canRetry = computed(() => {
                         <Send class="h-5 w-5 text-green-600" />
                         <span>Confirmar Envío de Lote</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        ¿Estás seguro de que quieres enviar este lote de emails?
-                    </DialogDescription>
+                    <DialogDescription> ¿Estás seguro de que quieres enviar este lote de emails? </DialogDescription>
                 </DialogHeader>
-                
-                <div class="py-4 space-y-2">
-                    <div class="text-sm">
-                        <strong>Lote:</strong> {{ batch.name }}
-                    </div>
-                    <div class="text-sm">
-                        <strong>Total de facturas:</strong> {{ batch.total_invoices }}
-                    </div>
-                    <div class="text-sm text-muted-foreground">
-                        Una vez iniciado el envío, este proceso no se puede deshacer.
-                    </div>
+
+                <div class="space-y-2 py-4">
+                    <div class="text-sm"><strong>Lote:</strong> {{ batch.name }}</div>
+                    <div class="text-sm"><strong>Total de facturas:</strong> {{ batch.total_invoices }}</div>
+                    <div class="text-sm text-muted-foreground">Una vez iniciado el envío, este proceso no se puede deshacer.</div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" @click="showSendDialog = false">
-                        Cancelar
-                    </Button>
+                    <Button variant="outline" @click="showSendDialog = false"> Cancelar </Button>
                     <Button @click="confirmSendBatch" class="bg-green-600 hover:bg-green-700">
                         <Send class="mr-2 h-4 w-4" />
                         Sí, Enviar Lote
@@ -652,24 +611,16 @@ const canRetry = computed(() => {
                         <XCircle class="h-5 w-5 text-red-600" />
                         <span>Confirmar Cancelación</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        ¿Estás seguro de que quieres cancelar este lote?
-                    </DialogDescription>
+                    <DialogDescription> ¿Estás seguro de que quieres cancelar este lote? </DialogDescription>
                 </DialogHeader>
-                
-                <div class="py-4 space-y-2">
-                    <div class="text-sm">
-                        <strong>Lote:</strong> {{ batch.name }}
-                    </div>
-                    <div class="text-sm text-muted-foreground">
-                        Esta acción detendrá todos los envíos pendientes y no se puede deshacer.
-                    </div>
+
+                <div class="space-y-2 py-4">
+                    <div class="text-sm"><strong>Lote:</strong> {{ batch.name }}</div>
+                    <div class="text-sm text-muted-foreground">Esta acción detendrá todos los envíos pendientes y no se puede deshacer.</div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" @click="showCancelDialog = false">
-                        No, Mantener
-                    </Button>
+                    <Button variant="outline" @click="showCancelDialog = false"> No, Mantener </Button>
                     <Button variant="destructive" @click="confirmCancelBatch">
                         <XCircle class="mr-2 h-4 w-4" />
                         Sí, Cancelar Lote
@@ -686,27 +637,17 @@ const canRetry = computed(() => {
                         <RefreshCw class="h-5 w-5 text-orange-600" />
                         <span>Confirmar Reintento</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        ¿Quieres reintentar los envíos fallidos de este lote?
-                    </DialogDescription>
+                    <DialogDescription> ¿Quieres reintentar los envíos fallidos de este lote? </DialogDescription>
                 </DialogHeader>
-                
-                <div class="py-4 space-y-2">
-                    <div class="text-sm">
-                        <strong>Lote:</strong> {{ batch.name }}
-                    </div>
-                    <div class="text-sm">
-                        <strong>Envíos fallidos:</strong> {{ batch.failed_count }}
-                    </div>
-                    <div class="text-sm text-muted-foreground">
-                        Esto intentará enviar nuevamente solo los emails que fallaron.
-                    </div>
+
+                <div class="space-y-2 py-4">
+                    <div class="text-sm"><strong>Lote:</strong> {{ batch.name }}</div>
+                    <div class="text-sm"><strong>Envíos fallidos:</strong> {{ batch.failed_count }}</div>
+                    <div class="text-sm text-muted-foreground">Esto intentará enviar nuevamente solo los emails que fallaron.</div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" @click="showRetryDialog = false">
-                        Cancelar
-                    </Button>
+                    <Button variant="outline" @click="showRetryDialog = false"> Cancelar </Button>
                     <Button @click="confirmRetryBatch" variant="outline">
                         <RefreshCw class="mr-2 h-4 w-4" />
                         Sí, Reintentar
@@ -723,24 +664,18 @@ const canRetry = computed(() => {
                         <Trash2 class="h-5 w-5 text-red-600" />
                         <span>Confirmar Eliminación</span>
                     </DialogTitle>
-                    <DialogDescription>
-                        ¿Estás seguro de que deseas eliminar este lote de envío?
-                    </DialogDescription>
+                    <DialogDescription> ¿Estás seguro de que deseas eliminar este lote de envío? </DialogDescription>
                 </DialogHeader>
-                
-                <div class="py-4 space-y-2">
-                    <div class="text-sm">
-                        <strong>Lote:</strong> {{ batch.name }}
-                    </div>
+
+                <div class="space-y-2 py-4">
+                    <div class="text-sm"><strong>Lote:</strong> {{ batch.name }}</div>
                     <div class="text-sm text-muted-foreground">
                         Esta acción no se puede deshacer. Se eliminará permanentemente el lote y todos sus registros de envío.
                     </div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" @click="showDeleteDialog = false">
-                        Cancelar
-                    </Button>
+                    <Button variant="outline" @click="showDeleteDialog = false"> Cancelar </Button>
                     <Button variant="destructive" @click="confirmDeleteBatch">
                         <Trash2 class="mr-2 h-4 w-4" />
                         Sí, Eliminar Lote

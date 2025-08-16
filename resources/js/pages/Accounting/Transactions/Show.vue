@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle, DollarSign, Edit, FileText, Hash, XCircle } from 'lucide-vue-next';
+import { AlertCircle, ArrowLeft, CheckCircle, DollarSign, Edit, Hash, XCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface TransactionEntry {
@@ -119,23 +119,23 @@ const referenceDisplay = computed(() => {
         return `Reverso Aplicación de Pago #${reference.id}`;
     } else if (reference?.id) {
         const typeLabels = {
-            'payment_application': 'Aplicación de Pago',
-            'payment_application_reversal': 'Reverso Aplicación de Pago',
-            'invoice': 'Factura',
-            'payment': 'Pago',
-            'budget': 'Presupuesto',
-            'expense': 'Gasto'
+            payment_application: 'Aplicación de Pago',
+            payment_application_reversal: 'Reverso Aplicación de Pago',
+            invoice: 'Factura',
+            payment: 'Pago',
+            budget: 'Presupuesto',
+            expense: 'Gasto',
         };
         const typeLabel = typeLabels[referenceType] || referenceType.charAt(0).toUpperCase() + referenceType.slice(1);
         return `${typeLabel} #${reference.id}`;
     } else {
         const typeLabels = {
-            'payment_application': 'Aplicación de Pago',
-            'payment_application_reversal': 'Reverso Aplicación de Pago',
-            'invoice': 'Factura',
-            'payment': 'Pago',
-            'budget': 'Presupuesto',
-            'expense': 'Gasto'
+            payment_application: 'Aplicación de Pago',
+            payment_application_reversal: 'Reverso Aplicación de Pago',
+            invoice: 'Factura',
+            payment: 'Pago',
+            budget: 'Presupuesto',
+            expense: 'Gasto',
         };
         const typeLabel = typeLabels[referenceType] || referenceType.charAt(0).toUpperCase() + referenceType.slice(1);
         return props.transaction.transaction_number || typeLabel;
@@ -190,7 +190,7 @@ const breadcrumbs = [
                     </div>
                     <p class="text-muted-foreground">{{ transaction.description }}</p>
                 </div>
-                <div class="flex items-center gap-3 no-print">
+                <div class="no-print flex items-center gap-3">
                     <Link href="/accounting/transactions">
                         <Button variant="outline" class="gap-2">
                             <ArrowLeft class="h-4 w-4" />
@@ -354,7 +354,7 @@ const breadcrumbs = [
                 </div>
 
                 <!-- Sidebar -->
-                <div class="space-y-6 no-print">
+                <div class="no-print space-y-6">
                     <!-- Transaction Summary -->
                     <Card>
                         <CardHeader>
@@ -496,7 +496,7 @@ const breadcrumbs = [
     /* Ensure all cards and content are visible */
     .space-y-6,
     .card,
-    [class*="Card"] {
+    [class*='Card'] {
         display: block !important;
         margin-bottom: 20px !important;
         page-break-inside: avoid;
@@ -509,7 +509,8 @@ const breadcrumbs = [
         margin: 10px 0 !important;
     }
 
-    th, td {
+    th,
+    td {
         border: 1px solid #000 !important;
         padding: 8px !important;
         text-align: left !important;
@@ -528,17 +529,25 @@ const breadcrumbs = [
     }
 
     /* Ensure text content is visible */
-    h1, h2, h3, h4, h5, h6,
-    p, span, div, label {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    div,
+    label {
         color: black !important;
         background: transparent !important;
     }
 
     /* Style badges */
     .badge,
-    [class*="bg-gray"],
-    [class*="bg-green"],
-    [class*="bg-red"] {
+    [class*='bg-gray'],
+    [class*='bg-green'],
+    [class*='bg-red'] {
         border: 1px solid #000 !important;
         padding: 2px 6px !important;
         background: #f5f5f5 !important;
@@ -550,4 +559,5 @@ const breadcrumbs = [
     .transaction-entries {
         page-break-inside: avoid;
     }
-}</style>
+}
+</style>

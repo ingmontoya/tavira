@@ -46,7 +46,7 @@ class SetupProductionData extends Command
 
         foreach ($seeders as $seederClass => $description) {
             $this->info("Seeding: {$description}");
-            
+
             try {
                 $this->call('db:seed', [
                     '--class' => $seederClass,
@@ -54,7 +54,8 @@ class SetupProductionData extends Command
                 ]);
                 $this->line("✅ {$description} seeded successfully");
             } catch (\Exception $e) {
-                $this->error("❌ Failed to seed {$description}: " . $e->getMessage());
+                $this->error("❌ Failed to seed {$description}: ".$e->getMessage());
+
                 return Command::FAILURE;
             }
         }
@@ -62,7 +63,7 @@ class SetupProductionData extends Command
         $this->newLine();
         $this->info('🎉 Production setup completed successfully!');
         $this->info('Your application now has all the necessary data to function properly.');
-        
+
         $this->newLine();
         $this->info('Next steps:');
         $this->line('1. Create your conjunto configuration via the web interface');

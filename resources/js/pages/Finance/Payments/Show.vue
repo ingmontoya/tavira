@@ -7,20 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
-import {
-    AlertCircle,
-    ArrowLeft,
-    CreditCard,
-    DollarSign,
-    Edit,
-    FileText,
-    Hash,
-    Mail,
-    Receipt,
-    RefreshCw,
-    RotateCcw,
-    XCircle,
-} from 'lucide-vue-next';
+import { AlertCircle, ArrowLeft, CreditCard, DollarSign, Edit, FileText, Hash, Mail, Receipt, RefreshCw, RotateCcw, XCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface PaymentApplication {
@@ -166,7 +153,6 @@ const canEdit = computed(() => {
     return props.payment.is_pending;
 });
 
-
 const canReverse = computed(() => {
     return parseFloat((props.payment.applied_amount as string) || '0') > 0;
 });
@@ -174,7 +160,7 @@ const canReverse = computed(() => {
 // Accounting simulation for this payment
 const accountingSimulation = computed(() => {
     const totalAmount = parseFloat((props.payment.total_amount as string) || '0');
-    
+
     if (!totalAmount || !props.payment.payment_method) {
         return null;
     }
@@ -225,7 +211,6 @@ const formatDateTime = (dateString: string) => {
     });
 };
 
-
 const reversePayment = () => {
     if (confirm('¿Está seguro de que desea reversar las aplicaciones de este pago?')) {
         router.post(
@@ -240,10 +225,11 @@ const reversePayment = () => {
 
 const sendByEmail = () => {
     const recipientEmail = prompt('Ingrese el email del destinatario (dejar vacío para usar el email del propietario):');
-    if (recipientEmail !== null) { // User didn't cancel
+    if (recipientEmail !== null) {
+        // User didn't cancel
         const includeApplications = confirm('¿Desea incluir el detalle de aplicaciones del pago?');
         const customMessage = prompt('Mensaje personalizado (opcional):');
-        
+
         router.post(
             `/finance/payments/${props.payment.id}/send-email`,
             {
@@ -416,7 +402,10 @@ const breadcrumbs = [
                             <div v-if="payment.applications.length === 0" class="py-8 text-center text-muted-foreground">
                                 <Receipt class="mx-auto mb-4 h-12 w-12 opacity-50" />
                                 <p class="mb-2 text-lg font-medium">Sin Aplicaciones</p>
-                                <p class="text-sm">Este pago no tiene aplicaciones a facturas. Esto puede suceder si no había facturas pendientes al momento del registro.</p>
+                                <p class="text-sm">
+                                    Este pago no tiene aplicaciones a facturas. Esto puede suceder si no había facturas pendientes al momento del
+                                    registro.
+                                </p>
                             </div>
 
                             <div v-else class="space-y-4">
@@ -479,7 +468,9 @@ const breadcrumbs = [
                                                     <div
                                                         :class="[
                                                             'font-mono text-sm font-medium',
-                                                            (application.status === 'activo' || application.status === 'active') ? 'text-green-600' : 'text-red-600 line-through',
+                                                            application.status === 'activo' || application.status === 'active'
+                                                                ? 'text-green-600'
+                                                                : 'text-red-600 line-through',
                                                         ]"
                                                     >
                                                         {{ formatCurrency(parseFloat((application.amount_applied as string) || '0')) }}
@@ -488,7 +479,7 @@ const breadcrumbs = [
                                                 <TableCell>
                                                     <Badge
                                                         :class="
-                                                            (application.status === 'activo' || application.status === 'active')
+                                                            application.status === 'activo' || application.status === 'active'
                                                                 ? 'bg-green-100 text-green-800'
                                                                 : 'bg-red-100 text-red-800'
                                                         "
@@ -511,9 +502,7 @@ const breadcrumbs = [
                     <Card v-if="accountingSimulation">
                         <CardHeader>
                             <CardTitle>Simulación Contable</CardTitle>
-                            <CardDescription>
-                                Asiento contable generado para este pago
-                            </CardDescription>
+                            <CardDescription> Asiento contable generado para este pago </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <!-- Balance Summary -->
@@ -702,7 +691,6 @@ const breadcrumbs = [
                                 <Edit class="h-4 w-4" />
                                 Editar Pago
                             </Button>
-
 
                             <Button
                                 v-if="canReverse"

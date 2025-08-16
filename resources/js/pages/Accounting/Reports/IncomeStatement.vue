@@ -92,15 +92,11 @@ const exportReport = () => {
 };
 
 const profitMargin = computed(() => {
-    return props.report.total_income > 0 
-        ? (props.report.net_income / props.report.total_income) * 100 
-        : 0;
+    return props.report.total_income > 0 ? (props.report.net_income / props.report.total_income) * 100 : 0;
 });
 
 const expenseRatio = computed(() => {
-    return props.report.total_income > 0 
-        ? (props.report.total_expenses / props.report.total_income) * 100 
-        : 0;
+    return props.report.total_income > 0 ? (props.report.total_expenses / props.report.total_income) * 100 : 0;
 });
 
 const isPositiveResult = computed(() => props.report.net_income > 0);
@@ -108,13 +104,13 @@ const isPositiveResult = computed(() => props.report.net_income > 0);
 // Categorize expenses for better visualization
 const categorizedExpenses = computed(() => {
     const categories = {
-        administrative: props.report.expenses.filter(account => account.code.startsWith('51')),
-        operational: props.report.expenses.filter(account => account.code.startsWith('52')),
-        maintenance: props.report.expenses.filter(account => account.code.startsWith('53')),
-        financial: props.report.expenses.filter(account => account.code.startsWith('54')),
-        other: props.report.expenses.filter(account => !['51', '52', '53', '54'].some(prefix => account.code.startsWith(prefix))),
+        administrative: props.report.expenses.filter((account) => account.code.startsWith('51')),
+        operational: props.report.expenses.filter((account) => account.code.startsWith('52')),
+        maintenance: props.report.expenses.filter((account) => account.code.startsWith('53')),
+        financial: props.report.expenses.filter((account) => account.code.startsWith('54')),
+        other: props.report.expenses.filter((account) => !['51', '52', '53', '54'].some((prefix) => account.code.startsWith(prefix))),
     };
-    
+
     return Object.entries(categories)
         .filter(([, accounts]) => accounts.length > 0)
         .map(([category, accounts]) => ({
@@ -150,7 +146,7 @@ const getCategoryName = (category: string) => {
                         {{ report.period.description }}
                     </p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button variant="outline" @click="showFilters = !showFilters">
                         <Filter class="mr-2 h-4 w-4" />
@@ -166,7 +162,7 @@ const getCategoryName = (category: string) => {
             <!-- Filters Panel -->
             <Card v-if="showFilters" class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Filtros de Período
                     </CardTitle>
@@ -175,28 +171,16 @@ const getCategoryName = (category: string) => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="start_date">Fecha Inicial</Label>
-                            <Input
-                                id="start_date"
-                                type="date"
-                                v-model="form.start_date"
-                            />
+                            <Input id="start_date" type="date" v-model="form.start_date" />
                         </div>
                         <div class="space-y-2">
                             <Label for="end_date">Fecha Final</Label>
-                            <Input
-                                id="end_date"
-                                type="date"
-                                v-model="form.end_date"
-                            />
+                            <Input id="end_date" type="date" v-model="form.end_date" />
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" @click="showFilters = false">
-                            Cancelar
-                        </Button>
-                        <Button @click="applyFilters">
-                            Aplicar Filtros
-                        </Button>
+                        <Button variant="outline" @click="showFilters = false"> Cancelar </Button>
+                        <Button @click="applyFilters"> Aplicar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -211,12 +195,10 @@ const getCategoryName = (category: string) => {
                         <div class="text-2xl font-bold text-green-600">
                             {{ formatCurrency(report.total_income) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            Base para el cálculo
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">Base para el cálculo</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Gastos Totales</CardTitle>
@@ -225,43 +207,41 @@ const getCategoryName = (category: string) => {
                         <div class="text-2xl font-bold text-red-600">
                             {{ formatCurrency(report.total_expenses) }}
                         </div>
-                        <div class="flex items-center mt-1">
-                            <Progress 
-                                :value="expenseRatio" 
-                                class="flex-1 h-2"
+                        <div class="mt-1 flex items-center">
+                            <Progress
+                                :value="expenseRatio"
+                                class="h-2 flex-1"
                                 :class="expenseRatio > 80 ? 'bg-red-100' : expenseRatio > 60 ? 'bg-yellow-100' : 'bg-green-100'"
                             />
-                            <span class="text-xs text-muted-foreground ml-2">{{ expenseRatio.toFixed(1) }}%</span>
+                            <span class="ml-2 text-xs text-muted-foreground">{{ expenseRatio.toFixed(1) }}%</span>
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Resultado Neto</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold flex items-center gap-2" 
-                             :class="isPositiveResult ? 'text-green-600' : 'text-red-600'">
+                        <div class="flex items-center gap-2 text-2xl font-bold" :class="isPositiveResult ? 'text-green-600' : 'text-red-600'">
                             <component :is="isPositiveResult ? TrendingUp : TrendingDown" class="h-5 w-5" />
                             {{ formatCurrency(Math.abs(report.net_income)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
+                        <p class="mt-1 text-xs text-muted-foreground">
                             {{ isPositiveResult ? 'Superávit' : 'Déficit' }}
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Margen</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold" 
-                             :class="profitMargin > 0 ? 'text-green-600' : 'text-red-600'">
+                        <div class="text-2xl font-bold" :class="profitMargin > 0 ? 'text-green-600' : 'text-red-600'">
                             {{ profitMargin.toFixed(1) }}%
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
+                        <p class="mt-1 text-xs text-muted-foreground">
                             {{ profitMargin > 10 ? 'Excelente' : profitMargin > 0 ? 'Positivo' : 'Negativo' }}
                         </p>
                     </CardContent>
@@ -282,7 +262,7 @@ const getCategoryName = (category: string) => {
                                     <TableHead class="w-20">Código</TableHead>
                                     <TableHead>Cuenta</TableHead>
                                     <TableHead class="text-right">Importe</TableHead>
-                                    <TableHead class="text-right w-20">%</TableHead>
+                                    <TableHead class="w-20 text-right">%</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -298,7 +278,7 @@ const getCategoryName = (category: string) => {
                                 </TableRow>
                                 <TableRow class="border-t-2 bg-green-50">
                                     <TableCell colspan="2" class="font-bold text-green-700">Total Ingresos</TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-green-700">
+                                    <TableCell class="text-right font-mono font-bold text-green-700">
                                         {{ formatCurrency(report.total_income) }}
                                     </TableCell>
                                     <TableCell class="text-right font-bold text-green-700">100.0%</TableCell>
@@ -315,14 +295,14 @@ const getCategoryName = (category: string) => {
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <div v-for="category in categorizedExpenses" :key="category.category" class="space-y-3">
-                            <h3 class="font-semibold text-lg text-red-600">{{ category.categoryName }}</h3>
+                            <h3 class="text-lg font-semibold text-red-600">{{ category.categoryName }}</h3>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead class="w-20">Código</TableHead>
                                         <TableHead>Cuenta</TableHead>
                                         <TableHead class="text-right">Importe</TableHead>
-                                        <TableHead class="text-right w-20">%</TableHead>
+                                        <TableHead class="w-20 text-right">%</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -337,10 +317,8 @@ const getCategoryName = (category: string) => {
                                         </TableCell>
                                     </TableRow>
                                     <TableRow class="border-t bg-red-50">
-                                        <TableCell colspan="2" class="font-semibold text-red-600">
-                                            Subtotal {{ category.categoryName }}
-                                        </TableCell>
-                                        <TableCell class="text-right font-semibold font-mono text-red-600">
+                                        <TableCell colspan="2" class="font-semibold text-red-600"> Subtotal {{ category.categoryName }} </TableCell>
+                                        <TableCell class="text-right font-mono font-semibold text-red-600">
                                             {{ formatCurrency(category.total) }}
                                         </TableCell>
                                         <TableCell class="text-right font-semibold text-red-600">
@@ -349,7 +327,7 @@ const getCategoryName = (category: string) => {
                                     </TableRow>
                                 </TableBody>
                             </Table>
-                            
+
                             <Separator v-if="categorizedExpenses.indexOf(category) !== categorizedExpenses.length - 1" />
                         </div>
 
@@ -359,12 +337,10 @@ const getCategoryName = (category: string) => {
                                 <TableBody>
                                     <TableRow class="bg-red-100">
                                         <TableCell class="font-bold text-red-700">Total Gastos</TableCell>
-                                        <TableCell class="text-right font-bold font-mono text-red-700">
+                                        <TableCell class="text-right font-mono font-bold text-red-700">
                                             {{ formatCurrency(report.total_expenses) }}
                                         </TableCell>
-                                        <TableCell class="text-right font-bold text-red-700 w-20">
-                                            {{ expenseRatio.toFixed(1) }}%
-                                        </TableCell>
+                                        <TableCell class="w-20 text-right font-bold text-red-700"> {{ expenseRatio.toFixed(1) }}% </TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
@@ -378,16 +354,19 @@ const getCategoryName = (category: string) => {
                         <Table>
                             <TableBody>
                                 <TableRow class="border-none">
-                                    <TableCell class="text-xl font-bold" 
-                                               :class="isPositiveResult ? 'text-green-700' : 'text-red-700'">
+                                    <TableCell class="text-xl font-bold" :class="isPositiveResult ? 'text-green-700' : 'text-red-700'">
                                         {{ isPositiveResult ? 'Superávit del Período' : 'Déficit del Período' }}
                                     </TableCell>
-                                    <TableCell class="text-right text-2xl font-bold font-mono"
-                                               :class="isPositiveResult ? 'text-green-700' : 'text-red-700'">
+                                    <TableCell
+                                        class="text-right font-mono text-2xl font-bold"
+                                        :class="isPositiveResult ? 'text-green-700' : 'text-red-700'"
+                                    >
                                         {{ formatCurrency(Math.abs(report.net_income)) }}
                                     </TableCell>
-                                    <TableCell class="text-right text-xl font-bold w-20"
-                                               :class="isPositiveResult ? 'text-green-700' : 'text-red-700'">
+                                    <TableCell
+                                        class="w-20 text-right text-xl font-bold"
+                                        :class="isPositiveResult ? 'text-green-700' : 'text-red-700'"
+                                    >
                                         {{ profitMargin.toFixed(1) }}%
                                     </TableCell>
                                 </TableRow>

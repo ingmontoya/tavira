@@ -33,7 +33,7 @@
                                     <div class="space-y-2">
                                         <Label for="approval-threshold">Monto mínimo para aprobación</Label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                                            <span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-500">
                                                 {{ form.approval_threshold_currency === 'COP' ? '$' : '$' }}
                                             </span>
                                             <Input
@@ -47,9 +47,7 @@
                                                 required
                                             />
                                         </div>
-                                        <p class="text-xs text-gray-500">
-                                            Gastos por encima de este monto requerirán aprobación previa
-                                        </p>
+                                        <p class="text-xs text-gray-500">Gastos por encima de este monto requerirán aprobación previa</p>
                                     </div>
 
                                     <div class="space-y-2">
@@ -89,9 +87,7 @@
                                         placeholder="consejo@conjunto.com"
                                         required
                                     />
-                                    <p class="text-xs text-gray-500">
-                                        Email donde se enviarán las notificaciones de gastos pendientes de aprobación
-                                    </p>
+                                    <p class="text-xs text-gray-500">Email donde se enviarán las notificaciones de gastos pendientes de aprobación</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -104,28 +100,20 @@
                                 <CheckCircleIcon class="h-5 w-5" />
                                 <span>Configuración de Auto-Aprobación</span>
                             </CardTitle>
-                            <CardDescription>
-                                Configurar categorías y condiciones para la aprobación automática de gastos.
-                            </CardDescription>
+                            <CardDescription> Configurar categorías y condiciones para la aprobación automática de gastos. </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="flex items-center space-x-2">
                                 <Switch id="auto-approve-threshold" v-model:checked="form.auto_approve_below_threshold" />
                                 <Label for="auto-approve-threshold">Auto-aprobar gastos por debajo del monto mínimo</Label>
                             </div>
-                            <p class="text-xs text-gray-500 ml-6">
-                                Los gastos por debajo del monto configurado se aprobarán automáticamente
-                            </p>
+                            <p class="ml-6 text-xs text-gray-500">Los gastos por debajo del monto configurado se aprobarán automáticamente</p>
 
                             <div class="space-y-2">
                                 <Label>Categorías con auto-aprobación</Label>
-                                <div class="border rounded-lg p-3">
+                                <div class="rounded-lg border p-3">
                                     <div class="space-y-2">
-                                        <div 
-                                            v-for="category in expenseCategories" 
-                                            :key="category.id"
-                                            class="flex items-center space-x-2"
-                                        >
+                                        <div v-for="category in expenseCategories" :key="category.id" class="flex items-center space-x-2">
                                             <input
                                                 type="checkbox"
                                                 :id="`category-${category.id}`"
@@ -133,19 +121,13 @@
                                                 v-model="form.auto_approve_categories"
                                                 class="rounded border-gray-300 text-blue-600 focus:border-blue-500 focus:ring-blue-500"
                                             />
-                                            <Label
-                                                :for="`category-${category.id}`"
-                                                class="flex items-center space-x-2 cursor-pointer"
-                                            >
-                                                <div
-                                                    class="w-3 h-3 rounded-full"
-                                                    :style="{ backgroundColor: category.color }"
-                                                ></div>
+                                            <Label :for="`category-${category.id}`" class="flex cursor-pointer items-center space-x-2">
+                                                <div class="h-3 w-3 rounded-full" :style="{ backgroundColor: category.color }"></div>
                                                 <span class="text-sm">{{ category.name }}</span>
                                             </Label>
                                         </div>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-2">
+                                    <p class="mt-2 text-xs text-gray-500">
                                         Los gastos en estas categorías se aprobarán automáticamente independiente del monto
                                     </p>
                                 </div>
@@ -160,18 +142,14 @@
                                 <BellIcon class="h-5 w-5" />
                                 <span>Configuración de Notificaciones</span>
                             </CardTitle>
-                            <CardDescription>
-                                Configurar cuándo enviar notificaciones por email sobre el estado de los gastos.
-                            </CardDescription>
+                            <CardDescription> Configurar cuándo enviar notificaciones por email sobre el estado de los gastos. </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="space-y-4">
                                 <div class="flex items-center justify-between">
                                     <div class="space-y-0.5">
                                         <Label for="notify-pending">Notificar gastos pendientes de aprobación</Label>
-                                        <p class="text-xs text-gray-500">
-                                            Enviar notificación cuando un gasto quede pendiente de aprobación
-                                        </p>
+                                        <p class="text-xs text-gray-500">Enviar notificación cuando un gasto quede pendiente de aprobación</p>
                                     </div>
                                     <Switch id="notify-pending" v-model:checked="form.notify_on_pending_approval" />
                                 </div>
@@ -179,9 +157,7 @@
                                 <div class="flex items-center justify-between">
                                     <div class="space-y-0.5">
                                         <Label for="notify-approved">Notificar gastos aprobados</Label>
-                                        <p class="text-xs text-gray-500">
-                                            Enviar notificación cuando un gasto sea aprobado
-                                        </p>
+                                        <p class="text-xs text-gray-500">Enviar notificación cuando un gasto sea aprobado</p>
                                     </div>
                                     <Switch id="notify-approved" v-model:checked="form.notify_on_approval_granted" />
                                 </div>
@@ -189,9 +165,7 @@
                                 <div class="flex items-center justify-between">
                                     <div class="space-y-0.5">
                                         <Label for="notify-rejected">Notificar gastos rechazados</Label>
-                                        <p class="text-xs text-gray-500">
-                                            Enviar notificación cuando un gasto sea rechazado
-                                        </p>
+                                        <p class="text-xs text-gray-500">Enviar notificación cuando un gasto sea rechazado</p>
                                     </div>
                                     <Switch id="notify-rejected" v-model:checked="form.notify_on_approval_rejected" />
                                 </div>
@@ -200,18 +174,18 @@
                     </Card>
 
                     <!-- Summary Card -->
-                    <Card class="bg-blue-50 border-blue-200">
+                    <Card class="border-blue-200 bg-blue-50">
                         <CardContent class="pt-6">
                             <div class="flex items-start gap-4">
-                                <InfoIcon class="w-5 h-5 text-blue-600 mt-0.5" />
+                                <InfoIcon class="mt-0.5 h-5 w-5 text-blue-600" />
                                 <div>
-                                    <h4 class="font-medium text-blue-900 mb-2">Resumen de Configuración</h4>
-                                    <div class="text-sm text-blue-800 space-y-1">
-                                        <p v-if="!form.approval_required">
-                                            • Todos los gastos se aprobarán automáticamente sin revisión
-                                        </p>
+                                    <h4 class="mb-2 font-medium text-blue-900">Resumen de Configuración</h4>
+                                    <div class="space-y-1 text-sm text-blue-800">
+                                        <p v-if="!form.approval_required">• Todos los gastos se aprobarán automáticamente sin revisión</p>
                                         <p v-else>
-                                            • Gastos por encima de {{ formatCurrency(form.approval_threshold_amount, form.approval_threshold_currency) }} requerirán aprobación
+                                            • Gastos por encima de
+                                            {{ formatCurrency(form.approval_threshold_amount, form.approval_threshold_currency) }} requerirán
+                                            aprobación
                                         </p>
                                         <p v-if="form.approval_required && form.auto_approve_below_threshold">
                                             • Gastos por debajo del monto se aprobarán automáticamente
@@ -229,21 +203,10 @@
                     </Card>
 
                     <div class="flex justify-between">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            @click="resetForm"
-                            :disabled="form.processing"
-                        >
-                            Restablecer
-                        </Button>
+                        <Button type="button" variant="outline" @click="resetForm" :disabled="form.processing"> Restablecer </Button>
                         <Button type="submit" :disabled="form.processing">
-                            <template v-if="form.processing">
-                                Guardando...
-                            </template>
-                            <template v-else>
-                                Guardar Configuración
-                            </template>
+                            <template v-if="form.processing"> Guardando... </template>
+                            <template v-else> Guardar Configuración </template>
                         </Button>
                     </div>
                 </form>
@@ -328,7 +291,7 @@ const formatCurrency = (amount: number, currency: string): string => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     });
-    
+
     return formatter.format(amount);
 };
 </script>

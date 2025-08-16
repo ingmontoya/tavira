@@ -2,10 +2,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import type { InvoiceEmailBatch } from '@/types';
 import { router } from '@inertiajs/vue3';
 import { Clock, Mail, MailCheck, MailX, Send, Trash2, User } from 'lucide-vue-next';
 import { computed } from 'vue';
-import type { InvoiceEmailBatch } from '@/types';
 
 interface Props {
     batch: InvoiceEmailBatch;
@@ -73,10 +73,7 @@ const viewDetails = () => {
         <CardHeader class="pb-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                    <component 
-                        :is="getStatusIcon(batch.status)" 
-                        class="h-5 w-5 text-muted-foreground" 
-                    />
+                    <component :is="getStatusIcon(batch.status)" class="h-5 w-5 text-muted-foreground" />
                     <CardTitle class="text-lg">{{ batch.name }}</CardTitle>
                 </div>
                 <Badge :class="batch.status_badge.class">
@@ -87,7 +84,7 @@ const viewDetails = () => {
                 {{ batch.description }}
             </CardDescription>
         </CardHeader>
-        
+
         <CardContent class="space-y-4">
             <!-- Statistics Grid -->
             <div class="grid grid-cols-2 gap-4">
@@ -107,11 +104,8 @@ const viewDetails = () => {
                     <span>Progreso</span>
                     <span>{{ getProgressPercentage }}%</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                        class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        :style="{ width: `${getProgressPercentage}%` }"
-                    ></div>
+                <div class="h-2 w-full rounded-full bg-gray-200">
+                    <div class="h-2 rounded-full bg-blue-600 transition-all duration-300" :style="{ width: `${getProgressPercentage}%` }"></div>
                 </div>
             </div>
 
@@ -135,32 +129,14 @@ const viewDetails = () => {
 
         <CardFooter class="pt-0">
             <div class="flex w-full gap-2">
-                <Button 
-                    variant="outline" 
-                    size="sm" 
-                    class="flex-1"
-                    @click="viewDetails"
-                >
-                    Ver Detalles
-                </Button>
-                
-                <Button 
-                    v-if="batch.can_send && batch.status === 'listo'"
-                    size="sm"
-                    @click="handleSend"
-                    class="bg-green-600 hover:bg-green-700"
-                >
+                <Button variant="outline" size="sm" class="flex-1" @click="viewDetails"> Ver Detalles </Button>
+
+                <Button v-if="batch.can_send && batch.status === 'listo'" size="sm" @click="handleSend" class="bg-green-600 hover:bg-green-700">
                     <Send class="mr-2 h-3 w-3" />
                     Enviar
                 </Button>
 
-                <Button 
-                    v-if="batch.can_delete"
-                    variant="outline" 
-                    size="sm"
-                    @click="handleDelete"
-                    class="text-red-600 hover:text-red-700"
-                >
+                <Button v-if="batch.can_delete" variant="outline" size="sm" @click="handleDelete" class="text-red-600 hover:text-red-700">
                     <Trash2 class="h-3 w-3" />
                 </Button>
             </div>

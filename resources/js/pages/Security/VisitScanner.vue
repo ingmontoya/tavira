@@ -1,15 +1,14 @@
 <script setup lang="ts">
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { QrCode, Scan, Check, X, AlertTriangle, User, Home, Calendar, Clock, Shield } from 'lucide-vue-next';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { AlertTriangle, Check, Clock, Home, QrCode, Scan, Shield, User } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
 
 interface Visit {
     id: number;
@@ -41,7 +40,7 @@ const isAuthorizing = ref(false);
 
 const validateQR = async () => {
     if (!qrCode.value.trim()) return;
-    
+
     isValidating.value = true;
     validationResult.value = null;
 
@@ -51,7 +50,7 @@ const validateQR = async () => {
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                'Accept': 'application/json',
+                Accept: 'application/json',
             },
             body: JSON.stringify({
                 qr_code: qrCode.value.trim(),
@@ -60,7 +59,6 @@ const validateQR = async () => {
 
         const data = await response.json();
         validationResult.value = data;
-
     } catch (error) {
         console.error('Error validating QR:', error);
         validationResult.value = {
@@ -83,7 +81,7 @@ const authorizeEntry = async () => {
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                'Accept': 'application/json',
+                Accept: 'application/json',
             },
             body: JSON.stringify({
                 qr_code: qrCode.value.trim(),
@@ -101,7 +99,7 @@ const authorizeEntry = async () => {
                 valid: true,
                 message: 'Entrada autorizada exitosamente',
             };
-            
+
             // Auto-clear after 3 seconds
             setTimeout(() => {
                 validationResult.value = null;
@@ -112,7 +110,6 @@ const authorizeEntry = async () => {
                 message: data.message || 'Error al autorizar la entrada',
             };
         }
-
     } catch (error) {
         console.error('Error authorizing entry:', error);
         validationResult.value = {
@@ -148,11 +145,11 @@ onMounted(() => {
 
 <template>
     <Head title="Escáner de Visitas" />
-    
+
     <AppLayout>
-        <div class="container mx-auto px-6 py-8 max-w-2xl">
+        <div class="container mx-auto max-w-2xl px-6 py-8">
             <div class="mb-8 text-center">
-                <div class="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-xl px-6 py-4 mb-4">
+                <div class="mb-4 inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 text-white">
                     <Shield class="h-6 w-6" />
                     <h1 class="text-2xl font-bold">Control de Acceso</h1>
                 </div>
@@ -167,9 +164,7 @@ onMounted(() => {
                             <Scan class="h-5 w-5" />
                             Escáner de Código QR
                         </CardTitle>
-                        <CardDescription>
-                            Ingresa o escanea el código QR del visitante
-                        </CardDescription>
+                        <CardDescription> Ingresa o escanea el código QR del visitante </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div>
@@ -178,25 +173,18 @@ onMounted(() => {
                                 id="qr-input"
                                 v-model="qrCode"
                                 placeholder="Ingresa el código QR..."
-                                class="font-mono text-lg text-center"
+                                class="text-center font-mono text-lg"
                                 @keyup.enter="validateQR"
                                 @input="validationResult = null"
                             />
                         </div>
 
                         <div class="flex gap-3">
-                            <Button
-                                @click="validateQR"
-                                :disabled="!qrCode.trim() || isValidating"
-                                class="flex-1"
-                                variant="default"
-                            >
-                                <QrCode class="h-4 w-4 mr-2" />
+                            <Button @click="validateQR" :disabled="!qrCode.trim() || isValidating" class="flex-1" variant="default">
+                                <QrCode class="mr-2 h-4 w-4" />
                                 {{ isValidating ? 'Validando...' : 'Validar Código' }}
                             </Button>
-                            <Button @click="resetForm" variant="outline">
-                                Limpiar
-                            </Button>
+                            <Button @click="resetForm" variant="outline"> Limpiar </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -216,11 +204,11 @@ onMounted(() => {
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <!-- Visit Details -->
-                            <div class="bg-white rounded-lg p-4 space-y-3">
+                            <div class="space-y-3 rounded-lg bg-white p-4">
                                 <div class="flex items-center gap-3">
                                     <User class="h-5 w-5 text-gray-500" />
                                     <div>
-                                        <div class="font-semibold text-lg">{{ validationResult.visit.visitor_name }}</div>
+                                        <div class="text-lg font-semibold">{{ validationResult.visit.visitor_name }}</div>
                                         <div class="text-sm text-gray-600">{{ validationResult.visit.visitor_document_number }}</div>
                                     </div>
                                 </div>
@@ -231,28 +219,26 @@ onMounted(() => {
                                         <div class="font-medium">
                                             Torre {{ validationResult.visit.apartment.tower }} - Apt {{ validationResult.visit.apartment.number }}
                                         </div>
-                                        <div class="text-sm text-gray-600">
-                                            Autorizado por: {{ validationResult.visit.creator.name }}
-                                        </div>
+                                        <div class="text-sm text-gray-600">Autorizado por: {{ validationResult.visit.creator.name }}</div>
                                     </div>
                                 </div>
 
                                 <div v-if="validationResult.visit.visit_reason" class="flex items-start gap-3">
-                                    <Clock class="h-5 w-5 text-gray-500 mt-0.5" />
+                                    <Clock class="mt-0.5 h-5 w-5 text-gray-500" />
                                     <div>
-                                        <div class="text-sm text-gray-600 font-medium">Motivo de la visita:</div>
+                                        <div class="text-sm font-medium text-gray-600">Motivo de la visita:</div>
                                         <div class="text-sm">{{ validationResult.visit.visit_reason }}</div>
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4 pt-2 border-t">
+                                <div class="grid grid-cols-2 gap-4 border-t pt-2">
                                     <div>
                                         <div class="text-xs text-gray-500">Válido desde</div>
-                                        <div class="text-sm font-mono">{{ formatDate(validationResult.visit.valid_from) }}</div>
+                                        <div class="font-mono text-sm">{{ formatDate(validationResult.visit.valid_from) }}</div>
                                     </div>
                                     <div>
                                         <div class="text-xs text-gray-500">Válido hasta</div>
-                                        <div class="text-sm font-mono">{{ formatDate(validationResult.visit.valid_until) }}</div>
+                                        <div class="font-mono text-sm">{{ formatDate(validationResult.visit.valid_until) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -269,13 +255,8 @@ onMounted(() => {
                             </div>
 
                             <!-- Authorize Button -->
-                            <Button
-                                @click="authorizeEntry"
-                                :disabled="isAuthorizing"
-                                class="w-full bg-green-600 hover:bg-green-700"
-                                size="lg"
-                            >
-                                <Check class="h-5 w-5 mr-2" />
+                            <Button @click="authorizeEntry" :disabled="isAuthorizing" class="w-full bg-green-600 hover:bg-green-700" size="lg">
+                                <Check class="mr-2 h-5 w-5" />
                                 {{ isAuthorizing ? 'Autorizando...' : 'Autorizar Entrada' }}
                             </Button>
                         </CardContent>
@@ -285,14 +266,18 @@ onMounted(() => {
                     <Alert v-else-if="!validationResult.valid" class="border-red-200 bg-red-50">
                         <AlertTriangle class="h-4 w-4 text-red-600" />
                         <AlertDescription class="text-red-800">
-                            <div class="font-medium mb-2">Código No Válido</div>
+                            <div class="mb-2 font-medium">Código No Válido</div>
                             <div>{{ validationResult.message }}</div>
-                            
+
                             <!-- Show visit details if available but invalid -->
-                            <div v-if="validationResult.visit" class="mt-3 p-3 bg-white rounded border">
-                                <div class="text-sm space-y-1">
+                            <div v-if="validationResult.visit" class="mt-3 rounded border bg-white p-3">
+                                <div class="space-y-1 text-sm">
                                     <div><strong>Visitante:</strong> {{ validationResult.visit.visitor_name }}</div>
-                                    <div><strong>Apartamento:</strong> {{ validationResult.visit.apartment.tower }}-{{ validationResult.visit.apartment.number }}</div>
+                                    <div>
+                                        <strong>Apartamento:</strong> {{ validationResult.visit.apartment.tower }}-{{
+                                            validationResult.visit.apartment.number
+                                        }}
+                                    </div>
                                     <div><strong>Estado:</strong> {{ validationResult.visit.status }}</div>
                                 </div>
                             </div>
@@ -309,7 +294,7 @@ onMounted(() => {
                 </div>
 
                 <!-- Quick Actions -->
-                <Card class="bg-blue-50 border-blue-200">
+                <Card class="border-blue-200 bg-blue-50">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2 text-blue-800">
                             <Shield class="h-5 w-5" />
@@ -318,12 +303,8 @@ onMounted(() => {
                     </CardHeader>
                     <CardContent>
                         <div class="grid grid-cols-1 gap-3">
-                            <Button
-                                @click="router.get(route('security.visits.recent-entries'))"
-                                variant="outline"
-                                class="justify-start"
-                            >
-                                <Clock class="h-4 w-4 mr-2" />
+                            <Button @click="router.get(route('security.visits.recent-entries'))" variant="outline" class="justify-start">
+                                <Clock class="mr-2 h-4 w-4" />
                                 Ver Entradas Recientes
                             </Button>
                         </div>
@@ -331,9 +312,9 @@ onMounted(() => {
                 </Card>
 
                 <!-- Instructions -->
-                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 class="font-medium text-gray-800 mb-2">Instrucciones:</h3>
-                    <ul class="text-sm text-gray-600 space-y-1">
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <h3 class="mb-2 font-medium text-gray-800">Instrucciones:</h3>
+                    <ul class="space-y-1 text-sm text-gray-600">
                         <li>• Solicita al visitante que muestre su código QR</li>
                         <li>• Ingresa o escanea el código en el campo superior</li>
                         <li>• Verifica la identidad del visitante con sus datos</li>

@@ -69,7 +69,7 @@ const customFilters = ref({
 
 // Computed values for filter options
 const uniqueYears = computed(() => {
-    const years = [...new Set(data.map((budget) => budget.year).filter(year => year != null))].sort((a, b) => b - a);
+    const years = [...new Set(data.map((budget) => budget.year).filter((year) => year != null))].sort((a, b) => b - a);
     return years;
 });
 

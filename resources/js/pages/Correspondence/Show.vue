@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Package, Mail, FileText, Calendar, MapPin, Camera, CheckCircle, Edit, User, PenTool } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, Camera, CheckCircle, Edit, FileText, Mail, MapPin, Package, PenTool, User } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Correspondence {
     id: number;
@@ -75,20 +75,29 @@ const signatureInput = ref<HTMLInputElement>();
 
 const getTypeIcon = (type: string) => {
     switch (type) {
-        case 'package': return Package;
-        case 'letter': return Mail;
-        case 'document': return FileText;
-        default: return Mail;
+        case 'package':
+            return Package;
+        case 'letter':
+            return Mail;
+        case 'document':
+            return FileText;
+        default:
+            return Mail;
     }
 };
 
 const getTypeLabel = (type: string) => {
     switch (type) {
-        case 'package': return 'Paquete';
-        case 'letter': return 'Carta';
-        case 'document': return 'Documento';
-        case 'other': return 'Otro';
-        default: return type;
+        case 'package':
+            return 'Paquete';
+        case 'letter':
+            return 'Carta';
+        case 'document':
+            return 'Documento';
+        case 'other':
+            return 'Otro';
+        default:
+            return type;
     }
 };
 
@@ -154,12 +163,12 @@ const openImageDialog = (imagePath: string) => {
 
 // Get signature attachments
 const signatureAttachments = computed(() => {
-    return props.correspondence.attachments.filter(attachment => attachment.type === 'signature');
+    return props.correspondence.attachments.filter((attachment) => attachment.type === 'signature');
 });
 
 // Get non-signature attachments for the general attachments section
 const nonSignatureAttachments = computed(() => {
-    return props.correspondence.attachments.filter(attachment => attachment.type !== 'signature');
+    return props.correspondence.attachments.filter((attachment) => attachment.type !== 'signature');
 });
 
 // Delete attachment function (to be implemented when needed)
@@ -179,18 +188,14 @@ const nonSignatureAttachments = computed(() => {
                 <div class="flex items-center space-x-4">
                     <Link
                         :href="route('correspondence.index')"
-                        class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                        class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
-                        <ArrowLeft class="w-4 h-4 mr-2" />
+                        <ArrowLeft class="mr-2 h-4 w-4" />
                         Volver
                     </Link>
                     <div>
-                        <h1 class="text-2xl font-semibold text-gray-900">
-                            Correspondencia {{ correspondence.tracking_number }}
-                        </h1>
-                        <p class="text-sm text-gray-600 mt-1">
-                            Detalles de la correspondencia recibida
-                        </p>
+                        <h1 class="text-2xl font-semibold text-gray-900">Correspondencia {{ correspondence.tracking_number }}</h1>
+                        <p class="mt-1 text-sm text-gray-600">Detalles de la correspondencia recibida</p>
                     </div>
                 </div>
 
@@ -198,47 +203,41 @@ const nonSignatureAttachments = computed(() => {
                     <Link
                         v-if="canEdit"
                         :href="route('correspondence.edit', correspondence.id)"
-                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                        class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
-                        <Edit class="w-4 h-4 mr-2" />
+                        <Edit class="mr-2 h-4 w-4" />
                         Editar
                     </Link>
 
-                    <Button
-                        v-if="canDeliver"
-                        @click="showDeliveryDialog = true"
-                        class="inline-flex items-center"
-                    >
-                        <CheckCircle class="w-4 h-4 mr-2" />
+                    <Button v-if="canDeliver" @click="showDeliveryDialog = true" class="inline-flex items-center">
+                        <CheckCircle class="mr-2 h-4 w-4" />
                         Marcar como Entregada
                     </Button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Main content -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <!-- Basic information -->
                     <Card>
                         <CardHeader>
                             <div class="flex items-center justify-between">
                                 <CardTitle class="flex items-center space-x-2">
-                                    <component :is="getTypeIcon(correspondence.type)" class="w-5 h-5" />
+                                    <component :is="getTypeIcon(correspondence.type)" class="h-5 w-5" />
                                     <span>{{ getTypeLabel(correspondence.type) }}</span>
                                 </CardTitle>
                                 <Badge :class="getStatusBadge(correspondence.status).class">
                                     {{ getStatusBadge(correspondence.status).text }}
                                 </Badge>
                             </div>
-                            <CardDescription>
-                                Información general de la correspondencia
-                            </CardDescription>
+                            <CardDescription> Información general de la correspondencia </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <Label class="text-sm font-medium text-gray-500">Número de Seguimiento</Label>
-                                    <p class="text-lg font-mono">{{ correspondence.tracking_number }}</p>
+                                    <p class="font-mono text-lg">{{ correspondence.tracking_number }}</p>
                                 </div>
                                 <div>
                                     <Label class="text-sm font-medium text-gray-500">Tipo</Label>
@@ -268,12 +267,12 @@ const nonSignatureAttachments = computed(() => {
                     <Card v-if="correspondence.delivered_at">
                         <CardHeader>
                             <CardTitle class="flex items-center space-x-2">
-                                <CheckCircle class="w-5 h-5 text-green-600" />
+                                <CheckCircle class="h-5 w-5 text-green-600" />
                                 <span>Información de Entrega</span>
                             </CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <Label class="text-sm font-medium text-gray-500">Entregado por</Label>
                                     <p>{{ correspondence.delivered_by?.name }}</p>
@@ -302,23 +301,21 @@ const nonSignatureAttachments = computed(() => {
                     <Card v-if="correspondence.delivered_at && (correspondence.recipient_name || signatureAttachments.length > 0)">
                         <CardHeader>
                             <CardTitle class="flex items-center space-x-2">
-                                <User class="w-5 h-5 text-blue-600" />
+                                <User class="h-5 w-5 text-blue-600" />
                                 <span>Información del Receptor</span>
                             </CardTitle>
-                            <CardDescription>
-                                Detalles de la persona que recibió la correspondencia
-                            </CardDescription>
+                            <CardDescription> Detalles de la persona que recibió la correspondencia </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-6">
                             <!-- Recipient Details -->
-                            <div v-if="correspondence.recipient_name" class="bg-gray-50 rounded-lg p-4">
+                            <div v-if="correspondence.recipient_name" class="rounded-lg bg-gray-50 p-4">
                                 <div class="flex items-start space-x-3">
-                                    <User class="w-5 h-5 text-gray-600 mt-1" />
+                                    <User class="mt-1 h-5 w-5 text-gray-600" />
                                     <div class="flex-1">
                                         <h4 class="text-lg font-semibold text-gray-900">{{ correspondence.recipient_name }}</h4>
                                         <div v-if="correspondence.recipient_document" class="mt-1">
                                             <Label class="text-sm font-medium text-gray-500">Documento de Identidad</Label>
-                                            <p class="text-sm font-mono">{{ correspondence.recipient_document }}</p>
+                                            <p class="font-mono text-sm">{{ correspondence.recipient_document }}</p>
                                         </div>
                                         <div class="mt-2">
                                             <Label class="text-sm font-medium text-gray-500">Fecha de Recepción</Label>
@@ -331,34 +328,27 @@ const nonSignatureAttachments = computed(() => {
                             <!-- Signature Display -->
                             <div v-if="signatureAttachments.length > 0" class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <PenTool class="w-4 h-4 text-gray-600" />
+                                    <PenTool class="h-4 w-4 text-gray-600" />
                                     <Label class="text-sm font-medium text-gray-700">Firma Digital del Receptor</Label>
                                 </div>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div
                                         v-for="signature in signatureAttachments"
                                         :key="signature.id"
-                                        class="border border-gray-200 rounded-lg p-3 bg-white"
+                                        class="rounded-lg border border-gray-200 bg-white p-3"
                                     >
-                                        <div 
-                                            class="cursor-pointer group"
-                                            @click="openImageDialog(signature.file_path)"
-                                        >
-                                            <div class="aspect-video rounded-md overflow-hidden bg-gray-50 border">
+                                        <div class="group cursor-pointer" @click="openImageDialog(signature.file_path)">
+                                            <div class="aspect-video overflow-hidden rounded-md border bg-gray-50">
                                                 <img
                                                     :src="`/storage/${signature.file_path}`"
                                                     :alt="`Firma de ${correspondence.recipient_name || 'Receptor'}`"
-                                                    class="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                                                    class="h-full w-full object-contain transition-transform group-hover:scale-105"
                                                 />
                                             </div>
                                             <div class="mt-2 text-center">
-                                                <p class="text-xs text-gray-500">
-                                                    Haga clic para ampliar
-                                                </p>
-                                                <p class="text-xs text-gray-400">
-                                                    Capturada por {{ signature.uploaded_by.name }}
-                                                </p>
+                                                <p class="text-xs text-gray-500">Haga clic para ampliar</p>
+                                                <p class="text-xs text-gray-400">Capturada por {{ signature.uploaded_by.name }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -371,36 +361,32 @@ const nonSignatureAttachments = computed(() => {
                     <Card v-if="nonSignatureAttachments.length > 0">
                         <CardHeader>
                             <CardTitle class="flex items-center space-x-2">
-                                <Camera class="w-5 h-5" />
+                                <Camera class="h-5 w-5" />
                                 <span>Archivos Adjuntos</span>
                             </CardTitle>
-                            <CardDescription>
-                                Evidencia fotográfica y documentos adjuntos (las firmas se muestran arriba)
-                            </CardDescription>
+                            <CardDescription> Evidencia fotográfica y documentos adjuntos (las firmas se muestran arriba) </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                                 <div
                                     v-for="attachment in nonSignatureAttachments"
                                     :key="attachment.id"
-                                    class="relative group cursor-pointer"
+                                    class="group relative cursor-pointer"
                                     @click="openImageDialog(attachment.file_path)"
                                 >
-                                    <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                                    <div class="aspect-square overflow-hidden rounded-lg bg-gray-100">
                                         <img
                                             :src="`/storage/${attachment.file_path}`"
                                             :alt="attachment.original_filename"
-                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                            class="h-full w-full object-cover transition-transform group-hover:scale-105"
                                         />
                                     </div>
                                     <div class="mt-2">
-                                        <p class="text-xs font-medium truncate">{{ attachment.original_filename }}</p>
+                                        <p class="truncate text-xs font-medium">{{ attachment.original_filename }}</p>
                                         <p class="text-xs text-gray-500">
                                             {{ attachment.type === 'photo_evidence' ? 'Evidencia' : 'Documento' }}
                                         </p>
-                                        <p class="text-xs text-gray-400">
-                                            Por {{ attachment.uploaded_by.name }}
-                                        </p>
+                                        <p class="text-xs text-gray-400">Por {{ attachment.uploaded_by.name }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -413,17 +399,13 @@ const nonSignatureAttachments = computed(() => {
                     <Card>
                         <CardHeader>
                             <CardTitle class="flex items-center space-x-2">
-                                <MapPin class="w-5 h-5" />
+                                <MapPin class="h-5 w-5" />
                                 <span>Destino</span>
                             </CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-2">
-                            <p class="text-lg font-semibold">
-                                {{ correspondence.apartment.tower }}-{{ correspondence.apartment.number }}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                Piso {{ correspondence.apartment.floor }}
-                            </p>
+                            <p class="text-lg font-semibold">{{ correspondence.apartment.tower }}-{{ correspondence.apartment.number }}</p>
+                            <p class="text-sm text-gray-600">Piso {{ correspondence.apartment.floor }}</p>
                             <p class="text-sm text-gray-600">
                                 {{ correspondence.apartment.apartment_type.name }}
                             </p>
@@ -433,7 +415,7 @@ const nonSignatureAttachments = computed(() => {
                     <Card>
                         <CardHeader>
                             <CardTitle class="flex items-center space-x-2">
-                                <Calendar class="w-5 h-5" />
+                                <Calendar class="h-5 w-5" />
                                 <span>Fechas</span>
                             </CardTitle>
                         </CardHeader>
@@ -460,64 +442,56 @@ const nonSignatureAttachments = computed(() => {
             <DialogContent class="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Marcar como Entregada</DialogTitle>
-                    <DialogDescription>
-                        Complete los detalles de la entrega de la correspondencia
-                    </DialogDescription>
+                    <DialogDescription> Complete los detalles de la entrega de la correspondencia </DialogDescription>
                 </DialogHeader>
 
                 <form @submit.prevent="markAsDelivered" class="space-y-4">
                     <!-- Show validation errors if any -->
-                    <div v-if="Object.keys(deliveryForm.errors).length > 0" class="bg-red-50 border border-red-200 rounded-md p-3">
-                        <h4 class="text-sm font-medium text-red-800 mb-2">Por favor corrija los siguientes errores:</h4>
-                        <ul class="text-sm text-red-600 space-y-1">
-                            <li v-for="(error, field) in deliveryForm.errors" :key="field">
-                                • {{ error }}
-                            </li>
+                    <div v-if="Object.keys(deliveryForm.errors).length > 0" class="rounded-md border border-red-200 bg-red-50 p-3">
+                        <h4 class="mb-2 text-sm font-medium text-red-800">Por favor corrija los siguientes errores:</h4>
+                        <ul class="space-y-1 text-sm text-red-600">
+                            <li v-for="(error, field) in deliveryForm.errors" :key="field">• {{ error }}</li>
                         </ul>
                     </div>
 
                     <div v-if="correspondence.requires_signature || Object.keys(deliveryForm.errors).length > 0" class="space-y-4">
                         <div class="space-y-2">
-                            <Label for="recipient_name">
-                                Nombre de quien recibe {{ correspondence.requires_signature ? '*' : '' }}
-                            </Label>
+                            <Label for="recipient_name"> Nombre de quien recibe {{ correspondence.requires_signature ? '*' : '' }} </Label>
                             <Input
                                 id="recipient_name"
                                 v-model="deliveryForm.recipient_name"
                                 :class="{ 'border-red-500': deliveryForm.errors.recipient_name }"
                                 :required="correspondence.requires_signature"
                             />
-                            <div v-if="deliveryForm.errors.recipient_name" class="text-red-600 text-sm">
+                            <div v-if="deliveryForm.errors.recipient_name" class="text-sm text-red-600">
                                 {{ deliveryForm.errors.recipient_name }}
                             </div>
                         </div>
 
                         <div class="space-y-2">
                             <Label for="recipient_document">Número de documento</Label>
-                            <Input
-                                id="recipient_document"
-                                v-model="deliveryForm.recipient_document"
-                                placeholder="Ej: 12345678"
-                            />
+                            <Input id="recipient_document" v-model="deliveryForm.recipient_document" placeholder="Ej: 12345678" />
                         </div>
 
                         <div class="space-y-2">
-                            <Label>
-                                Firma digital {{ correspondence.requires_signature ? '*' : '' }}
-                            </Label>
+                            <Label> Firma digital {{ correspondence.requires_signature ? '*' : '' }} </Label>
                             <input
                                 ref="signatureInput"
                                 type="file"
                                 accept="image/*"
                                 @change="handleSignatureUpload"
                                 :class="{ 'border-red-500': deliveryForm.errors.signature }"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                class="w-full rounded-md border border-gray-300 px-3 py-2"
                                 :required="correspondence.requires_signature"
                             />
                             <p class="text-xs text-gray-500">
-                                {{ correspondence.requires_signature ? 'Capture o suba una imagen de la firma del receptor' : 'Opcional: capture o suba una imagen de la firma del receptor' }}
+                                {{
+                                    correspondence.requires_signature
+                                        ? 'Capture o suba una imagen de la firma del receptor'
+                                        : 'Opcional: capture o suba una imagen de la firma del receptor'
+                                }}
                             </p>
-                            <div v-if="deliveryForm.errors.signature" class="text-red-600 text-sm">
+                            <div v-if="deliveryForm.errors.signature" class="text-sm text-red-600">
                                 {{ deliveryForm.errors.signature }}
                             </div>
                         </div>
@@ -534,9 +508,7 @@ const nonSignatureAttachments = computed(() => {
                     </div>
 
                     <div class="flex justify-end space-x-2">
-                        <Button type="button" variant="outline" @click="showDeliveryDialog = false">
-                            Cancelar
-                        </Button>
+                        <Button type="button" variant="outline" @click="showDeliveryDialog = false"> Cancelar </Button>
                         <Button type="submit" :disabled="deliveryForm.processing">
                             {{ deliveryForm.processing ? 'Procesando...' : 'Marcar como Entregada' }}
                         </Button>
@@ -552,11 +524,7 @@ const nonSignatureAttachments = computed(() => {
                     <DialogTitle>Vista de Imagen</DialogTitle>
                 </DialogHeader>
                 <div class="flex justify-center">
-                    <img
-                        :src="selectedImage"
-                        alt="Imagen ampliada"
-                        class="max-w-full max-h-96 object-contain"
-                    />
+                    <img :src="selectedImage" alt="Imagen ampliada" class="max-h-96 max-w-full object-contain" />
                 </div>
             </DialogContent>
         </Dialog>

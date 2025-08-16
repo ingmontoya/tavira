@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import {
-    ArrowLeft,
-    Reply,
-    ReplyAll,
-    Forward,
-    Trash2,
-    Download,
-    Printer,
-    Users
-} from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { ArrowLeft, Download, Forward, Printer, Reply, ReplyAll, Trash2, Users } from 'lucide-vue-next';
 
 interface Email {
     ID: string;
@@ -54,7 +45,7 @@ const formatDate = (dateString: string) => {
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -71,24 +62,28 @@ const deleteEmail = () => {
         router.delete(route('email.concejo.destroy', props.email.ID), {
             onSuccess: () => {
                 router.visit(route('email.concejo.index'));
-            }
+            },
         });
     }
 };
 
 const replyToEmail = () => {
-    router.visit(route('email.concejo.compose', {
-        reply_to: props.email.ID,
-        subject: `Re: ${props.email.Subject}`,
-        to: props.email.From.Address
-    }));
+    router.visit(
+        route('email.concejo.compose', {
+            reply_to: props.email.ID,
+            subject: `Re: ${props.email.Subject}`,
+            to: props.email.From.Address,
+        }),
+    );
 };
 
 const forwardEmail = () => {
-    router.visit(route('email.concejo.compose', {
-        forward: props.email.ID,
-        subject: `Fwd: ${props.email.Subject}`
-    }));
+    router.visit(
+        route('email.concejo.compose', {
+            forward: props.email.ID,
+            subject: `Fwd: ${props.email.Subject}`,
+        }),
+    );
 };
 
 const printEmail = () => {
@@ -98,44 +93,40 @@ const printEmail = () => {
 
 <template>
     <Head :title="`${email.Subject} - Correo Concejo`" />
-    
+
     <AppLayout>
         <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Button 
-                        @click="$inertia.visit(route('email.concejo.index'))"
-                        variant="outline"
-                        size="sm"
-                    >
-                        <ArrowLeft class="w-4 h-4 mr-2" />
+                    <Button @click="$inertia.visit(route('email.concejo.index'))" variant="outline" size="sm">
+                        <ArrowLeft class="mr-2 h-4 w-4" />
                         Volver
                     </Button>
                     <div>
-                        <h1 class="text-2xl font-bold tracking-tight truncate">{{ email.Subject }}</h1>
-                        <p class="text-muted-foreground flex items-center gap-2">
-                            <Users class="w-4 h-4" />
+                        <h1 class="truncate text-2xl font-bold tracking-tight">{{ email.Subject }}</h1>
+                        <p class="flex items-center gap-2 text-muted-foreground">
+                            <Users class="h-4 w-4" />
                             Correo Electrónico - Concejo
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button @click="replyToEmail" variant="outline" size="sm">
-                        <Reply class="w-4 h-4 mr-2" />
+                        <Reply class="mr-2 h-4 w-4" />
                         Responder
                     </Button>
                     <Button @click="forwardEmail" variant="outline" size="sm">
-                        <Forward class="w-4 h-4 mr-2" />
+                        <Forward class="mr-2 h-4 w-4" />
                         Reenviar
                     </Button>
                     <Button @click="printEmail" variant="outline" size="sm">
-                        <Printer class="w-4 h-4 mr-2" />
+                        <Printer class="mr-2 h-4 w-4" />
                         Imprimir
                     </Button>
                     <Button @click="deleteEmail" variant="outline" size="sm">
-                        <Trash2 class="w-4 h-4 mr-2" />
+                        <Trash2 class="mr-2 h-4 w-4" />
                         Eliminar
                     </Button>
                 </div>
@@ -151,14 +142,14 @@ const printEmail = () => {
                                 <h2 class="text-xl font-semibold">{{ email.Subject }}</h2>
                                 <div class="flex items-center gap-2">
                                     <Badge variant="outline" class="flex items-center gap-1">
-                                        <Users class="w-3 h-3" />
+                                        <Users class="h-3 w-3" />
                                         Concejo
                                     </Badge>
                                     <Badge v-if="!email.Read" variant="default">No leído</Badge>
                                 </div>
                             </div>
-                            
-                            <div class="text-sm text-muted-foreground space-y-1">
+
+                            <div class="space-y-1 text-sm text-muted-foreground">
                                 <div>
                                     <span class="font-medium">De:</span>
                                     {{ email.From.Name }} &lt;{{ email.From.Address }}&gt;
@@ -176,50 +167,41 @@ const printEmail = () => {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <Separator />
                     </div>
                 </CardHeader>
-                
+
                 <CardContent>
                     <!-- Email Body -->
                     <div class="space-y-6">
                         <!-- HTML Content -->
-                        <div 
-                            v-if="email.HTML" 
-                            class="prose prose-sm max-w-none"
-                            v-html="email.HTML"
-                        ></div>
-                        
+                        <div v-if="email.HTML" class="prose prose-sm max-w-none" v-html="email.HTML"></div>
+
                         <!-- Text Content (fallback) -->
-                        <div 
-                            v-else-if="email.Text"
-                            class="whitespace-pre-wrap text-sm"
-                        >
+                        <div v-else-if="email.Text" class="text-sm whitespace-pre-wrap">
                             {{ email.Text }}
                         </div>
-                        
+
                         <!-- No Content -->
-                        <div v-else class="text-center text-muted-foreground py-8">
+                        <div v-else class="py-8 text-center text-muted-foreground">
                             <p>No hay contenido disponible para este correo.</p>
                         </div>
-                        
+
                         <!-- Attachments -->
                         <div v-if="email.Attachments && email.Attachments.length > 0" class="space-y-2">
                             <Separator />
                             <h3 class="font-medium">Archivos adjuntos ({{ email.Attachments.length }})</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                <div 
+                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                <div
                                     v-for="attachment in email.Attachments"
                                     :key="attachment.FileName"
-                                    class="flex items-center gap-2 p-2 border rounded-lg hover:bg-muted cursor-pointer"
+                                    class="flex cursor-pointer items-center gap-2 rounded-lg border p-2 hover:bg-muted"
                                 >
-                                    <Download class="w-4 h-4 text-muted-foreground" />
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium truncate">{{ attachment.FileName }}</p>
-                                        <p class="text-xs text-muted-foreground">
-                                            {{ attachment.ContentType }} • {{ formatSize(attachment.Size) }}
-                                        </p>
+                                    <Download class="h-4 w-4 text-muted-foreground" />
+                                    <div class="min-w-0 flex-1">
+                                        <p class="truncate text-sm font-medium">{{ attachment.FileName }}</p>
+                                        <p class="text-xs text-muted-foreground">{{ attachment.ContentType }} • {{ formatSize(attachment.Size) }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -227,19 +209,19 @@ const printEmail = () => {
                     </div>
                 </CardContent>
             </Card>
-            
+
             <!-- Action Buttons -->
             <div class="flex items-center justify-center gap-4 pt-4">
                 <Button @click="replyToEmail" variant="default">
-                    <Reply class="w-4 h-4 mr-2" />
+                    <Reply class="mr-2 h-4 w-4" />
                     Responder
                 </Button>
                 <Button @click="replyToEmail" variant="outline">
-                    <ReplyAll class="w-4 h-4 mr-2" />
+                    <ReplyAll class="mr-2 h-4 w-4" />
                     Responder a todos
                 </Button>
                 <Button @click="forwardEmail" variant="outline">
-                    <Forward class="w-4 h-4 mr-2" />
+                    <Forward class="mr-2 h-4 w-4" />
                     Reenviar
                 </Button>
             </div>

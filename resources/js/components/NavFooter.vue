@@ -15,10 +15,7 @@ defineProps<Props>();
         <SidebarGroupContent>
             <SidebarMenu class="space-y-1">
                 <SidebarMenuItem v-for="(item, index) in items" :key="item.title">
-                    <SidebarMenuButton
-                        class="text-neutral-600 dark:text-neutral-300"
-                        as-child
-                    >
+                    <SidebarMenuButton class="text-neutral-600 dark:text-neutral-300" as-child>
                         <a
                             :href="item.href"
                             target="_blank"

@@ -2,14 +2,14 @@
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { Save, ArrowLeft, Building2, User, Phone, MapPin, FileText } from 'lucide-vue-next';
+import { ArrowLeft, Building2, FileText, MapPin, Phone, Save, User } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 // Breadcrumbs
@@ -55,7 +55,7 @@ const submit = () => {
     form.post('/suppliers', {
         onSuccess: () => {
             // Will redirect to show page
-        }
+        },
     });
 };
 
@@ -86,9 +86,26 @@ const taxRegimes = [
 
 // Major Colombian cities
 const colombianCities = [
-    'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Soledad', 'Ibagué', 
-    'Bucaramanga', 'Soacha', 'Santa Marta', 'Villavicencio', 'Valledupar', 'Pereira', 
-    'Montería', 'Manizales', 'Pasto', 'Neiva', 'Palmira', 'Armenia'
+    'Bogotá',
+    'Medellín',
+    'Cali',
+    'Barranquilla',
+    'Cartagena',
+    'Cúcuta',
+    'Soledad',
+    'Ibagué',
+    'Bucaramanga',
+    'Soacha',
+    'Santa Marta',
+    'Villavicencio',
+    'Valledupar',
+    'Pereira',
+    'Montería',
+    'Manizales',
+    'Pasto',
+    'Neiva',
+    'Palmira',
+    'Armenia',
 ];
 </script>
 
@@ -104,9 +121,7 @@ const colombianCities = [
                 <div class="flex items-center justify-between">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-semibold tracking-tight">Crear Nuevo Proveedor</h2>
-                        <p class="text-sm text-muted-foreground">
-                            Complete la información del proveedor para registrarlo en el sistema
-                        </p>
+                        <p class="text-sm text-muted-foreground">Complete la información del proveedor para registrarlo en el sistema</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <Button type="button" variant="outline" @click="cancel">
@@ -120,9 +135,9 @@ const colombianCities = [
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Main Information -->
-                    <div class="lg:col-span-2 space-y-6">
+                    <div class="space-y-6 lg:col-span-2">
                         <!-- Basic Information -->
                         <Card>
                             <CardHeader>
@@ -134,15 +149,10 @@ const colombianCities = [
                             <CardContent class="space-y-4">
                                 <div class="space-y-2">
                                     <Label for="name" class="required">Nombre o Razón Social</Label>
-                                    <Input
-                                        id="name"
-                                        v-model="form.name"
-                                        placeholder="Nombre del proveedor"
-                                        required
-                                    />
+                                    <Input id="name" v-model="form.name" placeholder="Nombre del proveedor" required />
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="document_type" class="required">Tipo de Documento</Label>
                                         <Select v-model="form.document_type" required>
@@ -193,54 +203,32 @@ const colombianCities = [
                                 </CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="email">Email Principal</Label>
-                                        <Input
-                                            id="email"
-                                            v-model="form.email"
-                                            type="email"
-                                            placeholder="email@proveedor.com"
-                                        />
+                                        <Input id="email" v-model="form.email" type="email" placeholder="email@proveedor.com" />
                                     </div>
 
                                     <div class="space-y-2">
                                         <Label for="phone">Teléfono Principal</Label>
-                                        <Input
-                                            id="phone"
-                                            v-model="form.phone"
-                                            placeholder="Número de teléfono"
-                                        />
+                                        <Input id="phone" v-model="form.phone" placeholder="Número de teléfono" />
                                     </div>
                                 </div>
 
                                 <div class="space-y-2">
                                     <Label for="contact_name">Persona de Contacto</Label>
-                                    <Input
-                                        id="contact_name"
-                                        v-model="form.contact_name"
-                                        placeholder="Nombre del contacto principal"
-                                    />
+                                    <Input id="contact_name" v-model="form.contact_name" placeholder="Nombre del contacto principal" />
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="contact_email">Email de Contacto</Label>
-                                        <Input
-                                            id="contact_email"
-                                            v-model="form.contact_email"
-                                            type="email"
-                                            placeholder="contacto@proveedor.com"
-                                        />
+                                        <Input id="contact_email" v-model="form.contact_email" type="email" placeholder="contacto@proveedor.com" />
                                     </div>
 
                                     <div class="space-y-2">
                                         <Label for="contact_phone">Teléfono de Contacto</Label>
-                                        <Input
-                                            id="contact_phone"
-                                            v-model="form.contact_phone"
-                                            placeholder="Número de contacto directo"
-                                        />
+                                        <Input id="contact_phone" v-model="form.contact_phone" placeholder="Número de contacto directo" />
                                     </div>
                                 </div>
                             </CardContent>
@@ -257,22 +245,13 @@ const colombianCities = [
                             <CardContent class="space-y-4">
                                 <div class="space-y-2">
                                     <Label for="address">Dirección</Label>
-                                    <Input
-                                        id="address"
-                                        v-model="form.address"
-                                        placeholder="Dirección completa"
-                                    />
+                                    <Input id="address" v-model="form.address" placeholder="Dirección completa" />
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="city">Ciudad</Label>
-                                        <Input
-                                            id="city"
-                                            v-model="form.city"
-                                            placeholder="Ciudad"
-                                            list="cities"
-                                        />
+                                        <Input id="city" v-model="form.city" placeholder="Ciudad" list="cities" />
                                         <datalist id="cities">
                                             <option v-for="city in colombianCities" :key="city" :value="city" />
                                         </datalist>
@@ -280,11 +259,7 @@ const colombianCities = [
 
                                     <div class="space-y-2">
                                         <Label for="country">País</Label>
-                                        <Input
-                                            id="country"
-                                            v-model="form.country"
-                                            placeholder="País"
-                                        />
+                                        <Input id="country" v-model="form.country" placeholder="País" />
                                     </div>
                                 </div>
                             </CardContent>
@@ -324,13 +299,8 @@ const colombianCities = [
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_active"
-                                        v-model:checked="form.is_active"
-                                    />
-                                    <Label for="is_active">
-                                        Proveedor activo
-                                    </Label>
+                                    <Checkbox id="is_active" v-model:checked="form.is_active" />
+                                    <Label for="is_active"> Proveedor activo </Label>
                                 </div>
                                 <p class="text-xs text-muted-foreground">
                                     Los proveedores inactivos no aparecerán en las listas de selección para nuevos gastos.
@@ -345,22 +315,20 @@ const colombianCities = [
                             </CardHeader>
                             <CardContent class="space-y-3 text-sm">
                                 <div>
-                                    <h4 class="font-medium mb-1">Campos Requeridos</h4>
-                                    <p class="text-muted-foreground text-xs">
+                                    <h4 class="mb-1 font-medium">Campos Requeridos</h4>
+                                    <p class="text-xs text-muted-foreground">
                                         Solo el nombre y documento son obligatorios. La información de contacto es opcional pero recomendada.
                                     </p>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium mb-1">Documentos</h4>
-                                    <p class="text-muted-foreground text-xs">
+                                    <h4 class="mb-1 font-medium">Documentos</h4>
+                                    <p class="text-xs text-muted-foreground">
                                         Para personas jurídicas use NIT. Para personas naturales use CC (Cédula de Ciudadanía).
                                     </p>
                                 </div>
                                 <div>
-                                    <h4 class="font-medium mb-1">Régimen Tributario</h4>
-                                    <p class="text-muted-foreground text-xs">
-                                        Esta información ayuda con el manejo de impuestos y retenciones.
-                                    </p>
+                                    <h4 class="mb-1 font-medium">Régimen Tributario</h4>
+                                    <p class="text-xs text-muted-foreground">Esta información ayuda con el manejo de impuestos y retenciones.</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -373,7 +341,7 @@ const colombianCities = [
 
 <style scoped>
 .required::after {
-    content: " *";
+    content: ' *';
     color: red;
 }
 </style>

@@ -55,6 +55,7 @@ class AnnouncementController extends Controller
         $announcements->through(function ($announcement) {
             $announcement->target_scope_display = $announcement->target_scope_display;
             $announcement->target_details = $announcement->target_details;
+
             return $announcement;
         });
 
@@ -121,7 +122,6 @@ class AnnouncementController extends Controller
             'target_apartment_ids' => ['nullable', 'array'],
             'target_apartment_ids.*' => ['integer', 'exists:apartments,id'],
         ]);
-
 
         // Conditional validation based on target_scope
         $this->validateTargetingFields($validated);
@@ -287,13 +287,12 @@ class AnnouncementController extends Controller
     {
         $targetScope = $data['target_scope'] ?? 'general';
 
-
         $validator = validator($data, []);
 
         switch ($targetScope) {
             case 'tower':
                 $towers = $data['target_towers'] ?? [];
-                if (!is_array($towers) || count($towers) === 0) {
+                if (! is_array($towers) || count($towers) === 0) {
                     $validator->errors()->add('target_towers', 'Debe seleccionar al menos una torre.');
                     throw new \Illuminate\Validation\ValidationException($validator);
                 }
@@ -301,7 +300,7 @@ class AnnouncementController extends Controller
 
             case 'apartment_type':
                 $types = $data['target_apartment_type_ids'] ?? [];
-                if (!is_array($types) || count($types) === 0) {
+                if (! is_array($types) || count($types) === 0) {
                     $validator->errors()->add('target_apartment_type_ids', 'Debe seleccionar al menos un tipo de apartamento.');
                     throw new \Illuminate\Validation\ValidationException($validator);
                 }
@@ -309,7 +308,7 @@ class AnnouncementController extends Controller
 
             case 'apartment':
                 $apartments = $data['target_apartment_ids'] ?? [];
-                if (!is_array($apartments) || count($apartments) === 0) {
+                if (! is_array($apartments) || count($apartments) === 0) {
                     $validator->errors()->add('target_apartment_ids', 'Debe seleccionar al menos un apartamento.');
                     throw new \Illuminate\Validation\ValidationException($validator);
                 }

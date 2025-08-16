@@ -100,20 +100,20 @@ class Announcement extends Model
                 // General announcements
                 $q->where('target_scope', 'general')
                   // Tower-specific announcements
-                  ->orWhere(function ($sq) use ($apartment) {
-                      $sq->where('target_scope', 'tower')
-                         ->whereJsonContains('target_towers', $apartment->tower);
-                  })
+                    ->orWhere(function ($sq) use ($apartment) {
+                        $sq->where('target_scope', 'tower')
+                            ->whereJsonContains('target_towers', $apartment->tower);
+                    })
                   // Apartment type-specific announcements
-                  ->orWhere(function ($sq) use ($apartment) {
-                      $sq->where('target_scope', 'apartment_type')
-                         ->whereJsonContains('target_apartment_type_ids', $apartment->apartment_type_id);
-                  })
+                    ->orWhere(function ($sq) use ($apartment) {
+                        $sq->where('target_scope', 'apartment_type')
+                            ->whereJsonContains('target_apartment_type_ids', $apartment->apartment_type_id);
+                    })
                   // Individual apartment announcements
-                  ->orWhere(function ($sq) use ($apartment) {
-                      $sq->where('target_scope', 'apartment')
-                         ->whereJsonContains('target_apartment_ids', $apartment->id);
-                  });
+                    ->orWhere(function ($sq) use ($apartment) {
+                        $sq->where('target_scope', 'apartment')
+                            ->whereJsonContains('target_apartment_ids', $apartment->id);
+                    });
             })
             ->orderByDesc('is_pinned')
             ->orderBy(\DB::raw("CASE 
@@ -199,7 +199,7 @@ class Announcement extends Model
     public function getTargetDetailsAttribute(): string
     {
         return match ($this->target_scope) {
-            'tower' => $this->target_towers ? 'Torres: ' . implode(', ', $this->target_towers) : '',
+            'tower' => $this->target_towers ? 'Torres: '.implode(', ', $this->target_towers) : '',
             'apartment_type' => $this->getApartmentTypesNames(),
             'apartment' => $this->getApartmentNumbers(),
             default => '',
@@ -208,7 +208,7 @@ class Announcement extends Model
 
     public function getApartmentTypesNames(): string
     {
-        if (!$this->target_apartment_type_ids) {
+        if (! $this->target_apartment_type_ids) {
             return '';
         }
 
@@ -216,12 +216,12 @@ class Announcement extends Model
             ->pluck('name')
             ->toArray();
 
-        return 'Tipos: ' . implode(', ', $types);
+        return 'Tipos: '.implode(', ', $types);
     }
 
     public function getApartmentNumbers(): string
     {
-        if (!$this->target_apartment_ids) {
+        if (! $this->target_apartment_ids) {
             return '';
         }
 
@@ -232,7 +232,7 @@ class Announcement extends Model
             })
             ->toArray();
 
-        return 'Apartamentos: ' . implode(', ', $apartments);
+        return 'Apartamentos: '.implode(', ', $apartments);
     }
 
     public function isVisibleToApartment(int $apartmentId): bool
@@ -244,7 +244,7 @@ class Announcement extends Model
         $apartment = \App\Models\Apartment::with(['apartmentType'])
             ->find($apartmentId);
 
-        if (!$apartment) {
+        if (! $apartment) {
             return false;
         }
 

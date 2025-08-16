@@ -179,7 +179,7 @@ class InvoiceEmailBatch extends Model
     {
         $totalRecipients = $this->total_recipients ?? 0;
         $emailsSent = $this->emails_sent ?? 0;
-        
+
         if ($totalRecipients === 0) {
             return 0;
         }
@@ -191,7 +191,7 @@ class InvoiceEmailBatch extends Model
     {
         $emailsSent = $this->emails_sent ?? 0;
         $emailsDelivered = $this->emails_delivered ?? 0;
-        
+
         if ($emailsSent === 0) {
             return 0;
         }
@@ -203,7 +203,7 @@ class InvoiceEmailBatch extends Model
     {
         $emailsDelivered = $this->emails_delivered ?? 0;
         $emailsOpened = $this->emails_opened ?? 0;
-        
+
         if ($emailsDelivered === 0) {
             return 0;
         }
@@ -215,7 +215,7 @@ class InvoiceEmailBatch extends Model
     {
         $emailsOpened = $this->emails_opened ?? 0;
         $emailsClicked = $this->emails_clicked ?? 0;
-        
+
         if ($emailsOpened === 0) {
             return 0;
         }

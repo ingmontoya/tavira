@@ -11,13 +11,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type {
+    Apartment,
+    CreateInvoiceEmailBatchData,
+    EligibleInvoice,
+    EligibleInvoiceFilters,
+    EligibleInvoicesResponse,
+    EmailTemplate,
+} from '@/types';
+import { cn, valueUpdater } from '@/utils';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
-import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
+import { createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
 import { ArrowLeft, CheckCircle, ChevronsUpDown, Eye, FileText, Filter, Mail, Plus, Search, X, XCircle } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
-import { cn, valueUpdater } from '@/utils';
-import type { EligibleInvoice, EligibleInvoicesResponse, EligibleInvoiceFilters, Apartment, EmailTemplate, CreateInvoiceEmailBatchData } from '@/types';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -154,9 +161,9 @@ const columns = [
         header: 'Tipo',
         cell: ({ row }) => {
             const typeLabels = {
-                'monthly': 'Mensual',
-                'individual': 'Individual', 
-                'late_fee': 'Intereses'
+                monthly: 'Mensual',
+                individual: 'Individual',
+                late_fee: 'Intereses',
             };
             return h('span', { class: 'text-sm' }, typeLabels[row.original.type] || row.original.type);
         },
@@ -199,11 +206,11 @@ const columns = [
         cell: ({ row }) => {
             const invoice = row.original;
             const statusLabels = {
-                'pending': { text: 'Pendiente', class: 'bg-yellow-100 text-yellow-800' },
-                'paid': { text: 'Pagado', class: 'bg-green-100 text-green-800' },
-                'overdue': { text: 'Vencido', class: 'bg-red-100 text-red-800' },
-                'partial': { text: 'Pago Parcial', class: 'bg-orange-100 text-orange-800' },
-                'cancelled': { text: 'Cancelado', class: 'bg-gray-100 text-gray-800' }
+                pending: { text: 'Pendiente', class: 'bg-yellow-100 text-yellow-800' },
+                paid: { text: 'Pagado', class: 'bg-green-100 text-green-800' },
+                overdue: { text: 'Vencido', class: 'bg-red-100 text-red-800' },
+                partial: { text: 'Pago Parcial', class: 'bg-orange-100 text-orange-800' },
+                cancelled: { text: 'Cancelado', class: 'bg-gray-100 text-gray-800' },
             };
             const statusInfo = statusLabels[invoice.status] || { text: invoice.status, class: 'bg-gray-100 text-gray-800' };
             return h(
@@ -291,7 +298,7 @@ const toggleAllSelection = () => {
         manualSelectedIds.value = [];
     } else {
         // Select all
-        manualSelectedIds.value = tableData.value.map(invoice => invoice.id);
+        manualSelectedIds.value = tableData.value.map((invoice) => invoice.id);
     }
     form.invoice_ids = [...manualSelectedIds.value];
     console.log('Manual select all updated:', form.invoice_ids);
@@ -313,15 +320,15 @@ const areSomeSelected = computed(() => {
 const handleSelectAllChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     console.log('Select all changed:', target.checked);
-    
+
     if (target.checked) {
         // Select all
-        manualSelectedIds.value = tableData.value.map(invoice => invoice.id);
+        manualSelectedIds.value = tableData.value.map((invoice) => invoice.id);
     } else {
         // Deselect all
         manualSelectedIds.value = [];
     }
-    
+
     form.invoice_ids = [...manualSelectedIds.value];
     console.log('Select all updated:', form.invoice_ids);
 };
@@ -336,31 +343,31 @@ const handleCheckboxChange = (event: Event, invoiceId: number) => {
 // Utility functions for table display
 const getTypeLabel = (type: string) => {
     const typeLabels = {
-        'monthly': 'Mensual',
-        'individual': 'Individual', 
-        'late_fee': 'Intereses'
+        monthly: 'Mensual',
+        individual: 'Individual',
+        late_fee: 'Intereses',
     };
     return typeLabels[type] || type;
 };
 
 const getStatusLabel = (status: string) => {
     const statusLabels = {
-        'pending': 'Pendiente',
-        'paid': 'Pagado',
-        'overdue': 'Vencido',
-        'partial': 'Pago Parcial',
-        'cancelled': 'Cancelado'
+        pending: 'Pendiente',
+        paid: 'Pagado',
+        overdue: 'Vencido',
+        partial: 'Pago Parcial',
+        cancelled: 'Cancelado',
     };
     return statusLabels[status] || status;
 };
 
 const getStatusBadgeClass = (status: string) => {
     const statusClasses = {
-        'pending': 'bg-yellow-100 text-yellow-800',
-        'paid': 'bg-green-100 text-green-800',
-        'overdue': 'bg-red-100 text-red-800',
-        'partial': 'bg-orange-100 text-orange-800',
-        'cancelled': 'bg-gray-100 text-gray-800'
+        pending: 'bg-yellow-100 text-yellow-800',
+        paid: 'bg-green-100 text-green-800',
+        overdue: 'bg-red-100 text-red-800',
+        partial: 'bg-orange-100 text-orange-800',
+        cancelled: 'bg-gray-100 text-gray-800',
     };
     return statusClasses[status] || 'bg-gray-100 text-gray-800';
 };
@@ -385,7 +392,7 @@ watch(
         console.log('Row selection changed:', newSelection);
         updateSelectedInvoices();
     },
-    { deep: true }
+    { deep: true },
 );
 
 // Apply filters
@@ -393,12 +400,9 @@ const applyFilters = () => {
     const params: Record<string, string> = {};
 
     if (customFilters.value.search) params.search = customFilters.value.search;
-    if (customFilters.value.apartment_id && customFilters.value.apartment_id !== 'all')
-        params.apartment_id = customFilters.value.apartment_id;
-    if (customFilters.value.status && customFilters.value.status !== 'all')
-        params.status = customFilters.value.status;
-    if (customFilters.value.type && customFilters.value.type !== 'all')
-        params.type = customFilters.value.type;
+    if (customFilters.value.apartment_id && customFilters.value.apartment_id !== 'all') params.apartment_id = customFilters.value.apartment_id;
+    if (customFilters.value.status && customFilters.value.status !== 'all') params.status = customFilters.value.status;
+    if (customFilters.value.type && customFilters.value.type !== 'all') params.type = customFilters.value.type;
     if (customFilters.value.date_from) params.date_from = customFilters.value.date_from;
     if (customFilters.value.date_to) params.date_to = customFilters.value.date_to;
 
@@ -426,7 +430,7 @@ const submitForm = () => {
     // Create filters based on selected invoices
     const filters = {
         invoice_ids: manualSelectedIds.value,
-        apartment_ids: [...new Set(selectedInvoices.value.map(inv => inv.apartment_id))],
+        apartment_ids: [...new Set(selectedInvoices.value.map((inv) => inv.apartment_id))],
         // Add other filters if needed
     };
 
@@ -489,16 +493,20 @@ const typeOptions = [
 const selectedCount = computed(() => manualSelectedIds.value.length);
 const canProceed = computed(() => {
     switch (currentStep.value) {
-        case 1: return form.name.trim().length > 0;
-        case 2: return selectedCount.value > 0;
-        case 3: return true;
-        default: return false;
+        case 1:
+            return form.name.trim().length > 0;
+        case 2:
+            return selectedCount.value > 0;
+        case 3:
+            return true;
+        default:
+            return false;
     }
 });
 
 // Get selected invoices for preview
 const selectedInvoices = computed(() => {
-    return tableData.value.filter(invoice => manualSelectedIds.value.includes(invoice.id));
+    return tableData.value.filter((invoice) => manualSelectedIds.value.includes(invoice.id));
 });
 
 // Calculate total amount
@@ -533,9 +541,9 @@ const totalAmount = computed(() => {
             </div>
 
             <!-- Progress Bar -->
-            <div class="w-full bg-gray-200 rounded-full h-2">
+            <div class="h-2 w-full rounded-full bg-gray-200">
                 <div
-                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    class="h-2 rounded-full bg-blue-600 transition-all duration-300"
                     :style="{ width: `${(currentStep / totalSteps) * 100}%` }"
                 ></div>
             </div>
@@ -561,42 +569,24 @@ const totalAmount = computed(() => {
                         <FileText class="h-5 w-5" />
                         <span>Información del Lote</span>
                     </CardTitle>
-                    <CardDescription>
-                        Define el nombre y descripción del lote de envío
-                    </CardDescription>
+                    <CardDescription> Define el nombre y descripción del lote de envío </CardDescription>
                 </CardHeader>
 
                 <CardContent class="space-y-4">
                     <div class="space-y-2">
                         <Label for="name">Nombre del Lote *</Label>
-                        <Input
-                            id="name"
-                            v-model="form.name"
-                            placeholder="Ej: Facturas Enero 2024"
-                            :class="{ 'border-red-500': form.errors.name }"
-                        />
+                        <Input id="name" v-model="form.name" placeholder="Ej: Facturas Enero 2024" :class="{ 'border-red-500': form.errors.name }" />
                         <div v-if="form.errors.name" class="text-sm text-red-600">{{ form.errors.name }}</div>
                     </div>
 
                     <div class="space-y-2">
                         <Label for="description">Descripción (opcional)</Label>
-                        <Textarea
-                            id="description"
-                            v-model="form.description"
-                            placeholder="Descripción adicional del lote..."
-                            rows="3"
-                        />
+                        <Textarea id="description" v-model="form.description" placeholder="Descripción adicional del lote..." rows="3" />
                     </div>
                 </CardContent>
 
                 <CardFooter class="pt-4">
-                    <Button
-                        @click="nextStep"
-                        :disabled="!canProceed"
-                        class="ml-auto"
-                    >
-                        Siguiente: Seleccionar Facturas
-                    </Button>
+                    <Button @click="nextStep" :disabled="!canProceed" class="ml-auto"> Siguiente: Seleccionar Facturas </Button>
                 </CardFooter>
             </Card>
 
@@ -616,12 +606,7 @@ const totalAmount = computed(() => {
                                 <Label for="search">Buscar</Label>
                                 <div class="relative">
                                     <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id="search"
-                                        placeholder="Número..."
-                                        v-model="customFilters.search"
-                                        class="pl-8"
-                                    />
+                                    <Input id="search" placeholder="Número..." v-model="customFilters.search" class="pl-8" />
                                 </div>
                             </div>
 
@@ -634,11 +619,7 @@ const totalAmount = computed(() => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">Todos</SelectItem>
-                                        <SelectItem
-                                            v-for="apartment in apartments"
-                                            :key="apartment.id"
-                                            :value="apartment.id.toString()"
-                                        >
+                                        <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id.toString()">
                                             {{ apartment.full_address }}
                                         </SelectItem>
                                     </SelectContent>
@@ -653,11 +634,7 @@ const totalAmount = computed(() => {
                                         <SelectValue placeholder="Estado" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem
-                                            v-for="status in statusOptions"
-                                            :key="status.value"
-                                            :value="status.value"
-                                        >
+                                        <SelectItem v-for="status in statusOptions" :key="status.value" :value="status.value">
                                             {{ status.label }}
                                         </SelectItem>
                                     </SelectContent>
@@ -672,11 +649,7 @@ const totalAmount = computed(() => {
                                         <SelectValue placeholder="Tipo" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem
-                                            v-for="type in typeOptions"
-                                            :key="type.value"
-                                            :value="type.value"
-                                        >
+                                        <SelectItem v-for="type in typeOptions" :key="type.value" :value="type.value">
                                             {{ type.label }}
                                         </SelectItem>
                                     </SelectContent>
@@ -686,21 +659,13 @@ const totalAmount = computed(() => {
                             <!-- Date From -->
                             <div class="space-y-2">
                                 <Label for="date_from">Desde</Label>
-                                <Input
-                                    id="date_from"
-                                    type="date"
-                                    v-model="customFilters.date_from"
-                                />
+                                <Input id="date_from" type="date" v-model="customFilters.date_from" />
                             </div>
 
                             <!-- Date To -->
                             <div class="space-y-2">
                                 <Label for="date_to">Hasta</Label>
-                                <Input
-                                    id="date_to"
-                                    type="date"
-                                    v-model="customFilters.date_to"
-                                />
+                                <Input id="date_to" type="date" v-model="customFilters.date_to" />
                             </div>
                         </div>
 
@@ -722,9 +687,7 @@ const totalAmount = computed(() => {
                 <Card>
                     <CardHeader>
                         <CardTitle>Facturas Elegibles</CardTitle>
-                        <CardDescription>
-                            Selecciona las facturas que deseas incluir en el lote de envío
-                        </CardDescription>
+                        <CardDescription> Selecciona las facturas que deseas incluir en el lote de envío </CardDescription>
                     </CardHeader>
 
                     <CardContent>
@@ -735,13 +698,11 @@ const totalAmount = computed(() => {
                                 id="select-all"
                                 :checked="areAllSelected"
                                 @change="handleSelectAllChange"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <label for="select-all" class="text-sm font-medium">
-                                Seleccionar todas las facturas ({{ tableData.length }})
-                            </label>
+                            <label for="select-all" class="text-sm font-medium"> Seleccionar todas las facturas ({{ tableData.length }}) </label>
                         </div>
-                        
+
                         <div class="rounded-md border">
                             <Table>
                                 <TableHeader>
@@ -770,7 +731,7 @@ const totalAmount = computed(() => {
                                                     type="checkbox"
                                                     :checked="isInvoiceSelected(invoice.id)"
                                                     @change="(e) => handleCheckboxChange(e, invoice.id)"
-                                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                                                    class="h-4 w-4 cursor-pointer rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                                 />
                                             </TableCell>
                                             <TableCell class="font-medium">{{ invoice.invoice_number }}</TableCell>
@@ -792,9 +753,7 @@ const totalAmount = computed(() => {
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <div class="font-medium text-orange-600">
-                                                    ${{ formatAmount(invoice.total_amount) }}
-                                                </div>
+                                                <div class="font-medium text-orange-600">${{ formatAmount(invoice.total_amount) }}</div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge :class="getStatusBadgeClass(invoice.status)">
@@ -810,9 +769,7 @@ const totalAmount = computed(() => {
                                     </template>
                                     <template v-else>
                                         <TableRow>
-                                            <TableCell :colSpan="9" class="h-24 text-center">
-                                                No se encontraron facturas elegibles.
-                                            </TableCell>
+                                            <TableCell :colSpan="9" class="h-24 text-center"> No se encontraron facturas elegibles. </TableCell>
                                         </TableRow>
                                     </template>
                                 </TableBody>
@@ -821,16 +778,9 @@ const totalAmount = computed(() => {
                     </CardContent>
 
                     <CardFooter class="flex justify-between">
-                        <Button @click="prevStep" variant="outline">
-                            Anterior: Información del Lote
-                        </Button>
+                        <Button @click="prevStep" variant="outline"> Anterior: Información del Lote </Button>
 
-                        <Button
-                            @click="nextStep"
-                            :disabled="!canProceed"
-                        >
-                            Siguiente: Revisar ({{ selectedCount }})
-                        </Button>
+                        <Button @click="nextStep" :disabled="!canProceed"> Siguiente: Revisar ({{ selectedCount }}) </Button>
                     </CardFooter>
                 </Card>
             </template>
@@ -865,11 +815,7 @@ const totalAmount = computed(() => {
                                         <SelectValue placeholder="Seleccionar template" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem
-                                            v-for="template in props.emailTemplates"
-                                            :key="template.id"
-                                            :value="template.id.toString()"
-                                        >
+                                        <SelectItem v-for="template in props.emailTemplates" :key="template.id" :value="template.id.toString()">
                                             {{ template.name }}
                                         </SelectItem>
                                     </SelectContent>
@@ -877,13 +823,8 @@ const totalAmount = computed(() => {
                             </div>
 
                             <div class="flex items-center space-x-2">
-                                <Checkbox
-                                    id="send_immediately"
-                                    v-model="form.send_immediately"
-                                />
-                                <Label for="send_immediately" class="text-sm">
-                                    Enviar inmediatamente después de crear
-                                </Label>
+                                <Checkbox id="send_immediately" v-model="form.send_immediately" />
+                                <Label for="send_immediately" class="text-sm"> Enviar inmediatamente después de crear </Label>
                             </div>
                         </CardContent>
                     </Card>
@@ -895,27 +836,23 @@ const totalAmount = computed(() => {
                                 <Mail class="h-5 w-5" />
                                 <span>Facturas Seleccionadas</span>
                             </CardTitle>
-                            <CardDescription>
-                                {{ selectedCount }} facturas por un total de ${{ totalAmount.toLocaleString() }}
-                            </CardDescription>
+                            <CardDescription> {{ selectedCount }} facturas por un total de ${{ totalAmount.toLocaleString() }} </CardDescription>
                         </CardHeader>
 
                         <CardContent>
-                            <div class="space-y-2 max-h-64 overflow-y-auto">
+                            <div class="max-h-64 space-y-2 overflow-y-auto">
                                 <div
                                     v-for="invoice in selectedInvoices"
                                     :key="invoice.id"
-                                    class="flex justify-between items-center py-2 border-b last:border-0"
+                                    class="flex items-center justify-between border-b py-2 last:border-0"
                                 >
                                     <div>
-                                        <div class="font-medium text-sm">{{ invoice.invoice_number }}</div>
+                                        <div class="text-sm font-medium">{{ invoice.invoice_number }}</div>
                                         <div class="text-xs text-muted-foreground">
                                             {{ invoice.apartment_number || 'Sin apartamento asignado' }}
                                         </div>
                                     </div>
-                                    <div class="text-sm font-medium">
-                                        ${{ parseFloat(invoice.total_amount.toString()).toLocaleString() }}
-                                    </div>
+                                    <div class="text-sm font-medium">${{ parseFloat(invoice.total_amount.toString()).toLocaleString() }}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -925,15 +862,9 @@ const totalAmount = computed(() => {
                 <!-- Action Buttons -->
                 <Card>
                     <CardFooter class="flex justify-between pt-6">
-                        <Button @click="prevStep" variant="outline">
-                            Anterior: Seleccionar Facturas
-                        </Button>
+                        <Button @click="prevStep" variant="outline"> Anterior: Seleccionar Facturas </Button>
 
-                        <Button
-                            @click="submitForm"
-                            :disabled="form.processing"
-                            class="bg-green-600 hover:bg-green-700"
-                        >
+                        <Button @click="submitForm" :disabled="form.processing" class="bg-green-600 hover:bg-green-700">
                             <Plus class="mr-2 h-4 w-4" />
                             {{ form.processing ? 'Creando...' : 'Crear Lote de Envío' }}
                         </Button>

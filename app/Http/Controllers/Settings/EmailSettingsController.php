@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Settings\EmailSettings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class EmailSettingsController extends Controller
@@ -40,7 +40,7 @@ class EmailSettingsController extends Controller
         $validatedData = $validator->validated();
 
         // Encrypt sensitive data before storing
-        if (isset($validatedData['smtp_password']) && !empty($validatedData['smtp_password'])) {
+        if (isset($validatedData['smtp_password']) && ! empty($validatedData['smtp_password'])) {
             $validatedData['smtp_password'] = encrypt($validatedData['smtp_password']);
         }
 
@@ -90,7 +90,7 @@ class EmailSettingsController extends Controller
             // Try to create a mailer instance and test connection
             $mailer = app('mail.manager')->mailer('test_smtp');
             $transport = $mailer->getSymfonyTransporter();
-            
+
             // Test the connection (this will throw exception if fails)
             $transport->start();
             $transport->stop();
@@ -104,7 +104,7 @@ class EmailSettingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Conexión SMTP exitosa'
+                'message' => 'Conexión SMTP exitosa',
             ]);
 
         } catch (\Exception $e) {
@@ -118,7 +118,7 @@ class EmailSettingsController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error de conexión SMTP: ' . $e->getMessage()
+                'message' => 'Error de conexión SMTP: '.$e->getMessage(),
             ], 400);
         }
     }
@@ -130,16 +130,16 @@ class EmailSettingsController extends Controller
             'email_type' => 'required|in:admin,council',
         ]);
 
-        if (!$this->emailSettings->isConfigured()) {
+        if (! $this->emailSettings->isConfigured()) {
             return response()->json([
                 'success' => false,
-                'message' => 'La configuración de correo no está completa'
+                'message' => 'La configuración de correo no está completa',
             ], 400);
         }
 
         try {
             $emailType = $request->email_type;
-            $config = $emailType === 'admin' 
+            $config = $emailType === 'admin'
                 ? $this->emailSettings->getAdminEmailConfig()
                 : $this->emailSettings->getCouncilEmailConfig();
 
@@ -148,8 +148,8 @@ class EmailSettingsController extends Controller
                 'to' => $request->to_email,
                 'from' => $config['address'],
                 'from_name' => $config['name'],
-                'subject' => 'Test de Configuración de Correo - ' . $config['name'],
-                'body' => "Este es un correo de prueba para verificar la configuración del correo electrónico.\n\nEnviado desde: {$config['name']}\nFecha: " . now()->format('d/m/Y H:i:s'),
+                'subject' => 'Test de Configuración de Correo - '.$config['name'],
+                'body' => "Este es un correo de prueba para verificar la configuración del correo electrónico.\n\nEnviado desde: {$config['name']}\nFecha: ".now()->format('d/m/Y H:i:s'),
             ];
 
             // TODO: Implement actual email sending using the configured settings
@@ -165,7 +165,7 @@ class EmailSettingsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Correo de prueba enviado exitosamente'
+                'message' => 'Correo de prueba enviado exitosamente',
             ]);
 
         } catch (\Exception $e) {
@@ -178,7 +178,7 @@ class EmailSettingsController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al enviar correo de prueba: ' . $e->getMessage()
+                'message' => 'Error al enviar correo de prueba: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -214,7 +214,7 @@ class EmailSettingsController extends Controller
         $this->emailSettings->admin_email_address = '';
         $this->emailSettings->admin_email_name = 'Administración';
         $this->emailSettings->admin_email_signature = '';
-        
+
         $this->emailSettings->council_email_address = '';
         $this->emailSettings->council_email_name = 'Concejo de Administración';
         $this->emailSettings->council_email_signature = '';
@@ -236,18 +236,18 @@ class EmailSettingsController extends Controller
 
     private function getMailpitStatus(): array
     {
-        if (!$this->emailSettings->mailpit_enabled) {
+        if (! $this->emailSettings->mailpit_enabled) {
             return ['available' => false, 'message' => 'Mailpit deshabilitado'];
         }
 
         try {
-            $response = Http::timeout(3)->get($this->emailSettings->mailpit_url . '/api/v1/info');
-            
+            $response = Http::timeout(3)->get($this->emailSettings->mailpit_url.'/api/v1/info');
+
             if ($response->successful()) {
                 return [
                     'available' => true,
                     'message' => 'Mailpit disponible',
-                    'version' => $response->json('version') ?? 'unknown'
+                    'version' => $response->json('version') ?? 'unknown',
                 ];
             }
         } catch (\Exception $e) {
@@ -256,7 +256,7 @@ class EmailSettingsController extends Controller
 
         return [
             'available' => false,
-            'message' => 'Mailpit no disponible en ' . $this->emailSettings->mailpit_url
+            'message' => 'Mailpit no disponible en '.$this->emailSettings->mailpit_url,
         ];
     }
 
@@ -312,7 +312,7 @@ class EmailSettingsController extends Controller
     {
         $presets = $this->getEmailPresets();
 
-        if (!isset($presets[$preset])) {
+        if (! isset($presets[$preset])) {
             throw new \InvalidArgumentException("Invalid email preset: {$preset}");
         }
 

@@ -132,12 +132,16 @@ const updatePeriod = () => {
 const refreshExecution = async () => {
     isRefreshing.value = true;
     try {
-        await router.post('/accounting/budgets/refresh-execution', {
-            month: selectedMonth.value,
-            year: selectedYear.value,
-        }, {
-            preserveState: false,
-        });
+        await router.post(
+            '/accounting/budgets/refresh-execution',
+            {
+                month: selectedMonth.value,
+                year: selectedYear.value,
+            },
+            {
+                preserveState: false,
+            },
+        );
     } finally {
         isRefreshing.value = false;
     }
@@ -165,7 +169,7 @@ const incomePerformance = computed(() => {
     const executed = props.executionSummary.total_income_actual || 0;
     const variance = executed - total;
     const percentage = total > 0 ? (executed / total) * 100 : 0;
-    
+
     return {
         total,
         executed,
@@ -179,7 +183,7 @@ const expensesPerformance = computed(() => {
     const executed = props.executionSummary.total_expenses_actual || 0;
     const variance = executed - total;
     const percentage = total > 0 ? (executed / total) * 100 : 0;
-    
+
     return {
         total,
         executed,
@@ -192,7 +196,7 @@ const overallPerformance = computed(() => {
     const totalBudgeted = incomePerformance.value.total + expensesPerformance.value.total;
     const totalExecuted = incomePerformance.value.executed + expensesPerformance.value.executed;
     const totalVariance = incomePerformance.value.variance + expensesPerformance.value.variance;
-    
+
     return {
         total: totalBudgeted,
         executed: totalExecuted,
@@ -216,18 +220,12 @@ const overallPerformance = computed(() => {
                     </Button>
                     <div>
                         <h1 class="text-3xl font-bold tracking-tight">Ejecución Presupuestal</h1>
-                        <p class="text-muted-foreground">
-                            {{ budget.name }} - {{ availableMonths[currentPeriod.month] }} {{ currentPeriod.year }}
-                        </p>
+                        <p class="text-muted-foreground">{{ budget.name }} - {{ availableMonths[currentPeriod.month] }} {{ currentPeriod.year }}</p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
-                    <Button 
-                        variant="outline" 
-                        @click="refreshExecution"
-                        :disabled="isRefreshing"
-                    >
+                    <Button variant="outline" @click="refreshExecution" :disabled="isRefreshing">
                         <RefreshCw :class="['mr-2 h-4 w-4', { 'animate-spin': isRefreshing }]" />
                         Actualizar
                     </Button>
@@ -241,7 +239,7 @@ const overallPerformance = computed(() => {
             <!-- Period Selector -->
             <Card class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Seleccionar Período
                     </CardTitle>
@@ -255,9 +253,7 @@ const overallPerformance = computed(() => {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="(monthName, monthNum) in availableMonths" 
-                                                :key="monthNum" 
-                                                :value="monthNum">
+                                    <SelectItem v-for="(monthName, monthNum) in availableMonths" :key="monthNum" :value="monthNum">
                                         {{ monthName }}
                                     </SelectItem>
                                 </SelectContent>
@@ -276,9 +272,7 @@ const overallPerformance = computed(() => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <Button @click="updatePeriod">
-                            Actualizar Período
-                        </Button>
+                        <Button @click="updatePeriod"> Actualizar Período </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -301,7 +295,7 @@ const overallPerformance = computed(() => {
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Gastos</CardTitle>
@@ -318,7 +312,7 @@ const overallPerformance = computed(() => {
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Ejecución Total</CardTitle>
@@ -335,20 +329,26 @@ const overallPerformance = computed(() => {
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Variación Total</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold flex items-center gap-2" 
-                             :class="getVarianceColor(overallPerformance.variance, 
-                                    overallPerformance.total > 0 ? (overallPerformance.variance / overallPerformance.total) * 100 : 0)">
+                        <div
+                            class="flex items-center gap-2 text-2xl font-bold"
+                            :class="
+                                getVarianceColor(
+                                    overallPerformance.variance,
+                                    overallPerformance.total > 0 ? (overallPerformance.variance / overallPerformance.total) * 100 : 0,
+                                )
+                            "
+                        >
                             <component :is="getVarianceIcon(overallPerformance.variance)" class="h-5 w-5" />
                             {{ formatCurrency(Math.abs(overallPerformance.variance)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ overallPerformance.total > 0 ? ((overallPerformance.variance / overallPerformance.total) * 100).toFixed(1) : 0 }}% 
+                        <p class="mt-1 text-xs text-muted-foreground">
+                            {{ overallPerformance.total > 0 ? ((overallPerformance.variance / overallPerformance.total) * 100).toFixed(1) : 0 }}%
                             {{ overallPerformance.variance > 0 ? 'sobre' : 'bajo' }} presupuesto
                         </p>
                     </CardContent>
@@ -358,7 +358,7 @@ const overallPerformance = computed(() => {
             <!-- Detailed Execution -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="text-xl flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-xl">
                         <BarChart3 class="h-5 w-5" />
                         Ejecución Detallada
                     </CardTitle>
@@ -371,27 +371,24 @@ const overallPerformance = computed(() => {
                         </TabsList>
 
                         <TabsContent value="income" class="space-y-4">
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
-                                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div class="rounded-lg bg-blue-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-blue-600">
                                         {{ formatCurrency(incomePerformance.total) }}
                                     </div>
-                                    <p class="text-sm text-blue-600 font-medium">Presupuestado</p>
+                                    <p class="text-sm font-medium text-blue-600">Presupuestado</p>
                                 </div>
-                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <div class="rounded-lg bg-green-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-green-600">
                                         {{ formatCurrency(incomePerformance.executed) }}
                                     </div>
-                                    <p class="text-sm text-green-600 font-medium">Ejecutado</p>
+                                    <p class="text-sm font-medium text-green-600">Ejecutado</p>
                                 </div>
-                                <div class="text-center p-4 rounded-lg"
-                                     :class="incomePerformance.variance > 0 ? 'bg-green-50' : 'bg-red-50'">
-                                    <div class="text-2xl font-bold"
-                                         :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
+                                <div class="rounded-lg p-4 text-center" :class="incomePerformance.variance > 0 ? 'bg-green-50' : 'bg-red-50'">
+                                    <div class="text-2xl font-bold" :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ formatCurrency(Math.abs(incomePerformance.variance)) }}
                                     </div>
-                                    <p class="text-sm font-medium"
-                                       :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
+                                    <p class="text-sm font-medium" :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ incomePerformance.variance > 0 ? 'Exceso' : 'Faltante' }}
                                     </p>
                                 </div>
@@ -419,25 +416,27 @@ const overallPerformance = computed(() => {
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.actual_amount || 0) }}
                                         </TableCell>
-                                        <TableCell class="text-right font-mono"
-                                                   :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)">
+                                        <TableCell
+                                            class="text-right font-mono"
+                                            :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
+                                        >
                                             {{ formatCurrency(Math.abs(item.variance_amount || 0)) }}
                                             ({{ (item.variance_percentage || 0).toFixed(1) }}%)
                                         </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center gap-2">
-                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)" 
-                                                          class="flex-1 h-2" />
-                                                <span class="text-xs font-medium w-12" 
-                                                      :class="getExecutionColor(item.execution_percentage || 0)">
+                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)" class="h-2 flex-1" />
+                                                <span class="w-12 text-xs font-medium" :class="getExecutionColor(item.execution_percentage || 0)">
                                                     {{ (item.execution_percentage || 0).toFixed(0) }}%
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <component :is="getVarianceIcon(item.variance_amount || 0)" 
-                                                       :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
-                                                       class="h-4 w-4" />
+                                            <component
+                                                :is="getVarianceIcon(item.variance_amount || 0)"
+                                                :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
+                                                class="h-4 w-4"
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -445,27 +444,24 @@ const overallPerformance = computed(() => {
                         </TabsContent>
 
                         <TabsContent value="expenses" class="space-y-4">
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
-                                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div class="rounded-lg bg-blue-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-blue-600">
                                         {{ formatCurrency(expensesPerformance.total) }}
                                     </div>
-                                    <p class="text-sm text-blue-600 font-medium">Presupuestado</p>
+                                    <p class="text-sm font-medium text-blue-600">Presupuestado</p>
                                 </div>
-                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <div class="rounded-lg bg-green-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-green-600">
                                         {{ formatCurrency(expensesPerformance.executed) }}
                                     </div>
-                                    <p class="text-sm text-green-600 font-medium">Ejecutado</p>
+                                    <p class="text-sm font-medium text-green-600">Ejecutado</p>
                                 </div>
-                                <div class="text-center p-4 rounded-lg"
-                                     :class="expensesPerformance.variance > 0 ? 'bg-red-50' : 'bg-green-50'">
-                                    <div class="text-2xl font-bold"
-                                         :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
+                                <div class="rounded-lg p-4 text-center" :class="expensesPerformance.variance > 0 ? 'bg-red-50' : 'bg-green-50'">
+                                    <div class="text-2xl font-bold" :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
                                         {{ formatCurrency(Math.abs(expensesPerformance.variance)) }}
                                     </div>
-                                    <p class="text-sm font-medium"
-                                       :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
+                                    <p class="text-sm font-medium" :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
                                         {{ expensesPerformance.variance > 0 ? 'Sobregiro' : 'Ahorro' }}
                                     </p>
                                 </div>
@@ -493,25 +489,27 @@ const overallPerformance = computed(() => {
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.actual_amount || 0) }}
                                         </TableCell>
-                                        <TableCell class="text-right font-mono"
-                                                   :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)">
+                                        <TableCell
+                                            class="text-right font-mono"
+                                            :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
+                                        >
                                             {{ formatCurrency(Math.abs(item.variance_amount || 0)) }}
                                             ({{ (item.variance_percentage || 0).toFixed(1) }}%)
                                         </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center gap-2">
-                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)" 
-                                                          class="flex-1 h-2" />
-                                                <span class="text-xs font-medium w-12" 
-                                                      :class="getExecutionColor(item.execution_percentage || 0)">
+                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)" class="h-2 flex-1" />
+                                                <span class="w-12 text-xs font-medium" :class="getExecutionColor(item.execution_percentage || 0)">
                                                     {{ (item.execution_percentage || 0).toFixed(0) }}%
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <component :is="getVarianceIcon(item.variance_amount || 0)" 
-                                                       :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
-                                                       class="h-4 w-4" />
+                                            <component
+                                                :is="getVarianceIcon(item.variance_amount || 0)"
+                                                :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
+                                                class="h-4 w-4"
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>

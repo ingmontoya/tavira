@@ -119,32 +119,26 @@ const netChange = computed(() => {
 const movementSummary = computed(() => {
     return {
         totalMovements: props.report.entries.length,
-        increasingMovements: props.report.entries.filter(entry => {
-            const movement = props.report.account.nature === 'debit' 
-                ? entry.debit_amount - entry.credit_amount 
-                : entry.credit_amount - entry.debit_amount;
+        increasingMovements: props.report.entries.filter((entry) => {
+            const movement =
+                props.report.account.nature === 'debit' ? entry.debit_amount - entry.credit_amount : entry.credit_amount - entry.debit_amount;
             return movement > 0;
         }).length,
-        decreasingMovements: props.report.entries.filter(entry => {
-            const movement = props.report.account.nature === 'debit' 
-                ? entry.debit_amount - entry.credit_amount 
-                : entry.credit_amount - entry.debit_amount;
+        decreasingMovements: props.report.entries.filter((entry) => {
+            const movement =
+                props.report.account.nature === 'debit' ? entry.debit_amount - entry.credit_amount : entry.credit_amount - entry.debit_amount;
             return movement < 0;
         }).length,
     };
 });
 
 const getMovementIcon = (entry: LedgerEntry) => {
-    const movement = props.report.account.nature === 'debit' 
-        ? entry.debit_amount - entry.credit_amount 
-        : entry.credit_amount - entry.debit_amount;
+    const movement = props.report.account.nature === 'debit' ? entry.debit_amount - entry.credit_amount : entry.credit_amount - entry.debit_amount;
     return movement > 0 ? TrendingUp : TrendingDown;
 };
 
 const getMovementColor = (entry: LedgerEntry) => {
-    const movement = props.report.account.nature === 'debit' 
-        ? entry.debit_amount - entry.credit_amount 
-        : entry.credit_amount - entry.debit_amount;
+    const movement = props.report.account.nature === 'debit' ? entry.debit_amount - entry.credit_amount : entry.credit_amount - entry.debit_amount;
     return movement > 0 ? 'text-green-600' : 'text-red-600';
 };
 
@@ -160,14 +154,12 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
             <div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Libro Mayor</h1>
-                    <p class="text-muted-foreground">
-                        {{ report.account.code }} - {{ report.account.name }}
-                    </p>
+                    <p class="text-muted-foreground">{{ report.account.code }} - {{ report.account.name }}</p>
                     <p class="text-sm text-muted-foreground">
                         Del {{ formatDate(report.period.start_date) }} al {{ formatDate(report.period.end_date) }}
                     </p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button variant="outline" @click="showFilters = !showFilters">
                         <Filter class="mr-2 h-4 w-4" />
@@ -183,7 +175,7 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
             <!-- Filters Panel -->
             <Card v-if="showFilters" class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Filtros del Libro Mayor
                     </CardTitle>
@@ -205,28 +197,16 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                         </div>
                         <div class="space-y-2">
                             <Label for="start_date">Fecha Inicial</Label>
-                            <Input
-                                id="start_date"
-                                type="date"
-                                v-model="form.start_date"
-                            />
+                            <Input id="start_date" type="date" v-model="form.start_date" />
                         </div>
                         <div class="space-y-2">
                             <Label for="end_date">Fecha Final</Label>
-                            <Input
-                                id="end_date"
-                                type="date"
-                                v-model="form.end_date"
-                            />
+                            <Input id="end_date" type="date" v-model="form.end_date" />
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" @click="showFilters = false">
-                            Cancelar
-                        </Button>
-                        <Button @click="applyFilters">
-                            Aplicar Filtros
-                        </Button>
+                        <Button variant="outline" @click="showFilters = false"> Cancelar </Button>
+                        <Button @click="applyFilters"> Aplicar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -238,47 +218,44 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                         <CardTitle class="text-sm font-medium">Saldo Inicial</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold" 
-                             :class="report.opening_balance >= 0 ? 'text-green-600' : 'text-red-600'">
+                        <div class="text-2xl font-bold" :class="report.opening_balance >= 0 ? 'text-green-600' : 'text-red-600'">
                             {{ formatCurrency(Math.abs(report.opening_balance)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ report.opening_balance >= 0 ? (isDebitAccount ? 'Deudor' : 'Acreedor') : (isDebitAccount ? 'Acreedor' : 'Deudor') }}
+                        <p class="mt-1 text-xs text-muted-foreground">
+                            {{ report.opening_balance >= 0 ? (isDebitAccount ? 'Deudor' : 'Acreedor') : isDebitAccount ? 'Acreedor' : 'Deudor' }}
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Saldo Final</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold"
-                             :class="report.closing_balance >= 0 ? 'text-green-600' : 'text-red-600'">
+                        <div class="text-2xl font-bold" :class="report.closing_balance >= 0 ? 'text-green-600' : 'text-red-600'">
                             {{ formatCurrency(Math.abs(report.closing_balance)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ report.closing_balance >= 0 ? (isDebitAccount ? 'Deudor' : 'Acreedor') : (isDebitAccount ? 'Acreedor' : 'Deudor') }}
+                        <p class="mt-1 text-xs text-muted-foreground">
+                            {{ report.closing_balance >= 0 ? (isDebitAccount ? 'Deudor' : 'Acreedor') : isDebitAccount ? 'Acreedor' : 'Deudor' }}
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Cambio Neto</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold flex items-center gap-2"
-                             :class="netChange >= 0 ? 'text-green-600' : 'text-red-600'">
+                        <div class="flex items-center gap-2 text-2xl font-bold" :class="netChange >= 0 ? 'text-green-600' : 'text-red-600'">
                             <component :is="netChange >= 0 ? TrendingUp : TrendingDown" class="h-5 w-5" />
                             {{ formatCurrency(Math.abs(netChange)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
+                        <p class="mt-1 text-xs text-muted-foreground">
                             {{ netChange >= 0 ? 'Aumento' : 'Disminución' }}
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Movimientos</CardTitle>
@@ -287,7 +264,7 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                         <div class="text-2xl font-bold">
                             {{ movementSummary.totalMovements }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
+                        <p class="mt-1 text-xs text-muted-foreground">
                             {{ movementSummary.increasingMovements }} ↑ / {{ movementSummary.decreasingMovements }} ↓
                         </p>
                     </CardContent>
@@ -297,17 +274,15 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
             <!-- Ledger Entries -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="text-xl flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-xl">
                         <BookOpen class="h-5 w-5" />
                         Movimientos Contables
-                        <span class="text-sm font-normal text-muted-foreground ml-2">
-                            ({{ report.entries.length }} registros)
-                        </span>
+                        <span class="ml-2 text-sm font-normal text-muted-foreground"> ({{ report.entries.length }} registros) </span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="report.entries.length === 0" class="text-center py-8 text-muted-foreground">
-                        <BookOpen class="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <div v-if="report.entries.length === 0" class="py-8 text-center text-muted-foreground">
+                        <BookOpen class="mx-auto mb-4 h-12 w-12 opacity-50" />
                         <p class="text-lg font-medium">No hay movimientos en el período seleccionado</p>
                         <p class="text-sm">Selecciona un período diferente o verifica que la cuenta tenga transacciones</p>
                     </div>
@@ -316,13 +291,13 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                         <!-- Opening Balance Row -->
                         <Table>
                             <TableBody>
-                                <TableRow class="bg-muted/30 border-2 border-dashed">
+                                <TableRow class="border-2 border-dashed bg-muted/30">
                                     <TableCell class="font-bold">{{ formatDate(report.period.start_date) }}</TableCell>
                                     <TableCell class="font-bold">SALDO INICIAL</TableCell>
                                     <TableCell>Saldo anterior al período</TableCell>
                                     <TableCell class="text-right">-</TableCell>
                                     <TableCell class="text-right">-</TableCell>
-                                    <TableCell class="text-right font-bold font-mono">
+                                    <TableCell class="text-right font-mono font-bold">
                                         {{ formatCurrency(Math.abs(report.opening_balance)) }}
                                     </TableCell>
                                 </TableRow>
@@ -336,15 +311,14 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                                     <TableHead class="w-28">Fecha</TableHead>
                                     <TableHead class="w-32">Comprobante</TableHead>
                                     <TableHead>Descripción</TableHead>
-                                    <TableHead class="text-right w-32">Débito</TableHead>
-                                    <TableHead class="text-right w-32">Crédito</TableHead>
-                                    <TableHead class="text-right w-32">Saldo</TableHead>
+                                    <TableHead class="w-32 text-right">Débito</TableHead>
+                                    <TableHead class="w-32 text-right">Crédito</TableHead>
+                                    <TableHead class="w-32 text-right">Saldo</TableHead>
                                     <TableHead class="w-8"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow v-for="(entry, index) in report.entries" :key="index"
-                                          class="hover:bg-muted/50">
+                                <TableRow v-for="(entry, index) in report.entries" :key="index" class="hover:bg-muted/50">
                                     <TableCell class="font-mono text-sm">
                                         {{ formatDate(entry.date) }}
                                     </TableCell>
@@ -366,9 +340,7 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                                         {{ formatCurrency(Math.abs(entry.balance)) }}
                                     </TableCell>
                                     <TableCell>
-                                        <component :is="getMovementIcon(entry)" 
-                                                   :class="getMovementColor(entry)" 
-                                                   class="h-4 w-4" />
+                                        <component :is="getMovementIcon(entry)" :class="getMovementColor(entry)" class="h-4 w-4" />
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -379,13 +351,13 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                             <TableBody>
                                 <TableRow class="border-t-2 bg-primary/5 font-semibold">
                                     <TableCell colspan="3" class="font-bold">TOTALES DEL PERÍODO</TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-blue-600">
+                                    <TableCell class="text-right font-mono font-bold text-blue-600">
                                         {{ formatCurrency(report.total_debits) }}
                                     </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-green-600">
+                                    <TableCell class="text-right font-mono font-bold text-green-600">
                                         {{ formatCurrency(report.total_credits) }}
                                     </TableCell>
-                                    <TableCell class="text-right font-bold font-mono">
+                                    <TableCell class="text-right font-mono font-bold">
                                         {{ formatCurrency(Math.abs(report.closing_balance)) }}
                                     </TableCell>
                                     <TableCell></TableCell>
@@ -404,15 +376,15 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-3">
-                            <div class="flex justify-between items-center">
+                            <div class="flex items-center justify-between">
                                 <span class="text-muted-foreground">Código:</span>
                                 <span class="font-mono font-medium">{{ report.account.code }}</span>
                             </div>
-                            <div class="flex justify-between items-center">
+                            <div class="flex items-center justify-between">
                                 <span class="text-muted-foreground">Nombre:</span>
                                 <span class="font-medium">{{ report.account.name }}</span>
                             </div>
-                            <div class="flex justify-between items-center">
+                            <div class="flex items-center justify-between">
                                 <span class="text-muted-foreground">Naturaleza:</span>
                                 <span class="font-medium capitalize">
                                     {{ report.account.nature === 'debit' ? 'Deudora' : 'Acreedora' }}
@@ -421,7 +393,7 @@ const isDebitAccount = computed(() => props.report.account.nature === 'debit');
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader>
                         <CardTitle class="text-lg">Resumen del Período</CardTitle>

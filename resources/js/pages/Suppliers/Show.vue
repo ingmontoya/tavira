@@ -7,26 +7,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { useToast } from '@/composables/useToast';
 import {
+    AlertTriangle,
     ArrowLeft,
-    Edit,
-    CheckCircle,
-    XCircle,
-    Copy,
-    Trash2,
     Building2,
-    User,
-    Phone,
+    Calendar,
+    CheckCircle,
+    Copy,
+    Edit,
+    Eye,
+    FileText,
     Mail,
     MapPin,
-    FileText,
-    Calendar,
+    Phone,
     Receipt,
-    AlertTriangle,
-    Eye
+    Trash2,
+    User,
+    XCircle,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { formatCurrency } from '../../utils';
@@ -202,9 +202,7 @@ const hasLocationInfo = computed(() => {
                             <h2 class="text-2xl font-semibold tracking-tight">{{ supplier.name }}</h2>
                             <Badge :class="supplier.status_badge.class">{{ supplier.status_badge.text }}</Badge>
                         </div>
-                        <p class="text-sm text-muted-foreground">
-                            {{ supplier.document_type }}: {{ supplier.document_number }}
-                        </p>
+                        <p class="text-sm text-muted-foreground">{{ supplier.document_type }}: {{ supplier.document_number }}</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <Button asChild variant="outline">
@@ -248,9 +246,9 @@ const hasLocationInfo = computed(() => {
                     </TabsList>
 
                     <TabsContent value="details" class="space-y-4">
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <!-- Main Details -->
-                            <div class="lg:col-span-2 space-y-4">
+                            <div class="space-y-4 lg:col-span-2">
                                 <!-- Basic Information -->
                                 <Card>
                                     <CardHeader>
@@ -262,27 +260,27 @@ const hasLocationInfo = computed(() => {
                                     <CardContent class="space-y-4">
                                         <div class="grid grid-cols-2 gap-4">
                                             <div>
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Nombre/Razón Social</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Nombre/Razón Social</h4>
                                                 <p class="font-medium">{{ supplier.name }}</p>
                                             </div>
                                             <div>
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Tipo de Documento</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Tipo de Documento</h4>
                                                 <p>{{ supplier.document_type }}</p>
                                             </div>
                                             <div>
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Número de Documento</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Número de Documento</h4>
                                                 <p class="font-mono">{{ supplier.document_number }}</p>
                                             </div>
                                             <div v-if="supplier.tax_regime">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Régimen Tributario</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Régimen Tributario</h4>
                                                 <p>{{ supplier.tax_regime }}</p>
                                             </div>
                                         </div>
 
                                         <div v-if="supplier.notes">
                                             <Separator class="my-4" />
-                                            <h4 class="text-sm font-medium text-muted-foreground mb-1">Notas</h4>
-                                            <p class="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{{ supplier.notes }}</p>
+                                            <h4 class="mb-1 text-sm font-medium text-muted-foreground">Notas</h4>
+                                            <p class="rounded-md bg-muted p-3 text-sm whitespace-pre-wrap">{{ supplier.notes }}</p>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -296,45 +294,54 @@ const hasLocationInfo = computed(() => {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent class="space-y-3">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             <div v-if="supplier.email">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Email Principal</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Email Principal</h4>
                                                 <p>
-                                                    <a :href="`mailto:${supplier.email}`" class="text-blue-600 hover:underline flex items-center gap-1">
+                                                    <a
+                                                        :href="`mailto:${supplier.email}`"
+                                                        class="flex items-center gap-1 text-blue-600 hover:underline"
+                                                    >
                                                         <Mail class="h-3 w-3" />
                                                         {{ supplier.email }}
                                                     </a>
                                                 </p>
                                             </div>
                                             <div v-if="supplier.phone">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Teléfono Principal</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Teléfono Principal</h4>
                                                 <p>
-                                                    <a :href="`tel:${supplier.phone}`" class="text-blue-600 hover:underline flex items-center gap-1">
+                                                    <a :href="`tel:${supplier.phone}`" class="flex items-center gap-1 text-blue-600 hover:underline">
                                                         <Phone class="h-3 w-3" />
                                                         {{ supplier.phone }}
                                                     </a>
                                                 </p>
                                             </div>
                                             <div v-if="supplier.contact_name">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Persona de Contacto</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Persona de Contacto</h4>
                                                 <p class="flex items-center gap-1">
                                                     <User class="h-3 w-3" />
                                                     {{ supplier.contact_name }}
                                                 </p>
                                             </div>
                                             <div v-if="supplier.contact_phone">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Teléfono de Contacto</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Teléfono de Contacto</h4>
                                                 <p>
-                                                    <a :href="`tel:${supplier.contact_phone}`" class="text-blue-600 hover:underline flex items-center gap-1">
+                                                    <a
+                                                        :href="`tel:${supplier.contact_phone}`"
+                                                        class="flex items-center gap-1 text-blue-600 hover:underline"
+                                                    >
                                                         <Phone class="h-3 w-3" />
                                                         {{ supplier.contact_phone }}
                                                     </a>
                                                 </p>
                                             </div>
                                             <div v-if="supplier.contact_email" class="md:col-span-2">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Email de Contacto</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Email de Contacto</h4>
                                                 <p>
-                                                    <a :href="`mailto:${supplier.contact_email}`" class="text-blue-600 hover:underline flex items-center gap-1">
+                                                    <a
+                                                        :href="`mailto:${supplier.contact_email}`"
+                                                        class="flex items-center gap-1 text-blue-600 hover:underline"
+                                                    >
                                                         <Mail class="h-3 w-3" />
                                                         {{ supplier.contact_email }}
                                                     </a>
@@ -353,17 +360,17 @@ const hasLocationInfo = computed(() => {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent class="space-y-3">
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             <div v-if="supplier.address" class="md:col-span-2">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Dirección</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Dirección</h4>
                                                 <p>{{ supplier.address }}</p>
                                             </div>
                                             <div v-if="supplier.city">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">Ciudad</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">Ciudad</h4>
                                                 <p>{{ supplier.city }}</p>
                                             </div>
                                             <div v-if="supplier.country">
-                                                <h4 class="text-sm font-medium text-muted-foreground mb-1">País</h4>
+                                                <h4 class="mb-1 text-sm font-medium text-muted-foreground">País</h4>
                                                 <p>{{ supplier.country }}</p>
                                             </div>
                                         </div>
@@ -397,7 +404,9 @@ const hasLocationInfo = computed(() => {
                                             </div>
                                             <div v-if="supplier.last_expense_date">
                                                 <span class="text-muted-foreground">Último gasto:</span>
-                                                <span class="font-medium block">{{ new Date(supplier.last_expense_date).toLocaleDateString('es-CO') }}</span>
+                                                <span class="block font-medium">{{
+                                                    new Date(supplier.last_expense_date).toLocaleDateString('es-CO')
+                                                }}</span>
                                             </div>
                                         </div>
 
@@ -425,7 +434,15 @@ const hasLocationInfo = computed(() => {
                                     </CardHeader>
                                     <CardContent class="space-y-2">
                                         <Button asChild variant="outline" size="sm" class="w-full justify-start">
-                                            <Link href="/expenses/create" :data="{ vendor_name: supplier.name, vendor_document: supplier.document_number, vendor_email: supplier.email, vendor_phone: supplier.phone }">
+                                            <Link
+                                                href="/expenses/create"
+                                                :data="{
+                                                    vendor_name: supplier.name,
+                                                    vendor_document: supplier.document_number,
+                                                    vendor_email: supplier.email,
+                                                    vendor_phone: supplier.phone,
+                                                }"
+                                            >
                                                 <Receipt class="mr-2 h-4 w-4" />
                                                 Crear Gasto
                                             </Link>
@@ -446,7 +463,7 @@ const hasLocationInfo = computed(() => {
                                 <CardTitle>Historial de Gastos</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div v-if="!expenses || expenses.data.length === 0" class="text-center py-8 text-muted-foreground">
+                                <div v-if="!expenses || expenses.data.length === 0" class="py-8 text-center text-muted-foreground">
                                     No hay gastos registrados para este proveedor
                                 </div>
                                 <div v-else>
@@ -472,7 +489,10 @@ const hasLocationInfo = computed(() => {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div class="flex items-center gap-2">
-                                                        <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: expense.expense_category.color }"></div>
+                                                        <div
+                                                            class="h-3 w-3 rounded-full"
+                                                            :style="{ backgroundColor: expense.expense_category.color }"
+                                                        ></div>
                                                         <span class="text-sm">{{ expense.expense_category.name }}</span>
                                                     </div>
                                                 </TableCell>
@@ -481,7 +501,11 @@ const hasLocationInfo = computed(() => {
                                                 <TableCell>
                                                     <div class="flex items-center gap-2">
                                                         <Badge :class="expense.status_badge.class">{{ expense.status_badge.text }}</Badge>
-                                                        <AlertTriangle v-if="expense.is_overdue" class="w-4 h-4 text-red-500" :title="`Vencido ${expense.days_overdue} días`" />
+                                                        <AlertTriangle
+                                                            v-if="expense.is_overdue"
+                                                            class="h-4 w-4 text-red-500"
+                                                            :title="`Vencido ${expense.days_overdue} días`"
+                                                        />
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -494,7 +518,7 @@ const hasLocationInfo = computed(() => {
                                     </Table>
 
                                     <!-- Pagination for expenses -->
-                                    <div v-if="expenses && expenses.last_page > 1" class="flex items-center justify-between mt-4">
+                                    <div v-if="expenses && expenses.last_page > 1" class="mt-4 flex items-center justify-between">
                                         <div class="flex-1 text-sm text-muted-foreground">
                                             Mostrando {{ expenses.from }} a {{ expenses.to }} de {{ expenses.total }} gastos.
                                         </div>
@@ -503,7 +527,9 @@ const hasLocationInfo = computed(() => {
                                                 variant="outline"
                                                 size="sm"
                                                 :disabled="expenses.current_page === 1"
-                                                @click="router.get(window.location.pathname, { page: expenses.current_page - 1 }, { preserveState: true })"
+                                                @click="
+                                                    router.get(window.location.pathname, { page: expenses.current_page - 1 }, { preserveState: true })
+                                                "
                                             >
                                                 Anterior
                                             </Button>
@@ -511,7 +537,9 @@ const hasLocationInfo = computed(() => {
                                                 variant="outline"
                                                 size="sm"
                                                 :disabled="expenses.current_page === expenses.last_page"
-                                                @click="router.get(window.location.pathname, { page: expenses.current_page + 1 }, { preserveState: true })"
+                                                @click="
+                                                    router.get(window.location.pathname, { page: expenses.current_page + 1 }, { preserveState: true })
+                                                "
                                             >
                                                 Siguiente
                                             </Button>
@@ -524,7 +552,7 @@ const hasLocationInfo = computed(() => {
 
                     <TabsContent value="stats" class="space-y-4">
                         <!-- Stats Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <Card>
                                 <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle class="text-sm font-medium">Total Gastos</CardTitle>
@@ -572,25 +600,27 @@ const hasLocationInfo = computed(() => {
                                 <CardTitle>Resumen Financiero</CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div class="space-y-3">
-                                        <div class="flex justify-between items-center">
+                                        <div class="flex items-center justify-between">
                                             <span class="text-muted-foreground">Monto Total:</span>
-                                            <span class="font-bold text-lg">{{ formatCurrency(stats?.total_amount || 0) }}</span>
+                                            <span class="text-lg font-bold">{{ formatCurrency(stats?.total_amount || 0) }}</span>
                                         </div>
-                                        <div class="flex justify-between items-center">
+                                        <div class="flex items-center justify-between">
                                             <span class="text-muted-foreground">Promedio por Gasto:</span>
                                             <span class="font-medium">{{ formatCurrency(stats?.average_amount || 0) }}</span>
                                         </div>
                                     </div>
                                     <div class="space-y-3">
-                                        <div v-if="stats?.overdue_expenses > 0" class="flex justify-between items-center">
+                                        <div v-if="stats?.overdue_expenses > 0" class="flex items-center justify-between">
                                             <span class="text-muted-foreground">Gastos Vencidos:</span>
                                             <span class="font-medium text-red-600">{{ stats?.overdue_expenses || 0 }}</span>
                                         </div>
-                                        <div class="flex justify-between items-center">
+                                        <div class="flex items-center justify-between">
                                             <span class="text-muted-foreground">Último Registro:</span>
-                                            <span class="font-medium">{{ supplier.last_expense_date ? new Date(supplier.last_expense_date).toLocaleDateString('es-CO') : 'N/A' }}</span>
+                                            <span class="font-medium">{{
+                                                supplier.last_expense_date ? new Date(supplier.last_expense_date).toLocaleDateString('es-CO') : 'N/A'
+                                            }}</span>
                                         </div>
                                     </div>
                                 </div>

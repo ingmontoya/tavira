@@ -45,6 +45,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'rate.limit' => RateLimitMiddleware::class,
             'company' => EnsureUserIsCompany::class,
             'multiple.conjuntos' => EnsureCanCreateMultipleConjuntos::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -194,12 +194,12 @@ class EmailTemplate extends Model
         static::creating(function ($template) {
             $template->created_by = auth()->id();
             $template->updated_by = auth()->id();
-            
+
             // Set default variables if not provided
             if (empty($template->variables)) {
                 $template->variables = self::DEFAULT_VARIABLES[$template->type] ?? [];
             }
-            
+
             // Set default design config if not provided
             if (empty($template->design_config)) {
                 $template->design_config = self::DEFAULT_DESIGN_CONFIG;

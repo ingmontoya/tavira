@@ -1,25 +1,11 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import {
-    Calendar,
-    Clock,
-    Edit,
-    Eye,
-    Pin,
-    CheckCircle,
-    User,
-    Copy,
-    Users,
-    AlertTriangle,
-    FileText,
-    Building,
-    Home
-} from 'lucide-vue-next';
+import { AlertTriangle, Building, Calendar, CheckCircle, Clock, Copy, Edit, Eye, FileText, Home, Pin, User, Users } from 'lucide-vue-next';
 
 interface Announcement {
     id: number;
@@ -61,20 +47,20 @@ const props = defineProps<Props>();
 const priorityLabels = {
     urgent: 'Urgente',
     important: 'Importante',
-    normal: 'Normal'
+    normal: 'Normal',
 };
 
 const typeLabels = {
     general: 'General',
     administrative: 'Administrativo',
     maintenance: 'Mantenimiento',
-    emergency: 'Emergencia'
+    emergency: 'Emergencia',
 };
 
 const statusLabels = {
     draft: 'Borrador',
     published: 'Publicado',
-    archived: 'Archivado'
+    archived: 'Archivado',
 };
 
 const formatDate = (date: string) => {
@@ -83,7 +69,7 @@ const formatDate = (date: string) => {
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -98,7 +84,7 @@ const duplicate = () => {
 const breadcrumbs = [
     { title: 'Comunicación', href: '#' },
     { title: 'Anuncios', href: route('announcements.index') },
-    { title: props.announcement.title, href: route('announcements.show', props.announcement.id) }
+    { title: props.announcement.title, href: route('announcements.show', props.announcement.id) },
 ];
 </script>
 
@@ -110,7 +96,7 @@ const breadcrumbs = [
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
-                    <div class="flex items-center gap-3 mb-2">
+                    <div class="mb-2 flex items-center gap-3">
                         <h1 class="text-2xl font-semibold text-gray-900">{{ announcement.title }}</h1>
                         <Pin v-if="announcement.is_pinned" class="h-5 w-5 text-yellow-600" />
                     </div>
@@ -130,10 +116,7 @@ const breadcrumbs = [
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        @click="duplicate"
-                    >
+                    <Button variant="outline" @click="duplicate">
                         <Copy class="mr-2 h-4 w-4" />
                         Duplicar
                     </Button>
@@ -147,7 +130,7 @@ const breadcrumbs = [
             </div>
 
             <!-- Status and Metadata -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Estado</CardTitle>
@@ -181,9 +164,9 @@ const breadcrumbs = [
                     <CardContent>
                         <div class="space-y-1">
                             <div class="flex items-center text-sm font-medium">
-                                <component 
-                                    :is="announcement.target_scope === 'general' ? Users : announcement.target_scope === 'tower' ? Building : Home" 
-                                    class="mr-1 h-3 w-3" 
+                                <component
+                                    :is="announcement.target_scope === 'general' ? Users : announcement.target_scope === 'tower' ? Building : Home"
+                                    class="mr-1 h-3 w-3"
                                 />
                                 {{ announcement.target_scope_display || 'General' }}
                             </div>
@@ -234,9 +217,7 @@ const breadcrumbs = [
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle>Estadísticas de Confirmación</CardTitle>
-                            <CardDescription>
-                                Seguimiento de lecturas y confirmaciones de los residentes
-                            </CardDescription>
+                            <CardDescription> Seguimiento de lecturas y confirmaciones de los residentes </CardDescription>
                         </div>
                         <Button as-child variant="outline">
                             <Link :href="route('announcements.confirmations', announcement.id)">
@@ -247,7 +228,7 @@ const breadcrumbs = [
                     </div>
                 </CardHeader>
                 <CardContent class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div class="text-center">
                             <div class="text-2xl font-bold text-blue-600">{{ confirmationStats.total_users }}</div>
                             <div class="text-sm text-gray-600">Total Usuarios</div>
@@ -264,7 +245,7 @@ const breadcrumbs = [
 
                     <div class="space-y-3">
                         <div>
-                            <div class="flex justify-between text-sm mb-1">
+                            <div class="mb-1 flex justify-between text-sm">
                                 <span>Porcentaje de Lectura</span>
                                 <span>{{ confirmationStats.read_percentage }}%</span>
                             </div>
@@ -272,7 +253,7 @@ const breadcrumbs = [
                         </div>
 
                         <div>
-                            <div class="flex justify-between text-sm mb-1">
+                            <div class="mb-1 flex justify-between text-sm">
                                 <span>Porcentaje de Confirmación</span>
                                 <span>{{ confirmationStats.confirmed_percentage }}%</span>
                             </div>
@@ -298,7 +279,7 @@ const breadcrumbs = [
                     <CardTitle>Información Adicional</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                         <div>
                             <span class="font-medium text-gray-700">Creado por:</span>
                             <span class="ml-2">{{ announcement.created_by?.name || 'N/A' }}</span>

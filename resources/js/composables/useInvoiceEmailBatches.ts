@@ -1,12 +1,6 @@
+import type { BatchProgressData, CreateInvoiceEmailBatchData, InvoiceEmailBatch, InvoiceEmailBatchFilters } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import type { 
-    InvoiceEmailBatch, 
-    InvoiceEmailBatchFilters, 
-    InvoiceEmailBatchResponse,
-    CreateInvoiceEmailBatchData,
-    BatchProgressData
-} from '@/types';
+import { computed, ref } from 'vue';
 
 export function useInvoiceEmailBatches() {
     // State
@@ -56,17 +50,21 @@ export function useInvoiceEmailBatches() {
             isLoading.value = true;
             error.value = null;
 
-            router.post(`/invoices/email/${batchId}/send`, {}, {
-                onSuccess: (page) => {
-                    isLoading.value = false;
-                    resolve(page);
+            router.post(
+                `/invoices/email/${batchId}/send`,
+                {},
+                {
+                    onSuccess: (page) => {
+                        isLoading.value = false;
+                        resolve(page);
+                    },
+                    onError: (errors) => {
+                        isLoading.value = false;
+                        error.value = Object.values(errors).flat().join(', ');
+                        reject(errors);
+                    },
                 },
-                onError: (errors) => {
-                    isLoading.value = false;
-                    error.value = Object.values(errors).flat().join(', ');
-                    reject(errors);
-                },
-            });
+            );
         });
     };
 
@@ -96,9 +94,9 @@ export function useInvoiceEmailBatches() {
         const sent = batch.sent_count;
         const failed = batch.failed_count;
         const pending = batch.pending_count;
-        
+
         const percentage = total > 0 ? Math.round((sent / total) * 100) : 0;
-        
+
         let current_status = '';
         switch (batch.status) {
             case 'borrador':
@@ -186,17 +184,21 @@ export function useInvoiceEmailDeliveries() {
             isLoading.value = true;
             error.value = null;
 
-            router.post(`/invoices/email/delivery/${deliveryId}/retry`, {}, {
-                onSuccess: (page) => {
-                    isLoading.value = false;
-                    resolve(page);
+            router.post(
+                `/invoices/email/delivery/${deliveryId}/retry`,
+                {},
+                {
+                    onSuccess: (page) => {
+                        isLoading.value = false;
+                        resolve(page);
+                    },
+                    onError: (errors) => {
+                        isLoading.value = false;
+                        error.value = Object.values(errors).flat().join(', ');
+                        reject(errors);
+                    },
                 },
-                onError: (errors) => {
-                    isLoading.value = false;
-                    error.value = Object.values(errors).flat().join(', ');
-                    reject(errors);
-                },
-            });
+            );
         });
     };
 
@@ -206,17 +208,21 @@ export function useInvoiceEmailDeliveries() {
             isLoading.value = true;
             error.value = null;
 
-            router.post(`/invoices/email/${batchId}/retry-failures`, {}, {
-                onSuccess: (page) => {
-                    isLoading.value = false;
-                    resolve(page);
+            router.post(
+                `/invoices/email/${batchId}/retry-failures`,
+                {},
+                {
+                    onSuccess: (page) => {
+                        isLoading.value = false;
+                        resolve(page);
+                    },
+                    onError: (errors) => {
+                        isLoading.value = false;
+                        error.value = Object.values(errors).flat().join(', ');
+                        reject(errors);
+                    },
                 },
-                onError: (errors) => {
-                    isLoading.value = false;
-                    error.value = Object.values(errors).flat().join(', ');
-                    reject(errors);
-                },
-            });
+            );
         });
     };
 
@@ -254,7 +260,7 @@ export function useInvoiceEmailDeliveries() {
     // Format date helper
     const formatDeliveryDate = (dateString: string | null) => {
         if (!dateString) return null;
-        
+
         return new Date(dateString).toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'short',

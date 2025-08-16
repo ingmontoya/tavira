@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     require __DIR__.'/modules/communication.php';
     require __DIR__.'/modules/visits.php';
     require __DIR__.'/modules/users.php';
+    require __DIR__.'/modules/maintenance.php';
 });
 
 require __DIR__.'/settings.php';

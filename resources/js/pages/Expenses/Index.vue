@@ -14,9 +14,27 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { CalendarDays, CheckCircle, ChevronDown, ChevronsUpDown, Clock, Copy, CreditCard, Edit, Eye, Filter, Plus, Search, Settings, Trash2, X, XCircle, AlertTriangle } from 'lucide-vue-next';
+import {
+    AlertTriangle,
+    CalendarDays,
+    CheckCircle,
+    ChevronDown,
+    ChevronsUpDown,
+    Clock,
+    Copy,
+    CreditCard,
+    Edit,
+    Eye,
+    Filter,
+    Plus,
+    Search,
+    Settings,
+    Trash2,
+    X,
+    XCircle,
+} from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
-import { valueUpdater, formatCurrency } from '../../utils';
+import { formatCurrency, valueUpdater } from '../../utils';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -132,61 +150,67 @@ const columnHelper = createColumnHelper<Expense>();
 const columns = [
     columnHelper.accessor('expense_number', {
         header: 'Número',
-        cell: info => info.getValue(),
+        cell: (info) => info.getValue(),
     }),
     columnHelper.accessor('vendor_name', {
         header: 'Proveedor',
-        cell: info => info.getValue(),
+        cell: (info) => info.getValue(),
     }),
     columnHelper.accessor('description', {
         header: 'Descripción',
-        cell: info => {
+        cell: (info) => {
             const value = info.getValue();
             return value.length > 50 ? value.substring(0, 50) + '...' : value;
         },
     }),
     columnHelper.accessor('expense_category.name', {
         header: 'Categoría',
-        cell: info => {
+        cell: (info) => {
             const category = info.row.original.expense_category;
             return h('div', { class: 'flex items-center gap-2' }, [
                 h('div', {
                     class: 'w-3 h-3 rounded-full',
-                    style: { backgroundColor: category.color }
+                    style: { backgroundColor: category.color },
                 }),
-                h('span', category.name)
+                h('span', category.name),
             ]);
         },
     }),
     columnHelper.accessor('expense_date', {
         header: 'Fecha',
-        cell: info => new Date(info.getValue()).toLocaleDateString('es-CO'),
+        cell: (info) => new Date(info.getValue()).toLocaleDateString('es-CO'),
     }),
     columnHelper.accessor('total_amount', {
         header: 'Valor',
-        cell: info => formatCurrency(info.getValue()),
+        cell: (info) => formatCurrency(info.getValue()),
     }),
     columnHelper.accessor('status_badge', {
         header: 'Estado',
-        cell: info => {
+        cell: (info) => {
             const badge = info.getValue();
             const expense = info.row.original;
 
             return h('div', { class: 'flex items-center gap-2' }, [
-                h(Badge, {
-                    class: badge.class
-                }, badge.text),
-                expense.is_overdue ? h(AlertTriangle, {
-                    class: 'w-4 h-4 text-red-500',
-                    title: `Vencido ${expense.days_overdue} días`
-                }) : null
+                h(
+                    Badge,
+                    {
+                        class: badge.class,
+                    },
+                    badge.text,
+                ),
+                expense.is_overdue
+                    ? h(AlertTriangle, {
+                          class: 'w-4 h-4 text-red-500',
+                          title: `Vencido ${expense.days_overdue} días`,
+                      })
+                    : null,
             ]);
         },
     }),
     columnHelper.display({
         id: 'actions',
         header: 'Acciones',
-        cell: info => {
+        cell: (info) => {
             const expense = info.row.original;
             const actions = [
                 {
@@ -245,18 +269,28 @@ const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
 
 const table = useVueTable({
-    get data() { return data.value; },
-    get columns() { return columns; },
+    get data() {
+        return data.value;
+    },
+    get columns() {
+        return columns;
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: updaterOrValue => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: updaterOrValue => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: updaterOrValue => valueUpdater(updaterOrValue, columnVisibility),
+    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
+    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
+    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
     state: {
-        get sorting() { return sorting.value; },
-        get columnFilters() { return columnFilters.value; },
-        get columnVisibility() { return columnVisibility.value; },
+        get sorting() {
+            return sorting.value;
+        },
+        get columnFilters() {
+            return columnFilters.value;
+        },
+        get columnVisibility() {
+            return columnVisibility.value;
+        },
     },
 });
 
@@ -284,10 +318,14 @@ const clearFilters = () => {
     dateFromFilter.value = '';
     dateToFilter.value = '';
     vendorFilter.value = '';
-    router.get('/expenses', {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/expenses',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 // Watch for filter changes
@@ -306,12 +344,16 @@ let searchTimeout: number;
 // Action functions
 const approveExpense = (expenseId: number) => {
     if (confirm('¿Está seguro de que desea aprobar este gasto?')) {
-        router.post(`/expenses/${expenseId}/approve`, {}, {
-            onSuccess: () => {
-                // Refresh the page
-                router.reload();
-            }
-        });
+        router.post(
+            `/expenses/${expenseId}/approve`,
+            {},
+            {
+                onSuccess: () => {
+                    // Refresh the page
+                    router.reload();
+                },
+            },
+        );
     }
 };
 
@@ -320,23 +362,31 @@ const markAsPaid = (expenseId: number) => {
     const paymentReference = prompt('Referencia de pago (opcional):');
 
     if (confirm('¿Está seguro de que desea marcar este gasto como pagado?')) {
-        router.post(`/expenses/${expenseId}/mark-as-paid`, {
-            payment_method: paymentMethod,
-            payment_reference: paymentReference,
-        }, {
-            onSuccess: () => {
-                router.reload();
-            }
-        });
+        router.post(
+            `/expenses/${expenseId}/mark-as-paid`,
+            {
+                payment_method: paymentMethod,
+                payment_reference: paymentReference,
+            },
+            {
+                onSuccess: () => {
+                    router.reload();
+                },
+            },
+        );
     }
 };
 
 const duplicateExpense = (expenseId: number) => {
-    router.post(`/expenses/${expenseId}/duplicate`, {}, {
-        onSuccess: () => {
-            // Will redirect to edit page
-        }
-    });
+    router.post(
+        `/expenses/${expenseId}/duplicate`,
+        {},
+        {
+            onSuccess: () => {
+                // Will redirect to edit page
+            },
+        },
+    );
 };
 
 const deleteExpense = (expenseId: number) => {
@@ -344,7 +394,7 @@ const deleteExpense = (expenseId: number) => {
         router.delete(`/expenses/${expenseId}`, {
             onSuccess: () => {
                 router.reload();
-            }
+            },
         });
     }
 };
@@ -374,7 +424,7 @@ const deleteExpense = (expenseId: number) => {
             </Alert>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">Pendientes</CardTitle>
@@ -421,9 +471,7 @@ const deleteExpense = (expenseId: number) => {
                 <div class="flex items-center justify-between">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-semibold tracking-tight">Egresos</h2>
-                        <p class="text-sm text-muted-foreground">
-                            Gestiona todos los gastos del conjunto
-                        </p>
+                        <p class="text-sm text-muted-foreground">Gestiona todos los gastos del conjunto</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <Button asChild variant="outline" size="sm">
@@ -453,17 +501,12 @@ const deleteExpense = (expenseId: number) => {
                         <CardTitle class="text-lg">Filtros</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
                             <div class="space-y-2">
                                 <Label for="search">Buscar</Label>
                                 <div class="relative">
-                                    <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id="search"
-                                        v-model="search"
-                                        placeholder="Número, proveedor, descripción..."
-                                        class="pl-8"
-                                    />
+                                    <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
+                                    <Input id="search" v-model="search" placeholder="Número, proveedor, descripción..." class="pl-8" />
                                 </div>
                             </div>
 
@@ -502,33 +545,21 @@ const deleteExpense = (expenseId: number) => {
 
                             <div class="space-y-2">
                                 <Label for="date-from">Fecha desde</Label>
-                                <Input
-                                    id="date-from"
-                                    v-model="dateFromFilter"
-                                    type="date"
-                                />
+                                <Input id="date-from" v-model="dateFromFilter" type="date" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="date-to">Fecha hasta</Label>
-                                <Input
-                                    id="date-to"
-                                    v-model="dateToFilter"
-                                    type="date"
-                                />
+                                <Input id="date-to" v-model="dateToFilter" type="date" />
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="vendor">Proveedor</Label>
-                                <Input
-                                    id="vendor"
-                                    v-model="vendorFilter"
-                                    placeholder="Nombre del proveedor"
-                                />
+                                <Input id="vendor" v-model="vendorFilter" placeholder="Nombre del proveedor" />
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between mt-4">
+                        <div class="mt-4 flex items-center justify-between">
                             <div class="flex items-center space-x-2">
                                 <Button @click="applyFilters" size="sm">
                                     <Filter class="mr-2 h-4 w-4" />
@@ -549,10 +580,10 @@ const deleteExpense = (expenseId: number) => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuCheckboxItem
-                                        v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
+                                        v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
                                         :key="column.id"
                                         :checked="column.getIsVisible()"
-                                        @update:checked="value => column.toggleVisibility(!!value)"
+                                        @update:checked="(value) => column.toggleVisibility(!!value)"
                                     >
                                         {{ column.columnDef.header }}
                                     </DropdownMenuCheckboxItem>
@@ -576,11 +607,7 @@ const deleteExpense = (expenseId: number) => {
                                         <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
                                         <ChevronsUpDown class="ml-2 h-4 w-4" />
                                     </Button>
-                                    <FlexRender
-                                        v-else
-                                        :render="header.column.columnDef.header"
-                                        :props="header.getContext()"
-                                    />
+                                    <FlexRender v-else :render="header.column.columnDef.header" :props="header.getContext()" />
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
@@ -600,9 +627,7 @@ const deleteExpense = (expenseId: number) => {
                             </template>
                             <template v-else>
                                 <TableRow>
-                                    <TableCell :colspan="columns.length" class="h-24 text-center">
-                                        No se encontraron gastos.
-                                    </TableCell>
+                                    <TableCell :colspan="columns.length" class="h-24 text-center"> No se encontraron gastos. </TableCell>
                                 </TableRow>
                             </template>
                         </TableBody>

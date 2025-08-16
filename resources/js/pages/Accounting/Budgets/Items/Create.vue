@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeft, Calculator, DollarSign, Save } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 
 interface Account {
     id: number;
@@ -57,15 +57,25 @@ const form = useForm<FormData>({
     notes: '',
     use_monthly_distribution: false,
     monthly_distribution: {
-        1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0,
-        7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0
-    }
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        7: 0,
+        8: 0,
+        9: 0,
+        10: 0,
+        11: 0,
+        12: 0,
+    },
 });
 
 // Available accounts filtered by category and excluding used ones
 const availableAccounts = computed(() => {
     const accounts = form.category === 'income' ? props.incomeAccounts : props.expenseAccounts;
-    return accounts.filter(account => !props.usedAccountIds.includes(account.id));
+    return accounts.filter((account) => !props.usedAccountIds.includes(account.id));
 });
 
 // Monthly distribution validation
@@ -80,9 +90,18 @@ const distributionValid = computed(() => {
 
 // Month names
 const monthNames = {
-    1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
-    5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
-    9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    1: 'Enero',
+    2: 'Febrero',
+    3: 'Marzo',
+    4: 'Abril',
+    5: 'Mayo',
+    6: 'Junio',
+    7: 'Julio',
+    8: 'Agosto',
+    9: 'Septiembre',
+    10: 'Octubre',
+    11: 'Noviembre',
+    12: 'Diciembre',
 };
 
 // Auto-distribute equally across months
@@ -111,11 +130,11 @@ const submit = () => {
         category: form.category,
         budgeted_amount: form.budgeted_amount,
         notes: form.notes || undefined,
-        ...(form.use_monthly_distribution ? { monthly_distribution: form.monthly_distribution } : {})
+        ...(form.use_monthly_distribution ? { monthly_distribution: form.monthly_distribution } : {}),
     };
 
     form.post(route('accounting.budgets.items.store', props.budget.id), {
-        data
+        data,
     });
 };
 
@@ -183,11 +202,7 @@ const breadcrumbs = [
                                             <SelectValue placeholder="Seleccionar cuenta" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem
-                                                v-for="account in availableAccounts"
-                                                :key="account.id"
-                                                :value="account.id.toString()"
-                                            >
+                                            <SelectItem v-for="account in availableAccounts" :key="account.id" :value="account.id.toString()">
                                                 <div class="flex flex-col">
                                                     <span class="font-mono text-xs">{{ account.code }}</span>
                                                     <span>{{ account.name }}</span>
@@ -256,13 +271,7 @@ const breadcrumbs = [
                             </CardHeader>
                             <CardContent v-if="form.use_monthly_distribution" class="space-y-4">
                                 <div class="flex justify-end">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        @click="distributeEqually"
-                                        class="gap-2"
-                                    >
+                                    <Button type="button" variant="outline" size="sm" @click="distributeEqually" class="gap-2">
                                         <Calculator class="h-4 w-4" />
                                         Distribuir Igualmente
                                     </Button>
@@ -291,12 +300,8 @@ const breadcrumbs = [
                                         <span :class="['font-mono font-semibold', distributionValid ? 'text-green-600' : 'text-red-600']">
                                             {{ formatCurrency(monthlyTotal) }}
                                         </span>
-                                        <Badge v-if="!distributionValid" variant="destructive" class="text-xs">
-                                            No coincide
-                                        </Badge>
-                                        <Badge v-else variant="default" class="bg-green-100 text-green-800 text-xs">
-                                            Válido
-                                        </Badge>
+                                        <Badge v-if="!distributionValid" variant="destructive" class="text-xs"> No coincide </Badge>
+                                        <Badge v-else variant="default" class="bg-green-100 text-xs text-green-800"> Válido </Badge>
                                     </div>
                                 </div>
                             </CardContent>
@@ -350,7 +355,12 @@ const breadcrumbs = [
                             <CardContent class="space-y-3">
                                 <Button
                                     type="submit"
-                                    :disabled="form.processing || !form.account_id || !form.budgeted_amount || (form.use_monthly_distribution && !distributionValid)"
+                                    :disabled="
+                                        form.processing ||
+                                        !form.account_id ||
+                                        !form.budgeted_amount ||
+                                        (form.use_monthly_distribution && !distributionValid)
+                                    "
                                     class="w-full gap-2"
                                 >
                                     <Save class="h-4 w-4" />

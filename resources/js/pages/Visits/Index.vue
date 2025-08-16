@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus, Search, Eye, QrCode, Calendar, Clock, Trash2 } from 'lucide-vue-next';
+import { Calendar, Clock, Eye, Plus, QrCode, Search, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Visit {
@@ -57,13 +57,17 @@ const statusConfig = {
 };
 
 const search = () => {
-    router.get(route('visits.index'), {
-        search: searchForm.value,
-        status: statusFilter.value === 'all' ? '' : statusFilter.value,
-    }, {
-        preserveState: true,
-        replace: true,
-    });
+    router.get(
+        route('visits.index'),
+        {
+            search: searchForm.value,
+            status: statusFilter.value === 'all' ? '' : statusFilter.value,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        },
+    );
 };
 
 const clearFilters = () => {
@@ -93,24 +97,22 @@ const formatDate = (date: string) => {
 
 <template>
     <Head title="Gestión de Visitas" />
-    
+
     <AppLayout>
         <div class="container mx-auto px-6 py-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900">Gestión de Visitas</h1>
-                <p class="text-gray-600 mt-2">Administra las visitas y códigos QR de acceso</p>
+                <p class="mt-2 text-gray-600">Administra las visitas y códigos QR de acceso</p>
             </div>
 
             <!-- Filters and Actions -->
             <Card class="mb-6">
                 <CardContent class="pt-6">
-                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex flex-col items-end gap-4 md:flex-row">
                         <div class="flex-1">
-                            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
-                                Buscar visitante o código
-                            </label>
+                            <label for="search" class="mb-2 block text-sm font-medium text-gray-700"> Buscar visitante o código </label>
                             <div class="relative">
-                                <Search class="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Search class="absolute top-3 left-3 h-4 w-4 text-gray-400" />
                                 <Input
                                     id="search"
                                     v-model="searchForm"
@@ -120,11 +122,9 @@ const formatDate = (date: string) => {
                                 />
                             </div>
                         </div>
-                        
+
                         <div class="min-w-[200px]">
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                                Estado
-                            </label>
+                            <label for="status" class="mb-2 block text-sm font-medium text-gray-700"> Estado </label>
                             <Select v-model="statusFilter">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Todos los estados" />
@@ -139,17 +139,15 @@ const formatDate = (date: string) => {
                                 </SelectContent>
                             </Select>
                         </div>
-                        
+
                         <div class="flex gap-2">
                             <Button @click="search" variant="default">
-                                <Search class="h-4 w-4 mr-2" />
+                                <Search class="mr-2 h-4 w-4" />
                                 Buscar
                             </Button>
-                            <Button @click="clearFilters" variant="outline">
-                                Limpiar
-                            </Button>
+                            <Button @click="clearFilters" variant="outline"> Limpiar </Button>
                             <Button @click="router.get(route('visits.create'))" class="bg-primary">
-                                <Plus class="h-4 w-4 mr-2" />
+                                <Plus class="mr-2 h-4 w-4" />
                                 Nueva Visita
                             </Button>
                         </div>
@@ -164,19 +162,17 @@ const formatDate = (date: string) => {
                         <Calendar class="h-5 w-5" />
                         Visitas Registradas
                     </CardTitle>
-                    <CardDescription>
-                        Lista de todas las visitas y su estado actual
-                    </CardDescription>
+                    <CardDescription> Lista de todas las visitas y su estado actual </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="props.visits.data.length === 0" class="text-center py-12">
+                    <div v-if="props.visits.data.length === 0" class="py-12 text-center">
                         <div class="text-gray-500">
-                            <QrCode class="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <QrCode class="mx-auto mb-4 h-12 w-12 opacity-50" />
                             <p class="text-lg font-medium">No hay visitas registradas</p>
                             <p class="text-sm">Comienza creando una nueva visita</p>
                         </div>
                         <Button @click="router.get(route('visits.create'))" class="mt-4">
-                            <Plus class="h-4 w-4 mr-2" />
+                            <Plus class="mr-2 h-4 w-4" />
                             Crear Primera Visita
                         </Button>
                     </div>
@@ -198,7 +194,7 @@ const formatDate = (date: string) => {
                                     <TableCell>
                                         <div class="font-medium">{{ visit.visitor_name }}</div>
                                         <div class="text-sm text-gray-500">{{ visit.visitor_document_number }}</div>
-                                        <div v-if="visit.visit_reason" class="text-xs text-gray-400 mt-1">
+                                        <div v-if="visit.visit_reason" class="mt-1 text-xs text-gray-400">
                                             {{ visit.visit_reason }}
                                         </div>
                                     </TableCell>
@@ -222,22 +218,18 @@ const formatDate = (date: string) => {
                                         <Badge :class="statusConfig[visit.status].color">
                                             {{ statusConfig[visit.status].label }}
                                         </Badge>
-                                        <div v-if="visit.entry_time" class="text-xs text-gray-500 mt-1">
+                                        <div v-if="visit.entry_time" class="mt-1 text-xs text-gray-500">
                                             Entrada: {{ formatDate(visit.entry_time) }}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <div class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                                        <div class="rounded bg-gray-100 px-2 py-1 font-mono text-sm">
                                             {{ visit.qr_code }}
                                         </div>
                                     </TableCell>
                                     <TableCell class="text-right">
-                                        <div class="flex gap-2 justify-end">
-                                            <Button
-                                                @click="router.get(route('visits.show', visit.id))"
-                                                variant="outline"
-                                                size="sm"
-                                            >
+                                        <div class="flex justify-end gap-2">
+                                            <Button @click="router.get(route('visits.show', visit.id))" variant="outline" size="sm">
                                                 <Eye class="h-4 w-4" />
                                             </Button>
                                             <Button
@@ -263,17 +255,12 @@ const formatDate = (date: string) => {
                                 <Link
                                     v-if="link.url"
                                     :href="link.url"
-                                    class="px-3 py-2 text-sm font-medium rounded-md"
-                                    :class="link.active 
-                                        ? 'bg-primary text-white' 
-                                        : 'text-gray-700 hover:bg-gray-100'"
+                                    class="rounded-md px-3 py-2 text-sm font-medium"
+                                    :class="link.active ? 'bg-primary text-white' : 'text-gray-700 hover:bg-gray-100'"
                                 >
                                     {{ link.label }}
                                 </Link>
-                                <span
-                                    v-else
-                                    class="px-3 py-2 text-sm font-medium text-gray-400"
-                                >
+                                <span v-else class="px-3 py-2 text-sm font-medium text-gray-400">
                                     {{ link.label }}
                                 </span>
                             </template>

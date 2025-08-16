@@ -2,19 +2,15 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { AlertTriangle, Building, CheckCircle, CreditCard, Download, Edit, ExternalLink, Mail, Printer, Receipt, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { useToast } from '@/composables/useToast';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -222,7 +218,6 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                         <Trash2 class="mr-2 h-4 w-4" />
                         Eliminar
                     </Button>
-
                 </div>
             </div>
 
@@ -417,9 +412,7 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                         <CardHeader>
                             <CardTitle>Historial de Pagos</CardTitle>
                             <CardDescription>
-                                Pagos aplicados a esta factura ({{
-                                    invoice.payment_applications.filter((app) => app.status === 'active').length
-                                }}
+                                Pagos aplicados a esta factura ({{ invoice.payment_applications.filter((app) => app.status === 'active').length }}
                                 activos)
                             </CardDescription>
                         </CardHeader>
@@ -558,7 +551,7 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                             <CardDescription> Registra un pago para esta factura </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <Button asChild class="w-full" >
+                            <Button asChild class="w-full">
                                 <Link :href="`/finance/payments/create?apartment_id=${invoice.apartment.id}`">
                                     <CreditCard class="mr-2 h-4 w-4" />
                                     Registrar Pago

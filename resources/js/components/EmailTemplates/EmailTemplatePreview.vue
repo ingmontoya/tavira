@@ -2,9 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import type { EmailTemplate, Invoice } from '@/types';
 import { Eye, EyeOff, Mail } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import type { EmailTemplate, Invoice } from '@/types';
 
 interface Props {
     template: Partial<EmailTemplate>;
@@ -27,9 +27,9 @@ const togglePreview = () => {
 // Process template with sample data
 const processedSubject = computed(() => {
     if (!props.sampleInvoice) return props.template.subject || '';
-    
+
     let subject = props.template.subject || '';
-    
+
     // Replace common variables with sample data
     const replacements = {
         '{{invoice_number}}': props.sampleInvoice.invoice_number || 'INV-001',
@@ -63,19 +63,19 @@ const processedSubject = computed(() => {
     };
 
     const finalReplacements = props.sampleInvoice ? replacements : defaultReplacements;
-    
+
     Object.entries(finalReplacements).forEach(([key, value]) => {
         subject = subject.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
     });
-    
+
     return subject;
 });
 
 const processedBody = computed(() => {
     if (!props.template.body) return '';
-    
+
     let body = props.template.body;
-    
+
     // Sample data replacements
     const defaultReplacements = {
         '{{invoice_number}}': 'INV-2024-001',
@@ -115,28 +115,30 @@ const processedBody = computed(() => {
         };
         Object.assign(defaultReplacements, sampleReplacements);
     }
-    
+
     Object.entries(defaultReplacements).forEach(([key, value]) => {
         body = body.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
     });
-    
+
     // Convert line breaks to HTML if not already HTML
     if (!body.includes('<p>') && !body.includes('<div>')) {
         body = body.replace(/\n/g, '<br>');
     }
-    
+
     return body;
 });
 
 const designConfig = computed(() => {
-    return props.template.design_config || {
-        primary_color: '#3b82f6',
-        secondary_color: '#1d4ed8',
-        background_color: '#f8fafc',
-        text_color: '#1e293b',
-        font_family: 'system-ui, -apple-system, sans-serif',
-        max_width: '600px',
-    };
+    return (
+        props.template.design_config || {
+            primary_color: '#3b82f6',
+            secondary_color: '#1d4ed8',
+            background_color: '#f8fafc',
+            text_color: '#1e293b',
+            font_family: 'system-ui, -apple-system, sans-serif',
+            max_width: '600px',
+        }
+    );
 });
 </script>
 
@@ -152,91 +154,76 @@ const designConfig = computed(() => {
                     <CardDescription v-if="sampleInvoice">
                         Vista previa con datos de ejemplo de la factura {{ sampleInvoice.invoice_number }}
                     </CardDescription>
-                    <CardDescription v-else>
-                        Vista previa con datos de muestra
-                    </CardDescription>
+                    <CardDescription v-else> Vista previa con datos de muestra </CardDescription>
                 </div>
-                
-                <Button 
-                    @click="togglePreview"
-                    variant="outline"
-                    size="sm"
-                >
-                    <component 
-                        :is="isPreviewVisible ? EyeOff : Eye" 
-                        class="mr-2 h-4 w-4" 
-                    />
+
+                <Button @click="togglePreview" variant="outline" size="sm">
+                    <component :is="isPreviewVisible ? EyeOff : Eye" class="mr-2 h-4 w-4" />
                     {{ isPreviewVisible ? 'Ocultar' : 'Ver' }} Vista Previa
                 </Button>
             </div>
         </CardHeader>
-        
+
         <CardContent v-if="isPreviewVisible">
             <!-- Email Preview -->
-            <div 
-                class="border rounded-lg overflow-hidden bg-white"
+            <div
+                class="overflow-hidden rounded-lg border bg-white"
                 :style="{
                     fontFamily: designConfig.font_family,
                     color: designConfig.text_color,
                     maxWidth: designConfig.max_width,
-                    margin: '0 auto'
+                    margin: '0 auto',
                 }"
             >
                 <!-- Email Header (simulated) -->
-                <div class="border-b p-4 bg-gray-50">
-                    <div class="text-sm text-muted-foreground mb-2">Para: propietario@ejemplo.com</div>
-                    <div class="text-sm text-muted-foreground mb-2">De: administracion@conjunto.com</div>
-                    <div class="text-sm text-muted-foreground mb-1">Asunto:</div>
+                <div class="border-b bg-gray-50 p-4">
+                    <div class="mb-2 text-sm text-muted-foreground">Para: propietario@ejemplo.com</div>
+                    <div class="mb-2 text-sm text-muted-foreground">De: administracion@conjunto.com</div>
+                    <div class="mb-1 text-sm text-muted-foreground">Asunto:</div>
                     <div class="font-medium">{{ processedSubject || 'Sin asunto definido' }}</div>
                 </div>
-                
+
                 <!-- Email Body -->
                 <div class="p-6">
                     <div v-if="processedBody" v-html="processedBody" class="prose prose-sm max-w-none"></div>
-                    <div v-else class="text-muted-foreground italic">
-                        Sin contenido definido
-                    </div>
+                    <div v-else class="text-muted-foreground italic">Sin contenido definido</div>
                 </div>
-                
+
                 <!-- Email Footer (simulated) -->
                 <Separator />
-                <div class="p-4 bg-gray-50 text-center">
+                <div class="bg-gray-50 p-4 text-center">
                     <div class="text-xs text-muted-foreground">
                         <div>Este es un email automático generado por el sistema de administración.</div>
                         <div class="mt-1">Por favor no responda a este mensaje.</div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Template Variables -->
             <div v-if="template.variables && template.variables.length > 0" class="mt-6">
-                <div class="text-sm font-medium mb-3">Variables disponibles:</div>
+                <div class="mb-3 text-sm font-medium">Variables disponibles:</div>
                 <div class="flex flex-wrap gap-2">
-                    <code 
-                        v-for="variable in template.variables" 
-                        :key="variable"
-                        class="px-2 py-1 bg-gray-100 rounded text-xs"
-                    >
+                    <code v-for="variable in template.variables" :key="variable" class="rounded bg-gray-100 px-2 py-1 text-xs">
                         {{ variable }}
                     </code>
                 </div>
             </div>
-            
+
             <!-- Sample Data Notice -->
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <div class="text-sm text-blue-800">
-                    <strong>Nota:</strong> Esta vista previa utiliza datos de muestra. 
-                    Los valores reales se completarán automáticamente al enviar los emails.
+                    <strong>Nota:</strong> Esta vista previa utiliza datos de muestra. Los valores reales se completarán automáticamente al enviar los
+                    emails.
                 </div>
             </div>
         </CardContent>
-        
+
         <!-- Template Info (when collapsed) -->
         <CardContent v-else>
             <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
                     <span class="font-medium">Asunto:</span>
-                    <div class="text-muted-foreground truncate">{{ template.subject || 'Sin asunto' }}</div>
+                    <div class="truncate text-muted-foreground">{{ template.subject || 'Sin asunto' }}</div>
                 </div>
                 <div>
                     <span class="font-medium">Variables:</span>

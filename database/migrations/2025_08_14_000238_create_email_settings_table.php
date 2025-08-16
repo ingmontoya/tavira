@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -14,7 +12,7 @@ return new class extends Migration
     {
         // The settings table should already exist from spatie/laravel-settings
         // We just need to insert the default email settings
-        
+
         $emailSettings = [
             // SMTP Configuration
             ['group' => 'email', 'name' => 'smtp_host', 'payload' => json_encode('localhost'), 'locked' => false],
@@ -91,7 +89,7 @@ return new class extends Migration
                 ->where('name', $setting['name'])
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('settings')->insert(array_merge($setting, [
                     'created_at' => now(),
                     'updated_at' => now(),

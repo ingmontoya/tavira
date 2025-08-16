@@ -1,22 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
-import { Head, Link } from '@inertiajs/vue3';
+import EmailTemplatePreview from '@/components/EmailTemplates/EmailTemplatePreview.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
-import EmailTemplatePreview from '@/components/EmailTemplates/EmailTemplatePreview.vue';
-import { ArrowLeft, Eye, Palette, Save, Type } from 'lucide-vue-next';
 import type { AppPageProps, EmailTemplate, EmailTemplateDesignConfig } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Eye, Palette, Save, Type } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 interface Props extends /* @vue-ignore */ AppPageProps {
     template: EmailTemplate;
@@ -52,16 +50,17 @@ const availableVariables = computed(() => {
     return form.type ? props.defaultVariables[form.type] || [] : [];
 });
 
-const typeOptions = computed(() => 
-    Object.entries(props.types).map(([value, label]) => ({ value, label }))
-);
+const typeOptions = computed(() => Object.entries(props.types).map(([value, label]) => ({ value, label })));
 
 // Watchers
-watch(() => form.type, (newType) => {
-    if (newType) {
-        form.variables = props.defaultVariables[newType] || [];
-    }
-});
+watch(
+    () => form.type,
+    (newType) => {
+        if (newType) {
+            form.variables = props.defaultVariables[newType] || [];
+        }
+    },
+);
 
 // Methods
 const insertVariable = (variable: string) => {
@@ -71,7 +70,7 @@ const insertVariable = (variable: string) => {
         const end = textarea.selectionEnd;
         const text = form.body;
         form.body = text.substring(0, start) + variable + text.substring(end);
-        
+
         // Set cursor position after inserted variable
         setTimeout(() => {
             textarea.focus();
@@ -89,7 +88,7 @@ const insertVariableInSubject = (variable: string) => {
         const end = input.selectionEnd || 0;
         const text = form.subject;
         form.subject = text.substring(0, start) + variable + text.substring(end);
-        
+
         // Set cursor position after inserted variable
         setTimeout(() => {
             input.focus();
@@ -128,16 +127,11 @@ const submit = () => {
                     </Link>
                     <div>
                         <h1 class="text-3xl font-bold tracking-tight">Editar Plantilla</h1>
-                        <p class="text-muted-foreground">
-                            Modifica la plantilla "{{ template.name }}"
-                        </p>
+                        <p class="text-muted-foreground">Modifica la plantilla "{{ template.name }}"</p>
                     </div>
                 </div>
                 <div class="flex space-x-2">
-                    <Button
-                        variant="outline"
-                        @click="previewMode = !previewMode"
-                    >
+                    <Button variant="outline" @click="previewMode = !previewMode">
                         <Eye class="mr-2 h-4 w-4" />
                         {{ previewMode ? 'Ocultar' : 'Vista Previa' }}
                     </Button>
@@ -148,7 +142,7 @@ const submit = () => {
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <!-- Form -->
                 <div class="space-y-6">
                     <Tabs v-model="activeTab" class="w-full">
@@ -161,9 +155,7 @@ const submit = () => {
                                 <Palette class="mr-2 h-4 w-4" />
                                 Diseño
                             </TabsTrigger>
-                            <TabsTrigger value="settings">
-                                Configuración
-                            </TabsTrigger>
+                            <TabsTrigger value="settings"> Configuración </TabsTrigger>
                         </TabsList>
 
                         <!-- Content Tab -->
@@ -172,12 +164,10 @@ const submit = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Información Básica</CardTitle>
-                                    <CardDescription>
-                                        Configura la información básica de la plantilla
-                                    </CardDescription>
+                                    <CardDescription> Configura la información básica de la plantilla </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
                                             <Label for="name">Nombre de la Plantilla</Label>
                                             <Input
@@ -197,11 +187,7 @@ const submit = () => {
                                                     <SelectValue placeholder="Selecciona un tipo" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem
-                                                        v-for="option in typeOptions"
-                                                        :key="option.value"
-                                                        :value="option.value"
-                                                    >
+                                                    <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
                                                         {{ option.label }}
                                                     </SelectItem>
                                                 </SelectContent>
@@ -211,7 +197,7 @@ const submit = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="space-y-2">
                                         <Label for="description">Descripción</Label>
                                         <Textarea
@@ -228,9 +214,7 @@ const submit = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Asunto del Email</CardTitle>
-                                    <CardDescription>
-                                        Define el asunto que aparecerá en el email
-                                    </CardDescription>
+                                    <CardDescription> Define el asunto que aparecerá en el email </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2">
@@ -268,9 +252,7 @@ const submit = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Contenido del Email</CardTitle>
-                                    <CardDescription>
-                                        Escribe el contenido principal del email. Puedes usar HTML.
-                                    </CardDescription>
+                                    <CardDescription> Escribe el contenido principal del email. Puedes usar HTML. </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2">
@@ -311,9 +293,7 @@ const submit = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Configuración de Diseño</CardTitle>
-                                    <CardDescription>
-                                        Personaliza los colores y estilos de la plantilla
-                                    </CardDescription>
+                                    <CardDescription> Personaliza los colores y estilos de la plantilla </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-6">
                                     <!-- Colors -->
@@ -327,13 +307,9 @@ const submit = () => {
                                                         id="primary-color"
                                                         v-model="form.design_config.primary_color"
                                                         type="color"
-                                                        class="w-16 h-10 p-1"
+                                                        class="h-10 w-16 p-1"
                                                     />
-                                                    <Input
-                                                        v-model="form.design_config.primary_color"
-                                                        placeholder="#3b82f6"
-                                                        class="flex-1"
-                                                    />
+                                                    <Input v-model="form.design_config.primary_color" placeholder="#3b82f6" class="flex-1" />
                                                 </div>
                                             </div>
                                             <div class="space-y-2">
@@ -343,13 +319,9 @@ const submit = () => {
                                                         id="secondary-color"
                                                         v-model="form.design_config.secondary_color"
                                                         type="color"
-                                                        class="w-16 h-10 p-1"
+                                                        class="h-10 w-16 p-1"
                                                     />
-                                                    <Input
-                                                        v-model="form.design_config.secondary_color"
-                                                        placeholder="#1d4ed8"
-                                                        class="flex-1"
-                                                    />
+                                                    <Input v-model="form.design_config.secondary_color" placeholder="#1d4ed8" class="flex-1" />
                                                 </div>
                                             </div>
                                         </div>
@@ -397,10 +369,7 @@ const submit = () => {
                                             </div>
                                             <div class="space-y-2">
                                                 <Label>Ancho Máximo</Label>
-                                                <Input
-                                                    v-model="form.design_config.max_width"
-                                                    placeholder="600px"
-                                                />
+                                                <Input v-model="form.design_config.max_width" placeholder="600px" />
                                             </div>
                                         </div>
                                     </div>
@@ -413,9 +382,7 @@ const submit = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Configuración</CardTitle>
-                                    <CardDescription>
-                                        Configura el estado y comportamiento de la plantilla
-                                    </CardDescription>
+                                    <CardDescription> Configura el estado y comportamiento de la plantilla </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-6">
                                     <div class="flex items-center justify-between">
@@ -433,17 +400,15 @@ const submit = () => {
                                     <div class="flex items-center justify-between">
                                         <div class="space-y-0.5">
                                             <Label>Plantilla Predeterminada</Label>
-                                            <p class="text-sm text-muted-foreground">
-                                                Esta plantilla se usará por defecto para este tipo de email
-                                            </p>
+                                            <p class="text-sm text-muted-foreground">Esta plantilla se usará por defecto para este tipo de email</p>
                                         </div>
                                         <Switch v-model:checked="form.is_default" />
                                     </div>
 
-                                    <div v-if="form.is_default" class="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                    <div v-if="form.is_default" class="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
                                         <div class="text-sm text-yellow-800">
-                                            <strong>Nota:</strong> Al marcar esta plantilla como predeterminada, 
-                                            las demás plantillas del mismo tipo perderán este estado automáticamente.
+                                            <strong>Nota:</strong> Al marcar esta plantilla como predeterminada, las demás plantillas del mismo tipo
+                                            perderán este estado automáticamente.
                                         </div>
                                     </div>
                                 </CardContent>
@@ -457,9 +422,7 @@ const submit = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Vista Previa</CardTitle>
-                            <CardDescription>
-                                Así se verá tu plantilla de email actualizada
-                            </CardDescription>
+                            <CardDescription> Así se verá tu plantilla de email actualizada </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <EmailTemplatePreview

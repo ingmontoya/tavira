@@ -3,30 +3,18 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Textarea } from '@/components/ui/textarea';
 import { type BreadcrumbItem } from '@/types';
-import { 
-    AlertCircle, 
-    CheckCircle2, 
-    Eye, 
-    EyeOff, 
-    Mail, 
-    RotateCcw, 
-    Send, 
-    Settings, 
-    Shield,
-    TestTube,
-    Zap
-} from 'lucide-vue-next';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Mail, RotateCcw, Send, Settings, Shield, TestTube, Zap } from 'lucide-vue-next';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -120,7 +108,7 @@ const submit = () => {
 
 const applyPreset = () => {
     if (!presetForm.preset) return;
-    
+
     presetForm.post(route('settings.email.apply-preset'), {
         preserveScroll: true,
         onSuccess: () => {
@@ -169,7 +157,7 @@ const testConnection = async () => {
 
 const sendTestEmail = async () => {
     if (!testEmailForm.to_email) return;
-    
+
     isSendingTestEmail.value = true;
     testEmailResult.value = null;
 
@@ -206,17 +194,12 @@ const sendTestEmail = async () => {
                 <div class="flex items-center justify-between">
                     <div>
                         <HeadingSmall>Configuración de Correo Electrónico</HeadingSmall>
-                        <p class="text-sm text-muted-foreground">
-                            Configure las cuentas de correo para administración y concejo
-                        </p>
+                        <p class="text-sm text-muted-foreground">Configure las cuentas de correo para administración y concejo</p>
                     </div>
-                    
+
                     <div class="flex items-center gap-2">
-                        <Badge 
-                            :class="[configurationStatus.color, configurationStatus.bgColor]"
-                            class="flex items-center gap-1"
-                        >
-                            <component :is="configurationStatus.icon" class="w-3 h-3" />
+                        <Badge :class="[configurationStatus.color, configurationStatus.bgColor]" class="flex items-center gap-1">
+                            <component :is="configurationStatus.icon" class="h-3 w-3" />
                             {{ configurationStatus.text }}
                         </Badge>
                     </div>
@@ -224,17 +207,15 @@ const sendTestEmail = async () => {
 
                 <!-- Mailpit Status -->
                 <Alert v-if="mailpitStatus.available" class="border-blue-200 bg-blue-50">
-                    <CheckCircle2 class="w-4 h-4 text-blue-600" />
+                    <CheckCircle2 class="h-4 w-4 text-blue-600" />
                     <AlertDescription class="text-blue-800">
                         {{ mailpitStatus.message }}
-                        <span v-if="mailpitStatus.version" class="ml-2 text-xs">
-                            (v{{ mailpitStatus.version }})
-                        </span>
+                        <span v-if="mailpitStatus.version" class="ml-2 text-xs"> (v{{ mailpitStatus.version }}) </span>
                     </AlertDescription>
                 </Alert>
 
                 <Alert v-else class="border-orange-200 bg-orange-50">
-                    <AlertCircle class="w-4 h-4 text-orange-600" />
+                    <AlertCircle class="h-4 w-4 text-orange-600" />
                     <AlertDescription class="text-orange-800">
                         {{ mailpitStatus.message }}
                     </AlertDescription>
@@ -255,12 +236,10 @@ const sendTestEmail = async () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle class="flex items-center gap-2">
-                                        <Settings class="w-5 h-5" />
+                                        <Settings class="h-5 w-5" />
                                         Configuración del Servidor SMTP
                                     </CardTitle>
-                                    <CardDescription>
-                                        Configure la conexión al servidor de correo saliente
-                                    </CardDescription>
+                                    <CardDescription> Configure la conexión al servidor de correo saliente </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <!-- Presets -->
@@ -277,13 +256,8 @@ const sendTestEmail = async () => {
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <Button 
-                                                @click="applyPreset" 
-                                                type="button" 
-                                                variant="outline"
-                                                :disabled="!presetForm.preset"
-                                            >
-                                                <Zap class="w-4 h-4 mr-2" />
+                                            <Button @click="applyPreset" type="button" variant="outline" :disabled="!presetForm.preset">
+                                                <Zap class="mr-2 h-4 w-4" />
                                                 Aplicar
                                             </Button>
                                         </div>
@@ -346,10 +320,10 @@ const sendTestEmail = async () => {
                                                     type="button"
                                                     variant="ghost"
                                                     size="sm"
-                                                    class="absolute right-0 top-0 h-full px-3"
+                                                    class="absolute top-0 right-0 h-full px-3"
                                                 >
-                                                    <Eye v-if="!showPassword" class="w-4 h-4" />
-                                                    <EyeOff v-else class="w-4 h-4" />
+                                                    <Eye v-if="!showPassword" class="h-4 w-4" />
+                                                    <EyeOff v-else class="h-4 w-4" />
                                                 </Button>
                                             </div>
                                             <p v-if="form.errors.smtp_password" class="text-sm text-red-500">
@@ -373,13 +347,7 @@ const sendTestEmail = async () => {
 
                                         <div class="space-y-2">
                                             <Label for="smtp_timeout">Timeout (segundos)</Label>
-                                            <Input
-                                                id="smtp_timeout"
-                                                v-model="form.smtp_timeout"
-                                                type="number"
-                                                min="1"
-                                                max="300"
-                                            />
+                                            <Input id="smtp_timeout" v-model="form.smtp_timeout" type="number" min="1" max="300" />
                                         </div>
                                     </div>
 
@@ -392,17 +360,14 @@ const sendTestEmail = async () => {
                                                 variant="outline"
                                                 :disabled="isTestingConnection || !form.smtp_host || !form.smtp_username"
                                             >
-                                                <TestTube class="w-4 h-4 mr-2" />
+                                                <TestTube class="mr-2 h-4 w-4" />
                                                 {{ isTestingConnection ? 'Probando...' : 'Probar Conexión' }}
                                             </Button>
-                                            
+
                                             <div v-if="connectionTestResult" class="flex items-center gap-2">
-                                                <CheckCircle2 v-if="connectionTestResult.success" class="w-4 h-4 text-green-600" />
-                                                <AlertCircle v-else class="w-4 h-4 text-red-600" />
-                                                <span 
-                                                    :class="connectionTestResult.success ? 'text-green-600' : 'text-red-600'"
-                                                    class="text-sm"
-                                                >
+                                                <CheckCircle2 v-if="connectionTestResult.success" class="h-4 w-4 text-green-600" />
+                                                <AlertCircle v-else class="h-4 w-4 text-red-600" />
+                                                <span :class="connectionTestResult.success ? 'text-green-600' : 'text-red-600'" class="text-sm">
                                                     {{ connectionTestResult.message }}
                                                 </span>
                                             </div>
@@ -414,17 +379,15 @@ const sendTestEmail = async () => {
 
                         <!-- Email Accounts -->
                         <TabsContent value="accounts" class="space-y-4">
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                                 <!-- Admin Account -->
                                 <Card>
                                     <CardHeader>
                                         <CardTitle class="flex items-center gap-2">
-                                            <Shield class="w-5 h-5" />
+                                            <Shield class="h-5 w-5" />
                                             Cuenta de Administración
                                         </CardTitle>
-                                        <CardDescription>
-                                            Configuración del correo para la administración del conjunto
-                                        </CardDescription>
+                                        <CardDescription> Configuración del correo para la administración del conjunto </CardDescription>
                                     </CardHeader>
                                     <CardContent class="space-y-4">
                                         <div class="space-y-2">
@@ -443,11 +406,7 @@ const sendTestEmail = async () => {
 
                                         <div class="space-y-2">
                                             <Label for="admin_email_name">Nombre para Mostrar</Label>
-                                            <Input
-                                                id="admin_email_name"
-                                                v-model="form.admin_email_name"
-                                                placeholder="Administración"
-                                            />
+                                            <Input id="admin_email_name" v-model="form.admin_email_name" placeholder="Administración" />
                                         </div>
 
                                         <div class="space-y-2">
@@ -466,12 +425,10 @@ const sendTestEmail = async () => {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle class="flex items-center gap-2">
-                                            <Mail class="w-5 h-5" />
+                                            <Mail class="h-5 w-5" />
                                             Cuenta del Concejo
                                         </CardTitle>
-                                        <CardDescription>
-                                            Configuración del correo para el concejo de administración
-                                        </CardDescription>
+                                        <CardDescription> Configuración del correo para el concejo de administración </CardDescription>
                                     </CardHeader>
                                     <CardContent class="space-y-4">
                                         <div class="space-y-2">
@@ -514,15 +471,13 @@ const sendTestEmail = async () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle class="flex items-center gap-2">
-                                        <Send class="w-5 h-5" />
+                                        <Send class="h-5 w-5" />
                                         Probar Envío de Correo
                                     </CardTitle>
-                                    <CardDescription>
-                                        Envía un correo de prueba para verificar la configuración
-                                    </CardDescription>
+                                    <CardDescription> Envía un correo de prueba para verificar la configuración </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                                         <div class="space-y-2">
                                             <Label for="test_to_email">Enviar a</Label>
                                             <Input
@@ -554,19 +509,16 @@ const sendTestEmail = async () => {
                                                 :disabled="isSendingTestEmail || !testEmailForm.to_email || !isConfigured"
                                                 class="w-full"
                                             >
-                                                <Send class="w-4 h-4 mr-2" />
+                                                <Send class="mr-2 h-4 w-4" />
                                                 {{ isSendingTestEmail ? 'Enviando...' : 'Enviar Prueba' }}
                                             </Button>
                                         </div>
                                     </div>
 
                                     <div v-if="testEmailResult" class="flex items-center gap-2">
-                                        <CheckCircle2 v-if="testEmailResult.success" class="w-4 h-4 text-green-600" />
-                                        <AlertCircle v-else class="w-4 h-4 text-red-600" />
-                                        <span 
-                                            :class="testEmailResult.success ? 'text-green-600' : 'text-red-600'"
-                                            class="text-sm"
-                                        >
+                                        <CheckCircle2 v-if="testEmailResult.success" class="h-4 w-4 text-green-600" />
+                                        <AlertCircle v-else class="h-4 w-4 text-red-600" />
+                                        <span :class="testEmailResult.success ? 'text-green-600' : 'text-red-600'" class="text-sm">
                                             {{ testEmailResult.message }}
                                         </span>
                                     </div>
@@ -579,34 +531,23 @@ const sendTestEmail = async () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Configuración General</CardTitle>
-                                    <CardDescription>
-                                        Opciones generales para el sistema de correo
-                                    </CardDescription>
+                                    <CardDescription> Opciones generales para el sistema de correo </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="grid grid-cols-2 gap-4">
                                         <div class="space-y-4">
                                             <div class="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id="email_enabled"
-                                                    v-model:checked="form.email_enabled"
-                                                />
+                                                <Checkbox id="email_enabled" v-model:checked="form.email_enabled" />
                                                 <Label for="email_enabled">Habilitar envío de correos</Label>
                                             </div>
 
                                             <div class="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id="email_queue_enabled"
-                                                    v-model:checked="form.email_queue_enabled"
-                                                />
+                                                <Checkbox id="email_queue_enabled" v-model:checked="form.email_queue_enabled" />
                                                 <Label for="email_queue_enabled">Usar cola de correos</Label>
                                             </div>
 
                                             <div class="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id="mailpit_enabled"
-                                                    v-model:checked="form.mailpit_enabled"
-                                                />
+                                                <Checkbox id="mailpit_enabled" v-model:checked="form.mailpit_enabled" />
                                                 <Label for="mailpit_enabled">Habilitar Mailpit</Label>
                                             </div>
                                         </div>
@@ -614,24 +555,12 @@ const sendTestEmail = async () => {
                                         <div class="space-y-4">
                                             <div class="space-y-2">
                                                 <Label for="email_retry_attempts">Intentos de reenvío</Label>
-                                                <Input
-                                                    id="email_retry_attempts"
-                                                    v-model="form.email_retry_attempts"
-                                                    type="number"
-                                                    min="1"
-                                                    max="10"
-                                                />
+                                                <Input id="email_retry_attempts" v-model="form.email_retry_attempts" type="number" min="1" max="10" />
                                             </div>
 
                                             <div class="space-y-2">
                                                 <Label for="email_retry_delay">Demora entre intentos (seg)</Label>
-                                                <Input
-                                                    id="email_retry_delay"
-                                                    v-model="form.email_retry_delay"
-                                                    type="number"
-                                                    min="1"
-                                                    max="3600"
-                                                />
+                                                <Input id="email_retry_delay" v-model="form.email_retry_delay" type="number" min="1" max="3600" />
                                             </div>
                                         </div>
                                     </div>
@@ -644,9 +573,7 @@ const sendTestEmail = async () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Configuración Avanzada</CardTitle>
-                                    <CardDescription>
-                                        Opciones avanzadas para usuarios experimentados
-                                    </CardDescription>
+                                    <CardDescription> Opciones avanzadas para usuarios experimentados </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
                                     <div class="grid grid-cols-2 gap-4">
@@ -676,18 +603,12 @@ const sendTestEmail = async () => {
 
                                         <div class="space-y-4">
                                             <div class="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id="rate_limiting_enabled"
-                                                    v-model:checked="form.rate_limiting_enabled"
-                                                />
+                                                <Checkbox id="rate_limiting_enabled" v-model:checked="form.rate_limiting_enabled" />
                                                 <Label for="rate_limiting_enabled">Habilitar límites de velocidad</Label>
                                             </div>
 
                                             <div class="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id="email_backup_enabled"
-                                                    v-model:checked="form.email_backup_enabled"
-                                                />
+                                                <Checkbox id="email_backup_enabled" v-model:checked="form.email_backup_enabled" />
                                                 <Label for="email_backup_enabled">Respaldar correos</Label>
                                             </div>
                                         </div>
@@ -698,13 +619,9 @@ const sendTestEmail = async () => {
                     </Tabs>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-center justify-between pt-6 border-t">
-                        <Button
-                            @click="resetDefaults"
-                            type="button"
-                            variant="outline"
-                        >
-                            <RotateCcw class="w-4 h-4 mr-2" />
+                    <div class="flex items-center justify-between border-t pt-6">
+                        <Button @click="resetDefaults" type="button" variant="outline">
+                            <RotateCcw class="mr-2 h-4 w-4" />
                             Restablecer por Defecto
                         </Button>
 

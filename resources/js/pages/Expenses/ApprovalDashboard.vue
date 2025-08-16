@@ -15,32 +15,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import {
-    CheckCircle,
-    XCircle,
-    Clock,
-    AlertTriangle,
-    TrendingUp,
-    Users,
-    Building,
-    Calendar,
-    CreditCard,
-    Eye,
-} from 'lucide-vue-next';
+import { AlertTriangle, Building, Calendar, CheckCircle, Clock, CreditCard, Eye, TrendingUp, Users, XCircle } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { formatCurrency } from '../../utils';
 
@@ -72,7 +54,6 @@ interface ExpenseCategory {
     color: string;
     icon: string;
 }
-
 
 interface Expense {
     id: number;
@@ -153,7 +134,7 @@ const toggleSelectAll = () => {
     if (selectAll.value) {
         selectedExpenses.value = [];
     } else {
-        selectedExpenses.value = props.pendingApprovals.map(expense => expense.id);
+        selectedExpenses.value = props.pendingApprovals.map((expense) => expense.id);
     }
     selectAll.value = !selectAll.value;
 };
@@ -184,7 +165,7 @@ const confirmBulkApprove = () => {
             selectedExpenses.value = [];
             selectAll.value = false;
             showBulkApproveDialog.value = false;
-        }
+        },
     });
 };
 
@@ -211,7 +192,7 @@ const confirmBulkReject = () => {
             selectAll.value = false;
             showBulkRejectDialog.value = false;
             rejectReason.value = '';
-        }
+        },
     });
 };
 
@@ -269,19 +250,15 @@ const confirmApproveByCouncil = () => {
             <div class="flex items-center justify-between">
                 <div class="space-y-1">
                     <h2 class="text-2xl font-semibold tracking-tight">Dashboard de Aprobaciones</h2>
-                    <p class="text-sm text-muted-foreground">
-                        Gestiona las aprobaciones pendientes y supervisa el flujo de gastos
-                    </p>
+                    <p class="text-sm text-muted-foreground">Gestiona las aprobaciones pendientes y supervisa el flujo de gastos</p>
                 </div>
                 <Button asChild variant="outline">
-                    <Link href="/expenses">
-                        Ver Todos los Gastos
-                    </Link>
+                    <Link href="/expenses"> Ver Todos los Gastos </Link>
                 </Button>
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">Aprobación Regular</CardTitle>
@@ -289,9 +266,7 @@ const confirmApproveByCouncil = () => {
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.pending_regular_count }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            {{ formatCurrency(stats.pending_total_amount) }} total
-                        </p>
+                        <p class="text-xs text-muted-foreground">{{ formatCurrency(stats.pending_total_amount) }} total</p>
                     </CardContent>
                 </Card>
 
@@ -302,9 +277,7 @@ const confirmApproveByCouncil = () => {
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.pending_council_count }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            {{ formatCurrency(stats.council_pending_total_amount) }} total
-                        </p>
+                        <p class="text-xs text-muted-foreground">{{ formatCurrency(stats.council_pending_total_amount) }} total</p>
                     </CardContent>
                 </Card>
 
@@ -315,9 +288,7 @@ const confirmApproveByCouncil = () => {
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold text-red-600">{{ stats.overdue_count }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            {{ formatCurrency(stats.overdue_total_amount) }} total
-                        </p>
+                        <p class="text-xs text-muted-foreground">{{ formatCurrency(stats.overdue_total_amount) }} total</p>
                     </CardContent>
                 </Card>
 
@@ -328,9 +299,7 @@ const confirmApproveByCouncil = () => {
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold text-green-600">{{ recentApprovals.length }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Últimas aprobaciones
-                        </p>
+                        <p class="text-xs text-muted-foreground">Últimas aprobaciones</p>
                     </CardContent>
                 </Card>
             </div>
@@ -338,18 +307,10 @@ const confirmApproveByCouncil = () => {
             <!-- Tabs for different approval queues -->
             <Tabs default-value="pending" class="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="pending">
-                        Aprobación Regular ({{ stats.pending_regular_count }})
-                    </TabsTrigger>
-                    <TabsTrigger value="council">
-                        Aprobación Concejo ({{ stats.pending_council_count }})
-                    </TabsTrigger>
-                    <TabsTrigger value="overdue">
-                        Vencidos ({{ stats.overdue_count }})
-                    </TabsTrigger>
-                    <TabsTrigger value="recent">
-                        Recientes
-                    </TabsTrigger>
+                    <TabsTrigger value="pending"> Aprobación Regular ({{ stats.pending_regular_count }}) </TabsTrigger>
+                    <TabsTrigger value="council"> Aprobación Concejo ({{ stats.pending_council_count }}) </TabsTrigger>
+                    <TabsTrigger value="overdue"> Vencidos ({{ stats.overdue_count }}) </TabsTrigger>
+                    <TabsTrigger value="recent"> Recientes </TabsTrigger>
                 </TabsList>
 
                 <!-- Pending Regular Approvals -->
@@ -363,7 +324,7 @@ const confirmApproveByCouncil = () => {
                                         @click="bulkApprove"
                                         :disabled="bulkApproveForm.processing || !hasSelectedExpenses"
                                         size="sm"
-                                        class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                        class="bg-green-600 hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                                     >
                                         <CheckCircle class="mr-2 h-4 w-4" />
                                         Aprobar Seleccionados ({{ selectedCount }})
@@ -373,7 +334,7 @@ const confirmApproveByCouncil = () => {
                                         :disabled="bulkRejectForm.processing || !hasSelectedExpenses"
                                         size="sm"
                                         variant="destructive"
-                                        class="disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                        class="disabled:cursor-not-allowed disabled:bg-gray-400"
                                     >
                                         <XCircle class="mr-2 h-4 w-4" />
                                         Rechazar Seleccionados ({{ selectedCount }})
@@ -382,9 +343,9 @@ const confirmApproveByCouncil = () => {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="pendingApprovals.length === 0" class="text-center py-8 text-muted-foreground">
-                                <CheckCircle class="mx-auto h-12 w-12 text-green-500 mb-4" />
-                                <h3 class="text-lg font-medium mb-2">¡Todo al día!</h3>
+                            <div v-if="pendingApprovals.length === 0" class="py-8 text-center text-muted-foreground">
+                                <CheckCircle class="mx-auto mb-4 h-12 w-12 text-green-500" />
+                                <h3 class="mb-2 text-lg font-medium">¡Todo al día!</h3>
                                 <p>No hay gastos pendientes de aprobación regular.</p>
                             </div>
                             <div v-else>
@@ -392,10 +353,7 @@ const confirmApproveByCouncil = () => {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead class="w-12">
-                                                <Checkbox
-                                                    :checked="true"
-                                                    @update:checked="toggleSelectAll"
-                                                />
+                                                <Checkbox :checked="true" @update:checked="toggleSelectAll" />
                                             </TableHead>
                                             <TableHead>Gasto</TableHead>
                                             <TableHead>Categoría</TableHead>
@@ -427,7 +385,10 @@ const confirmApproveByCouncil = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <div class="flex items-center gap-2">
-                                                    <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: expense.expense_category.color }"></div>
+                                                    <div
+                                                        class="h-3 w-3 rounded-full"
+                                                        :style="{ backgroundColor: expense.expense_category.color }"
+                                                    ></div>
                                                     <span>{{ expense.expense_category.name }}</span>
                                                 </div>
                                             </TableCell>
@@ -438,7 +399,7 @@ const confirmApproveByCouncil = () => {
                                             <TableCell @click.stop>
                                                 <div class="flex items-center space-x-2">
                                                     <Button @click="approveExpense(expense.id)" size="sm" variant="outline">
-                                                        <CheckCircle class="h-3 w-3 mr-1" />
+                                                        <CheckCircle class="mr-1 h-3 w-3" />
                                                         Aprobar
                                                     </Button>
                                                     <Button asChild variant="ghost" size="sm">
@@ -461,14 +422,12 @@ const confirmApproveByCouncil = () => {
                     <Card>
                         <CardHeader>
                             <CardTitle>Gastos Pendientes de Aprobación del Concejo</CardTitle>
-                            <p class="text-sm text-muted-foreground">
-                                Gastos que superan los $4,000,000 COP y requieren aprobación del concejo
-                            </p>
+                            <p class="text-sm text-muted-foreground">Gastos que superan los $4,000,000 COP y requieren aprobación del concejo</p>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="councilPendingApprovals.length === 0" class="text-center py-8 text-muted-foreground">
-                                <Building class="mx-auto h-12 w-12 text-blue-500 mb-4" />
-                                <h3 class="text-lg font-medium mb-2">Sin gastos pendientes</h3>
+                            <div v-if="councilPendingApprovals.length === 0" class="py-8 text-center text-muted-foreground">
+                                <Building class="mx-auto mb-4 h-12 w-12 text-blue-500" />
+                                <h3 class="mb-2 text-lg font-medium">Sin gastos pendientes</h3>
                                 <p>No hay gastos esperando aprobación del concejo.</p>
                             </div>
                             <div v-else>
@@ -499,7 +458,10 @@ const confirmApproveByCouncil = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <div class="flex items-center gap-2">
-                                                    <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: expense.expense_category.color }"></div>
+                                                    <div
+                                                        class="h-3 w-3 rounded-full"
+                                                        :style="{ backgroundColor: expense.expense_category.color }"
+                                                    ></div>
                                                     <span>{{ expense.expense_category.name }}</span>
                                                 </div>
                                             </TableCell>
@@ -512,7 +474,7 @@ const confirmApproveByCouncil = () => {
                                             <TableCell @click.stop>
                                                 <div class="flex items-center space-x-2">
                                                     <Button @click="approveByCouncil(expense.id)" size="sm">
-                                                        <Building class="h-3 w-3 mr-1" />
+                                                        <Building class="mr-1 h-3 w-3" />
                                                         Aprobar por Concejo
                                                     </Button>
                                                     <Button asChild variant="ghost" size="sm">
@@ -538,14 +500,12 @@ const confirmApproveByCouncil = () => {
                                 <AlertTriangle class="h-5 w-5" />
                                 Gastos Vencidos
                             </CardTitle>
-                            <p class="text-sm text-muted-foreground">
-                                Gastos aprobados pero con fecha de pago vencida
-                            </p>
+                            <p class="text-sm text-muted-foreground">Gastos aprobados pero con fecha de pago vencida</p>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="overdueExpenses.length === 0" class="text-center py-8 text-muted-foreground">
-                                <Calendar class="mx-auto h-12 w-12 text-green-500 mb-4" />
-                                <h3 class="text-lg font-medium mb-2">¡Sin gastos vencidos!</h3>
+                            <div v-if="overdueExpenses.length === 0" class="py-8 text-center text-muted-foreground">
+                                <Calendar class="mx-auto mb-4 h-12 w-12 text-green-500" />
+                                <h3 class="mb-2 text-lg font-medium">¡Sin gastos vencidos!</h3>
                                 <p>Todos los gastos están al día con sus fechas de vencimiento.</p>
                             </div>
                             <div v-else>
@@ -565,7 +525,7 @@ const confirmApproveByCouncil = () => {
                                         <TableRow
                                             v-for="expense in overdueExpenses"
                                             :key="expense.id"
-                                            class="bg-red-50 cursor-pointer hover:bg-red-100/75"
+                                            class="cursor-pointer bg-red-50 hover:bg-red-100/75"
                                             @click="router.visit(`/expenses/${expense.id}`)"
                                         >
                                             <TableCell>
@@ -576,13 +536,18 @@ const confirmApproveByCouncil = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <div class="flex items-center gap-2">
-                                                    <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: expense.expense_category.color }"></div>
+                                                    <div
+                                                        class="h-3 w-3 rounded-full"
+                                                        :style="{ backgroundColor: expense.expense_category.color }"
+                                                    ></div>
                                                     <span>{{ expense.expense_category.name }}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>{{ expense.vendor_name }}</TableCell>
                                             <TableCell class="font-mono">{{ formatCurrency(expense.total_amount) }}</TableCell>
-                                            <TableCell>{{ expense.due_date ? new Date(expense.due_date).toLocaleDateString('es-CO') : 'N/A' }}</TableCell>
+                                            <TableCell>{{
+                                                expense.due_date ? new Date(expense.due_date).toLocaleDateString('es-CO') : 'N/A'
+                                            }}</TableCell>
                                             <TableCell>
                                                 <Badge variant="destructive">{{ expense.days_overdue }} días</Badge>
                                             </TableCell>
@@ -590,7 +555,7 @@ const confirmApproveByCouncil = () => {
                                                 <div class="flex items-center space-x-2">
                                                     <Button asChild size="sm">
                                                         <Link :href="`/expenses/${expense.id}`">
-                                                            <CreditCard class="h-3 w-3 mr-1" />
+                                                            <CreditCard class="mr-1 h-3 w-3" />
                                                             Marcar como Pagado
                                                         </Link>
                                                     </Button>
@@ -617,14 +582,12 @@ const confirmApproveByCouncil = () => {
                                 <CheckCircle class="h-5 w-5" />
                                 Aprobaciones Recientes
                             </CardTitle>
-                            <p class="text-sm text-muted-foreground">
-                                Gastos aprobados en los últimos 7 días
-                            </p>
+                            <p class="text-sm text-muted-foreground">Gastos aprobados en los últimos 7 días</p>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="recentApprovals.length === 0" class="text-center py-8 text-muted-foreground">
-                                <Users class="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                <h3 class="text-lg font-medium mb-2">Sin aprobaciones recientes</h3>
+                            <div v-if="recentApprovals.length === 0" class="py-8 text-center text-muted-foreground">
+                                <Users class="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                                <h3 class="mb-2 text-lg font-medium">Sin aprobaciones recientes</h3>
                                 <p>No se han aprobado gastos en los últimos 7 días.</p>
                             </div>
                             <div v-else>
@@ -655,14 +618,19 @@ const confirmApproveByCouncil = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <div class="flex items-center gap-2">
-                                                    <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: expense.expense_category.color }"></div>
+                                                    <div
+                                                        class="h-3 w-3 rounded-full"
+                                                        :style="{ backgroundColor: expense.expense_category.color }"
+                                                    ></div>
                                                     <span>{{ expense.expense_category.name }}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell>{{ expense.vendor_name }}</TableCell>
                                             <TableCell class="font-mono">{{ formatCurrency(expense.total_amount) }}</TableCell>
                                             <TableCell>{{ expense.approved_by?.name || 'Auto' }}</TableCell>
-                                            <TableCell>{{ expense.approved_at ? new Date(expense.approved_at).toLocaleDateString('es-CO') : 'N/A' }}</TableCell>
+                                            <TableCell>{{
+                                                expense.approved_at ? new Date(expense.approved_at).toLocaleDateString('es-CO') : 'N/A'
+                                            }}</TableCell>
                                             <TableCell @click.stop>
                                                 <Button asChild variant="ghost" size="sm">
                                                     <Link :href="`/expenses/${expense.id}`">
@@ -686,8 +654,7 @@ const confirmApproveByCouncil = () => {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Confirmar Aprobación</AlertDialogTitle>
                     <AlertDialogDescription>
-                        ¿Está seguro de aprobar {{ selectedExpenses.length }} gastos seleccionados?
-                        Esta acción no se puede deshacer.
+                        ¿Está seguro de aprobar {{ selectedExpenses.length }} gastos seleccionados? Esta acción no se puede deshacer.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -704,28 +671,17 @@ const confirmApproveByCouncil = () => {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Rechazar Gastos Seleccionados</DialogTitle>
-                    <DialogDescription>
-                        Ingrese el motivo del rechazo para {{ selectedExpenses.length }} gastos seleccionados.
-                    </DialogDescription>
+                    <DialogDescription> Ingrese el motivo del rechazo para {{ selectedExpenses.length }} gastos seleccionados. </DialogDescription>
                 </DialogHeader>
                 <div class="space-y-4">
                     <div>
                         <Label for="reject-reason">Motivo del rechazo *</Label>
-                        <Input
-                            id="reject-reason"
-                            v-model="rejectReason"
-                            placeholder="Ingrese el motivo del rechazo..."
-                            class="mt-1"
-                        />
+                        <Input id="reject-reason" v-model="rejectReason" placeholder="Ingrese el motivo del rechazo..." class="mt-1" />
                     </div>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" @click="showBulkRejectDialog = false">Cancelar</Button>
-                    <Button
-                        variant="destructive"
-                        @click="confirmBulkReject"
-                        :disabled="bulkRejectForm.processing || !rejectReason.trim()"
-                    >
+                    <Button variant="destructive" @click="confirmBulkReject" :disabled="bulkRejectForm.processing || !rejectReason.trim()">
                         {{ bulkRejectForm.processing ? 'Rechazando...' : 'Rechazar' }}
                     </Button>
                 </DialogFooter>
@@ -737,16 +693,11 @@ const confirmApproveByCouncil = () => {
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Confirmar Aprobación</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        ¿Está seguro de aprobar este gasto?
-                        Esta acción no se puede deshacer.
-                    </AlertDialogDescription>
+                    <AlertDialogDescription> ¿Está seguro de aprobar este gasto? Esta acción no se puede deshacer. </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction @click="confirmApproveExpense">
-                        Aprobar
-                    </AlertDialogAction>
+                    <AlertDialogAction @click="confirmApproveExpense"> Aprobar </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -757,15 +708,12 @@ const confirmApproveByCouncil = () => {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Confirmar Aprobación por Concejo</AlertDialogTitle>
                     <AlertDialogDescription>
-                        ¿Está seguro de aprobar este gasto por el concejo?
-                        Esta acción marcará el gasto como definitivamente aprobado.
+                        ¿Está seguro de aprobar este gasto por el concejo? Esta acción marcará el gasto como definitivamente aprobado.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction @click="confirmApproveByCouncil">
-                        Aprobar por Concejo
-                    </AlertDialogAction>
+                    <AlertDialogAction @click="confirmApproveByCouncil"> Aprobar por Concejo </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -780,9 +728,7 @@ const confirmApproveByCouncil = () => {
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogAction @click="showNoSelectionDialog = false">
-                        Entendido
-                    </AlertDialogAction>
+                    <AlertDialogAction @click="showNoSelectionDialog = false"> Entendido </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

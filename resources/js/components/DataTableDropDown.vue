@@ -1,13 +1,4 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,6 +10,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { router } from '@inertiajs/vue3';
 import { CheckCircle, Clock, Copy, Edit, Eye, MoreHorizontal, Play, QrCode, RefreshCw, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
@@ -216,11 +216,15 @@ const viewBudgetExecution = () => {
                     Ver ejecución
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                
+
                 <!-- Estado: Aprobar (Draft -> Approved) - Solo para usuarios del Concejo -->
                 <AlertDialog v-model:open="approveDialogOpen">
                     <AlertDialogTrigger as-child>
-                        <DropdownMenuItem @click="$event.preventDefault()" v-if="budget.status === 'Draft' && budget.can_approve" class="text-blue-600">
+                        <DropdownMenuItem
+                            @click="$event.preventDefault()"
+                            v-if="budget.status === 'Draft' && budget.can_approve"
+                            class="text-blue-600"
+                        >
                             <CheckCircle class="mr-2 h-4 w-4" />
                             Aprobar
                         </DropdownMenuItem>
@@ -229,29 +233,31 @@ const viewBudgetExecution = () => {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Aprobar Presupuesto</AlertDialogTitle>
                             <AlertDialogDescription>
-                                ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br><br>
+                                ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br /><br />
                                 Esta acción marcará el presupuesto como aprobado por el Concejo de Administración y permitirá su posterior activación.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction @click="confirmApproveBudget" class="bg-blue-600 hover:bg-blue-700">Aprobar Presupuesto</AlertDialogAction>
+                            <AlertDialogAction @click="confirmApproveBudget" class="bg-blue-600 hover:bg-blue-700"
+                                >Aprobar Presupuesto</AlertDialogAction
+                            >
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                
+
                 <!-- Estado: Activar (Approved -> Active) -->
                 <DropdownMenuItem @click="activateBudget" v-if="budget.status === 'Approved'" class="text-green-600">
                     <Play class="mr-2 h-4 w-4" />
                     Activar
                 </DropdownMenuItem>
-                
+
                 <!-- Estado: Cerrar (Active -> Closed) -->
                 <DropdownMenuItem @click="closeBudget" v-if="budget.status === 'Active'" class="text-orange-600">
                     <Clock class="mr-2 h-4 w-4" />
                     Cerrar
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuSeparator v-if="budget.status !== 'Active'" />
                 <!-- Eliminar con AlertDialog -->
                 <AlertDialog v-model:open="deleteDialogOpen">
@@ -265,13 +271,16 @@ const viewBudgetExecution = () => {
                         <AlertDialogHeader>
                             <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
                             <AlertDialogDescription>
-                                ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br><br>
-                                <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas presupuestales asociadas.
+                                ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br /><br />
+                                <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas
+                                presupuestales asociadas.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700">Eliminar Presupuesto</AlertDialogAction>
+                            <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700"
+                                >Eliminar Presupuesto</AlertDialogAction
+                            >
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

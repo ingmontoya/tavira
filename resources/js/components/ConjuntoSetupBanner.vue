@@ -1,8 +1,5 @@
 <template>
-    <div
-        v-if="!conjuntoConfigured.exists"
-        class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-4 mb-6"
-    >
+    <div v-if="!conjuntoConfigured.exists" class="mb-6 border-l-4 border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
         <div class="flex items-center">
             <div class="flex-shrink-0">
                 <Icon name="info" class="h-5 w-5 text-blue-400" />
@@ -16,9 +13,9 @@
             <div class="ml-4 flex-shrink-0">
                 <Link
                     :href="route('conjunto-config.index')"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
-                    <Icon name="settings" class="w-4 h-4 mr-2" />
+                    <Icon name="settings" class="mr-2 h-4 w-4" />
                     Configurar Conjunto
                 </Link>
             </div>

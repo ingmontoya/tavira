@@ -37,8 +37,8 @@ class EmailTemplateController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('subject', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('subject', 'like', "%{$search}%");
             });
         }
 
@@ -65,7 +65,7 @@ class EmailTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'type' => 'required|string|in:' . implode(',', array_keys(EmailTemplate::TYPES)),
+            'type' => 'required|string|in:'.implode(',', array_keys(EmailTemplate::TYPES)),
             'subject' => 'required|string|max:500',
             'body' => 'required|string',
             'variables' => 'nullable|array',
@@ -119,7 +119,7 @@ class EmailTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'type' => 'required|string|in:' . implode(',', array_keys(EmailTemplate::TYPES)),
+            'type' => 'required|string|in:'.implode(',', array_keys(EmailTemplate::TYPES)),
             'subject' => 'required|string|max:500',
             'body' => 'required|string',
             'variables' => 'nullable|array',
@@ -200,7 +200,7 @@ class EmailTemplateController extends Controller
     public function toggleStatus(EmailTemplate $emailTemplate)
     {
         $emailTemplate->update([
-            'is_active' => !$emailTemplate->is_active,
+            'is_active' => ! $emailTemplate->is_active,
         ]);
 
         $status = $emailTemplate->is_active ? 'activada' : 'desactivada';
@@ -214,7 +214,7 @@ class EmailTemplateController extends Controller
             'is_default', // Don't copy default status
         ]);
 
-        $duplicated->name = $emailTemplate->name . ' (Copia)';
+        $duplicated->name = $emailTemplate->name.' (Copia)';
         $duplicated->is_default = false;
         $duplicated->save();
 

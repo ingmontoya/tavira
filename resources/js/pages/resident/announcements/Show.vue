@@ -1,21 +1,10 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import {
-    Calendar,
-    Clock,
-    Pin,
-    CheckCircle,
-    User,
-    AlertTriangle,
-    FileText,
-    ArrowLeft,
-    Check
-} from 'lucide-vue-next';
-import { computed } from 'vue';
+import { AlertTriangle, ArrowLeft, Calendar, Check, CheckCircle, Clock, FileText, Pin, User } from 'lucide-vue-next';
 
 interface Announcement {
     id: number;
@@ -47,14 +36,14 @@ const confirmForm = useForm({});
 const priorityLabels = {
     urgent: 'Urgente',
     important: 'Importante',
-    normal: 'Normal'
+    normal: 'Normal',
 };
 
 const typeLabels = {
     general: 'General',
     administrative: 'Administrativo',
     maintenance: 'Mantenimiento',
-    emergency: 'Emergencia'
+    emergency: 'Emergencia',
 };
 
 const formatDate = (date: string) => {
@@ -63,7 +52,7 @@ const formatDate = (date: string) => {
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -81,7 +70,7 @@ const goBack = () => {
 
 const breadcrumbs = [
     { title: 'Anuncios', href: route('resident.announcements.index') },
-    { title: props.announcement.title, href: route('resident.announcements.show', props.announcement.id) }
+    { title: props.announcement.title, href: route('resident.announcements.show', props.announcement.id) },
 ];
 </script>
 
@@ -110,7 +99,7 @@ const breadcrumbs = [
                 <CardHeader>
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-3">
+                            <div class="mb-3 flex items-center gap-3">
                                 <h1 class="text-2xl font-bold text-gray-900">{{ announcement.title }}</h1>
                                 <Pin v-if="announcement.is_pinned" class="h-6 w-6 text-yellow-600" />
                             </div>
@@ -133,11 +122,17 @@ const breadcrumbs = [
 
                         <!-- Status Indicators -->
                         <div class="flex flex-col items-end gap-2">
-                            <div v-if="announcement.requires_confirmation && announcement.is_confirmed_by_user" class="flex items-center gap-1 text-green-600 text-sm">
+                            <div
+                                v-if="announcement.requires_confirmation && announcement.is_confirmed_by_user"
+                                class="flex items-center gap-1 text-sm text-green-600"
+                            >
                                 <CheckCircle class="h-4 w-4" />
                                 Confirmado
                             </div>
-                            <div v-else-if="announcement.requires_confirmation && !announcement.is_confirmed_by_user" class="flex items-center gap-1 text-orange-600 text-sm">
+                            <div
+                                v-else-if="announcement.requires_confirmation && !announcement.is_confirmed_by_user"
+                                class="flex items-center gap-1 text-sm text-orange-600"
+                            >
                                 <AlertTriangle class="h-4 w-4" />
                                 Pendiente Confirmación
                             </div>
@@ -148,18 +143,12 @@ const breadcrumbs = [
 
             <!-- Priority and Type Badges -->
             <div class="flex items-center gap-3">
-                <Badge
-                    :variant="announcement.priority_color"
-                    class="text-sm px-3 py-1"
-                >
+                <Badge :variant="announcement.priority_color" class="px-3 py-1 text-sm">
                     <AlertTriangle v-if="announcement.priority === 'urgent'" class="mr-1 h-4 w-4" />
                     {{ priorityLabels[announcement.priority] }}
                 </Badge>
 
-                <Badge
-                    :variant="announcement.type_color"
-                    class="text-sm px-3 py-1"
-                >
+                <Badge :variant="announcement.type_color" class="px-3 py-1 text-sm">
                     <FileText class="mr-1 h-4 w-4" />
                     {{ typeLabels[announcement.type] }}
                 </Badge>
@@ -171,10 +160,7 @@ const breadcrumbs = [
                     <CardTitle>Contenido del Anuncio</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div
-                        class="prose max-w-none text-gray-700 leading-relaxed"
-                        v-html="formatContent(announcement.content)"
-                    ></div>
+                    <div class="prose max-w-none leading-relaxed text-gray-700" v-html="formatContent(announcement.content)"></div>
                 </CardContent>
             </Card>
 
@@ -182,9 +168,7 @@ const breadcrumbs = [
             <Card v-if="announcement.requires_confirmation">
                 <CardHeader>
                     <CardTitle>Confirmación de Lectura</CardTitle>
-                    <CardDescription>
-                        Este anuncio requiere que confirmes que lo has leído y comprendido.
-                    </CardDescription>
+                    <CardDescription> Este anuncio requiere que confirmes que lo has leído y comprendido. </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div v-if="announcement.is_confirmed_by_user" class="flex items-center gap-2 text-green-600">
@@ -198,17 +182,13 @@ const breadcrumbs = [
                             <span class="font-medium">Tu confirmación está pendiente</span>
                         </div>
 
-                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div class="rounded-lg border border-amber-200 bg-amber-50 p-4">
                             <p class="text-sm text-amber-800">
                                 Al hacer clic en "Confirmar Lectura", estarás indicando que has leído y comprendido el contenido de este anuncio.
                             </p>
                         </div>
 
-                        <Button
-                            @click="confirmAnnouncement"
-                            :disabled="confirmForm.processing"
-                            class="w-full sm:w-auto"
-                        >
+                        <Button @click="confirmAnnouncement" :disabled="confirmForm.processing" class="w-full sm:w-auto">
                             <Check class="mr-2 h-4 w-4" />
                             {{ confirmForm.processing ? 'Confirmando...' : 'Confirmar Lectura' }}
                         </Button>
@@ -227,7 +207,7 @@ const breadcrumbs = [
             </Card>
 
             <!-- Action Buttons (Mobile) -->
-            <div class="flex flex-col sm:flex-row gap-3 sm:justify-between">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <Button variant="outline" @click="goBack" class="w-full sm:w-auto">
                     <ArrowLeft class="mr-2 h-4 w-4" />
                     Volver a Anuncios

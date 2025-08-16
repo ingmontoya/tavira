@@ -3,13 +3,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import type { Invoice } from '@/types';
+import { cn, valueUpdater } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
 import { ChevronsUpDown, Eye } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
-import { cn, valueUpdater } from '@/utils';
-import type { Invoice } from '@/types';
 
 interface Props {
     invoices: Invoice[];
@@ -44,9 +44,13 @@ const initializeSelection = () => {
 };
 
 // Watch for changes in selectedInvoiceIds prop
-watch(() => props.selectedInvoiceIds, () => {
-    initializeSelection();
-}, { immediate: true });
+watch(
+    () => props.selectedInvoiceIds,
+    () => {
+        initializeSelection();
+    },
+    { immediate: true },
+);
 
 // Column helper
 const columnHelper = createColumnHelper<Invoice>();
@@ -140,8 +144,7 @@ const columns = [
         },
         cell: ({ row }) => {
             const dueDate = new Date(row.original.due_date);
-            const isOverdue = row.original.status === 'overdue' || 
-                            (row.original.status === 'pending' && dueDate < new Date());
+            const isOverdue = row.original.status === 'overdue' || (row.original.status === 'pending' && dueDate < new Date());
             return h(
                 'div',
                 {
@@ -173,7 +176,7 @@ const columns = [
             return h(
                 'div',
                 {
-                    class: cn('font-medium text-sm', balance <= 0 ? 'text-green-600' : 'text-orange-600'),
+                    class: cn('text-sm font-medium', balance <= 0 ? 'text-green-600' : 'text-orange-600'),
                 },
                 `$${balance.toLocaleString()}`,
             );
@@ -220,7 +223,7 @@ if (props.showActions) {
                 );
             },
             size: 60,
-        })
+        }),
     );
 }
 
@@ -274,21 +277,12 @@ initializeSelection();
 <template>
     <div class="space-y-4">
         <!-- Selection Summary -->
-        <div v-if="selectedCount > 0" class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div v-if="selectedCount > 0" class="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 p-3">
             <div class="flex items-center space-x-4">
-                <div class="text-sm font-medium text-blue-900">
-                    {{ selectedCount }} facturas seleccionadas
-                </div>
-                <div class="text-sm text-blue-700">
-                    Total: ${{ totalAmount.toLocaleString() }}
-                </div>
+                <div class="text-sm font-medium text-blue-900">{{ selectedCount }} facturas seleccionadas</div>
+                <div class="text-sm text-blue-700">Total: ${{ totalAmount.toLocaleString() }}</div>
             </div>
-            <Button 
-                variant="outline" 
-                size="sm"
-                @click="table.resetRowSelection()"
-                class="text-blue-700 border-blue-300 hover:bg-blue-100"
-            >
+            <Button variant="outline" size="sm" @click="table.resetRowSelection()" class="border-blue-300 text-blue-700 hover:bg-blue-100">
                 Deseleccionar todas
             </Button>
         </div>
@@ -298,16 +292,8 @@ initializeSelection();
             <Table>
                 <TableHeader>
                     <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                        <TableHead 
-                            v-for="header in headerGroup.headers" 
-                            :key="header.id"
-                            :style="{ width: header.getSize() + 'px' }"
-                        >
-                            <FlexRender
-                                v-if="!header.isPlaceholder"
-                                :render="header.column.columnDef.header"
-                                :props="header.getContext()"
-                            />
+                        <TableHead v-for="header in headerGroup.headers" :key="header.id" :style="{ width: header.getSize() + 'px' }">
+                            <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
                         </TableHead>
                     </TableRow>
                 </TableHeader>
@@ -323,26 +309,16 @@ initializeSelection();
                             <TableCell
                                 v-for="cell in row.getVisibleCells()"
                                 :key="cell.id"
-                                :class="cn(
-                                    'py-2',
-                                    cell.column.id === 'select' || cell.column.id === 'actions' 
-                                        ? 'cursor-default' : ''
-                                )"
-                                @click="cell.column.id === 'select' || cell.column.id === 'actions' 
-                                    ? $event.stopPropagation() : null"
+                                :class="cn('py-2', cell.column.id === 'select' || cell.column.id === 'actions' ? 'cursor-default' : '')"
+                                @click="cell.column.id === 'select' || cell.column.id === 'actions' ? $event.stopPropagation() : null"
                             >
-                                <FlexRender 
-                                    :render="cell.column.columnDef.cell" 
-                                    :props="cell.getContext()" 
-                                />
+                                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                             </TableCell>
                         </TableRow>
                     </template>
                     <template v-else>
                         <TableRow>
-                            <TableCell :colSpan="columns.length" class="h-24 text-center">
-                                No se encontraron facturas elegibles.
-                            </TableCell>
+                            <TableCell :colSpan="columns.length" class="h-24 text-center"> No se encontraron facturas elegibles. </TableCell>
                         </TableRow>
                     </template>
                 </TableBody>
@@ -351,12 +327,8 @@ initializeSelection();
 
         <!-- Table Summary -->
         <div class="flex items-center justify-between text-sm text-muted-foreground">
-            <div>
-                Mostrando {{ table.getRowModel().rows.length }} facturas
-            </div>
-            <div v-if="selectedCount > 0">
-                {{ selectedCount }} de {{ table.getRowModel().rows.length }} seleccionadas
-            </div>
+            <div>Mostrando {{ table.getRowModel().rows.length }} facturas</div>
+            <div v-if="selectedCount > 0">{{ selectedCount }} de {{ table.getRowModel().rows.length }} seleccionadas</div>
         </div>
     </div>
 </template>

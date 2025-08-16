@@ -16,8 +16,11 @@ class InvoiceMail extends Mailable
     use Queueable, SerializesModels;
 
     public $invoice;
+
     public $pdfContent;
+
     public $template;
+
     public $processedTemplate;
 
     /**
@@ -27,10 +30,10 @@ class InvoiceMail extends Mailable
     {
         $this->invoice = $invoice;
         $this->pdfContent = $pdfContent;
-        
+
         // Use provided template or get default invoice template
         $this->template = $template ?: EmailTemplate::getDefaultForType('invoice');
-        
+
         // Process template with invoice data if template exists
         if ($this->template) {
             $this->processedTemplate = $this->template->processTemplate([
@@ -53,7 +56,7 @@ class InvoiceMail extends Mailable
     public function envelope(): Envelope
     {
         // Use processed template subject if available, otherwise use default
-        $subject = $this->processedTemplate['subject'] ?? 
+        $subject = $this->processedTemplate['subject'] ??
                   "Factura #{$this->invoice->invoice_number} - {$this->invoice->apartment->full_address}";
 
         return new Envelope(

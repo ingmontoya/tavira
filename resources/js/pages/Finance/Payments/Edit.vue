@@ -175,15 +175,16 @@ const breadcrumbs = [
             <div class="mb-8">
                 <h1 class="text-3xl font-bold tracking-tight">Editar Pago</h1>
                 <p class="text-muted-foreground">
-                    {{ payment.payment_number }} - Apartamento {{ payment.apartment?.number || 'N/A' }} 
-                    ({{ payment.status_label }})
+                    {{ payment.payment_number }} - Apartamento {{ payment.apartment?.number || 'N/A' }} ({{ payment.status_label }})
                 </p>
                 <div class="mt-2">
                     <Badge
                         :class="
-                            payment.status === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 
-                            payment.status === 'aplicado' ? 'bg-green-100 text-green-800' :
-                            'bg-blue-100 text-blue-800'
+                            payment.status === 'pendiente'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : payment.status === 'aplicado'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-blue-100 text-blue-800'
                         "
                     >
                         {{ payment.status_label }}
@@ -274,7 +275,9 @@ const breadcrumbs = [
                         <CardHeader>
                             <CardTitle>Facturas Aplicables</CardTitle>
                             <CardDescription>
-                                <span v-if="form.apartment_id">Facturas que pueden ser aplicadas con este pago (incluye facturas ya aplicadas por este pago)</span>
+                                <span v-if="form.apartment_id"
+                                    >Facturas que pueden ser aplicadas con este pago (incluye facturas ya aplicadas por este pago)</span
+                                >
                                 <span v-else>Seleccione un apartamento para ver las facturas aplicables</span>
                             </CardDescription>
                         </CardHeader>
@@ -346,9 +349,11 @@ const breadcrumbs = [
                                                 <TableCell>
                                                     <Badge
                                                         :class="
-                                                            invoice.status === 'overdue' ? 'bg-red-100 text-red-800' : 
-                                                            invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                                            'bg-green-100 text-green-800'
+                                                            invoice.status === 'overdue'
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : invoice.status === 'pending'
+                                                                  ? 'bg-yellow-100 text-yellow-800'
+                                                                  : 'bg-green-100 text-green-800'
                                                         "
                                                     >
                                                         {{ invoice.status_label }}
@@ -367,9 +372,7 @@ const breadcrumbs = [
                 <Card v-if="pendingInvoices.length > 0 && paymentAmount > 0">
                     <CardHeader>
                         <CardTitle>Simulación de Aplicación de Pago</CardTitle>
-                        <CardDescription> 
-                            Así es como se aplicará el pago actualizado a las facturas pendientes (orden cronológico) 
-                        </CardDescription>
+                        <CardDescription> Así es como se aplicará el pago actualizado a las facturas pendientes (orden cronológico) </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
@@ -455,9 +458,7 @@ const breadcrumbs = [
 
                 <!-- Actions -->
                 <div class="flex items-center justify-end space-x-4">
-                    <Button type="button" variant="outline" @click="$inertia.visit(`/finance/payments/${payment.id}`)">
-                        Cancelar
-                    </Button>
+                    <Button type="button" variant="outline" @click="$inertia.visit(`/finance/payments/${payment.id}`)"> Cancelar </Button>
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Guardando...' : 'Guardar Cambios' }}
                     </Button>

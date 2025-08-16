@@ -97,39 +97,39 @@ const groupedAccounts = computed(() => {
         income: { name: 'Ingresos', accounts: [], color: 'text-green-700' },
         expense: { name: 'Gastos', accounts: [], color: 'text-orange-700' },
     };
-    
+
     // Convert object to array if needed
     let accounts = props.report.accounts;
     if (accounts && !Array.isArray(accounts)) {
         accounts = Object.values(accounts);
     }
-    
+
     if (accounts && Array.isArray(accounts)) {
-        accounts.forEach(account => {
+        accounts.forEach((account) => {
             if (groups[account.account_type]) {
                 groups[account.account_type].accounts.push(account);
             }
         });
     }
-    
+
     // Sort accounts within each group by code
-    Object.values(groups).forEach(group => {
+    Object.values(groups).forEach((group) => {
         group.accounts.sort((a, b) => a.code.localeCompare(b.code));
     });
-    
+
     return groups;
 });
 
 const accountTypeTotals = computed(() => {
     const totals = {};
-    
+
     Object.entries(groupedAccounts.value).forEach(([type, group]) => {
         totals[type] = {
             debits: group.accounts.reduce((sum, account) => sum + account.debit_balance, 0),
             credits: group.accounts.reduce((sum, account) => sum + account.credit_balance, 0),
         };
     });
-    
+
     return totals;
 });
 
@@ -158,11 +158,9 @@ const visibleGroups = computed(() => {
             <div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Balance de Prueba</h1>
-                    <p class="text-muted-foreground">
-                        Saldos de todas las cuentas al {{ formatDate(report.as_of_date) }}
-                    </p>
+                    <p class="text-muted-foreground">Saldos de todas las cuentas al {{ formatDate(report.as_of_date) }}</p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button variant="outline" @click="showFilters = !showFilters">
                         <Filter class="mr-2 h-4 w-4" />
@@ -178,7 +176,7 @@ const visibleGroups = computed(() => {
             <!-- Filters Panel -->
             <Card v-if="showFilters" class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Filtros de Fecha
                     </CardTitle>
@@ -187,20 +185,12 @@ const visibleGroups = computed(() => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="as_of_date">Fecha de Corte</Label>
-                            <Input
-                                id="as_of_date"
-                                type="date"
-                                v-model="form.as_of_date"
-                            />
+                            <Input id="as_of_date" type="date" v-model="form.as_of_date" />
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" @click="showFilters = false">
-                            Cancelar
-                        </Button>
-                        <Button @click="applyFilters">
-                            Aplicar Filtros
-                        </Button>
+                        <Button variant="outline" @click="showFilters = false"> Cancelar </Button>
+                        <Button @click="applyFilters"> Aplicar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -215,12 +205,10 @@ const visibleGroups = computed(() => {
                         <div class="text-2xl font-bold text-blue-600">
                             {{ formatCurrency(report.total_debits) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            Suma de saldos deudores
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">Suma de saldos deudores</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Total Créditos</CardTitle>
@@ -229,15 +217,13 @@ const visibleGroups = computed(() => {
                         <div class="text-2xl font-bold text-green-600">
                             {{ formatCurrency(report.total_credits) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            Suma de saldos acreedores
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">Suma de saldos acreedores</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card :class="report.is_balanced ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'">
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <Scale class="h-4 w-4" />
                             Estado del Balance
                         </CardTitle>
@@ -246,7 +232,7 @@ const visibleGroups = computed(() => {
                         <div class="text-2xl font-bold" :class="report.is_balanced ? 'text-green-600' : 'text-red-600'">
                             {{ report.is_balanced ? '✓ Balanceado' : '✗ Desbalanceado' }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
+                        <p class="mt-1 text-xs text-muted-foreground">
                             {{ report.is_balanced ? 'Débitos = Créditos' : `Diferencia: ${formatCurrency(difference)}` }}
                         </p>
                     </CardContent>
@@ -258,10 +244,7 @@ const visibleGroups = computed(() => {
                 <CardContent class="pt-6">
                     <div class="flex items-center gap-2 text-amber-800">
                         <AlertTriangle class="h-5 w-5" />
-                        <p class="font-medium">
-                            Advertencia: El balance de prueba no está balanceado. 
-                            Diferencia: {{ formatCurrency(difference) }}
-                        </p>
+                        <p class="font-medium">Advertencia: El balance de prueba no está balanceado. Diferencia: {{ formatCurrency(difference) }}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -269,13 +252,11 @@ const visibleGroups = computed(() => {
             <!-- Traditional Trial Balance Format -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="text-xl flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-xl">
                         <Scale class="h-5 w-5" />
                         Balance de Prueba Detallado
                     </CardTitle>
-                    <p class="text-sm text-muted-foreground">
-                        Contabilidad por Causación (Base Devengado) - Al {{ formatDate(report.as_of_date) }}
-                    </p>
+                    <p class="text-sm text-muted-foreground">Contabilidad por Causación (Base Devengado) - Al {{ formatDate(report.as_of_date) }}</p>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -283,16 +264,14 @@ const visibleGroups = computed(() => {
                             <TableRow class="border-b-2">
                                 <TableHead class="w-20">Código</TableHead>
                                 <TableHead class="min-w-[300px]">Nombre de la Cuenta</TableHead>
-                                <TableHead class="text-right w-32">Débito (COP)</TableHead>
-                                <TableHead class="text-right w-32">Crédito (COP)</TableHead>
+                                <TableHead class="w-32 text-right">Débito (COP)</TableHead>
+                                <TableHead class="w-32 text-right">Crédito (COP)</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <!-- Assets Section -->
                             <TableRow class="bg-blue-50">
-                                <TableCell colspan="4" class="font-bold text-blue-700 text-lg py-3">
-                                    ACTIVOS
-                                </TableCell>
+                                <TableCell colspan="4" class="py-3 text-lg font-bold text-blue-700"> ACTIVOS </TableCell>
                             </TableRow>
                             <template v-for="account in groupedAccounts.asset.accounts" :key="account.code">
                                 <TableRow class="hover:bg-muted/50">
@@ -307,13 +286,11 @@ const visibleGroups = computed(() => {
                                 </TableRow>
                             </template>
                             <TableRow class="border-t bg-blue-100">
-                                <TableCell colspan="2" class="font-bold text-blue-700">
-                                    Subtotal Activos
-                                </TableCell>
-                                <TableCell class="text-right font-bold font-mono text-blue-700">
+                                <TableCell colspan="2" class="font-bold text-blue-700"> Subtotal Activos </TableCell>
+                                <TableCell class="text-right font-mono font-bold text-blue-700">
                                     {{ formatCurrency(accountTypeTotals.asset?.debits || 0) }}
                                 </TableCell>
-                                <TableCell class="text-right font-bold font-mono text-blue-700">
+                                <TableCell class="text-right font-mono font-bold text-blue-700">
                                     {{ formatCurrency(accountTypeTotals.asset?.credits || 0) }}
                                 </TableCell>
                             </TableRow>
@@ -321,9 +298,7 @@ const visibleGroups = computed(() => {
                             <!-- Liabilities Section -->
                             <template v-if="groupedAccounts.liability.accounts.length > 0">
                                 <TableRow class="bg-red-50">
-                                    <TableCell colspan="4" class="font-bold text-red-700 text-lg py-3">
-                                        PASIVOS
-                                    </TableCell>
+                                    <TableCell colspan="4" class="py-3 text-lg font-bold text-red-700"> PASIVOS </TableCell>
                                 </TableRow>
                                 <template v-for="account in groupedAccounts.liability.accounts" :key="account.code">
                                     <TableRow class="hover:bg-muted/50">
@@ -338,13 +313,11 @@ const visibleGroups = computed(() => {
                                     </TableRow>
                                 </template>
                                 <TableRow class="border-t bg-red-100">
-                                    <TableCell colspan="2" class="font-bold text-red-700">
-                                        Subtotal Pasivos
-                                    </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-red-700">
+                                    <TableCell colspan="2" class="font-bold text-red-700"> Subtotal Pasivos </TableCell>
+                                    <TableCell class="text-right font-mono font-bold text-red-700">
                                         {{ formatCurrency(accountTypeTotals.liability?.debits || 0) }}
                                     </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-red-700">
+                                    <TableCell class="text-right font-mono font-bold text-red-700">
                                         {{ formatCurrency(accountTypeTotals.liability?.credits || 0) }}
                                     </TableCell>
                                 </TableRow>
@@ -353,9 +326,7 @@ const visibleGroups = computed(() => {
                             <!-- Equity Section -->
                             <template v-if="groupedAccounts.equity.accounts.length > 0">
                                 <TableRow class="bg-purple-50">
-                                    <TableCell colspan="4" class="font-bold text-purple-700 text-lg py-3">
-                                        PATRIMONIO
-                                    </TableCell>
+                                    <TableCell colspan="4" class="py-3 text-lg font-bold text-purple-700"> PATRIMONIO </TableCell>
                                 </TableRow>
                                 <template v-for="account in groupedAccounts.equity.accounts" :key="account.code">
                                     <TableRow class="hover:bg-muted/50">
@@ -370,13 +341,11 @@ const visibleGroups = computed(() => {
                                     </TableRow>
                                 </template>
                                 <TableRow class="border-t bg-purple-100">
-                                    <TableCell colspan="2" class="font-bold text-purple-700">
-                                        Subtotal Patrimonio
-                                    </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-purple-700">
+                                    <TableCell colspan="2" class="font-bold text-purple-700"> Subtotal Patrimonio </TableCell>
+                                    <TableCell class="text-right font-mono font-bold text-purple-700">
                                         {{ formatCurrency(accountTypeTotals.equity?.debits || 0) }}
                                     </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-purple-700">
+                                    <TableCell class="text-right font-mono font-bold text-purple-700">
                                         {{ formatCurrency(accountTypeTotals.equity?.credits || 0) }}
                                     </TableCell>
                                 </TableRow>
@@ -385,9 +354,7 @@ const visibleGroups = computed(() => {
                             <!-- Income Section -->
                             <template v-if="groupedAccounts.income.accounts.length > 0">
                                 <TableRow class="bg-green-50">
-                                    <TableCell colspan="4" class="font-bold text-green-700 text-lg py-3">
-                                        INGRESOS
-                                    </TableCell>
+                                    <TableCell colspan="4" class="py-3 text-lg font-bold text-green-700"> INGRESOS </TableCell>
                                 </TableRow>
                                 <template v-for="account in groupedAccounts.income.accounts" :key="account.code">
                                     <TableRow class="hover:bg-muted/50">
@@ -402,13 +369,11 @@ const visibleGroups = computed(() => {
                                     </TableRow>
                                 </template>
                                 <TableRow class="border-t bg-green-100">
-                                    <TableCell colspan="2" class="font-bold text-green-700">
-                                        Subtotal Ingresos
-                                    </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-green-700">
+                                    <TableCell colspan="2" class="font-bold text-green-700"> Subtotal Ingresos </TableCell>
+                                    <TableCell class="text-right font-mono font-bold text-green-700">
                                         {{ formatCurrency(accountTypeTotals.income?.debits || 0) }}
                                     </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-green-700">
+                                    <TableCell class="text-right font-mono font-bold text-green-700">
                                         {{ formatCurrency(accountTypeTotals.income?.credits || 0) }}
                                     </TableCell>
                                 </TableRow>
@@ -417,9 +382,7 @@ const visibleGroups = computed(() => {
                             <!-- Expenses Section -->
                             <template v-if="groupedAccounts.expense.accounts.length > 0">
                                 <TableRow class="bg-orange-50">
-                                    <TableCell colspan="4" class="font-bold text-orange-700 text-lg py-3">
-                                        GASTOS
-                                    </TableCell>
+                                    <TableCell colspan="4" class="py-3 text-lg font-bold text-orange-700"> GASTOS </TableCell>
                                 </TableRow>
                                 <template v-for="account in groupedAccounts.expense.accounts" :key="account.code">
                                     <TableRow class="hover:bg-muted/50">
@@ -434,13 +397,11 @@ const visibleGroups = computed(() => {
                                     </TableRow>
                                 </template>
                                 <TableRow class="border-t bg-orange-100">
-                                    <TableCell colspan="2" class="font-bold text-orange-700">
-                                        Subtotal Gastos
-                                    </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-orange-700">
+                                    <TableCell colspan="2" class="font-bold text-orange-700"> Subtotal Gastos </TableCell>
+                                    <TableCell class="text-right font-mono font-bold text-orange-700">
                                         {{ formatCurrency(accountTypeTotals.expense?.debits || 0) }}
                                     </TableCell>
-                                    <TableCell class="text-right font-bold font-mono text-orange-700">
+                                    <TableCell class="text-right font-mono font-bold text-orange-700">
                                         {{ formatCurrency(accountTypeTotals.expense?.credits || 0) }}
                                     </TableCell>
                                 </TableRow>
@@ -466,7 +427,7 @@ const visibleGroups = computed(() => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow class="text-lg font-bold border-t-2">
+                            <TableRow class="border-t-2 text-lg font-bold">
                                 <TableCell>TOTALES</TableCell>
                                 <TableCell class="text-right font-mono text-blue-600">
                                     {{ formatCurrency(report.total_debits) }}
@@ -491,15 +452,14 @@ const visibleGroups = computed(() => {
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-3">
-                            <div v-for="(group, type) in visibleGroups" :key="type"
-                                 class="flex justify-between items-center p-2 rounded bg-muted/50">
+                            <div v-for="(group, type) in visibleGroups" :key="type" class="flex items-center justify-between rounded bg-muted/50 p-2">
                                 <span class="font-medium" :class="group.color">{{ group.name }}</span>
                                 <span class="text-sm text-muted-foreground">{{ group.accounts.length }} cuentas</span>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader>
                         <CardTitle class="text-lg">Información del Reporte</CardTitle>

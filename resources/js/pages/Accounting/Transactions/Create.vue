@@ -52,7 +52,7 @@ const form = useForm<FormData>({
     reference: '',
     description: props.duplicateFrom?.description || '',
     transaction_date: new Date().toISOString().split('T')[0],
-    entries: props.duplicateFrom?.entries.map(entry => ({
+    entries: props.duplicateFrom?.entries.map((entry) => ({
         account_id: entry.account_id,
         account: entry.account,
         description: entry.description,

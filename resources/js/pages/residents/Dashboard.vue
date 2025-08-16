@@ -8,7 +8,9 @@
                         <h1 class="text-3xl font-bold tracking-tight">Mi Panel Residencial</h1>
                         <p class="text-muted-foreground">Información personalizada para residentes de {{ conjuntoName }}</p>
                         <div v-if="apartment" class="mt-2">
-                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                            <span
+                                class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-sm font-medium text-blue-700 ring-1 ring-blue-600/20 ring-inset"
+                            >
                                 <Icon name="home" class="mr-1 h-4 w-4" />
                                 Apartamento {{ apartment.number }} - Torre {{ apartment.tower }}
                             </span>
@@ -40,7 +42,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="absolute right-0 bottom-0 left-0 h-1" :class="accountStatus.balance >= 0 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'"></div>
+                    <div
+                        class="absolute right-0 bottom-0 left-0 h-1"
+                        :class="
+                            accountStatus.balance >= 0 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'
+                        "
+                    ></div>
                 </Card>
 
                 <!-- Next Payment -->
@@ -50,9 +57,7 @@
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Próximo Pago</p>
                                 <p class="text-2xl font-bold">${{ nextPayment.amount.toLocaleString() }}</p>
-                                <p class="mt-2 text-sm text-muted-foreground">
-                                    Vence {{ nextPayment.dueDate }}
-                                </p>
+                                <p class="mt-2 text-sm text-muted-foreground">Vence {{ nextPayment.dueDate }}</p>
                             </div>
                             <div class="rounded-full bg-blue-100 p-3">
                                 <Icon name="calendar" class="h-8 w-8 text-blue-600" />
@@ -89,9 +94,7 @@
                             <h3 class="text-lg font-semibold">Comunicados</h3>
                             <p class="text-sm text-muted-foreground">Últimas noticias de la administración</p>
                         </div>
-                        <Link href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-                            Ver todos
-                        </Link>
+                        <Link href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500"> Ver todos </Link>
                     </div>
                     <div class="space-y-4">
                         <div v-for="announcement in communications" :key="announcement.id" class="rounded-lg border border-border p-4">
@@ -101,17 +104,20 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <p class="text-sm font-medium">{{ announcement.title }}</p>
-                                    <p class="mt-1 text-xs text-muted-foreground line-clamp-2">{{ announcement.content }}</p>
+                                    <p class="mt-1 line-clamp-2 text-xs text-muted-foreground">{{ announcement.content }}</p>
                                     <p class="mt-2 text-xs text-muted-foreground">{{ formatDate(announcement.date) }}</p>
                                 </div>
                                 <div class="flex-shrink-0">
-                                    <span v-if="announcement.isNew" class="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+                                    <span
+                                        v-if="announcement.isNew"
+                                        class="inline-flex items-center rounded-full bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-red-600/20 ring-inset"
+                                    >
                                         Nuevo
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div v-if="communications.length === 0" class="text-center py-8">
+                        <div v-if="communications.length === 0" class="py-8 text-center">
                             <Icon name="megaphone" class="mx-auto h-12 w-12 text-gray-400" />
                             <p class="mt-2 text-sm text-muted-foreground">No hay comunicados recientes</p>
                         </div>
@@ -140,17 +146,18 @@
                                     <div class="min-w-0 flex-1">
                                         <p class="text-sm font-medium">{{ visit.visitorName }}</p>
                                         <p class="mt-1 text-xs text-muted-foreground">{{ visit.purpose }}</p>
-                                        <p class="mt-1 text-xs text-muted-foreground">
-                                            {{ visit.date }} • {{ visit.time }}
-                                        </p>
+                                        <p class="mt-1 text-xs text-muted-foreground">{{ visit.date }} • {{ visit.time }}</p>
                                     </div>
                                 </div>
-                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset" :class="getVisitStatusClass(visit.status)">
+                                <span
+                                    class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                                    :class="getVisitStatusClass(visit.status)"
+                                >
                                     {{ visit.status }}
                                 </span>
                             </div>
                         </div>
-                        <div v-if="visits.length === 0" class="text-center py-8">
+                        <div v-if="visits.length === 0" class="py-8 text-center">
                             <Icon name="users" class="mx-auto h-12 w-12 text-gray-400" />
                             <p class="mt-2 text-sm text-muted-foreground">No hay visitas programadas</p>
                         </div>
@@ -164,8 +171,10 @@
                             <h3 class="text-lg font-semibold">Paquetes</h3>
                             <p class="text-sm text-muted-foreground">Seguimiento de entregas</p>
                         </div>
-                        <span class="inline-flex items-center rounded-full bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
-                            {{ packages.filter(p => p.status === 'Pendiente').length }} pendientes
+                        <span
+                            class="inline-flex items-center rounded-full bg-orange-50 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-orange-600/20 ring-inset"
+                        >
+                            {{ packages.filter((p) => p.status === 'Pendiente').length }} pendientes
                         </span>
                     </div>
                     <div class="space-y-4">
@@ -178,17 +187,18 @@
                                     <div class="min-w-0 flex-1">
                                         <p class="text-sm font-medium">{{ packageItem.sender }}</p>
                                         <p class="mt-1 text-xs text-muted-foreground">{{ packageItem.description }}</p>
-                                        <p class="mt-1 text-xs text-muted-foreground">
-                                            Recibido {{ formatDate(packageItem.receivedDate) }}
-                                        </p>
+                                        <p class="mt-1 text-xs text-muted-foreground">Recibido {{ formatDate(packageItem.receivedDate) }}</p>
                                     </div>
                                 </div>
-                                <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset" :class="getPackageStatusClass(packageItem.status)">
+                                <span
+                                    class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                                    :class="getPackageStatusClass(packageItem.status)"
+                                >
                                     {{ packageItem.status }}
                                 </span>
                             </div>
                         </div>
-                        <div v-if="packages.length === 0" class="text-center py-8">
+                        <div v-if="packages.length === 0" class="py-8 text-center">
                             <Icon name="package" class="mx-auto h-12 w-12 text-gray-400" />
                             <p class="mt-2 text-sm text-muted-foreground">No hay paquetes registrados</p>
                         </div>
@@ -202,10 +212,18 @@
                         <p class="text-sm text-muted-foreground">Últimos movimientos financieros</p>
                     </div>
                     <div class="space-y-4">
-                        <div v-for="transaction in accountTransactions" :key="transaction.id" class="flex items-center justify-between rounded-lg border border-border p-4">
+                        <div
+                            v-for="transaction in accountTransactions"
+                            :key="transaction.id"
+                            class="flex items-center justify-between rounded-lg border border-border p-4"
+                        >
                             <div class="flex items-center space-x-3">
                                 <div class="flex-shrink-0 rounded-full p-2" :class="transaction.type === 'payment' ? 'bg-green-100' : 'bg-blue-100'">
-                                    <Icon :name="transaction.type === 'payment' ? 'credit-card' : 'file-text'" class="h-4 w-4" :class="transaction.type === 'payment' ? 'text-green-600' : 'text-blue-600'" />
+                                    <Icon
+                                        :name="transaction.type === 'payment' ? 'credit-card' : 'file-text'"
+                                        class="h-4 w-4"
+                                        :class="transaction.type === 'payment' ? 'text-green-600' : 'text-blue-600'"
+                                    />
                                 </div>
                                 <div>
                                     <p class="text-sm font-medium">{{ transaction.description }}</p>
@@ -234,20 +252,28 @@
                     <p class="text-sm text-muted-foreground">Funciones frecuentes para residentes</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    <button class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center hover:bg-muted/50 transition-colors">
-                        <Icon name="credit-card" class="h-8 w-8 text-blue-600 mb-2" />
+                    <button
+                        class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
+                    >
+                        <Icon name="credit-card" class="mb-2 h-8 w-8 text-blue-600" />
                         <span class="text-sm font-medium">Pagar</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center hover:bg-muted/50 transition-colors">
-                        <Icon name="file-text" class="h-8 w-8 text-green-600 mb-2" />
+                    <button
+                        class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
+                    >
+                        <Icon name="file-text" class="mb-2 h-8 w-8 text-green-600" />
                         <span class="text-sm font-medium">Certificados</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center hover:bg-muted/50 transition-colors">
-                        <Icon name="user-plus" class="h-8 w-8 text-purple-600 mb-2" />
+                    <button
+                        class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
+                    >
+                        <Icon name="user-plus" class="mb-2 h-8 w-8 text-purple-600" />
                         <span class="text-sm font-medium">Autorizar Visita</span>
                     </button>
-                    <button class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center hover:bg-muted/50 transition-colors">
-                        <Icon name="phone" class="h-8 w-8 text-orange-600 mb-2" />
+                    <button
+                        class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
+                    >
+                        <Icon name="phone" class="mb-2 h-8 w-8 text-orange-600" />
                         <span class="text-sm font-medium">PQRS</span>
                     </button>
                 </div>
@@ -327,7 +353,7 @@ const paymentStatusColor = computed(() => {
 
 const paymentStatus = computed(() => {
     const baseStatus = props.paymentStatus;
-    
+
     switch (baseStatus.status) {
         case 'al_dia':
             return {

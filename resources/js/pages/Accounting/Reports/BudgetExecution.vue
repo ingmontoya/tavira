@@ -131,14 +131,13 @@ const getExecutionColor = (percentage: number) => {
 const monthlyPerformance = computed(() => {
     const execution = props.report.monthly_execution;
     const isOverBudget = execution.total_actual > execution.total_budgeted;
-    const criticalItems = execution.items.filter(item => Math.abs(item.variance_percentage) > 20);
-    
+    const criticalItems = execution.items.filter((item) => Math.abs(item.variance_percentage) > 20);
+
     return {
         status: isOverBudget ? 'over' : execution.execution_percentage > 90 ? 'excellent' : execution.execution_percentage > 70 ? 'good' : 'poor',
         criticalItems: criticalItems.length,
-        avgExecution: execution.items.length > 0 
-            ? execution.items.reduce((sum, item) => sum + item.execution_percentage, 0) / execution.items.length 
-            : 0,
+        avgExecution:
+            execution.items.length > 0 ? execution.items.reduce((sum, item) => sum + item.execution_percentage, 0) / execution.items.length : 0,
     };
 });
 
@@ -147,14 +146,12 @@ const ytdPerformance = computed(() => {
     const monthsElapsed = props.report.period.month;
     const expectedExecution = (monthsElapsed / 12) * 100;
     const performanceRatio = execution.execution_percentage / expectedExecution;
-    
+
     return {
         expectedExecution,
         performanceRatio,
         status: performanceRatio > 1.1 ? 'ahead' : performanceRatio > 0.9 ? 'ontrack' : 'behind',
-        projection: execution.execution_percentage > 0 
-            ? (execution.total_actual / monthsElapsed) * 12 
-            : 0,
+        projection: execution.execution_percentage > 0 ? (execution.total_actual / monthsElapsed) * 12 : 0,
     };
 });
 
@@ -186,11 +183,9 @@ const availableYears = computed(() => {
             <div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Ejecución Presupuestal</h1>
-                    <p class="text-muted-foreground">
-                        {{ report.budget.name }} - {{ report.period.name }}
-                    </p>
+                    <p class="text-muted-foreground">{{ report.budget.name }} - {{ report.period.name }}</p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button variant="outline" @click="showFilters = !showFilters">
                         <Filter class="mr-2 h-4 w-4" />
@@ -206,7 +201,7 @@ const availableYears = computed(() => {
             <!-- Filters Panel -->
             <Card v-if="showFilters" class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Filtros de Ejecución
                     </CardTitle>
@@ -233,9 +228,7 @@ const availableYears = computed(() => {
                                     <SelectValue placeholder="Seleccionar mes" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="(monthName, monthNum) in availableMonths" 
-                                                :key="monthNum" 
-                                                :value="monthNum.toString()">
+                                    <SelectItem v-for="(monthName, monthNum) in availableMonths" :key="monthNum" :value="monthNum.toString()">
                                         {{ monthName }}
                                     </SelectItem>
                                 </SelectContent>
@@ -256,12 +249,8 @@ const availableYears = computed(() => {
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" @click="showFilters = false">
-                            Cancelar
-                        </Button>
-                        <Button @click="applyFilters">
-                            Aplicar Filtros
-                        </Button>
+                        <Button variant="outline" @click="showFilters = false"> Cancelar </Button>
+                        <Button @click="applyFilters"> Aplicar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -277,18 +266,19 @@ const availableYears = computed(() => {
                             {{ report.monthly_execution.execution_percentage.toFixed(1) }}%
                         </div>
                         <div class="mt-2">
-                            <Progress :value="Math.min(report.monthly_execution.execution_percentage, 100)" 
-                                      class="h-2" />
+                            <Progress :value="Math.min(report.monthly_execution.execution_percentage, 100)" class="h-2" />
                         </div>
                         <div class="mt-2">
-                            <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" 
-                                  :class="getStatusBadge(monthlyPerformance.status).class">
+                            <span
+                                class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
+                                :class="getStatusBadge(monthlyPerformance.status).class"
+                            >
                                 {{ getStatusBadge(monthlyPerformance.status).label }}
                             </span>
                         </div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Ejecución Acumulada</CardTitle>
@@ -298,33 +288,36 @@ const availableYears = computed(() => {
                             {{ report.ytd_execution.execution_percentage.toFixed(1) }}%
                         </div>
                         <div class="mt-2">
-                            <Progress :value="Math.min(report.ytd_execution.execution_percentage, 100)" 
-                                      class="h-2" />
+                            <Progress :value="Math.min(report.ytd_execution.execution_percentage, 100)" class="h-2" />
                         </div>
-                        <div class="mt-2 text-xs text-muted-foreground">
-                            Esperado: {{ ytdPerformance.expectedExecution.toFixed(1) }}%
-                        </div>
+                        <div class="mt-2 text-xs text-muted-foreground">Esperado: {{ ytdPerformance.expectedExecution.toFixed(1) }}%</div>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Variación Mensual</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold flex items-center gap-2" 
-                             :class="getVarianceColor(report.monthly_execution.total_variance, 
-                                    (report.monthly_execution.total_variance / report.monthly_execution.total_budgeted) * 100)">
+                        <div
+                            class="flex items-center gap-2 text-2xl font-bold"
+                            :class="
+                                getVarianceColor(
+                                    report.monthly_execution.total_variance,
+                                    (report.monthly_execution.total_variance / report.monthly_execution.total_budgeted) * 100,
+                                )
+                            "
+                        >
                             <component :is="getVarianceIcon(report.monthly_execution.total_variance)" class="h-5 w-5" />
                             {{ formatCurrency(Math.abs(report.monthly_execution.total_variance)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ ((report.monthly_execution.total_variance / report.monthly_execution.total_budgeted) * 100).toFixed(1) }}% 
+                        <p class="mt-1 text-xs text-muted-foreground">
+                            {{ ((report.monthly_execution.total_variance / report.monthly_execution.total_budgeted) * 100).toFixed(1) }}%
                             {{ report.monthly_execution.total_variance > 0 ? 'sobre' : 'bajo' }} presupuesto
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Proyección Anual</CardTitle>
@@ -334,8 +327,10 @@ const availableYears = computed(() => {
                             {{ formatCurrency(ytdPerformance.projection) }}
                         </div>
                         <div class="mt-2">
-                            <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold" 
-                                  :class="getStatusBadge(ytdPerformance.status).class">
+                            <span
+                                class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
+                                :class="getStatusBadge(ytdPerformance.status).class"
+                            >
                                 {{ getStatusBadge(ytdPerformance.status).label }}
                             </span>
                         </div>
@@ -349,7 +344,7 @@ const availableYears = computed(() => {
                     <div class="flex items-center gap-2 text-amber-800">
                         <AlertTriangle class="h-5 w-5" />
                         <p class="font-medium">
-                            {{ monthlyPerformance.criticalItems }} partida{{ monthlyPerformance.criticalItems !== 1 ? 's' : '' }} 
+                            {{ monthlyPerformance.criticalItems }} partida{{ monthlyPerformance.criticalItems !== 1 ? 's' : '' }}
                             con variación mayor al 20%
                         </p>
                     </div>
@@ -359,7 +354,7 @@ const availableYears = computed(() => {
             <!-- Detailed Execution -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="text-xl flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-xl">
                         <BarChart3 class="h-5 w-5" />
                         Ejecución Detallada
                     </CardTitle>
@@ -372,27 +367,33 @@ const availableYears = computed(() => {
                         </TabsList>
 
                         <TabsContent value="monthly" class="space-y-4">
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
-                                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div class="rounded-lg bg-blue-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-blue-600">
                                         {{ formatCurrency(report.monthly_execution.total_budgeted) }}
                                     </div>
-                                    <p class="text-sm text-blue-600 font-medium">Presupuestado</p>
+                                    <p class="text-sm font-medium text-blue-600">Presupuestado</p>
                                 </div>
-                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <div class="rounded-lg bg-green-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-green-600">
                                         {{ formatCurrency(report.monthly_execution.total_actual) }}
                                     </div>
-                                    <p class="text-sm text-green-600 font-medium">Ejecutado</p>
+                                    <p class="text-sm font-medium text-green-600">Ejecutado</p>
                                 </div>
-                                <div class="text-center p-4 rounded-lg"
-                                     :class="report.monthly_execution.total_variance > 0 ? 'bg-red-50' : 'bg-green-50'">
-                                    <div class="text-2xl font-bold"
-                                         :class="report.monthly_execution.total_variance > 0 ? 'text-red-600' : 'text-green-600'">
+                                <div
+                                    class="rounded-lg p-4 text-center"
+                                    :class="report.monthly_execution.total_variance > 0 ? 'bg-red-50' : 'bg-green-50'"
+                                >
+                                    <div
+                                        class="text-2xl font-bold"
+                                        :class="report.monthly_execution.total_variance > 0 ? 'text-red-600' : 'text-green-600'"
+                                    >
                                         {{ formatCurrency(Math.abs(report.monthly_execution.total_variance)) }}
                                     </div>
-                                    <p class="text-sm font-medium"
-                                       :class="report.monthly_execution.total_variance > 0 ? 'text-red-600' : 'text-green-600'">
+                                    <p
+                                        class="text-sm font-medium"
+                                        :class="report.monthly_execution.total_variance > 0 ? 'text-red-600' : 'text-green-600'"
+                                    >
                                         {{ report.monthly_execution.total_variance > 0 ? 'Sobregiro' : 'Ahorro' }}
                                     </p>
                                 </div>
@@ -420,25 +421,24 @@ const availableYears = computed(() => {
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.actual_amount) }}
                                         </TableCell>
-                                        <TableCell class="text-right font-mono"
-                                                   :class="getVarianceColor(item.variance, item.variance_percentage)">
+                                        <TableCell class="text-right font-mono" :class="getVarianceColor(item.variance, item.variance_percentage)">
                                             {{ formatCurrency(Math.abs(item.variance)) }}
                                             ({{ item.variance_percentage.toFixed(1) }}%)
                                         </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center gap-2">
-                                                <Progress :value="Math.min(item.execution_percentage, 100)" 
-                                                          class="flex-1 h-2" />
-                                                <span class="text-xs font-medium w-12" 
-                                                      :class="getExecutionColor(item.execution_percentage)">
+                                                <Progress :value="Math.min(item.execution_percentage, 100)" class="h-2 flex-1" />
+                                                <span class="w-12 text-xs font-medium" :class="getExecutionColor(item.execution_percentage)">
                                                     {{ item.execution_percentage.toFixed(0) }}%
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <component :is="getVarianceIcon(item.variance)" 
-                                                       :class="getVarianceColor(item.variance, item.variance_percentage)"
-                                                       class="h-4 w-4" />
+                                            <component
+                                                :is="getVarianceIcon(item.variance)"
+                                                :class="getVarianceColor(item.variance, item.variance_percentage)"
+                                                class="h-4 w-4"
+                                            />
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -446,24 +446,24 @@ const availableYears = computed(() => {
                         </TabsContent>
 
                         <TabsContent value="ytd" class="space-y-4">
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
-                                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div class="rounded-lg bg-blue-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-blue-600">
                                         {{ formatCurrency(report.ytd_execution.total_budgeted) }}
                                     </div>
-                                    <p class="text-sm text-blue-600 font-medium">Presupuesto Anual</p>
+                                    <p class="text-sm font-medium text-blue-600">Presupuesto Anual</p>
                                 </div>
-                                <div class="text-center p-4 bg-green-50 rounded-lg">
+                                <div class="rounded-lg bg-green-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-green-600">
                                         {{ formatCurrency(report.ytd_execution.total_actual) }}
                                     </div>
-                                    <p class="text-sm text-green-600 font-medium">Ejecutado a la Fecha</p>
+                                    <p class="text-sm font-medium text-green-600">Ejecutado a la Fecha</p>
                                 </div>
-                                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                                <div class="rounded-lg bg-purple-50 p-4 text-center">
                                     <div class="text-2xl font-bold text-purple-600">
                                         {{ formatCurrency(ytdPerformance.projection) }}
                                     </div>
-                                    <p class="text-sm text-purple-600 font-medium">Proyección Anual</p>
+                                    <p class="text-sm font-medium text-purple-600">Proyección Anual</p>
                                 </div>
                             </div>
 
@@ -490,10 +490,8 @@ const availableYears = computed(() => {
                                         </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center gap-2">
-                                                <Progress :value="Math.min(item.execution_percentage, 100)" 
-                                                          class="flex-1 h-2" />
-                                                <span class="text-xs font-medium w-12" 
-                                                      :class="getExecutionColor(item.execution_percentage)">
+                                                <Progress :value="Math.min(item.execution_percentage, 100)" class="h-2 flex-1" />
+                                                <span class="w-12 text-xs font-medium" :class="getExecutionColor(item.execution_percentage)">
                                                     {{ item.execution_percentage.toFixed(0) }}%
                                                 </span>
                                             </div>

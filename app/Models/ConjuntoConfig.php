@@ -44,6 +44,21 @@ class ConjuntoConfig extends Model
         return $this->hasMany(Invoice::class);
     }
 
+    public function maintenanceCategories(): HasMany
+    {
+        return $this->hasMany(MaintenanceCategory::class);
+    }
+
+    public function maintenanceStaff(): HasMany
+    {
+        return $this->hasMany(MaintenanceStaff::class);
+    }
+
+    public function maintenanceRequests(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class);
+    }
+
     public function getEstimatedApartmentsCountAttribute(): int
     {
         $totalApartments = 0;

@@ -8,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { InvoiceEmailBatch, InvoiceEmailBatchFilters, InvoiceEmailBatchResponse } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { CheckCircle, Clock, Filter, Mail, MailCheck, MailX, Plus, Search, Send, Trash2, X, XCircle } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import type { InvoiceEmailBatch, InvoiceEmailBatchFilters, InvoiceEmailBatchResponse } from '@/types';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -173,9 +173,7 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">Envío de Facturas por Email</h1>
-                    <p class="text-muted-foreground">
-                        Gestiona los lotes de envío de facturas por correo electrónico
-                    </p>
+                    <p class="text-muted-foreground">Gestiona los lotes de envío de facturas por correo electrónico</p>
                 </div>
 
                 <Button asChild>
@@ -214,12 +212,7 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
                             <Label for="search">Buscar</Label>
                             <div class="relative">
                                 <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
-                                <Input 
-                                    id="search" 
-                                    placeholder="Nombre del lote..." 
-                                    v-model="customFilters.search" 
-                                    class="pl-8" 
-                                />
+                                <Input id="search" placeholder="Nombre del lote..." v-model="customFilters.search" class="pl-8" />
                             </div>
                         </div>
 
@@ -231,11 +224,7 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
                                     <SelectValue placeholder="Seleccionar estado" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem 
-                                        v-for="status in statusOptions" 
-                                        :key="status.value" 
-                                        :value="status.value"
-                                    >
+                                    <SelectItem v-for="status in statusOptions" :key="status.value" :value="status.value">
                                         {{ status.label }}
                                     </SelectItem>
                                 </SelectContent>
@@ -245,21 +234,13 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
                         <!-- Date From -->
                         <div class="space-y-2">
                             <Label for="date_from">Fecha desde</Label>
-                            <Input 
-                                id="date_from" 
-                                type="date" 
-                                v-model="customFilters.date_from" 
-                            />
+                            <Input id="date_from" type="date" v-model="customFilters.date_from" />
                         </div>
 
                         <!-- Date To -->
                         <div class="space-y-2">
                             <Label for="date_to">Fecha hasta</Label>
-                            <Input 
-                                id="date_to" 
-                                type="date" 
-                                v-model="customFilters.date_to" 
-                            />
+                            <Input id="date_to" type="date" v-model="customFilters.date_to" />
                         </div>
                     </div>
 
@@ -275,18 +256,11 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
 
             <!-- Batch Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card 
-                    v-for="batch in props.batches.data" 
-                    :key="batch.id"
-                    class="transition-all hover:shadow-md"
-                >
+                <Card v-for="batch in props.batches.data" :key="batch.id" class="transition-all hover:shadow-md">
                     <CardHeader class="pb-3">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
-                                <component 
-                                    :is="getStatusIcon(batch.status)" 
-                                    class="h-5 w-5 text-muted-foreground" 
-                                />
+                                <component :is="getStatusIcon(batch.status)" class="h-5 w-5 text-muted-foreground" />
                                 <CardTitle class="text-lg">{{ batch.name }}</CardTitle>
                             </div>
                             <Badge :class="batch.status_badge.class">
@@ -297,7 +271,7 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
                             {{ batch.description }}
                         </CardDescription>
                     </CardHeader>
-                    
+
                     <CardContent class="space-y-4">
                         <!-- Statistics -->
                         <div class="grid grid-cols-2 gap-4">
@@ -317,9 +291,9 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
                                 <span>Progreso</span>
                                 <span>{{ getProgressPercentage(batch) }}%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                    class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            <div class="h-2 w-full rounded-full bg-gray-200">
+                                <div
+                                    class="h-2 rounded-full bg-blue-600 transition-all duration-300"
                                     :style="{ width: `${getProgressPercentage(batch)}%` }"
                                 ></div>
                             </div>
@@ -341,27 +315,18 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
 
                     <CardFooter class="pt-0">
                         <div class="flex w-full gap-2">
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                class="flex-1"
-                                @click="router.visit(`/invoices/email/${batch.id}`)"
-                            >
+                            <Button variant="outline" size="sm" class="flex-1" @click="router.visit(`/invoices/email/${batch.id}`)">
                                 Ver Detalles
                             </Button>
-                            
-                            <Button 
-                                v-if="batch.can_send && batch.status === 'listo'"
-                                size="sm"
-                                @click="sendBatch(batch)"
-                            >
+
+                            <Button v-if="batch.can_send && batch.status === 'listo'" size="sm" @click="sendBatch(batch)">
                                 <Send class="mr-2 h-3 w-3" />
                                 Enviar
                             </Button>
 
-                            <Button 
+                            <Button
                                 v-if="batch.can_delete"
-                                variant="outline" 
+                                variant="outline"
                                 size="sm"
                                 @click="deleteBatch(batch)"
                                 class="text-red-600 hover:text-red-700"
@@ -375,11 +340,9 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
 
             <!-- Empty State -->
             <Card v-if="props.batches.data.length === 0" class="p-12 text-center">
-                <Mail class="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-                <h3 class="text-lg font-semibold mb-2">No hay lotes de envío</h3>
-                <p class="text-muted-foreground mb-4">
-                    Crea tu primer lote de envío de facturas para comenzar
-                </p>
+                <Mail class="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+                <h3 class="mb-2 text-lg font-semibold">No hay lotes de envío</h3>
+                <p class="mb-4 text-muted-foreground">Crea tu primer lote de envío de facturas para comenzar</p>
                 <Button asChild>
                     <Link href="/invoices/email/create">
                         <Plus class="mr-2 h-4 w-4" />
@@ -397,18 +360,11 @@ const getProgressPercentage = (batch: InvoiceEmailBatch) => {
                 </div>
 
                 <div class="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="props.batches.current_page <= 1"
-                        @click="goToPage(props.batches.current_page - 1)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="props.batches.current_page <= 1" @click="goToPage(props.batches.current_page - 1)">
                         Anterior
                     </Button>
 
-                    <span class="px-2 text-sm text-muted-foreground">
-                        Página {{ props.batches.current_page }} de {{ props.batches.last_page }}
-                    </span>
+                    <span class="px-2 text-sm text-muted-foreground"> Página {{ props.batches.current_page }} de {{ props.batches.last_page }} </span>
 
                     <Button
                         variant="outline"

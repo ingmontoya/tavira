@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { 
-    SidebarGroup, 
-    SidebarGroupLabel, 
-    SidebarMenu, 
-    SidebarMenuButton, 
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
@@ -23,44 +23,24 @@ const page = usePage();
 
 <template>
     <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel
-            v-if="props.title"
-            class="mb-2 text-xs font-semibold tracking-wider text-muted-foreground/70 uppercase"
-        >
+        <SidebarGroupLabel v-if="props.title" class="mb-2 text-xs font-semibold tracking-wider text-muted-foreground/70 uppercase">
             <div class="flex items-center gap-2">
                 <span>{{ props.title }}</span>
             </div>
         </SidebarGroupLabel>
         <SidebarMenu class="space-y-1">
-            <SidebarMenuItem
-                v-for="(item, index) in props.items"
-                :key="item.title"
-            >
+            <SidebarMenuItem v-for="(item, index) in props.items" :key="item.title">
                 <!-- Regular menu item (no children) -->
                 <template v-if="!item.items || item.items.length === 0">
-                    <SidebarMenuButton
-                        v-if="!item.disabled"
-                        as-child
-                        :is-active="item.href === page.url"
-                        :tooltip="item.title"
-                    >
-                        <Link
-                            :href="item.href!"
-                            :data-tour="item.tourId"
-                            class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium"
-                        >
+                    <SidebarMenuButton v-if="!item.disabled" as-child :is-active="item.href === page.url" :tooltip="item.title">
+                        <Link :href="item.href!" :data-tour="item.tourId" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium">
                             <component :is="item.icon" class="h-4 w-4" />
                             <span>
                                 {{ item.title }}
                             </span>
                         </Link>
                     </SidebarMenuButton>
-                    <SidebarMenuButton
-                        v-else
-                        :tooltip="`${item.title} (Configuración requerida)`"
-                        class="cursor-not-allowed opacity-50"
-                        disabled
-                    >
+                    <SidebarMenuButton v-else :tooltip="`${item.title} (Configuración requerida)`" class="cursor-not-allowed opacity-50" disabled>
                         <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium">
                             <component :is="item.icon" class="h-4 w-4" />
                             <span>
@@ -72,16 +52,18 @@ const page = usePage();
 
                 <!-- Collapsible menu item (has children) -->
                 <template v-else>
-                    <Collapsible 
-                        :default-open="item.items?.some(subItem => subItem.href === page.url || subItem.items?.some(nestedItem => nestedItem.href === page.url))"
+                    <Collapsible
+                        :default-open="
+                            item.items?.some(
+                                (subItem) => subItem.href === page.url || subItem.items?.some((nestedItem) => nestedItem.href === page.url),
+                            )
+                        "
                     >
                         <CollapsibleTrigger as-child>
-                            <SidebarMenuButton
-                                :tooltip="item.title"
-                            >
-                                <div class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium w-full min-w-0">
+                            <SidebarMenuButton :tooltip="item.title">
+                                <div class="flex w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium">
                                     <component :is="item.icon" class="h-4 w-4 flex-shrink-0" />
-                                    <span class="truncate flex-1">
+                                    <span class="flex-1 truncate">
                                         {{ item.title }}
                                     </span>
                                     <ChevronRight class="ml-auto h-4 w-4 flex-shrink-0" />
@@ -94,25 +76,13 @@ const page = usePage();
                                     <!-- Sub-item without nested children -->
                                     <template v-if="!subItem.items || subItem.items.length === 0">
                                         <SidebarMenuSubItem>
-                                            <SidebarMenuSubButton
-                                                v-if="!subItem.disabled"
-                                                as-child
-                                                :is-active="subItem.href === page.url"
-                                            >
-                                                <Link
-                                                    :href="subItem.href!"
-                                                    :data-tour="subItem.tourId"
-                                                    class="flex items-center gap-3"
-                                                >
+                                            <SidebarMenuSubButton v-if="!subItem.disabled" as-child :is-active="subItem.href === page.url">
+                                                <Link :href="subItem.href!" :data-tour="subItem.tourId" class="flex items-center gap-3">
                                                     <component :is="subItem.icon" class="h-3.5 w-3.5" />
                                                     <span>{{ subItem.title }}</span>
                                                 </Link>
                                             </SidebarMenuSubButton>
-                                            <SidebarMenuSubButton
-                                                v-else
-                                                class="cursor-not-allowed opacity-50"
-                                                disabled
-                                            >
+                                            <SidebarMenuSubButton v-else class="cursor-not-allowed opacity-50" disabled>
                                                 <div class="flex items-center gap-3">
                                                     <component :is="subItem.icon" class="h-3.5 w-3.5" />
                                                     <span>{{ subItem.title }}</span>
@@ -124,24 +94,19 @@ const page = usePage();
                                     <!-- Nested sub-item with children -->
                                     <template v-else>
                                         <SidebarMenuSubItem>
-                                            <Collapsible 
-                                                :default-open="subItem.items?.some(nestedItem => nestedItem.href === page.url)"
-                                            >
+                                            <Collapsible :default-open="subItem.items?.some((nestedItem) => nestedItem.href === page.url)">
                                                 <CollapsibleTrigger as-child>
                                                     <SidebarMenuSubButton>
-                                                        <div class="flex items-center gap-3 w-full min-w-0">
+                                                        <div class="flex w-full min-w-0 items-center gap-3">
                                                             <component :is="subItem.icon" class="h-3.5 w-3.5 flex-shrink-0" />
-                                                            <span class="truncate flex-1">{{ subItem.title }}</span>
+                                                            <span class="flex-1 truncate">{{ subItem.title }}</span>
                                                             <ChevronRight class="ml-auto h-3 w-3 flex-shrink-0" />
                                                         </div>
                                                     </SidebarMenuSubButton>
                                                 </CollapsibleTrigger>
                                                 <CollapsibleContent>
                                                     <SidebarMenuSub class="ml-4">
-                                                        <SidebarMenuSubItem
-                                                            v-for="nestedItem in subItem.items"
-                                                            :key="nestedItem.title"
-                                                        >
+                                                        <SidebarMenuSubItem v-for="nestedItem in subItem.items" :key="nestedItem.title">
                                                             <SidebarMenuSubButton
                                                                 v-if="!nestedItem.disabled"
                                                                 as-child
@@ -156,11 +121,7 @@ const page = usePage();
                                                                     <span class="text-xs">{{ nestedItem.title }}</span>
                                                                 </Link>
                                                             </SidebarMenuSubButton>
-                                                            <SidebarMenuSubButton
-                                                                v-else
-                                                                class="cursor-not-allowed opacity-50"
-                                                                disabled
-                                                            >
+                                                            <SidebarMenuSubButton v-else class="cursor-not-allowed opacity-50" disabled>
                                                                 <div class="flex items-center gap-3">
                                                                     <component :is="nestedItem.icon" class="h-3 w-3" />
                                                                     <span class="text-xs">{{ nestedItem.title }}</span>

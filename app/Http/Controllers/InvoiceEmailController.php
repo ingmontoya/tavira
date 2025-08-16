@@ -152,25 +152,25 @@ class InvoiceEmailController extends Controller
         // Basic email templates (you can move this to a model/service later)
         $emailTemplates = [
             [
-                'id' => 1, 
-                'name' => 'Template Básico', 
+                'id' => 1,
+                'name' => 'Template Básico',
                 'subject' => 'Factura de Administración - {{apartment_number}}',
                 'body' => 'Estimado propietario, adjuntamos su factura de administración.',
-                'is_active' => true
+                'is_active' => true,
             ],
             [
-                'id' => 2, 
-                'name' => 'Template Recordatorio', 
+                'id' => 2,
+                'name' => 'Template Recordatorio',
                 'subject' => 'Recordatorio de Pago - {{apartment_number}}',
                 'body' => 'Le recordamos que tiene una factura pendiente de pago.',
-                'is_active' => true
+                'is_active' => true,
             ],
             [
-                'id' => 3, 
-                'name' => 'Template Urgente', 
+                'id' => 3,
+                'name' => 'Template Urgente',
                 'subject' => 'URGENTE: Factura Vencida - {{apartment_number}}',
                 'body' => 'Su factura está vencida. Por favor proceda con el pago inmediatamente.',
-                'is_active' => true
+                'is_active' => true,
             ],
         ];
 
@@ -400,7 +400,7 @@ class InvoiceEmailController extends Controller
                 $batch->refresh();
             }
 
-            // Queue the batch for processing  
+            // Queue the batch for processing
             dispatch(function () use ($batch) {
                 $this->emailService->processBatch($batch);
             });

@@ -1,10 +1,6 @@
+import type { EligibleInvoiceFilters, Invoice } from '@/types';
 import { router } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
-import type { 
-    Invoice, 
-    EligibleInvoiceFilters, 
-    EligibleInvoicesResponse 
-} from '@/types';
+import { computed, ref } from 'vue';
 
 export function useInvoiceSelection() {
     // State
@@ -18,12 +14,9 @@ export function useInvoiceSelection() {
 
         // Add filters to params
         if (filters.search) params.search = filters.search;
-        if (filters.apartment_id && filters.apartment_id !== 'all') 
-            params.apartment_id = filters.apartment_id;
-        if (filters.status && filters.status !== 'all') 
-            params.status = filters.status;
-        if (filters.type && filters.type !== 'all') 
-            params.type = filters.type;
+        if (filters.apartment_id && filters.apartment_id !== 'all') params.apartment_id = filters.apartment_id;
+        if (filters.status && filters.status !== 'all') params.status = filters.status;
+        if (filters.type && filters.type !== 'all') params.type = filters.type;
         if (filters.date_from) params.date_from = filters.date_from;
         if (filters.date_to) params.date_to = filters.date_to;
         if (page) params.page = page.toString();
@@ -57,16 +50,14 @@ export function useInvoiceSelection() {
     };
 
     const selectAll = (invoices: Invoice[]) => {
-        const allIds = invoices.map(invoice => invoice.id);
+        const allIds = invoices.map((invoice) => invoice.id);
         selectedInvoiceIds.value = [...new Set([...selectedInvoiceIds.value, ...allIds])];
     };
 
     const deselectAll = (invoices?: Invoice[]) => {
         if (invoices) {
-            const idsToRemove = invoices.map(invoice => invoice.id);
-            selectedInvoiceIds.value = selectedInvoiceIds.value.filter(
-                id => !idsToRemove.includes(id)
-            );
+            const idsToRemove = invoices.map((invoice) => invoice.id);
+            selectedInvoiceIds.value = selectedInvoiceIds.value.filter((id) => !idsToRemove.includes(id));
         } else {
             selectedInvoiceIds.value = [];
         }
@@ -82,33 +73,34 @@ export function useInvoiceSelection() {
     };
 
     const areAllSelected = (invoices: Invoice[]) => {
-        return invoices.every(invoice => selectedInvoiceIds.value.includes(invoice.id));
+        return invoices.every((invoice) => selectedInvoiceIds.value.includes(invoice.id));
     };
 
     const areSomeSelected = (invoices: Invoice[]) => {
-        return invoices.some(invoice => selectedInvoiceIds.value.includes(invoice.id)) &&
-               !areAllSelected(invoices);
+        return invoices.some((invoice) => selectedInvoiceIds.value.includes(invoice.id)) && !areAllSelected(invoices);
     };
 
     // Calculate statistics for selected invoices
     const getSelectedInvoicesStats = (allInvoices: Invoice[]) => {
-        const selected = allInvoices.filter(invoice => 
-            selectedInvoiceIds.value.includes(invoice.id)
-        );
-        
-        const totalAmount = selected.reduce((sum, invoice) => 
-            sum + parseFloat(invoice.balance_due.toString()), 0
-        );
-        
-        const statusCounts = selected.reduce((counts, invoice) => {
-            counts[invoice.status] = (counts[invoice.status] || 0) + 1;
-            return counts;
-        }, {} as Record<string, number>);
+        const selected = allInvoices.filter((invoice) => selectedInvoiceIds.value.includes(invoice.id));
 
-        const typeCounts = selected.reduce((counts, invoice) => {
-            counts[invoice.type] = (counts[invoice.type] || 0) + 1;
-            return counts;
-        }, {} as Record<string, number>);
+        const totalAmount = selected.reduce((sum, invoice) => sum + parseFloat(invoice.balance_due.toString()), 0);
+
+        const statusCounts = selected.reduce(
+            (counts, invoice) => {
+                counts[invoice.status] = (counts[invoice.status] || 0) + 1;
+                return counts;
+            },
+            {} as Record<string, number>,
+        );
+
+        const typeCounts = selected.reduce(
+            (counts, invoice) => {
+                counts[invoice.type] = (counts[invoice.type] || 0) + 1;
+                return counts;
+            },
+            {} as Record<string, number>,
+        );
 
         return {
             count: selected.length,
@@ -137,9 +129,7 @@ export function useInvoiceSelection() {
     // Invoice eligibility helpers
     const isInvoiceEligible = (invoice: Invoice) => {
         // Check if invoice can be sent via email
-        return invoice.can_send_email && 
-               ['pending', 'partial', 'overdue'].includes(invoice.status) &&
-               parseFloat(invoice.balance_due.toString()) > 0;
+        return invoice.can_send_email && ['pending', 'partial', 'overdue'].includes(invoice.status) && parseFloat(invoice.balance_due.toString()) > 0;
     };
 
     const getIneligibilityReason = (invoice: Invoice) => {

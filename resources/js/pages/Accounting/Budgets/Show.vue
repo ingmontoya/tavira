@@ -1,11 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -17,10 +10,30 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { AlertCircle, ArrowLeft, Calendar, CheckCircle, Clock, DollarSign, Edit, Hash, Play, TrendingDown, TrendingUp, Trash2 } from 'lucide-vue-next';
+import {
+    AlertCircle,
+    ArrowLeft,
+    Calendar,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    Edit,
+    Hash,
+    Play,
+    Trash2,
+    TrendingDown,
+    TrendingUp,
+} from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface BudgetItem {
@@ -145,7 +158,7 @@ const confirmDeleteBudget = () => {
     router.delete(`/accounting/budgets/${props.budget.id}`, {
         onSuccess: () => {
             router.visit('/accounting/budgets');
-        }
+        },
     });
 };
 
@@ -200,33 +213,33 @@ const breadcrumbs = [
                             Volver
                         </Button>
                     </Link>
-                    
+
                     <!-- Botones de estado -->
-                    <Button v-if="canApprove" @click="approveBudget" variant="outline" class="gap-2 text-blue-600 border-blue-600 hover:bg-blue-50">
+                    <Button v-if="canApprove" @click="approveBudget" variant="outline" class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
                         <CheckCircle class="h-4 w-4" />
                         Aprobar
                     </Button>
-                    
+
                     <Button v-if="canActivate" @click="activateBudget" class="gap-2 bg-green-600 hover:bg-green-700">
                         <Play class="h-4 w-4" />
                         Activar
                     </Button>
-                    
-                    <Button v-if="canClose" @click="closeBudget" variant="outline" class="gap-2 text-orange-600 border-orange-600 hover:bg-orange-50">
+
+                    <Button v-if="canClose" @click="closeBudget" variant="outline" class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
                         <Clock class="h-4 w-4" />
                         Cerrar
                     </Button>
-                    
+
                     <Link v-if="canEdit" :href="`/accounting/budgets/${budget.id}/edit`">
                         <Button class="gap-2">
                             <Edit class="h-4 w-4" />
                             Editar
                         </Button>
                     </Link>
-                    
+
                     <AlertDialog v-model:open="deleteDialogOpen">
                         <AlertDialogTrigger as-child>
-                            <Button v-if="canDelete" variant="outline" class="gap-2 text-red-600 border-red-600 hover:bg-red-50">
+                            <Button v-if="canDelete" variant="outline" class="gap-2 border-red-600 text-red-600 hover:bg-red-50">
                                 <Trash2 class="h-4 w-4" />
                                 Eliminar
                             </Button>
@@ -235,13 +248,16 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br><br>
-                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas presupuestales asociadas.
+                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br /><br />
+                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas
+                                    presupuestales asociadas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700">Eliminar Presupuesto</AlertDialogAction>
+                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700"
+                                    >Eliminar Presupuesto</AlertDialogAction
+                                >
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>

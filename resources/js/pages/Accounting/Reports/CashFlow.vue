@@ -123,23 +123,25 @@ const exportReport = () => {
 
 const selectedAccountData = computed(() => {
     if (selectedAccount.value === null) return null;
-    return props.report.cash_accounts.find(acc => acc.account.id === selectedAccount.value);
+    return props.report.cash_accounts.find((acc) => acc.account.id === selectedAccount.value);
 });
 
 const cashFlowSummary = computed(() => {
     const total = props.report.total_opening + props.report.total_inflows - props.report.total_outflows;
     const isPositive = props.report.net_change > 0;
-    const flowRatio = props.report.total_opening > 0 
-        ? (props.report.net_change / props.report.total_opening) * 100 
-        : 0;
-    
+    const flowRatio = props.report.total_opening > 0 ? (props.report.net_change / props.report.total_opening) * 100 : 0;
+
     return {
         calculated_closing: total,
         is_balanced: Math.abs(total - props.report.total_closing) < 0.01,
         is_positive_flow: isPositive,
         flow_ratio: flowRatio,
-        liquidity_status: props.report.total_closing > props.report.total_opening ? 'increased' : 
-                         props.report.total_closing < props.report.total_opening ? 'decreased' : 'stable',
+        liquidity_status:
+            props.report.total_closing > props.report.total_opening
+                ? 'increased'
+                : props.report.total_closing < props.report.total_opening
+                  ? 'decreased'
+                  : 'stable',
     };
 });
 
@@ -154,14 +156,14 @@ const getFlowColor = (type: 'inflow' | 'outflow') => {
 // Commented out for now as it's not being used
 // const getAccountPerformance = (account: CashAccount) => {
 //     const turnover = Math.max(account.inflows, account.outflows);
-//     const netRatio = account.opening_balance > 0 
-//         ? (account.net_change / account.opening_balance) * 100 
+//     const netRatio = account.opening_balance > 0
+//         ? (account.net_change / account.opening_balance) * 100
 //         : 0;
-//     
+//
 //     return {
 //         turnover,
 //         net_ratio: netRatio,
-//         activity_level: turnover > account.opening_balance * 0.5 ? 'high' : 
+//         activity_level: turnover > account.opening_balance * 0.5 ? 'high' :
 //                        turnover > account.opening_balance * 0.1 ? 'medium' : 'low',
 //     };
 // };
@@ -193,11 +195,9 @@ const dailyAverage = computed(() => {
                     <p class="text-muted-foreground">
                         Del {{ formatDateLong(report.period.start_date) }} al {{ formatDateLong(report.period.end_date) }}
                     </p>
-                    <p class="text-sm text-muted-foreground">
-                        Período de {{ periodDays }} días
-                    </p>
+                    <p class="text-sm text-muted-foreground">Período de {{ periodDays }} días</p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button variant="outline" @click="showFilters = !showFilters">
                         <Filter class="mr-2 h-4 w-4" />
@@ -213,7 +213,7 @@ const dailyAverage = computed(() => {
             <!-- Filters Panel -->
             <Card v-if="showFilters" class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Filtros de Período
                     </CardTitle>
@@ -222,28 +222,16 @@ const dailyAverage = computed(() => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="start_date">Fecha Inicial</Label>
-                            <Input
-                                id="start_date"
-                                type="date"
-                                v-model="form.start_date"
-                            />
+                            <Input id="start_date" type="date" v-model="form.start_date" />
                         </div>
                         <div class="space-y-2">
                             <Label for="end_date">Fecha Final</Label>
-                            <Input
-                                id="end_date"
-                                type="date"
-                                v-model="form.end_date"
-                            />
+                            <Input id="end_date" type="date" v-model="form.end_date" />
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" @click="showFilters = false">
-                            Cancelar
-                        </Button>
-                        <Button @click="applyFilters">
-                            Aplicar Filtros
-                        </Button>
+                        <Button variant="outline" @click="showFilters = false"> Cancelar </Button>
+                        <Button @click="applyFilters"> Aplicar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -258,15 +246,13 @@ const dailyAverage = computed(() => {
                         <div class="text-2xl font-bold text-blue-600">
                             {{ formatCurrency(report.total_opening) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            Efectivo disponible al inicio
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">Efectivo disponible al inicio</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <ArrowDownLeft class="h-4 w-4 text-green-600" />
                             Entradas
                         </CardTitle>
@@ -275,15 +261,13 @@ const dailyAverage = computed(() => {
                         <div class="text-2xl font-bold text-green-600">
                             {{ formatCurrency(report.total_inflows) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ formatCurrency(dailyAverage.inflows) }}/día promedio
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">{{ formatCurrency(dailyAverage.inflows) }}/día promedio</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <ArrowUpRight class="h-4 w-4 text-red-600" />
                             Salidas
                         </CardTitle>
@@ -292,45 +276,48 @@ const dailyAverage = computed(() => {
                         <div class="text-2xl font-bold text-red-600">
                             {{ formatCurrency(report.total_outflows) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ formatCurrency(dailyAverage.outflows) }}/día promedio
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">{{ formatCurrency(dailyAverage.outflows) }}/día promedio</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Flujo Neto</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold"
-                             :class="report.net_change >= 0 ? 'text-green-600' : 'text-red-600'">
+                        <div class="text-2xl font-bold" :class="report.net_change >= 0 ? 'text-green-600' : 'text-red-600'">
                             {{ formatCurrency(Math.abs(report.net_change)) }}
                         </div>
-                        <p class="text-xs text-muted-foreground mt-1">
-                            {{ report.net_change >= 0 ? 'Generación' : 'Consumo' }} de efectivo
-                        </p>
+                        <p class="mt-1 text-xs text-muted-foreground">{{ report.net_change >= 0 ? 'Generación' : 'Consumo' }} de efectivo</p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Saldo Final</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="text-2xl font-bold" 
-                             :class="report.total_closing >= 0 ? 'text-green-600' : 'text-red-600'">
+                        <div class="text-2xl font-bold" :class="report.total_closing >= 0 ? 'text-green-600' : 'text-red-600'">
                             {{ formatCurrency(Math.abs(report.total_closing)) }}
                         </div>
                         <div class="mt-2">
-                            <span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
-                                  :class="cashFlowSummary.liquidity_status === 'increased' 
-                                         ? 'bg-green-100 text-green-800' 
-                                         : cashFlowSummary.liquidity_status === 'decreased'
-                                         ? 'bg-red-100 text-red-800'
-                                         : 'bg-gray-100 text-gray-800'">
-                                {{ cashFlowSummary.liquidity_status === 'increased' ? 'Mejoró' : 
-                                   cashFlowSummary.liquidity_status === 'decreased' ? 'Empeoró' : 'Estable' }}
+                            <span
+                                class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
+                                :class="
+                                    cashFlowSummary.liquidity_status === 'increased'
+                                        ? 'bg-green-100 text-green-800'
+                                        : cashFlowSummary.liquidity_status === 'decreased'
+                                          ? 'bg-red-100 text-red-800'
+                                          : 'bg-gray-100 text-gray-800'
+                                "
+                            >
+                                {{
+                                    cashFlowSummary.liquidity_status === 'increased'
+                                        ? 'Mejoró'
+                                        : cashFlowSummary.liquidity_status === 'decreased'
+                                          ? 'Empeoró'
+                                          : 'Estable'
+                                }}
                             </span>
                         </div>
                     </CardContent>
@@ -340,7 +327,7 @@ const dailyAverage = computed(() => {
             <!-- Cash Accounts Detail -->
             <Card>
                 <CardHeader>
-                    <CardTitle class="text-xl flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-xl">
                         <Wallet class="h-5 w-5" />
                         Detalle por Cuenta de Efectivo
                     </CardTitle>
@@ -372,16 +359,21 @@ const dailyAverage = computed(() => {
                                 <TableCell class="text-right font-mono text-red-600">
                                     {{ formatCurrency(cashAccount.outflows) }}
                                 </TableCell>
-                                <TableCell class="text-right font-mono font-medium"
-                                           :class="cashAccount.net_change >= 0 ? 'text-green-600' : 'text-red-600'">
+                                <TableCell
+                                    class="text-right font-mono font-medium"
+                                    :class="cashAccount.net_change >= 0 ? 'text-green-600' : 'text-red-600'"
+                                >
                                     {{ formatCurrency(Math.abs(cashAccount.net_change)) }}
                                 </TableCell>
                                 <TableCell class="text-right font-mono font-medium">
                                     {{ formatCurrency(cashAccount.closing_balance) }}
                                 </TableCell>
                                 <TableCell>
-                                    <Button variant="ghost" size="sm" 
-                                            @click="selectedAccount = selectedAccount === cashAccount.account.id ? null : cashAccount.account.id">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        @click="selectedAccount = selectedAccount === cashAccount.account.id ? null : cashAccount.account.id"
+                                    >
                                         {{ selectedAccount === cashAccount.account.id ? 'Ocultar' : 'Ver' }}
                                     </Button>
                                 </TableCell>
@@ -389,20 +381,19 @@ const dailyAverage = computed(() => {
                             <!-- Totals Row -->
                             <TableRow class="border-t-2 bg-primary/5 font-bold">
                                 <TableCell colspan="2" class="font-bold">TOTALES</TableCell>
-                                <TableCell class="text-right font-bold font-mono">
+                                <TableCell class="text-right font-mono font-bold">
                                     {{ formatCurrency(report.total_opening) }}
                                 </TableCell>
-                                <TableCell class="text-right font-bold font-mono text-green-600">
+                                <TableCell class="text-right font-mono font-bold text-green-600">
                                     {{ formatCurrency(report.total_inflows) }}
                                 </TableCell>
-                                <TableCell class="text-right font-bold font-mono text-red-600">
+                                <TableCell class="text-right font-mono font-bold text-red-600">
                                     {{ formatCurrency(report.total_outflows) }}
                                 </TableCell>
-                                <TableCell class="text-right font-bold font-mono"
-                                           :class="report.net_change >= 0 ? 'text-green-600' : 'text-red-600'">
+                                <TableCell class="text-right font-mono font-bold" :class="report.net_change >= 0 ? 'text-green-600' : 'text-red-600'">
                                     {{ formatCurrency(Math.abs(report.net_change)) }}
                                 </TableCell>
-                                <TableCell class="text-right font-bold font-mono">
+                                <TableCell class="text-right font-mono font-bold">
                                     {{ formatCurrency(report.total_closing) }}
                                 </TableCell>
                                 <TableCell></TableCell>
@@ -420,15 +411,15 @@ const dailyAverage = computed(() => {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="selectedAccountData.entries.length === 0" class="text-center py-8 text-muted-foreground">
-                        <Wallet class="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <div v-if="selectedAccountData.entries.length === 0" class="py-8 text-center text-muted-foreground">
+                        <Wallet class="mx-auto mb-4 h-12 w-12 opacity-50" />
                         <p class="text-lg font-medium">No hay movimientos en el período</p>
                         <p class="text-sm">Esta cuenta no registró transacciones en las fechas seleccionadas</p>
                     </div>
 
                     <div v-else class="space-y-4">
                         <!-- Account Summary -->
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4 p-4 bg-muted/30 rounded-lg">
+                        <div class="grid grid-cols-1 gap-4 rounded-lg bg-muted/30 p-4 md:grid-cols-4">
                             <div class="text-center">
                                 <div class="text-lg font-bold">{{ formatCurrency(selectedAccountData.opening_balance) }}</div>
                                 <p class="text-xs text-muted-foreground">Saldo Inicial</p>
@@ -456,8 +447,8 @@ const dailyAverage = computed(() => {
                                     <TableHead class="w-28">Fecha</TableHead>
                                     <TableHead class="w-32">Comprobante</TableHead>
                                     <TableHead>Descripción</TableHead>
-                                    <TableHead class="text-right w-32">Entradas</TableHead>
-                                    <TableHead class="text-right w-32">Salidas</TableHead>
+                                    <TableHead class="w-32 text-right">Entradas</TableHead>
+                                    <TableHead class="w-32 text-right">Salidas</TableHead>
                                     <TableHead class="w-8">Tipo</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -481,9 +472,11 @@ const dailyAverage = computed(() => {
                                         {{ entry.credit_amount > 0 ? formatCurrency(entry.credit_amount) : '-' }}
                                     </TableCell>
                                     <TableCell>
-                                        <component :is="getFlowIcon(entry.debit_amount > 0 ? 'inflow' : 'outflow')"
-                                                   :class="getFlowColor(entry.debit_amount > 0 ? 'inflow' : 'outflow')"
-                                                   class="h-4 w-4" />
+                                        <component
+                                            :is="getFlowIcon(entry.debit_amount > 0 ? 'inflow' : 'outflow')"
+                                            :class="getFlowColor(entry.debit_amount > 0 ? 'inflow' : 'outflow')"
+                                            class="h-4 w-4"
+                                        />
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -500,42 +493,49 @@ const dailyAverage = computed(() => {
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-4">
-                            <div class="p-3 rounded bg-muted/50">
-                                <div class="flex justify-between items-center mb-2">
+                            <div class="rounded bg-muted/50 p-3">
+                                <div class="mb-2 flex items-center justify-between">
                                     <span class="text-sm font-medium">Ratio Entradas/Salidas</span>
                                     <span class="font-bold">
                                         {{ report.total_outflows > 0 ? (report.total_inflows / report.total_outflows).toFixed(2) : '∞' }}
                                     </span>
                                 </div>
                                 <p class="text-xs text-muted-foreground">
-                                    {{ report.total_inflows > report.total_outflows ? 'Generación positiva de efectivo' : 
-                                       report.total_inflows < report.total_outflows ? 'Consumo neto de efectivo' : 
-                                       'Flujo balanceado' }}
+                                    {{
+                                        report.total_inflows > report.total_outflows
+                                            ? 'Generación positiva de efectivo'
+                                            : report.total_inflows < report.total_outflows
+                                              ? 'Consumo neto de efectivo'
+                                              : 'Flujo balanceado'
+                                    }}
                                 </p>
                             </div>
 
-                            <div class="p-3 rounded bg-muted/50">
-                                <div class="flex justify-between items-center mb-2">
+                            <div class="rounded bg-muted/50 p-3">
+                                <div class="mb-2 flex items-center justify-between">
                                     <span class="text-sm font-medium">Variación de Liquidez</span>
                                     <span class="font-bold" :class="cashFlowSummary.flow_ratio >= 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ cashFlowSummary.flow_ratio.toFixed(1) }}%
                                     </span>
                                 </div>
                                 <p class="text-xs text-muted-foreground">
-                                    {{ Math.abs(cashFlowSummary.flow_ratio) > 20 ? 'Cambio significativo' : 
-                                       Math.abs(cashFlowSummary.flow_ratio) > 5 ? 'Cambio moderado' : 'Cambio mínimo' }} 
+                                    {{
+                                        Math.abs(cashFlowSummary.flow_ratio) > 20
+                                            ? 'Cambio significativo'
+                                            : Math.abs(cashFlowSummary.flow_ratio) > 5
+                                              ? 'Cambio moderado'
+                                              : 'Cambio mínimo'
+                                    }}
                                     en la posición de efectivo
                                 </p>
                             </div>
 
-                            <div class="p-3 rounded bg-muted/50">
-                                <div class="flex justify-between items-center mb-2">
+                            <div class="rounded bg-muted/50 p-3">
+                                <div class="mb-2 flex items-center justify-between">
                                     <span class="text-sm font-medium">Duración del Período</span>
                                     <span class="font-bold">{{ periodDays }} días</span>
                                 </div>
-                                <p class="text-xs text-muted-foreground">
-                                    Flujo diario promedio: {{ formatCurrency(Math.abs(dailyAverage.net)) }}
-                                </p>
+                                <p class="text-xs text-muted-foreground">Flujo diario promedio: {{ formatCurrency(Math.abs(dailyAverage.net)) }}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -547,14 +547,17 @@ const dailyAverage = computed(() => {
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-3">
-                            <div v-for="account in report.cash_accounts" :key="account.account.id"
-                                 class="flex justify-between items-center p-2 rounded bg-muted/50">
+                            <div
+                                v-for="account in report.cash_accounts"
+                                :key="account.account.id"
+                                class="flex items-center justify-between rounded bg-muted/50 p-2"
+                            >
                                 <div>
-                                    <div class="font-medium text-sm">{{ account.account.name }}</div>
+                                    <div class="text-sm font-medium">{{ account.account.name }}</div>
                                     <div class="text-xs text-muted-foreground">{{ account.account.code }}</div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="font-bold text-sm">{{ formatCurrency(account.closing_balance) }}</div>
+                                    <div class="text-sm font-bold">{{ formatCurrency(account.closing_balance) }}</div>
                                     <div class="text-xs" :class="account.net_change >= 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ account.net_change >= 0 ? '+' : '' }}{{ formatCurrency(account.net_change) }}
                                     </div>

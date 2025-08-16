@@ -68,7 +68,6 @@ const customFilters = ref({
     department: props.filters?.department || 'all',
 });
 
-
 const uniqueDepartments = computed(() => {
     return props.departments || {};
 });
@@ -102,7 +101,7 @@ const filteredData = computed(() => {
     }
 
     if (customFilters.value.role !== 'all') {
-        filtered = filtered.filter((user) => user.roles.some(role => role.name === customFilters.value.role));
+        filtered = filtered.filter((user) => user.roles.some((role) => role.name === customFilters.value.role));
     }
 
     if (customFilters.value.status !== 'all') {
@@ -164,13 +163,13 @@ const columns = [
             const user = row.original;
             const role = user.roles[0];
             if (!role) return h('div', { class: 'text-muted-foreground text-sm' }, 'Sin rol');
-            
+
             const roleLabels: Record<string, string> = {
                 superadmin: 'Super Admin',
                 admin_conjunto: 'Administrador',
                 consejo: 'Consejo',
             };
-            
+
             return h(
                 'span',
                 {

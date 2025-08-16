@@ -15,12 +15,12 @@ class ResidentAnnouncementController extends Controller
     {
         $userId = Auth::id();
         $user = Auth::user();
-        
+
         // Get user's apartment if they are a resident
         $apartment = $user->apartment;
-        
+
         $query = Announcement::with(['createdBy']);
-        
+
         if ($apartment) {
             // Filter announcements based on user's apartment
             $query->forResident($apartment->id);
@@ -123,9 +123,9 @@ class ResidentAnnouncementController extends Controller
         $apartment = $user->apartment;
 
         // Check if user can see this announcement
-        if ($apartment && !$announcement->isVisibleToApartment($apartment->id)) {
+        if ($apartment && ! $announcement->isVisibleToApartment($apartment->id)) {
             abort(404, 'Anuncio no disponible');
-        } elseif (!$apartment && $announcement->target_scope !== 'general') {
+        } elseif (! $apartment && $announcement->target_scope !== 'general') {
             abort(404, 'Anuncio no disponible');
         }
         $announcement->load(['createdBy']);

@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Edit, Mail, Phone, User, UserCog, Users, Calendar } from 'lucide-vue-next';
+import { Calendar, Edit, Mail, Phone, User, UserCog, Users } from 'lucide-vue-next';
 
 export interface User {
     id: number;
@@ -158,12 +158,7 @@ const getRoleBadgeVariant = (roleName: string) => {
                         <div class="space-y-2">
                             <p class="text-sm text-muted-foreground">Rol asignado:</p>
                             <div v-if="user.roles.length > 0">
-                                <Badge 
-                                    v-for="role in user.roles" 
-                                    :key="role.id"
-                                    :variant="getRoleBadgeVariant(role.name)"
-                                    class="mb-1 mr-1"
-                                >
+                                <Badge v-for="role in user.roles" :key="role.id" :variant="getRoleBadgeVariant(role.name)" class="mr-1 mb-1">
                                     {{ roleLabels[role.name] || role.name }}
                                 </Badge>
                             </div>
@@ -215,17 +210,15 @@ const getRoleBadgeVariant = (roleName: string) => {
             <Card>
                 <CardHeader>
                     <CardTitle>Actividad Reciente</CardTitle>
-                    <CardDescription>
-                        Información sobre las actividades y accesos recientes del usuario
-                    </CardDescription>
+                    <CardDescription> Información sobre las actividades y accesos recientes del usuario </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="flex flex-col items-center justify-center py-12 text-center">
                         <Users class="mb-4 h-16 w-16 text-muted-foreground" />
                         <h3 class="mb-2 text-lg font-semibold">Estadísticas de Actividad</h3>
                         <p class="mb-6 max-w-md text-muted-foreground">
-                            Las estadísticas de actividad del usuario estarán disponibles próximamente.
-                            Aquí podrás ver el historial de accesos, últimas acciones realizadas y más.
+                            Las estadísticas de actividad del usuario estarán disponibles próximamente. Aquí podrás ver el historial de accesos,
+                            últimas acciones realizadas y más.
                         </p>
                     </div>
                 </CardContent>

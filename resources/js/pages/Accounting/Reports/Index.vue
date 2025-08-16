@@ -36,11 +36,11 @@ const navigateToReport = (reportKey: string) => {
     const today = new Date().toISOString().split('T')[0];
     const currentMonth = new Date();
     const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString().split('T')[0];
-    
+
     // Build URL with appropriate default parameters based on report type
     let url = `/accounting/reports/${reportKey}`;
     const params = new URLSearchParams();
-    
+
     switch (reportKey) {
         case 'balance-sheet':
         case 'trial-balance':
@@ -61,11 +61,11 @@ const navigateToReport = (reportKey: string) => {
             params.append('period_year', currentMonth.getFullYear().toString());
             break;
     }
-    
+
     if (params.toString()) {
         url += `?${params.toString()}`;
     }
-    
+
     router.visit(url);
 };
 
@@ -93,9 +93,7 @@ const breadcrumbs = [
             <!-- Header -->
             <div class="flex flex-col space-y-2">
                 <h1 class="text-3xl font-bold tracking-tight">Reportes Contables</h1>
-                <p class="text-muted-foreground">
-                    Accede a todos los reportes financieros y contables de la propiedad horizontal
-                </p>
+                <p class="text-muted-foreground">Accede a todos los reportes financieros y contables de la propiedad horizontal</p>
             </div>
 
             <!-- Reports Grid -->
@@ -103,7 +101,7 @@ const breadcrumbs = [
                 <Card
                     v-for="(report, key) in props.availableReports"
                     :key="key"
-                    class="cursor-pointer transition-all hover:shadow-lg hover:scale-105"
+                    class="cursor-pointer transition-all hover:scale-105 hover:shadow-lg"
                     @click="navigateToReport(key)"
                 >
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -116,7 +114,7 @@ const breadcrumbs = [
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Button variant="ghost" class="w-full justify-start p-0 h-auto font-normal">
+                        <Button variant="ghost" class="h-auto w-full justify-start p-0 font-normal">
                             <span class="text-sm text-muted-foreground">Ver reporte →</span>
                         </Button>
                     </CardContent>
@@ -127,7 +125,7 @@ const breadcrumbs = [
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-lg flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-lg">
                             <FileText class="h-5 w-5" />
                             Reportes Básicos
                         </CardTitle>
@@ -141,7 +139,7 @@ const breadcrumbs = [
 
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-lg flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-lg">
                             <TrendingUp class="h-5 w-5" />
                             Análisis Financiero
                         </CardTitle>

@@ -63,7 +63,7 @@ class UserController extends Controller
             ->pluck('department', 'department');
 
         $template = request()->routeIs('settings.users.*') ? 'settings/Users' : 'users/Index';
-        
+
         return Inertia::render($template, [
             'users' => $users,
             'roles' => $roles,

@@ -94,21 +94,23 @@ const exportReport = () => {
 };
 
 const currentRatio = computed(() => {
-    const currentAssets = props.report.assets.filter(account => 
-        account.code.startsWith('11') // Activos corrientes
-    ).reduce((sum, account) => sum + account.balance, 0);
-    
-    const currentLiabilities = props.report.liabilities.filter(account => 
-        account.code.startsWith('21') // Pasivos corrientes
-    ).reduce((sum, account) => sum + account.balance, 0);
-    
+    const currentAssets = props.report.assets
+        .filter(
+            (account) => account.code.startsWith('11'), // Activos corrientes
+        )
+        .reduce((sum, account) => sum + account.balance, 0);
+
+    const currentLiabilities = props.report.liabilities
+        .filter(
+            (account) => account.code.startsWith('21'), // Pasivos corrientes
+        )
+        .reduce((sum, account) => sum + account.balance, 0);
+
     return currentLiabilities > 0 ? currentAssets / currentLiabilities : 0;
 });
 
 const debtToEquityRatio = computed(() => {
-    return props.report.total_equity > 0 
-        ? props.report.total_liabilities / props.report.total_equity 
-        : 0;
+    return props.report.total_equity > 0 ? props.report.total_liabilities / props.report.total_equity : 0;
 });
 </script>
 
@@ -121,11 +123,9 @@ const debtToEquityRatio = computed(() => {
             <div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Balance General</h1>
-                    <p class="text-muted-foreground">
-                        Estado de Situación Financiera al {{ formatDate(report.as_of_date) }}
-                    </p>
+                    <p class="text-muted-foreground">Estado de Situación Financiera al {{ formatDate(report.as_of_date) }}</p>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <Button variant="outline" @click="showFilters = !showFilters">
                         <Filter class="mr-2 h-4 w-4" />
@@ -141,7 +141,7 @@ const debtToEquityRatio = computed(() => {
             <!-- Filters Panel -->
             <Card v-if="showFilters" class="border-dashed">
                 <CardHeader>
-                    <CardTitle class="text-lg flex items-center gap-2">
+                    <CardTitle class="flex items-center gap-2 text-lg">
                         <Calendar class="h-5 w-5" />
                         Filtros de Fecha
                     </CardTitle>
@@ -150,20 +150,12 @@ const debtToEquityRatio = computed(() => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label for="as_of_date">Fecha de Corte</Label>
-                            <Input
-                                id="as_of_date"
-                                type="date"
-                                v-model="form.as_of_date"
-                            />
+                            <Input id="as_of_date" type="date" v-model="form.as_of_date" />
                         </div>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <Button variant="outline" @click="showFilters = false">
-                            Cancelar
-                        </Button>
-                        <Button @click="applyFilters">
-                            Aplicar Filtros
-                        </Button>
+                        <Button variant="outline" @click="showFilters = false"> Cancelar </Button>
+                        <Button @click="applyFilters"> Aplicar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -174,8 +166,8 @@ const debtToEquityRatio = computed(() => {
                     <div class="flex items-center gap-2 text-amber-800">
                         <AlertTriangle class="h-5 w-5" />
                         <p class="font-medium">
-                            Advertencia: El balance no está balanceado. 
-                            Diferencia: {{ formatCurrency(Math.abs(report.total_assets - report.total_liabilities_equity)) }}
+                            Advertencia: El balance no está balanceado. Diferencia:
+                            {{ formatCurrency(Math.abs(report.total_assets - report.total_liabilities_equity)) }}
                         </p>
                     </div>
                 </CardContent>
@@ -194,7 +186,7 @@ const debtToEquityRatio = computed(() => {
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Endeudamiento</CardTitle>
@@ -202,11 +194,17 @@ const debtToEquityRatio = computed(() => {
                     <CardContent>
                         <div class="text-2xl font-bold">{{ debtToEquityRatio.toFixed(2) }}</div>
                         <p class="text-xs text-muted-foreground">
-                            {{ debtToEquityRatio <= 0.5 ? 'Bajo endeudamiento' : debtToEquityRatio <= 1 ? 'Endeudamiento moderado' : 'Alto endeudamiento' }}
+                            {{
+                                debtToEquityRatio <= 0.5
+                                    ? 'Bajo endeudamiento'
+                                    : debtToEquityRatio <= 1
+                                      ? 'Endeudamiento moderado'
+                                      : 'Alto endeudamiento'
+                            }}
                         </p>
                     </CardContent>
                 </Card>
-                
+
                 <Card>
                     <CardHeader class="pb-3">
                         <CardTitle class="text-sm font-medium">Balance</CardTitle>
@@ -227,7 +225,7 @@ const debtToEquityRatio = computed(() => {
                 <!-- Assets -->
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-xl flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-xl">
                             <FileText class="h-5 w-5" />
                             Activos
                         </CardTitle>
@@ -251,7 +249,7 @@ const debtToEquityRatio = computed(() => {
                                 </TableRow>
                                 <TableRow class="border-t-2 bg-muted/50">
                                     <TableCell colspan="2" class="font-bold">Total Activos</TableCell>
-                                    <TableCell class="text-right font-bold font-mono">
+                                    <TableCell class="text-right font-mono font-bold">
                                         {{ formatCurrency(report.total_assets) }}
                                     </TableCell>
                                 </TableRow>
@@ -263,7 +261,7 @@ const debtToEquityRatio = computed(() => {
                 <!-- Liabilities & Equity -->
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-xl flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-xl">
                             <FileText class="h-5 w-5" />
                             Pasivos y Patrimonio
                         </CardTitle>
@@ -271,7 +269,7 @@ const debtToEquityRatio = computed(() => {
                     <CardContent class="space-y-6">
                         <!-- Liabilities -->
                         <div>
-                            <h3 class="font-semibold text-lg mb-3">Pasivos</h3>
+                            <h3 class="mb-3 text-lg font-semibold">Pasivos</h3>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -290,7 +288,7 @@ const debtToEquityRatio = computed(() => {
                                     </TableRow>
                                     <TableRow class="border-t bg-muted/30">
                                         <TableCell colspan="2" class="font-semibold">Total Pasivos</TableCell>
-                                        <TableCell class="text-right font-semibold font-mono">
+                                        <TableCell class="text-right font-mono font-semibold">
                                             {{ formatCurrency(report.total_liabilities) }}
                                         </TableCell>
                                     </TableRow>
@@ -302,7 +300,7 @@ const debtToEquityRatio = computed(() => {
 
                         <!-- Equity -->
                         <div>
-                            <h3 class="font-semibold text-lg mb-3">Patrimonio</h3>
+                            <h3 class="mb-3 text-lg font-semibold">Patrimonio</h3>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -321,13 +319,13 @@ const debtToEquityRatio = computed(() => {
                                     </TableRow>
                                     <TableRow class="border-t bg-muted/30">
                                         <TableCell colspan="2" class="font-semibold">Total Patrimonio</TableCell>
-                                        <TableCell class="text-right font-semibold font-mono">
+                                        <TableCell class="text-right font-mono font-semibold">
                                             {{ formatCurrency(report.total_equity) }}
                                         </TableCell>
                                     </TableRow>
                                     <TableRow class="border-t-2 bg-primary/10">
                                         <TableCell colspan="2" class="font-bold">Total Pasivos y Patrimonio</TableCell>
-                                        <TableCell class="text-right font-bold font-mono">
+                                        <TableCell class="text-right font-mono font-bold">
                                             {{ formatCurrency(report.total_liabilities_equity) }}
                                         </TableCell>
                                     </TableRow>

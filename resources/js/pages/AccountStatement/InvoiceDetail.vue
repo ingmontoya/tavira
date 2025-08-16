@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
 import Icon from '@/components/Icon.vue';
-import { Head, Link } from '@inertiajs/vue3';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps<{
     invoice: {
@@ -91,14 +91,11 @@ const downloadInvoice = () => {
         <div class="mx-auto max-w-4xl space-y-6 p-6">
             <!-- Header Actions -->
             <div class="flex items-center justify-between">
-                <Link
-                    :href="route('account-statement.index')"
-                    class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-                >
+                <Link :href="route('account-statement.index')" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
                     <Icon name="arrow-left" class="mr-2 h-4 w-4" />
                     Volver al Estado de Cuenta
                 </Link>
-                
+
                 <div class="flex space-x-3">
                     <Button @click="printInvoice" variant="outline" size="sm">
                         <Icon name="printer" class="mr-2 h-4 w-4" />
@@ -210,29 +207,29 @@ const downloadInvoice = () => {
                                 <span>Subtotal:</span>
                                 <span class="font-medium">{{ formatCurrency(invoice.subtotal) }}</span>
                             </div>
-                            
+
                             <div v-if="invoice.early_discount > 0" class="flex justify-between text-green-600">
                                 <span>Descuento por pronto pago:</span>
                                 <span class="font-medium">-{{ formatCurrency(invoice.early_discount) }}</span>
                             </div>
-                            
+
                             <div v-if="invoice.late_fees > 0" class="flex justify-between text-red-600">
                                 <span>Intereses de mora:</span>
                                 <span class="font-medium">+{{ formatCurrency(invoice.late_fees) }}</span>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div class="flex justify-between text-lg font-bold">
                                 <span>Total a Pagar:</span>
                                 <span>{{ formatCurrency(invoice.total_amount) }}</span>
                             </div>
-                            
+
                             <div v-if="invoice.paid_amount > 0" class="flex justify-between text-green-600">
                                 <span>Total Pagado:</span>
                                 <span class="font-medium">{{ formatCurrency(invoice.paid_amount) }}</span>
                             </div>
-                            
+
                             <div v-if="invoice.balance_amount > 0" class="flex justify-between text-lg font-bold text-red-600">
                                 <span>Saldo Pendiente:</span>
                                 <span>{{ formatCurrency(invoice.balance_amount) }}</span>
@@ -289,19 +286,19 @@ const downloadInvoice = () => {
     body * {
         visibility: hidden;
     }
-    
+
     .print\\:shadow-none,
     .print\\:shadow-none * {
         visibility: visible;
     }
-    
+
     .print\\:shadow-none {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
     }
-    
+
     @page {
         margin: 1cm;
     }

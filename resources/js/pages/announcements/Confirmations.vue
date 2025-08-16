@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import {
-    CheckCircle2,
-    Clock,
-    Eye,
-    User,
-    Users,
-    ArrowLeft,
-    Calendar,
-    XCircle
-} from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, CheckCircle2, Clock, Eye, User, Users, XCircle } from 'lucide-vue-next';
 
 interface Announcement {
     id: number;
@@ -65,7 +56,7 @@ const formatDate = (date: string) => {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -81,16 +72,16 @@ const getStatusBadge = (confirmation: Confirmation) => {
 
 const calculateStats = () => {
     const total = props.confirmations.total;
-    const confirmed = props.confirmations.data.filter(c => c.confirmed_at).length;
-    const read = props.confirmations.data.filter(c => c.read_at).length;
-    
+    const confirmed = props.confirmations.data.filter((c) => c.confirmed_at).length;
+    const read = props.confirmations.data.filter((c) => c.read_at).length;
+
     return {
         total,
         confirmed,
         read,
         pending: total - read,
         confirmedPercentage: total > 0 ? Math.round((confirmed / total) * 100) : 0,
-        readPercentage: total > 0 ? Math.round((read / total) * 100) : 0
+        readPercentage: total > 0 ? Math.round((read / total) * 100) : 0,
     };
 };
 
@@ -100,7 +91,7 @@ const breadcrumbs = [
     { title: 'Comunicación', href: '#' },
     { title: 'Anuncios', href: route('announcements.index') },
     { title: props.announcement.title, href: route('announcements.show', props.announcement.id) },
-    { title: 'Confirmaciones', href: route('announcements.confirmations', props.announcement.id) }
+    { title: 'Confirmaciones', href: route('announcements.confirmations', props.announcement.id) },
 ];
 </script>
 
@@ -112,24 +103,24 @@ const breadcrumbs = [
             <!-- Header -->
             <div class="flex items-start justify-between">
                 <div>
-                    <div class="flex items-center gap-3 mb-2">
+                    <div class="mb-2 flex items-center gap-3">
                         <Button variant="ghost" size="sm" as-child>
                             <Link :href="route('announcements.show', announcement.id)">
-                                <ArrowLeft class="h-4 w-4 mr-2" />
+                                <ArrowLeft class="mr-2 h-4 w-4" />
                                 Volver al anuncio
                             </Link>
                         </Button>
                     </div>
                     <h1 class="text-2xl font-semibold text-gray-900">Confirmaciones de Lectura</h1>
-                    <p class="text-gray-600 mt-1">{{ announcement.title }}</p>
+                    <p class="mt-1 text-gray-600">{{ announcement.title }}</p>
                 </div>
             </div>
 
             <!-- Stats Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <Users class="h-4 w-4" />
                             Total Usuarios
                         </CardTitle>
@@ -141,7 +132,7 @@ const breadcrumbs = [
 
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <Eye class="h-4 w-4 text-blue-600" />
                             Han Leído
                         </CardTitle>
@@ -154,7 +145,7 @@ const breadcrumbs = [
 
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <CheckCircle2 class="h-4 w-4 text-green-600" />
                             Han Confirmado
                         </CardTitle>
@@ -167,16 +158,14 @@ const breadcrumbs = [
 
                 <Card>
                     <CardHeader class="pb-3">
-                        <CardTitle class="text-sm font-medium flex items-center gap-2">
+                        <CardTitle class="flex items-center gap-2 text-sm font-medium">
                             <Clock class="h-4 w-4 text-orange-600" />
                             Pendientes
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold text-orange-600">{{ stats.pending }}</div>
-                        <div class="text-sm text-gray-600">
-                            {{ stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0 }}%
-                        </div>
+                        <div class="text-sm text-gray-600">{{ stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0 }}%</div>
                     </CardContent>
                 </Card>
             </div>
@@ -189,16 +178,16 @@ const breadcrumbs = [
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <div>
-                        <div class="flex justify-between text-sm mb-2">
+                        <div class="mb-2 flex justify-between text-sm">
                             <span class="font-medium">Porcentaje de Lectura</span>
-                            <span class="text-blue-600 font-semibold">{{ stats.readPercentage }}%</span>
+                            <span class="font-semibold text-blue-600">{{ stats.readPercentage }}%</span>
                         </div>
                         <Progress :value="stats.readPercentage" class="h-2" />
                     </div>
                     <div>
-                        <div class="flex justify-between text-sm mb-2">
+                        <div class="mb-2 flex justify-between text-sm">
                             <span class="font-medium">Porcentaje de Confirmación</span>
-                            <span class="text-green-600 font-semibold">{{ stats.confirmedPercentage }}%</span>
+                            <span class="font-semibold text-green-600">{{ stats.confirmedPercentage }}%</span>
                         </div>
                         <Progress :value="stats.confirmedPercentage" class="h-2" />
                     </div>
@@ -215,14 +204,14 @@ const breadcrumbs = [
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
-                        <div 
-                            v-for="confirmation in confirmations.data" 
+                        <div
+                            v-for="confirmation in confirmations.data"
                             :key="confirmation.id"
-                            class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                            class="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50"
                         >
                             <div class="flex items-center gap-4">
                                 <div class="flex-shrink-0">
-                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
                                         <User class="h-5 w-5 text-gray-600" />
                                     </div>
                                 </div>
@@ -235,28 +224,25 @@ const breadcrumbs = [
                             <div class="flex items-center gap-4">
                                 <div class="text-right">
                                     <div v-if="confirmation.confirmed_at" class="text-sm">
-                                        <div class="text-green-600 font-medium">Confirmado</div>
-                                        <div class="text-gray-500 flex items-center gap-1">
+                                        <div class="font-medium text-green-600">Confirmado</div>
+                                        <div class="flex items-center gap-1 text-gray-500">
                                             <Calendar class="h-3 w-3" />
                                             {{ formatDate(confirmation.confirmed_at) }}
                                         </div>
                                     </div>
                                     <div v-else-if="confirmation.read_at" class="text-sm">
-                                        <div class="text-blue-600 font-medium">Leído</div>
-                                        <div class="text-gray-500 flex items-center gap-1">
+                                        <div class="font-medium text-blue-600">Leído</div>
+                                        <div class="flex items-center gap-1 text-gray-500">
                                             <Calendar class="h-3 w-3" />
                                             {{ formatDate(confirmation.read_at) }}
                                         </div>
                                     </div>
                                     <div v-else class="text-sm">
-                                        <div class="text-orange-600 font-medium">Pendiente</div>
+                                        <div class="font-medium text-orange-600">Pendiente</div>
                                         <div class="text-gray-500">Sin lectura</div>
                                     </div>
                                 </div>
-                                <Badge 
-                                    :variant="getStatusBadge(confirmation).variant"
-                                    class="flex items-center gap-1"
-                                >
+                                <Badge :variant="getStatusBadge(confirmation).variant" class="flex items-center gap-1">
                                     <component :is="getStatusBadge(confirmation).icon" class="h-3 w-3" />
                                     {{ getStatusBadge(confirmation).text }}
                                 </Badge>
@@ -264,12 +250,9 @@ const breadcrumbs = [
                         </div>
 
                         <!-- Empty State -->
-                        <div 
-                            v-if="confirmations.data.length === 0"
-                            class="text-center py-12"
-                        >
-                            <XCircle class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay confirmaciones</h3>
+                        <div v-if="confirmations.data.length === 0" class="py-12 text-center">
+                            <XCircle class="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                            <h3 class="mb-2 text-lg font-medium text-gray-900">No hay confirmaciones</h3>
                             <p class="text-gray-600">Aún no hay usuarios que hayan interactuado con este anuncio.</p>
                         </div>
                     </div>
@@ -279,37 +262,29 @@ const breadcrumbs = [
             <!-- Pagination -->
             <div v-if="confirmations.last_page > 1" class="flex justify-center">
                 <div class="flex items-center gap-2">
-                    <Button 
-                        variant="outline" 
-                        size="sm"
-                        :disabled="confirmations.current_page === 1"
-                        as-child
-                    >
-                        <Link 
-                            :href="route('announcements.confirmations', { 
-                                announcement: announcement.id, 
-                                page: confirmations.current_page - 1 
-                            })"
+                    <Button variant="outline" size="sm" :disabled="confirmations.current_page === 1" as-child>
+                        <Link
+                            :href="
+                                route('announcements.confirmations', {
+                                    announcement: announcement.id,
+                                    page: confirmations.current_page - 1,
+                                })
+                            "
                         >
                             Anterior
                         </Link>
                     </Button>
-                    
-                    <span class="text-sm text-gray-600 px-4">
-                        Página {{ confirmations.current_page }} de {{ confirmations.last_page }}
-                    </span>
-                    
-                    <Button 
-                        variant="outline" 
-                        size="sm"
-                        :disabled="confirmations.current_page === confirmations.last_page"
-                        as-child
-                    >
-                        <Link 
-                            :href="route('announcements.confirmations', { 
-                                announcement: announcement.id, 
-                                page: confirmations.current_page + 1 
-                            })"
+
+                    <span class="px-4 text-sm text-gray-600"> Página {{ confirmations.current_page }} de {{ confirmations.last_page }} </span>
+
+                    <Button variant="outline" size="sm" :disabled="confirmations.current_page === confirmations.last_page" as-child>
+                        <Link
+                            :href="
+                                route('announcements.confirmations', {
+                                    announcement: announcement.id,
+                                    page: confirmations.current_page + 1,
+                                })
+                            "
                         >
                             Siguiente
                         </Link>

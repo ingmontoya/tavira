@@ -15,7 +15,7 @@ class EmailSettingsSeeder extends Seeder
         $emailSettings = app(EmailSettings::class);
 
         // Only initialize if not already configured
-        if (!$emailSettings->isConfigured()) {
+        if (! $emailSettings->isConfigured()) {
             // Set default SMTP settings for Mailpit (development)
             $emailSettings->smtp_host = 'localhost';
             $emailSettings->smtp_port = 1025;
@@ -28,7 +28,7 @@ class EmailSettingsSeeder extends Seeder
             $emailSettings->admin_email_address = '';
             $emailSettings->admin_email_name = 'Administración';
             $emailSettings->admin_email_signature = "Administración del Conjunto\n\nEste es un correo automático, por favor no responder.";
-            
+
             $emailSettings->council_email_address = '';
             $emailSettings->council_email_name = 'Concejo de Administración';
             $emailSettings->council_email_signature = "Concejo de Administración\n\nEste correo es enviado por el concejo de administración del conjunto.";

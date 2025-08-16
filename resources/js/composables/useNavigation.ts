@@ -29,6 +29,7 @@ import {
     UserCog,
     Users,
     Wallet,
+    Wrench,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -50,20 +51,13 @@ export function useNavigation() {
     // Check if navigation should be enabled (conjunto configured OR accessing allowed routes)
     const isNavigationEnabled = (item: any): boolean => {
         // Always allow dashboard and configuration routes
-        const alwaysAllowedRoutes = [
-            '/dashboard',
-            '/conjunto-config',
-            '/settings',
-            '/profile',
-            '/support',
-            '/docs'
-        ];
-        
+        const alwaysAllowedRoutes = ['/dashboard', '/conjunto-config', '/settings', '/profile', '/support', '/docs'];
+
         // Check if the item href matches any always allowed route
-        if (item.href && alwaysAllowedRoutes.some(route => item.href.startsWith(route))) {
+        if (item.href && alwaysAllowedRoutes.some((route) => item.href.startsWith(route))) {
             return true;
         }
-        
+
         // For other routes, require conjunto to be configured
         return conjuntoConfigured.value.exists;
     };
@@ -79,7 +73,11 @@ export function useNavigation() {
         {
             title: 'Administración',
             icon: Users,
-            visible: hasPermission('view_residents') || hasPermission('view_apartments') || hasPermission('manage_invitations') || hasPermission('view_conjunto_config'),
+            visible:
+                hasPermission('view_residents') ||
+                hasPermission('view_apartments') ||
+                hasPermission('manage_invitations') ||
+                hasPermission('view_conjunto_config'),
             items: [
                 {
                     title: 'Residentes',
@@ -108,6 +106,44 @@ export function useNavigation() {
                     icon: Building2,
                     tourId: 'nav-conjunto-config',
                     visible: hasPermission('view_conjunto_config'),
+                },
+                {
+                    title: 'Mantenimiento',
+                    icon: Wrench,
+                    visible:
+                        hasPermission('view_maintenance_requests') ||
+                        hasPermission('view_maintenance_categories') ||
+                        hasPermission('view_maintenance_staff'),
+                    items: [
+                        {
+                            title: 'Solicitudes',
+                            href: '/maintenance-requests',
+                            icon: Wrench,
+                            tourId: 'nav-maintenance-requests',
+                            visible: hasPermission('view_maintenance_requests'),
+                        },
+                        {
+                            title: 'Categorías',
+                            href: '/maintenance-categories',
+                            icon: Settings,
+                            tourId: 'nav-maintenance-categories',
+                            visible: hasPermission('view_maintenance_categories'),
+                        },
+                        {
+                            title: 'Personal',
+                            href: '/maintenance-staff',
+                            icon: UserCog,
+                            tourId: 'nav-maintenance-staff',
+                            visible: hasPermission('view_maintenance_staff'),
+                        },
+                        {
+                            title: 'Cronograma',
+                            href: '/maintenance-requests-calendar',
+                            icon: Clock,
+                            tourId: 'nav-maintenance-calendar',
+                            visible: hasPermission('view_maintenance_requests'),
+                        },
+                    ],
                 },
             ],
         },
@@ -276,7 +312,17 @@ export function useNavigation() {
         {
             title: 'Comunicación',
             icon: MessageSquare,
-            visible: hasPermission('view_correspondence') || hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors') || hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates'),
+            visible:
+                hasPermission('view_correspondence') ||
+                hasPermission('view_announcements') ||
+                hasPermission('invite_visitors') ||
+                hasPermission('receive_notifications') ||
+                hasPermission('send_pqrs') ||
+                hasPermission('send_messages_to_admin') ||
+                hasPermission('manage_visitors') ||
+                hasPermission('view_admin_email') ||
+                hasPermission('view_council_email') ||
+                hasPermission('manage_email_templates'),
             items: [
                 {
                     title: 'Correspondencia',
@@ -462,13 +508,13 @@ export function useNavigation() {
     const filterVisibleItems = (items: NavItem[]): NavItem[] => {
         return items.filter((item) => {
             if (item.visible === false) return false;
-            
+
             // Check if navigation is enabled for this item
             if (!isNavigationEnabled(item)) {
                 // Add disabled property for styling purposes
                 item.disabled = true;
             }
-            
+
             if (item.items) {
                 item.items = filterVisibleItems(item.items);
                 // Show parent if any children are visible

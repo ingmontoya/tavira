@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
-import { Head, Link } from '@inertiajs/vue3';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Copy, Edit, Eye, Mail, MoreHorizontal, Plus, Power, PowerOff, Star, StarOff, Trash2 } from 'lucide-vue-next';
 import type { AppPageProps, EmailTemplate, EmailTemplateResponse } from '@/types';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Copy, Edit, Eye, Mail, MoreHorizontal, Plus, Power, PowerOff, Star, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Props extends /* @vue-ignore */ AppPageProps {
     templates: EmailTemplateResponse;
@@ -39,25 +47,29 @@ const { success, error } = useToast();
 // Computed
 const typeOptions = computed(() => [
     { value: 'all', label: 'Todos los tipos' },
-    ...Object.entries(props.types).map(([value, label]) => ({ value, label }))
+    ...Object.entries(props.types).map(([value, label]) => ({ value, label })),
 ]);
 
 const statusOptions = [
     { value: 'all', label: 'Todos los estados' },
     { value: 'active', label: 'Activas' },
-    { value: 'inactive', label: 'Inactivas' }
+    { value: 'inactive', label: 'Inactivas' },
 ];
 
 // Methods
 const search = () => {
-    router.get(route('email-templates.index'), {
-        search: searchQuery.value || undefined,
-        type: (selectedType.value && selectedType.value !== 'all') ? selectedType.value : undefined,
-        status: (selectedStatus.value && selectedStatus.value !== 'all') ? selectedStatus.value : undefined,
-    }, {
-        preserveState: true,
-        replace: true,
-    });
+    router.get(
+        route('email-templates.index'),
+        {
+            search: searchQuery.value || undefined,
+            type: selectedType.value && selectedType.value !== 'all' ? selectedType.value : undefined,
+            status: selectedStatus.value && selectedStatus.value !== 'all' ? selectedStatus.value : undefined,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        },
+    );
 };
 
 const clearFilters = () => {
@@ -68,28 +80,40 @@ const clearFilters = () => {
 };
 
 const setAsDefault = (template: EmailTemplate) => {
-    router.post(route('email-templates.set-default', template.id), {}, {
-        onSuccess: () => {
-            success('Plantilla marcada como predeterminada.', 'Éxito');
+    router.post(
+        route('email-templates.set-default', template.id),
+        {},
+        {
+            onSuccess: () => {
+                success('Plantilla marcada como predeterminada.', 'Éxito');
+            },
         },
-    });
+    );
 };
 
 const toggleStatus = (template: EmailTemplate) => {
-    router.post(route('email-templates.toggle-status', template.id), {}, {
-        onSuccess: () => {
-            const status = template.is_active ? 'desactivada' : 'activada';
-            success(`Plantilla ${status} exitosamente.`, 'Éxito');
+    router.post(
+        route('email-templates.toggle-status', template.id),
+        {},
+        {
+            onSuccess: () => {
+                const status = template.is_active ? 'desactivada' : 'activada';
+                success(`Plantilla ${status} exitosamente.`, 'Éxito');
+            },
         },
-    });
+    );
 };
 
 const duplicateTemplate = (template: EmailTemplate) => {
-    router.post(route('email-templates.duplicate', template.id), {}, {
-        onSuccess: () => {
-            success('Plantilla duplicada exitosamente.', 'Éxito');
+    router.post(
+        route('email-templates.duplicate', template.id),
+        {},
+        {
+            onSuccess: () => {
+                success('Plantilla duplicada exitosamente.', 'Éxito');
+            },
         },
-    });
+    );
 };
 
 const confirmDelete = (template: EmailTemplate) => {
@@ -134,9 +158,7 @@ const getTypeColor = (type: string) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">Plantillas de Email</h1>
-                    <p class="text-muted-foreground">
-                        Gestiona las plantillas para los envíos de correo electrónico
-                    </p>
+                    <p class="text-muted-foreground">Gestiona las plantillas para los envíos de correo electrónico</p>
                 </div>
                 <Link :href="route('email-templates.create')">
                     <Button>
@@ -152,13 +174,9 @@ const getTypeColor = (type: string) => {
                     <CardTitle class="text-lg">Filtros</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                         <div>
-                            <Input
-                                v-model="searchQuery"
-                                placeholder="Buscar plantillas..."
-                                @keyup.enter="search"
-                            />
+                            <Input v-model="searchQuery" placeholder="Buscar plantillas..." @keyup.enter="search" />
                         </div>
                         <div>
                             <Select v-model="selectedType" @update:model-value="search">
@@ -166,11 +184,7 @@ const getTypeColor = (type: string) => {
                                     <SelectValue placeholder="Tipo" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem
-                                        v-for="option in typeOptions"
-                                        :key="option.value"
-                                        :value="option.value"
-                                    >
+                                    <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
                                         {{ option.label }}
                                     </SelectItem>
                                 </SelectContent>
@@ -182,45 +196,30 @@ const getTypeColor = (type: string) => {
                                     <SelectValue placeholder="Estado" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem
-                                        v-for="option in statusOptions"
-                                        :key="option.value"
-                                        :value="option.value"
-                                    >
+                                    <SelectItem v-for="option in statusOptions" :key="option.value" :value="option.value">
                                         {{ option.label }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div class="flex space-x-2">
-                            <Button @click="search" variant="outline" class="flex-1">
-                                Buscar
-                            </Button>
-                            <Button @click="clearFilters" variant="ghost">
-                                Limpiar
-                            </Button>
+                            <Button @click="search" variant="outline" class="flex-1"> Buscar </Button>
+                            <Button @click="clearFilters" variant="ghost"> Limpiar </Button>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
             <!-- Templates Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card
-                    v-for="template in templates.data"
-                    :key="template.id"
-                    class="hover:shadow-md transition-shadow"
-                >
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <Card v-for="template in templates.data" :key="template.id" class="transition-shadow hover:shadow-md">
                     <CardHeader class="pb-3">
                         <div class="flex items-start justify-between">
-                            <div class="space-y-1 flex-1">
-                                <CardTitle class="text-lg flex items-center space-x-2">
+                            <div class="flex-1 space-y-1">
+                                <CardTitle class="flex items-center space-x-2 text-lg">
                                     <Mail class="h-5 w-5 text-muted-foreground" />
                                     <span>{{ template.name }}</span>
-                                    <Star
-                                        v-if="template.is_default"
-                                        class="h-4 w-4 text-yellow-500 fill-current"
-                                    />
+                                    <Star v-if="template.is_default" class="h-4 w-4 fill-current text-yellow-500" />
                                 </CardTitle>
                                 <CardDescription>{{ template.description }}</CardDescription>
                             </div>
@@ -248,26 +247,16 @@ const getTypeColor = (type: string) => {
                                         Duplicar
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        v-if="!template.is_default"
-                                        @click="setAsDefault(template)"
-                                    >
+                                    <DropdownMenuItem v-if="!template.is_default" @click="setAsDefault(template)">
                                         <Star class="mr-2 h-4 w-4" />
                                         Marcar como Predeterminada
                                     </DropdownMenuItem>
                                     <DropdownMenuItem @click="toggleStatus(template)">
-                                        <component
-                                            :is="template.is_active ? PowerOff : Power"
-                                            class="mr-2 h-4 w-4"
-                                        />
+                                        <component :is="template.is_active ? PowerOff : Power" class="mr-2 h-4 w-4" />
                                         {{ template.is_active ? 'Desactivar' : 'Activar' }}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                        v-if="!template.is_default"
-                                        @click="confirmDelete(template)"
-                                        class="text-destructive"
-                                    >
+                                    <DropdownMenuItem v-if="!template.is_default" @click="confirmDelete(template)" class="text-destructive">
                                         <Trash2 class="mr-2 h-4 w-4" />
                                         Eliminar
                                     </DropdownMenuItem>
@@ -275,24 +264,27 @@ const getTypeColor = (type: string) => {
                             </DropdownMenu>
                         </div>
                     </CardHeader>
-                    
+
                     <CardContent class="space-y-3">
                         <div class="flex items-center space-x-2">
                             <Badge :class="getTypeColor(template.type)">
                                 {{ types[template.type] }}
                             </Badge>
-                            <Badge variant="outline" :class="template.is_active ? 'text-green-600 border-green-200' : 'text-gray-500 border-gray-200'">
+                            <Badge
+                                variant="outline"
+                                :class="template.is_active ? 'border-green-200 text-green-600' : 'border-gray-200 text-gray-500'"
+                            >
                                 {{ template.is_active ? 'Activa' : 'Inactiva' }}
                             </Badge>
                         </div>
 
                         <div class="space-y-2 text-sm text-muted-foreground">
                             <div>
-                                <strong>Asunto:</strong> 
+                                <strong>Asunto:</strong>
                                 <span class="text-foreground">{{ template.subject }}</span>
                             </div>
                             <div>
-                                <strong>Variables:</strong> 
+                                <strong>Variables:</strong>
                                 <span class="text-foreground">{{ template.variables.length }} disponibles</span>
                             </div>
                         </div>
@@ -316,20 +308,17 @@ const getTypeColor = (type: string) => {
             </div>
 
             <!-- Empty State -->
-            <div v-if="templates.data.length === 0" class="text-center py-12">
+            <div v-if="templates.data.length === 0" class="py-12 text-center">
                 <Mail class="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 class="mt-4 text-lg font-medium">No hay plantillas</h3>
                 <p class="mt-2 text-muted-foreground">
-                    {{ filters.search || filters.type || filters.status 
-                        ? 'No se encontraron plantillas con los filtros aplicados.' 
-                        : 'Comienza creando tu primera plantilla de email.' 
+                    {{
+                        filters.search || filters.type || filters.status
+                            ? 'No se encontraron plantillas con los filtros aplicados.'
+                            : 'Comienza creando tu primera plantilla de email.'
                     }}
                 </p>
-                <Link
-                    v-if="!filters.search && !filters.type && !filters.status"
-                    :href="route('email-templates.create')"
-                    class="mt-4 inline-flex"
-                >
+                <Link v-if="!filters.search && !filters.type && !filters.status" :href="route('email-templates.create')" class="mt-4 inline-flex">
                     <Button>
                         <Plus class="mr-2 h-4 w-4" />
                         Nueva Plantilla
@@ -343,20 +332,10 @@ const getTypeColor = (type: string) => {
                     Mostrando {{ templates.from }} a {{ templates.to }} de {{ templates.total }} resultados
                 </div>
                 <div class="flex space-x-2">
-                    <Button
-                        v-if="templates.prev_page_url"
-                        variant="outline"
-                        size="sm"
-                        @click="router.get(templates.prev_page_url)"
-                    >
+                    <Button v-if="templates.prev_page_url" variant="outline" size="sm" @click="router.get(templates.prev_page_url)">
                         Anterior
                     </Button>
-                    <Button
-                        v-if="templates.next_page_url"
-                        variant="outline"
-                        size="sm"
-                        @click="router.get(templates.next_page_url)"
-                    >
+                    <Button v-if="templates.next_page_url" variant="outline" size="sm" @click="router.get(templates.next_page_url)">
                         Siguiente
                     </Button>
                 </div>
@@ -369,8 +348,7 @@ const getTypeColor = (type: string) => {
                 <AlertDialogHeader>
                     <AlertDialogTitle>¿Eliminar plantilla?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Esta acción no se puede deshacer. La plantilla "{{ templateToDelete?.name }}" 
-                        será eliminada permanentemente.
+                        Esta acción no se puede deshacer. La plantilla "{{ templateToDelete?.name }}" será eliminada permanentemente.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -103,7 +103,7 @@ const filteredData = computed(() => {
     }
 
     if (customFilters.value.role !== 'all') {
-        filtered = filtered.filter((user) => user.roles.some(role => role.name === customFilters.value.role));
+        filtered = filtered.filter((user) => user.roles.some((role) => role.name === customFilters.value.role));
     }
 
     if (customFilters.value.status !== 'all') {
@@ -165,13 +165,13 @@ const columns = [
             const user = row.original;
             const role = user.roles[0];
             if (!role) return h('div', { class: 'text-muted-foreground text-sm' }, 'Sin rol');
-            
+
             const roleLabels: Record<string, string> = {
                 superadmin: 'Super Admin',
                 admin_conjunto: 'Administrador',
                 consejo: 'Consejo',
             };
-            
+
             return h(
                 'span',
                 {
@@ -297,10 +297,7 @@ const breadcrumbs = [
         <SettingsLayout>
             <div class="space-y-6">
                 <div class="flex items-center justify-between">
-                    <HeadingSmall 
-                        title="Gestión de Usuarios" 
-                        description="Administra los usuarios administrativos del sistema y sus roles" 
-                    />
+                    <HeadingSmall title="Gestión de Usuarios" description="Administra los usuarios administrativos del sistema y sus roles" />
                     <Button @click="router.visit('/settings/users/create')">
                         <Plus class="mr-2 h-4 w-4" />
                         Nuevo Usuario

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import ValidationErrors from '@/components/ValidationErrors.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { Save, ArrowLeft, Building2, User, Phone, MapPin, FileText, AlertTriangle } from 'lucide-vue-next';
+import { AlertTriangle, ArrowLeft, Building2, FileText, MapPin, Phone, Save, User } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 // Breadcrumbs
@@ -84,11 +84,11 @@ const submit = () => {
     if (formData.tax_regime === 'ninguno') {
         formData.tax_regime = '';
     }
-    
+
     form.transform((_) => formData).put(`/suppliers/${props.supplier.id}`, {
         onSuccess: () => {
             // Will redirect to show page
-        }
+        },
     });
 };
 
@@ -120,9 +120,26 @@ const taxRegimes = [
 
 // Major Colombian cities
 const colombianCities = [
-    'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena', 'Cúcuta', 'Soledad', 'Ibagué',
-    'Bucaramanga', 'Soacha', 'Santa Marta', 'Villavicencio', 'Valledupar', 'Pereira',
-    'Montería', 'Manizales', 'Pasto', 'Neiva', 'Palmira', 'Armenia'
+    'Bogotá',
+    'Medellín',
+    'Cali',
+    'Barranquilla',
+    'Cartagena',
+    'Cúcuta',
+    'Soledad',
+    'Ibagué',
+    'Bucaramanga',
+    'Soacha',
+    'Santa Marta',
+    'Villavicencio',
+    'Valledupar',
+    'Pereira',
+    'Montería',
+    'Manizales',
+    'Pasto',
+    'Neiva',
+    'Palmira',
+    'Armenia',
 ];
 
 // Warning for suppliers with expenses
@@ -137,16 +154,15 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
             <ValidationErrors :errors="errors" />
 
             <!-- Warning for suppliers with expenses -->
-            <div v-if="hasExpenses" class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div v-if="hasExpenses" class="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <div class="flex items-start gap-2">
-                    <AlertTriangle class="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <AlertTriangle class="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
                     <div>
-                        <p class="text-amber-800 text-sm font-medium">
-                            Precaución al editar
-                        </p>
-                        <p class="text-amber-700 text-xs">
-                            Este proveedor tiene {{ supplier.expenses_count }} gasto{{ supplier.expenses_count !== 1 ? 's' : '' }} registrado{{ supplier.expenses_count !== 1 ? 's' : '' }}.
-                            Los cambios en el documento o nombre pueden afectar los reportes históricos.
+                        <p class="text-sm font-medium text-amber-800">Precaución al editar</p>
+                        <p class="text-xs text-amber-700">
+                            Este proveedor tiene {{ supplier.expenses_count }} gasto{{ supplier.expenses_count !== 1 ? 's' : '' }} registrado{{
+                                supplier.expenses_count !== 1 ? 's' : ''
+                            }}. Los cambios en el documento o nombre pueden afectar los reportes históricos.
                         </p>
                     </div>
                 </div>
@@ -161,9 +177,7 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                 <h2 class="text-2xl font-semibold tracking-tight">Editar {{ supplier.name }}</h2>
                                 <Badge :class="supplier.status_badge.class">{{ supplier.status_badge.text }}</Badge>
                             </div>
-                            <p class="text-sm text-muted-foreground">
-                                Modifique la información del proveedor
-                            </p>
+                            <p class="text-sm text-muted-foreground">Modifique la información del proveedor</p>
                         </div>
                         <div class="flex items-center space-x-2">
                             <Button type="button" variant="outline" @click="cancel">
@@ -177,9 +191,9 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <!-- Main Information -->
-                        <div class="lg:col-span-2 space-y-6">
+                        <div class="space-y-6 lg:col-span-2">
                             <!-- Basic Information -->
                             <Card>
                                 <CardHeader>
@@ -191,15 +205,10 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2">
                                         <Label for="name" class="required">Nombre o Razón Social</Label>
-                                        <Input
-                                            id="name"
-                                            v-model="form.name"
-                                            placeholder="Nombre del proveedor"
-                                            required
-                                        />
+                                        <Input id="name" v-model="form.name" placeholder="Nombre del proveedor" required />
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
                                             <Label for="document_type" class="required">Tipo de Documento</Label>
                                             <Select v-model="form.document_type" required>
@@ -253,37 +262,24 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
                                             <Label for="email">Email Principal</Label>
-                                            <Input
-                                                id="email"
-                                                v-model="form.email"
-                                                type="email"
-                                                placeholder="email@proveedor.com"
-                                            />
+                                            <Input id="email" v-model="form.email" type="email" placeholder="email@proveedor.com" />
                                         </div>
 
                                         <div class="space-y-2">
                                             <Label for="phone">Teléfono Principal</Label>
-                                            <Input
-                                                id="phone"
-                                                v-model="form.phone"
-                                                placeholder="Número de teléfono"
-                                            />
+                                            <Input id="phone" v-model="form.phone" placeholder="Número de teléfono" />
                                         </div>
                                     </div>
 
                                     <div class="space-y-2">
                                         <Label for="contact_name">Persona de Contacto</Label>
-                                        <Input
-                                            id="contact_name"
-                                            v-model="form.contact_name"
-                                            placeholder="Nombre del contacto principal"
-                                        />
+                                        <Input id="contact_name" v-model="form.contact_name" placeholder="Nombre del contacto principal" />
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
                                             <Label for="contact_email">Email de Contacto</Label>
                                             <Input
@@ -296,11 +292,7 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
 
                                         <div class="space-y-2">
                                             <Label for="contact_phone">Teléfono de Contacto</Label>
-                                            <Input
-                                                id="contact_phone"
-                                                v-model="form.contact_phone"
-                                                placeholder="Número de contacto directo"
-                                            />
+                                            <Input id="contact_phone" v-model="form.contact_phone" placeholder="Número de contacto directo" />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -317,22 +309,13 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2">
                                         <Label for="address">Dirección</Label>
-                                        <Input
-                                            id="address"
-                                            v-model="form.address"
-                                            placeholder="Dirección completa"
-                                        />
+                                        <Input id="address" v-model="form.address" placeholder="Dirección completa" />
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
                                             <Label for="city">Ciudad</Label>
-                                            <Input
-                                                id="city"
-                                                v-model="form.city"
-                                                placeholder="Ciudad"
-                                                list="cities"
-                                            />
+                                            <Input id="city" v-model="form.city" placeholder="Ciudad" list="cities" />
                                             <datalist id="cities">
                                                 <option v-for="city in colombianCities" :key="city" :value="city" />
                                             </datalist>
@@ -340,11 +323,7 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
 
                                         <div class="space-y-2">
                                             <Label for="country">País</Label>
-                                            <Input
-                                                id="country"
-                                                v-model="form.country"
-                                                placeholder="País"
-                                            />
+                                            <Input id="country" v-model="form.country" placeholder="País" />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -388,12 +367,14 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                             type="checkbox"
                                             id="is_active"
                                             :checked="form.is_active"
-                                            @change="(event) => { form.is_active = (event.target as HTMLInputElement).checked; }"
+                                            @change="
+                                                (event) => {
+                                                    form.is_active = (event.target as HTMLInputElement).checked;
+                                                }
+                                            "
                                             class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                         />
-                                        <Label for="is_active">
-                                            Proveedor activo
-                                        </Label>
+                                        <Label for="is_active"> Proveedor activo </Label>
                                     </div>
                                     <p class="text-xs text-muted-foreground">
                                         Los proveedores inactivos no aparecerán en las listas de selección para nuevos gastos.
@@ -432,20 +413,20 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
                                 </CardHeader>
                                 <CardContent class="space-y-3 text-sm">
                                     <div>
-                                        <h4 class="font-medium mb-1">Campos Requeridos</h4>
-                                        <p class="text-muted-foreground text-xs">
+                                        <h4 class="mb-1 font-medium">Campos Requeridos</h4>
+                                        <p class="text-xs text-muted-foreground">
                                             Solo el nombre y documento son obligatorios. La información de contacto es opcional pero recomendada.
                                         </p>
                                     </div>
                                     <div v-if="hasExpenses">
-                                        <h4 class="font-medium mb-1">Proveedor con Historial</h4>
-                                        <p class="text-muted-foreground text-xs">
+                                        <h4 class="mb-1 font-medium">Proveedor con Historial</h4>
+                                        <p class="text-xs text-muted-foreground">
                                             Este proveedor tiene gastos registrados. Los cambios en información básica pueden afectar reportes.
                                         </p>
                                     </div>
                                     <div>
-                                        <h4 class="font-medium mb-1">Estado Activo/Inactivo</h4>
-                                        <p class="text-muted-foreground text-xs">
+                                        <h4 class="mb-1 font-medium">Estado Activo/Inactivo</h4>
+                                        <p class="text-xs text-muted-foreground">
                                             Los proveedores inactivos no se pueden seleccionar en nuevos gastos, pero mantienen su historial.
                                         </p>
                                     </div>
@@ -461,7 +442,7 @@ const hasExpenses = computed(() => props.supplier.expenses_count > 0);
 
 <style scoped>
 .required::after {
-    content: " *";
+    content: ' *';
     color: red;
 }
 </style>

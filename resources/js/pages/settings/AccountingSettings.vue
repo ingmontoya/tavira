@@ -24,7 +24,8 @@
                                 <div class="ml-7">
                                     <h4 class="font-medium">Plan de cuentas no configurado</h4>
                                     <AlertDescription>
-                                        El sistema contable requiere un plan de cuentas inicial. Haga clic en el botón siguiente para crear el plan de cuentas estándar para propiedad horizontal.
+                                        El sistema contable requiere un plan de cuentas inicial. Haga clic en el botón siguiente para crear el plan de
+                                        cuentas estándar para propiedad horizontal.
                                     </AlertDescription>
                                 </div>
                             </Alert>
@@ -32,16 +33,17 @@
                             <div class="flex flex-col space-y-2">
                                 <Button @click="initializeChartOfAccounts" :disabled="initializingAccounts" class="w-fit">
                                     <template v-if="initializingAccounts">
-                                        <Loader2Icon class="h-4 w-4 mr-2 animate-spin" />
+                                        <Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
                                         Creando plan de cuentas...
                                     </template>
                                     <template v-else>
-                                        <PlusIcon class="h-4 w-4 mr-2" />
+                                        <PlusIcon class="mr-2 h-4 w-4" />
                                         Crear Plan de Cuentas Inicial
                                     </template>
                                 </Button>
                                 <p class="text-xs text-gray-500">
-                                    Se creará un plan de cuentas completo con 60+ cuentas siguiendo el Decreto 2650 y adaptado para conjuntos residenciales.
+                                    Se creará un plan de cuentas completo con 60+ cuentas siguiendo el Decreto 2650 y adaptado para conjuntos
+                                    residenciales.
                                 </p>
                             </div>
                         </div>
@@ -52,18 +54,19 @@
                                 <div class="ml-7">
                                     <h4 class="font-medium">Plan de cuentas configurado</h4>
                                     <AlertDescription>
-                                        El sistema contable está configurado con {{ props.accountsCount }} cuentas. El sistema de contabilidad está listo para operar.
+                                        El sistema contable está configurado con {{ props.accountsCount }} cuentas. El sistema de contabilidad está
+                                        listo para operar.
                                     </AlertDescription>
                                 </div>
                             </Alert>
 
                             <div class="flex space-x-3">
                                 <Button @click="$inertia.visit(route('accounting.chart-of-accounts.index'))" variant="outline">
-                                    <EyeIcon class="h-4 w-4 mr-2" />
+                                    <EyeIcon class="mr-2 h-4 w-4" />
                                     Ver Plan de Cuentas
                                 </Button>
                                 <Button @click="$inertia.visit(route('accounting.chart-of-accounts.create'))" variant="outline">
-                                    <PlusIcon class="h-4 w-4 mr-2" />
+                                    <PlusIcon class="mr-2 h-4 w-4" />
                                     Agregar Cuenta
                                 </Button>
                             </div>
@@ -81,13 +84,17 @@
                         <CardDescription>Configuraciones adicionales del sistema contable.</CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Button @click="$inertia.visit(route('accounting.accounting-transactions.index'))" variant="outline" class="justify-start">
-                                <FileTextIcon class="h-4 w-4 mr-2" />
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <Button
+                                @click="$inertia.visit(route('accounting.accounting-transactions.index'))"
+                                variant="outline"
+                                class="justify-start"
+                            >
+                                <FileTextIcon class="mr-2 h-4 w-4" />
                                 Ver Transacciones Contables
                             </Button>
                             <Button @click="$inertia.visit(route('accounting.reports.index'))" variant="outline" class="justify-start">
-                                <BarChart3Icon class="h-4 w-4 mr-2" />
+                                <BarChart3Icon class="mr-2 h-4 w-4" />
                                 Reportes Contables
                             </Button>
                         </div>
@@ -106,16 +113,16 @@ import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { Head } from '@inertiajs/vue3';
-import { 
-    AlertTriangleIcon, 
-    BarChart3Icon, 
-    BookOpenIcon, 
-    CheckCircleIcon, 
-    EyeIcon, 
-    FileTextIcon, 
-    Loader2Icon, 
-    PlusIcon, 
-    SettingsIcon 
+import {
+    AlertTriangleIcon,
+    BarChart3Icon,
+    BookOpenIcon,
+    CheckCircleIcon,
+    EyeIcon,
+    FileTextIcon,
+    Loader2Icon,
+    PlusIcon,
+    SettingsIcon,
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -131,20 +138,20 @@ const initializingAccounts = ref(false);
 
 const initializeChartOfAccounts = async () => {
     if (initializingAccounts.value) return;
-    
+
     initializingAccounts.value = true;
-    
+
     try {
         await fetch(route('settings.accounting.initialize-accounts'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || ''
-            }
+                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+            },
         });
-        
+
         success('Plan de cuentas creado exitosamente');
-        
+
         // Recargar la página para mostrar el estado actualizado
         window.location.reload();
     } catch (err) {

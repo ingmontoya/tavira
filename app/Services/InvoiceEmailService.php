@@ -39,7 +39,7 @@ class InvoiceEmailService
         try {
             // Calculate total invoices based on filters
             $totalInvoices = $this->countBatchInvoices($data['filters'] ?? []);
-            
+
             $batch = InvoiceEmailBatch::create([
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
@@ -384,10 +384,10 @@ class InvoiceEmailService
 
         try {
             $invoice = $delivery->invoice;
-            
+
             // Generate PDF content (for now, use dummy content)
             $pdfContent = "PDF content for invoice {$invoice->invoice_number}"; // This would be actual PDF generation
-            
+
             // Generate PDF if required
             if ($delivery->email_variables['include_pdf'] ?? true) {
                 // This would integrate with existing PDF generation
@@ -490,6 +490,7 @@ class InvoiceEmailService
         // Handle specific invoice IDs first (highest priority)
         if (! empty($filters['invoice_ids'])) {
             $query->whereIn('id', $filters['invoice_ids']);
+
             return $query; // Return early if specific IDs are provided
         }
 

@@ -65,15 +65,8 @@ const iconSize = computed(() => {
 </script>
 
 <template>
-    <Badge 
-        :class="[statusConfig.class, size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm']"
-        variant="outline"
-    >
-        <component 
-            v-if="showIcon"
-            :is="statusConfig.icon" 
-            :class="['mr-1', iconSize]"
-        />
+    <Badge :class="[statusConfig.class, size === 'sm' ? 'text-xs' : size === 'lg' ? 'text-base' : 'text-sm']" variant="outline">
+        <component v-if="showIcon" :is="statusConfig.icon" :class="['mr-1', iconSize]" />
         {{ statusLabel }}
     </Badge>
 </template>

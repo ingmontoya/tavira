@@ -67,7 +67,7 @@ Route::prefix('email')->name('email.')->group(function () {
         Route::post('/{id}/read', [EmailController::class, 'markAsRead'])->name('read')->middleware(['rate.limit:default', 'can:edit_admin_email']);
         Route::post('/{id}/unread', [EmailController::class, 'markAsUnread'])->name('unread')->middleware(['rate.limit:default', 'can:edit_admin_email']);
     });
-    
+
     // Concejo Email Routes
     Route::prefix('concejo')->name('concejo.')->group(function () {
         Route::get('/', [EmailController::class, 'concejoIndex'])->name('index')->middleware(['rate.limit:default', 'can:view_council_email']);

@@ -85,16 +85,9 @@ const errors = computed(() => page.props.errors || {});
                         </Link>
                     </Button>
                     <div class="flex items-center gap-3">
-                        <div
-                            class="w-6 h-6 rounded-full"
-                            :style="{ backgroundColor: category.color }"
-                        ></div>
+                        <div class="h-6 w-6 rounded-full" :style="{ backgroundColor: category.color }"></div>
                         <h2 class="text-2xl font-semibold tracking-tight">{{ category.name }}</h2>
-                        <Badge
-                            :class="category.is_active
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'"
-                        >
+                        <Badge :class="category.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
                             {{ category.is_active ? 'Activa' : 'Inactiva' }}
                         </Badge>
                     </div>
@@ -121,7 +114,7 @@ const errors = computed(() => page.props.errors || {});
                             <Label class="text-sm font-medium text-muted-foreground">Nombre</Label>
                             <p class="text-sm">{{ category.name }}</p>
                         </div>
-                        
+
                         <div v-if="category.description">
                             <Label class="text-sm font-medium text-muted-foreground">Descripción</Label>
                             <p class="text-sm">{{ category.description }}</p>
@@ -129,20 +122,11 @@ const errors = computed(() => page.props.errors || {});
 
                         <div>
                             <Label class="text-sm font-medium text-muted-foreground">Estado</Label>
-                            <div class="flex items-center gap-2 mt-1">
-                                <Badge
-                                    :class="category.is_active
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-gray-100 text-gray-800'"
-                                >
+                            <div class="mt-1 flex items-center gap-2">
+                                <Badge :class="category.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
                                     {{ category.is_active ? 'Activa' : 'Inactiva' }}
                                 </Badge>
-                                <Badge
-                                    v-if="category.requires_approval"
-                                    class="bg-amber-100 text-amber-800"
-                                >
-                                    Requiere aprobación
-                                </Badge>
+                                <Badge v-if="category.requires_approval" class="bg-amber-100 text-amber-800"> Requiere aprobación </Badge>
                             </div>
                         </div>
 
@@ -157,9 +141,7 @@ const errors = computed(() => page.props.errors || {});
                 <Card>
                     <CardHeader>
                         <CardTitle>Configuración Contable</CardTitle>
-                        <CardDescription>
-                            Cuentas predeterminadas para esta categoría
-                        </CardDescription>
+                        <CardDescription> Cuentas predeterminadas para esta categoría </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div v-if="category.default_debit_account">
@@ -205,17 +187,15 @@ const errors = computed(() => page.props.errors || {});
             <Card>
                 <CardContent class="pt-6">
                     <div class="flex items-start gap-4">
-                        <Settings class="w-5 h-5 text-muted-foreground mt-0.5" />
+                        <Settings class="mt-0.5 h-5 w-5 text-muted-foreground" />
                         <div>
-                            <h4 class="font-medium mb-2">Acerca de esta Categoría</h4>
-                            <div class="text-sm text-muted-foreground space-y-1">
+                            <h4 class="mb-2 font-medium">Acerca de esta Categoría</h4>
+                            <div class="space-y-1 text-sm text-muted-foreground">
                                 <p>• Esta categoría se utiliza para clasificar gastos del conjunto.</p>
                                 <p v-if="category.default_debit_account || category.default_credit_account">
                                     • Los asientos contables se generan automáticamente usando las cuentas configuradas.
                                 </p>
-                                <p v-if="category.requires_approval">
-                                    • Los gastos en esta categoría requieren aprobación de administradores.
-                                </p>
+                                <p v-if="category.requires_approval">• Los gastos en esta categoría requieren aprobación de administradores.</p>
                                 <p v-if="category.expenses_count > 0">
                                     • No se puede eliminar esta categoría porque tiene {{ category.expenses_count }} gastos asociados.
                                 </p>

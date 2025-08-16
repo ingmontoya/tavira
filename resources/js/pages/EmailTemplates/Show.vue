@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import EmailTemplatePreview from '@/components/EmailTemplates/EmailTemplatePreview.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/AppLayout.vue';
-import EmailTemplatePreview from '@/components/EmailTemplates/EmailTemplatePreview.vue';
-import { ArrowLeft, Calendar, Edit, Star, User } from 'lucide-vue-next';
 import type { AppPageProps, EmailTemplate, Invoice } from '@/types';
+import { Head, Link } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, Edit, Star, User } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface Props extends /* @vue-ignore */ AppPageProps {
     template: EmailTemplate;
@@ -33,9 +33,7 @@ const typeColor = computed(() => {
 });
 
 const statusColor = computed(() => {
-    return props.template.is_active 
-        ? 'bg-green-100 text-green-800 border-green-200' 
-        : 'bg-gray-100 text-gray-500 border-gray-200';
+    return props.template.is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200';
 });
 </script>
 
@@ -54,9 +52,9 @@ const statusColor = computed(() => {
                         </Button>
                     </Link>
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight flex items-center space-x-3">
+                        <h1 class="flex items-center space-x-3 text-3xl font-bold tracking-tight">
                             <span>{{ template.name }}</span>
-                            <Star v-if="template.is_default" class="h-6 w-6 text-yellow-500 fill-current" />
+                            <Star v-if="template.is_default" class="h-6 w-6 fill-current text-yellow-500" />
                         </h1>
                         <p class="text-muted-foreground">
                             {{ template.description || 'Sin descripción' }}
@@ -71,9 +69,9 @@ const statusColor = computed(() => {
                 </Link>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Template Details -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="space-y-6 lg:col-span-1">
                     <!-- Basic Info -->
                     <Card>
                         <CardHeader>
@@ -87,9 +85,7 @@ const statusColor = computed(() => {
                                 <Badge variant="outline" :class="statusColor">
                                     {{ template.is_active ? 'Activa' : 'Inactiva' }}
                                 </Badge>
-                                <Badge v-if="template.is_default" variant="outline" class="text-yellow-600 border-yellow-200">
-                                    Predeterminada
-                                </Badge>
+                                <Badge v-if="template.is_default" variant="outline" class="border-yellow-200 text-yellow-600"> Predeterminada </Badge>
                             </div>
 
                             <Separator />
@@ -99,14 +95,14 @@ const statusColor = computed(() => {
                                     <div class="font-medium text-muted-foreground">Asunto:</div>
                                     <div class="text-foreground">{{ template.subject }}</div>
                                 </div>
-                                
+
                                 <div>
                                     <div class="font-medium text-muted-foreground">Variables disponibles:</div>
                                     <div class="text-foreground">{{ template.variables.length }} variables</div>
                                 </div>
 
                                 <div v-if="template.created_by_user">
-                                    <div class="font-medium text-muted-foreground flex items-center space-x-1">
+                                    <div class="flex items-center space-x-1 font-medium text-muted-foreground">
                                         <User class="h-4 w-4" />
                                         <span>Creado por:</span>
                                     </div>
@@ -114,31 +110,35 @@ const statusColor = computed(() => {
                                 </div>
 
                                 <div>
-                                    <div class="font-medium text-muted-foreground flex items-center space-x-1">
+                                    <div class="flex items-center space-x-1 font-medium text-muted-foreground">
                                         <Calendar class="h-4 w-4" />
                                         <span>Fecha de creación:</span>
                                     </div>
                                     <div class="text-foreground">
-                                        {{ new Date(template.created_at).toLocaleDateString('es-ES', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }) }}
+                                        {{
+                                            new Date(template.created_at).toLocaleDateString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })
+                                        }}
                                     </div>
                                 </div>
 
                                 <div v-if="template.updated_at !== template.created_at">
                                     <div class="font-medium text-muted-foreground">Última modificación:</div>
                                     <div class="text-foreground">
-                                        {{ new Date(template.updated_at).toLocaleDateString('es-ES', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        }) }}
+                                        {{
+                                            new Date(template.updated_at).toLocaleDateString('es-ES', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })
+                                        }}
                                     </div>
                                     <div v-if="template.updated_by_user" class="text-xs text-muted-foreground">
                                         por {{ template.updated_by_user.name }}
@@ -152,17 +152,11 @@ const statusColor = computed(() => {
                     <Card v-if="template.variables.length > 0">
                         <CardHeader>
                             <CardTitle>Variables Disponibles</CardTitle>
-                            <CardDescription>
-                                Estas variables se reemplazan automáticamente en el email
-                            </CardDescription>
+                            <CardDescription> Estas variables se reemplazan automáticamente en el email </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div class="flex flex-wrap gap-2">
-                                <code 
-                                    v-for="variable in template.variables" 
-                                    :key="variable"
-                                    class="px-2 py-1 bg-gray-100 rounded text-xs font-mono"
-                                >
+                                <code v-for="variable in template.variables" :key="variable" class="rounded bg-gray-100 px-2 py-1 font-mono text-xs">
                                     {{ variable }}
                                 </code>
                             </div>
@@ -179,18 +173,15 @@ const statusColor = computed(() => {
                                 <div>
                                     <div class="font-medium text-muted-foreground">Color Primario:</div>
                                     <div class="flex items-center space-x-2">
-                                        <div 
-                                            class="w-4 h-4 rounded border"
-                                            :style="{ backgroundColor: template.design_config.primary_color }"
-                                        ></div>
+                                        <div class="h-4 w-4 rounded border" :style="{ backgroundColor: template.design_config.primary_color }"></div>
                                         <code class="text-xs">{{ template.design_config.primary_color }}</code>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="font-medium text-muted-foreground">Color Secundario:</div>
                                     <div class="flex items-center space-x-2">
-                                        <div 
-                                            class="w-4 h-4 rounded border"
+                                        <div
+                                            class="h-4 w-4 rounded border"
                                             :style="{ backgroundColor: template.design_config.secondary_color }"
                                         ></div>
                                         <code class="text-xs">{{ template.design_config.secondary_color }}</code>
@@ -198,11 +189,11 @@ const statusColor = computed(() => {
                                 </div>
                                 <div>
                                     <div class="font-medium text-muted-foreground">Fuente:</div>
-                                    <div class="text-foreground text-xs">{{ template.design_config.font_family }}</div>
+                                    <div class="text-xs text-foreground">{{ template.design_config.font_family }}</div>
                                 </div>
                                 <div>
                                     <div class="font-medium text-muted-foreground">Ancho Máximo:</div>
-                                    <div class="text-foreground text-xs">{{ template.design_config.max_width }}</div>
+                                    <div class="text-xs text-foreground">{{ template.design_config.max_width }}</div>
                                 </div>
                             </div>
                         </CardContent>
@@ -211,11 +202,7 @@ const statusColor = computed(() => {
 
                 <!-- Template Preview -->
                 <div class="lg:col-span-2">
-                    <EmailTemplatePreview
-                        :template="template"
-                        :sample-invoice="sampleInvoice"
-                        :show-preview="true"
-                    />
+                    <EmailTemplatePreview :template="template" :sample-invoice="sampleInvoice" :show-preview="true" />
                 </div>
             </div>
 
@@ -223,19 +210,17 @@ const statusColor = computed(() => {
             <Card>
                 <CardHeader>
                     <CardTitle>Contenido del Template</CardTitle>
-                    <CardDescription>
-                        Este es el contenido sin procesar de la plantilla
-                    </CardDescription>
+                    <CardDescription> Este es el contenido sin procesar de la plantilla </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
                         <div>
                             <Label class="text-sm font-medium">Asunto:</Label>
-                            <code class="block mt-1 p-3 bg-gray-50 rounded text-sm">{{ template.subject }}</code>
+                            <code class="mt-1 block rounded bg-gray-50 p-3 text-sm">{{ template.subject }}</code>
                         </div>
                         <div>
                             <Label class="text-sm font-medium">Contenido:</Label>
-                            <pre class="mt-1 p-3 bg-gray-50 rounded text-sm whitespace-pre-wrap overflow-auto max-h-96">{{ template.body }}</pre>
+                            <pre class="mt-1 max-h-96 overflow-auto rounded bg-gray-50 p-3 text-sm whitespace-pre-wrap">{{ template.body }}</pre>
                         </div>
                     </div>
                 </CardContent>

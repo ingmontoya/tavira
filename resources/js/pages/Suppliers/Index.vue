@@ -11,13 +11,28 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCurrency } from '@/utils/format';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { CheckCircle, ChevronDown, ChevronsUpDown, Copy, Edit, Eye, Filter, Plus, Search, Trash2, X, XCircle, Building2, Clock } from 'lucide-vue-next';
+import {
+    Building2,
+    CheckCircle,
+    ChevronDown,
+    ChevronsUpDown,
+    Clock,
+    Copy,
+    Edit,
+    Eye,
+    Filter,
+    Plus,
+    Search,
+    Trash2,
+    X,
+    XCircle,
+} from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { valueUpdater } from '../../utils';
-import { formatCurrency } from '@/utils/format';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -104,61 +119,67 @@ const columnHelper = createColumnHelper<Supplier>();
 const columns = [
     columnHelper.accessor('name', {
         header: 'Nombre',
-        cell: info => {
+        cell: (info) => {
             const supplier = info.row.original;
             return h('div', { class: 'space-y-1' }, [
                 h('div', { class: 'font-medium' }, supplier.name),
-                h('div', { class: 'text-xs text-muted-foreground' },
-                    `${supplier.document_type}: ${supplier.document_number}`
-                )
+                h('div', { class: 'text-xs text-muted-foreground' }, `${supplier.document_type}: ${supplier.document_number}`),
             ]);
         },
     }),
     columnHelper.accessor('full_contact_info', {
         header: 'Contacto',
-        cell: info => {
+        cell: (info) => {
             const supplier = info.row.original;
-            return h('div', { class: 'space-y-1' }, [
-                supplier.email ? h('div', { class: 'text-sm' }, supplier.email) : null,
-                supplier.phone ? h('div', { class: 'text-xs text-muted-foreground' }, supplier.phone) : null,
-                (!supplier.email && !supplier.phone) ? h('div', { class: 'text-xs text-muted-foreground' }, 'Sin contacto') : null,
-            ].filter(Boolean));
+            return h(
+                'div',
+                { class: 'space-y-1' },
+                [
+                    supplier.email ? h('div', { class: 'text-sm' }, supplier.email) : null,
+                    supplier.phone ? h('div', { class: 'text-xs text-muted-foreground' }, supplier.phone) : null,
+                    !supplier.email && !supplier.phone ? h('div', { class: 'text-xs text-muted-foreground' }, 'Sin contacto') : null,
+                ].filter(Boolean),
+            );
         },
     }),
     columnHelper.accessor('city', {
         header: 'Ciudad',
-        cell: info => {
+        cell: (info) => {
             const value = info.getValue();
             return value || '-';
         },
     }),
     columnHelper.accessor('expenses_count', {
         header: 'Gastos',
-        cell: info => {
+        cell: (info) => {
             const count = info.getValue();
             return h('div', { class: 'text-center font-mono' }, count.toString());
         },
     }),
     columnHelper.accessor('last_expense_date', {
         header: 'Último Gasto',
-        cell: info => {
+        cell: (info) => {
             const date = info.getValue();
             return date ? new Date(date).toLocaleDateString('es-CO') : '-';
         },
     }),
     columnHelper.accessor('status_badge', {
         header: 'Estado',
-        cell: info => {
+        cell: (info) => {
             const badge = info.getValue();
-            return h(Badge, {
-                class: badge.class
-            }, badge.text);
+            return h(
+                Badge,
+                {
+                    class: badge.class,
+                },
+                badge.text,
+            );
         },
     }),
     columnHelper.display({
         id: 'actions',
         header: 'Acciones',
-        cell: info => {
+        cell: (info) => {
             const supplier = info.row.original;
             const actions = [
                 {
@@ -211,18 +232,28 @@ const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
 
 const table = useVueTable({
-    get data() { return data.value; },
-    get columns() { return columns; },
+    get data() {
+        return data.value;
+    },
+    get columns() {
+        return columns;
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: updaterOrValue => valueUpdater(updaterOrValue, sorting),
-    onColumnFiltersChange: updaterOrValue => valueUpdater(updaterOrValue, columnFilters),
-    onColumnVisibilityChange: updaterOrValue => valueUpdater(updaterOrValue, columnVisibility),
+    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
+    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
+    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
     state: {
-        get sorting() { return sorting.value; },
-        get columnFilters() { return columnFilters.value; },
-        get columnVisibility() { return columnVisibility.value; },
+        get sorting() {
+            return sorting.value;
+        },
+        get columnFilters() {
+            return columnFilters.value;
+        },
+        get columnVisibility() {
+            return columnVisibility.value;
+        },
     },
 });
 
@@ -246,10 +277,14 @@ const clearFilters = () => {
     statusFilter.value = 'all';
     documentTypeFilter.value = 'all';
     cityFilter.value = '';
-    router.get('/suppliers', {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.get(
+        '/suppliers',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 // Watch for filter changes
@@ -269,22 +304,30 @@ let searchTimeout: number;
 const toggleSupplierStatus = (supplierId: number, active: boolean) => {
     const action = active ? 'activar' : 'desactivar';
     if (confirm(`¿Está seguro de que desea ${action} este proveedor?`)) {
-        router.post(`/suppliers/${supplierId}/toggle-status`, {
-            is_active: active
-        }, {
-            onSuccess: () => {
-                router.reload();
-            }
-        });
+        router.post(
+            `/suppliers/${supplierId}/toggle-status`,
+            {
+                is_active: active,
+            },
+            {
+                onSuccess: () => {
+                    router.reload();
+                },
+            },
+        );
     }
 };
 
 const duplicateSupplier = (supplierId: number) => {
-    router.post(`/suppliers/${supplierId}/duplicate`, {}, {
-        onSuccess: () => {
-            // Will redirect to edit page
-        }
-    });
+    router.post(
+        `/suppliers/${supplierId}/duplicate`,
+        {},
+        {
+            onSuccess: () => {
+                // Will redirect to edit page
+            },
+        },
+    );
 };
 
 const deleteSupplier = (supplierId: number) => {
@@ -292,7 +335,7 @@ const deleteSupplier = (supplierId: number) => {
         router.delete(`/suppliers/${supplierId}`, {
             onSuccess: () => {
                 router.reload();
-            }
+            },
         });
     }
 };
@@ -322,7 +365,7 @@ const deleteSupplier = (supplierId: number) => {
             </Alert>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">Total Proveedores</CardTitle>
@@ -369,9 +412,7 @@ const deleteSupplier = (supplierId: number) => {
                 <div class="flex items-center justify-between">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-semibold tracking-tight">Proveedores</h2>
-                        <p class="text-sm text-muted-foreground">
-                            Gestiona todos los proveedores del conjunto
-                        </p>
+                        <p class="text-sm text-muted-foreground">Gestiona todos los proveedores del conjunto</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <Button asChild size="sm">
@@ -389,17 +430,12 @@ const deleteSupplier = (supplierId: number) => {
                         <CardTitle class="text-lg">Filtros</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <div class="space-y-2">
                                 <Label for="search">Buscar</Label>
                                 <div class="relative">
-                                    <Search class="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id="search"
-                                        v-model="search"
-                                        placeholder="Nombre, documento, email..."
-                                        class="pl-8"
-                                    />
+                                    <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
+                                    <Input id="search" v-model="search" placeholder="Nombre, documento, email..." class="pl-8" />
                                 </div>
                             </div>
 
@@ -436,15 +472,11 @@ const deleteSupplier = (supplierId: number) => {
 
                             <div class="space-y-2">
                                 <Label for="city">Ciudad</Label>
-                                <Input
-                                    id="city"
-                                    v-model="cityFilter"
-                                    placeholder="Filtrar por ciudad"
-                                />
+                                <Input id="city" v-model="cityFilter" placeholder="Filtrar por ciudad" />
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between mt-4">
+                        <div class="mt-4 flex items-center justify-between">
                             <div class="flex items-center space-x-2">
                                 <Button @click="applyFilters" size="sm">
                                     <Filter class="mr-2 h-4 w-4" />
@@ -465,10 +497,10 @@ const deleteSupplier = (supplierId: number) => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuCheckboxItem
-                                        v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
+                                        v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
                                         :key="column.id"
                                         :checked="column.getIsVisible()"
-                                        @update:checked="value => column.toggleVisibility(!!value)"
+                                        @update:checked="(value) => column.toggleVisibility(!!value)"
                                     >
                                         {{ column.columnDef.header }}
                                     </DropdownMenuCheckboxItem>
@@ -492,11 +524,7 @@ const deleteSupplier = (supplierId: number) => {
                                         <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
                                         <ChevronsUpDown class="ml-2 h-4 w-4" />
                                     </Button>
-                                    <FlexRender
-                                        v-else
-                                        :render="header.column.columnDef.header"
-                                        :props="header.getContext()"
-                                    />
+                                    <FlexRender v-else :render="header.column.columnDef.header" :props="header.getContext()" />
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
@@ -516,9 +544,7 @@ const deleteSupplier = (supplierId: number) => {
                             </template>
                             <template v-else>
                                 <TableRow>
-                                    <TableCell :colspan="columns.length" class="h-24 text-center">
-                                        No se encontraron proveedores.
-                                    </TableCell>
+                                    <TableCell :colspan="columns.length" class="h-24 text-center"> No se encontraron proveedores. </TableCell>
                                 </TableRow>
                             </template>
                         </TableBody>

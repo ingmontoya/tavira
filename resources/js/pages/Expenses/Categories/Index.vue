@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { CheckCircle, Edit, Eye, Plus, Settings, Trash2, XCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useToast } from '@/composables/useToast';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -68,7 +68,7 @@ const flashSuccess = computed(() => page.props.flash?.success);
 const flashError = computed(() => page.props.flash?.error);
 
 const deleteCategory = (categoryId: number) => {
-    const category = props.categories.find(c => c.id === categoryId);
+    const category = props.categories.find((c) => c.id === categoryId);
 
     if (category && category.expenses_count > 0) {
         error('No se puede eliminar una categoría que tiene gastos asociados');
@@ -108,9 +108,7 @@ const deleteCategory = (categoryId: number) => {
             <div class="flex items-center justify-between">
                 <div class="space-y-1">
                     <h2 class="text-2xl font-semibold tracking-tight">Categorías de Gastos</h2>
-                    <p class="text-sm text-muted-foreground">
-                        Gestiona las categorías para clasificar los gastos
-                    </p>
+                    <p class="text-sm text-muted-foreground">Gestiona las categorías para clasificar los gastos</p>
                 </div>
                 <div class="flex items-center space-x-2">
                     <Button asChild size="sm">
@@ -128,11 +126,9 @@ const deleteCategory = (categoryId: number) => {
                     <CardTitle>Categorías Configuradas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="categories.length === 0" class="text-center py-8 text-muted-foreground">
+                    <div v-if="categories.length === 0" class="py-8 text-center text-muted-foreground">
                         No hay categorías configuradas.
-                        <Link href="/expense-categories/create" class="text-blue-600 hover:underline">
-                            Crear la primera categoría
-                        </Link>
+                        <Link href="/expense-categories/create" class="text-blue-600 hover:underline"> Crear la primera categoría </Link>
                     </div>
 
                     <Table v-else>
@@ -150,22 +146,17 @@ const deleteCategory = (categoryId: number) => {
                             <TableRow v-for="category in categories" :key="category.id">
                                 <TableCell>
                                     <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-4 h-4 rounded-full"
-                                            :style="{ backgroundColor: category.color }"
-                                        ></div>
+                                        <div class="h-4 w-4 rounded-full" :style="{ backgroundColor: category.color }"></div>
                                         <div>
                                             <div class="font-medium">{{ category.name }}</div>
-                                            <div v-if="category.requires_approval" class="text-xs text-amber-600">
-                                                Requiere aprobación
-                                            </div>
+                                            <div v-if="category.requires_approval" class="text-xs text-amber-600">Requiere aprobación</div>
                                         </div>
                                     </div>
                                 </TableCell>
 
                                 <TableCell>
                                     <div class="max-w-xs">
-                                        <p class="text-sm text-muted-foreground truncate">
+                                        <p class="truncate text-sm text-muted-foreground">
                                             {{ category.description || 'Sin descripción' }}
                                         </p>
                                     </div>
@@ -199,11 +190,7 @@ const deleteCategory = (categoryId: number) => {
                                 </TableCell>
 
                                 <TableCell>
-                                    <Badge
-                                        :class="category.is_active
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-gray-100 text-gray-800'"
-                                    >
+                                    <Badge :class="category.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
                                         {{ category.is_active ? 'Activa' : 'Inactiva' }}
                                     </Badge>
                                 </TableCell>
@@ -212,13 +199,13 @@ const deleteCategory = (categoryId: number) => {
                                     <div class="flex items-center gap-2">
                                         <Button asChild variant="ghost" size="sm">
                                             <Link :href="`/expense-categories/${category.id}`">
-                                                <Eye class="w-4 h-4" />
+                                                <Eye class="h-4 w-4" />
                                             </Link>
                                         </Button>
 
                                         <Button asChild variant="ghost" size="sm">
                                             <Link :href="`/expense-categories/${category.id}/edit`">
-                                                <Edit class="w-4 h-4" />
+                                                <Edit class="h-4 w-4" />
                                             </Link>
                                         </Button>
 
@@ -228,7 +215,7 @@ const deleteCategory = (categoryId: number) => {
                                             @click="deleteCategory(category.id)"
                                             :disabled="category.expenses_count > 0"
                                         >
-                                            <Trash2 class="w-4 h-4" />
+                                            <Trash2 class="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </TableCell>
@@ -242,10 +229,10 @@ const deleteCategory = (categoryId: number) => {
             <Card>
                 <CardContent class="pt-6">
                     <div class="flex items-start gap-4">
-                        <Settings class="w-5 h-5 text-muted-foreground mt-0.5" />
+                        <Settings class="mt-0.5 h-5 w-5 text-muted-foreground" />
                         <div>
-                            <h4 class="font-medium mb-2">Configuración de Categorías</h4>
-                            <div class="text-sm text-muted-foreground space-y-1">
+                            <h4 class="mb-2 font-medium">Configuración de Categorías</h4>
+                            <div class="space-y-1 text-sm text-muted-foreground">
                                 <p>• Las categorías ayudan a clasificar y organizar los gastos del conjunto.</p>
                                 <p>• Configura cuentas contables predeterminadas para automatizar los asientos.</p>
                                 <p>• Las categorías con "Requiere aprobación" necesitarán autorización de administradores.</p>

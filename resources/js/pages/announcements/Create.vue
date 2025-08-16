@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { CalendarIcon, Save, Send } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Save, Send } from 'lucide-vue-next';
 
 interface ApartmentType {
     id: number;
@@ -66,7 +64,6 @@ const submit = () => {
         transformedData.target_apartment_ids = form.target_apartment_ids;
     }
 
-
     form.transform(() => transformedData).post(route('announcements.store'));
 };
 
@@ -100,7 +97,7 @@ const publishAndSend = () => {
 const breadcrumbs = [
     { title: 'Comunicación', href: '#' },
     { title: 'Anuncios', href: route('announcements.index') },
-    { title: 'Nuevo Anuncio', href: route('announcements.create') }
+    { title: 'Nuevo Anuncio', href: route('announcements.create') },
 ];
 </script>
 
@@ -113,28 +110,15 @@ const breadcrumbs = [
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-900">Nuevo Anuncio</h1>
-                    <p class="text-sm text-gray-600 mt-1">
-                        Crea un nuevo anuncio para los residentes
-                    </p>
+                    <p class="mt-1 text-sm text-gray-600">Crea un nuevo anuncio para los residentes</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        @click="router.visit(route('announcements.index'))"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button
-                        @click="submit"
-                        :disabled="form.processing"
-                    >
+                    <Button variant="outline" @click="router.visit(route('announcements.index'))"> Cancelar </Button>
+                    <Button @click="submit" :disabled="form.processing">
                         <Save class="mr-2 h-4 w-4" />
                         Guardar Borrador
                     </Button>
-                    <Button
-                        @click="publishAndSend"
-                        :disabled="form.processing"
-                    >
+                    <Button @click="publishAndSend" :disabled="form.processing">
                         <Send class="mr-2 h-4 w-4" />
                         Publicar
                     </Button>
@@ -145,12 +129,10 @@ const breadcrumbs = [
                 <Card>
                     <CardHeader>
                         <CardTitle>Información Básica</CardTitle>
-                        <CardDescription>
-                            Información principal del anuncio
-                        </CardDescription>
+                        <CardDescription> Información principal del anuncio </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="title">Título *</Label>
                                 <Input
@@ -182,7 +164,7 @@ const breadcrumbs = [
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="type">Tipo *</Label>
                                 <Select v-model="form.type">
@@ -237,9 +219,7 @@ const breadcrumbs = [
                 <Card>
                     <CardHeader>
                         <CardTitle>Alcance del Anuncio</CardTitle>
-                        <CardDescription>
-                            Define a quién va dirigido este anuncio
-                        </CardDescription>
+                        <CardDescription> Define a quién va dirigido este anuncio </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="space-y-2">
@@ -263,20 +243,22 @@ const breadcrumbs = [
                         <!-- Tower Selection -->
                         <div v-if="form.target_scope === 'tower'" class="space-y-2">
                             <Label>Torres *</Label>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
                                 <div v-for="tower in props.towers" :key="tower" class="flex items-center space-x-2">
-                                    <Checkbox 
+                                    <Checkbox
                                         :id="`tower-${tower}`"
                                         :checked="form.target_towers.includes(tower)"
-                                        @update:checked="(checked) => {
-                                            if (checked) {
-                                                if (!form.target_towers.includes(tower)) {
-                                                    form.target_towers = [...form.target_towers, tower];
+                                        @update:checked="
+                                            (checked) => {
+                                                if (checked) {
+                                                    if (!form.target_towers.includes(tower)) {
+                                                        form.target_towers = [...form.target_towers, tower];
+                                                    }
+                                                } else {
+                                                    form.target_towers = form.target_towers.filter((t) => t !== tower);
                                                 }
-                                            } else {
-                                                form.target_towers = form.target_towers.filter(t => t !== tower);
                                             }
-                                        }"
+                                        "
                                     />
                                     <Label :for="`tower-${tower}`" class="text-sm">Torre {{ tower }}</Label>
                                 </div>
@@ -289,20 +271,22 @@ const breadcrumbs = [
                         <!-- Apartment Type Selection -->
                         <div v-if="form.target_scope === 'apartment_type'" class="space-y-2">
                             <Label>Tipos de Apartamento *</Label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
                                 <div v-for="type in props.apartmentTypes" :key="type.id" class="flex items-center space-x-2">
-                                    <Checkbox 
+                                    <Checkbox
                                         :id="`type-${type.id}`"
                                         :checked="form.target_apartment_type_ids.includes(type.id)"
-                                        @update:checked="(checked) => {
-                                            if (checked) {
-                                                if (!form.target_apartment_type_ids.includes(type.id)) {
-                                                    form.target_apartment_type_ids = [...form.target_apartment_type_ids, type.id];
+                                        @update:checked="
+                                            (checked) => {
+                                                if (checked) {
+                                                    if (!form.target_apartment_type_ids.includes(type.id)) {
+                                                        form.target_apartment_type_ids = [...form.target_apartment_type_ids, type.id];
+                                                    }
+                                                } else {
+                                                    form.target_apartment_type_ids = form.target_apartment_type_ids.filter((t) => t !== type.id);
                                                 }
-                                            } else {
-                                                form.target_apartment_type_ids = form.target_apartment_type_ids.filter(t => t !== type.id);
                                             }
-                                        }"
+                                        "
                                     />
                                     <Label :for="`type-${type.id}`" class="text-sm">{{ type.name }}</Label>
                                 </div>
@@ -315,15 +299,15 @@ const breadcrumbs = [
                         <!-- Apartment Selection -->
                         <div v-if="form.target_scope === 'apartment'" class="space-y-2">
                             <Label>Apartamentos *</Label>
-                            <div class="max-h-40 overflow-y-auto border rounded p-2">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-1">
+                            <div class="max-h-40 overflow-y-auto rounded border p-2">
+                                <div class="grid grid-cols-1 gap-1 md:grid-cols-2">
                                     <div v-for="apartment in props.apartments" :key="apartment.id" class="flex items-center space-x-2">
-                                        <input 
+                                        <input
                                             type="checkbox"
                                             :id="`apt-${apartment.id}`"
                                             :value="apartment.id"
                                             v-model="form.target_apartment_ids"
-                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
                                         <Label :for="`apt-${apartment.id}`" class="text-sm">{{ apartment.label }}</Label>
                                     </div>
@@ -339,23 +323,16 @@ const breadcrumbs = [
                 <Card>
                     <CardHeader>
                         <CardTitle>Configuración Avanzada</CardTitle>
-                        <CardDescription>
-                            Opciones adicionales para el anuncio
-                        </CardDescription>
+                        <CardDescription> Opciones adicionales para el anuncio </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="flex items-center space-x-3">
                                 <div class="flex items-center">
-                                    <input
-                                        id="is_pinned"
-                                        v-model="form.is_pinned"
-                                        type="checkbox"
-                                        class="sr-only"
-                                    />
+                                    <input id="is_pinned" v-model="form.is_pinned" type="checkbox" class="sr-only" />
                                     <label
                                         for="is_pinned"
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        class="relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
                                         :class="form.is_pinned ? 'bg-primary' : 'bg-gray-200'"
                                     >
                                         <span
@@ -364,25 +341,18 @@ const breadcrumbs = [
                                         ></span>
                                     </label>
                                 </div>
-                                <Label for="is_pinned" class="text-sm font-medium cursor-pointer">
+                                <Label for="is_pinned" class="cursor-pointer text-sm font-medium">
                                     Fijar anuncio
-                                    <span class="text-xs text-gray-500 ml-1">
-                                        ({{ form.is_pinned ? 'Activado' : 'Desactivado' }})
-                                    </span>
+                                    <span class="ml-1 text-xs text-gray-500"> ({{ form.is_pinned ? 'Activado' : 'Desactivado' }}) </span>
                                 </Label>
                             </div>
 
                             <div class="flex items-center space-x-3">
                                 <div class="flex items-center">
-                                    <input
-                                        id="requires_confirmation"
-                                        v-model="form.requires_confirmation"
-                                        type="checkbox"
-                                        class="sr-only"
-                                    />
+                                    <input id="requires_confirmation" v-model="form.requires_confirmation" type="checkbox" class="sr-only" />
                                     <label
                                         for="requires_confirmation"
-                                        class="relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        class="relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none"
                                         :class="form.requires_confirmation ? 'bg-primary' : 'bg-gray-200'"
                                     >
                                         <span
@@ -391,38 +361,24 @@ const breadcrumbs = [
                                         ></span>
                                     </label>
                                 </div>
-                                <Label for="requires_confirmation" class="text-sm font-medium cursor-pointer">
+                                <Label for="requires_confirmation" class="cursor-pointer text-sm font-medium">
                                     Requiere confirmación
-                                    <span class="text-xs text-gray-500 ml-1">
-                                        ({{ form.requires_confirmation ? 'Activado' : 'Desactivado' }})
-                                    </span>
+                                    <span class="ml-1 text-xs text-gray-500"> ({{ form.requires_confirmation ? 'Activado' : 'Desactivado' }}) </span>
                                 </Label>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="published_at">Fecha de Publicación</Label>
-                                <Input
-                                    id="published_at"
-                                    v-model="form.published_at"
-                                    type="datetime-local"
-                                />
-                                <p class="text-xs text-gray-500">
-                                    Deja vacío para publicar inmediatamente
-                                </p>
+                                <Input id="published_at" v-model="form.published_at" type="datetime-local" />
+                                <p class="text-xs text-gray-500">Deja vacío para publicar inmediatamente</p>
                             </div>
 
                             <div class="space-y-2">
                                 <Label for="expires_at">Fecha de Expiración</Label>
-                                <Input
-                                    id="expires_at"
-                                    v-model="form.expires_at"
-                                    type="datetime-local"
-                                />
-                                <p class="text-xs text-gray-500">
-                                    Opcional. El anuncio dejará de ser visible después de esta fecha
-                                </p>
+                                <Input id="expires_at" v-model="form.expires_at" type="datetime-local" />
+                                <p class="text-xs text-gray-500">Opcional. El anuncio dejará de ser visible después de esta fecha</p>
                             </div>
                         </div>
                     </CardContent>
@@ -432,30 +388,15 @@ const breadcrumbs = [
                 <Card class="md:hidden">
                     <CardContent class="pt-6">
                         <div class="flex flex-col gap-2">
-                            <Button
-                                type="button"
-                                @click="publishAndSend"
-                                :disabled="form.processing"
-                                class="w-full"
-                            >
+                            <Button type="button" @click="publishAndSend" :disabled="form.processing" class="w-full">
                                 <Send class="mr-2 h-4 w-4" />
                                 Publicar
                             </Button>
-                            <Button
-                                type="submit"
-                                variant="outline"
-                                :disabled="form.processing"
-                                class="w-full"
-                            >
+                            <Button type="submit" variant="outline" :disabled="form.processing" class="w-full">
                                 <Save class="mr-2 h-4 w-4" />
                                 Guardar Borrador
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                @click="router.visit(route('announcements.index'))"
-                                class="w-full"
-                            >
+                            <Button type="button" variant="outline" @click="router.visit(route('announcements.index'))" class="w-full">
                                 Cancelar
                             </Button>
                         </div>

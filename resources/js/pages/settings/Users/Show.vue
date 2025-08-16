@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import HeadingSmall from '@/components/HeadingSmall.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { Edit, Mail, Phone, User, UserCog, Users, Calendar } from 'lucide-vue-next';
+import { Calendar, Edit, Mail, Phone, User, UserCog, Users } from 'lucide-vue-next';
 
 export interface User {
     id: number;
@@ -87,9 +87,11 @@ const getRoleBadgeVariant = (roleName: string) => {
                             <User class="h-8 w-8 text-primary" />
                         </div>
                         <div>
-                            <HeadingSmall 
-                                :title="user.name" 
-                                :description="user.position ? `${user.position}${user.department ? ` - ${user.department}` : ''}` : 'Usuario del sistema'" 
+                            <HeadingSmall
+                                :title="user.name"
+                                :description="
+                                    user.position ? `${user.position}${user.department ? ` - ${user.department}` : ''}` : 'Usuario del sistema'
+                                "
                             />
                         </div>
                     </div>
@@ -160,12 +162,7 @@ const getRoleBadgeVariant = (roleName: string) => {
                             <div class="space-y-2">
                                 <p class="text-sm text-muted-foreground">Rol asignado:</p>
                                 <div v-if="user.roles.length > 0">
-                                    <Badge 
-                                        v-for="role in user.roles" 
-                                        :key="role.id"
-                                        :variant="getRoleBadgeVariant(role.name)"
-                                        class="mb-1 mr-1"
-                                    >
+                                    <Badge v-for="role in user.roles" :key="role.id" :variant="getRoleBadgeVariant(role.name)" class="mr-1 mb-1">
                                         {{ roleLabels[role.name] || role.name }}
                                     </Badge>
                                 </div>
@@ -223,8 +220,8 @@ const getRoleBadgeVariant = (roleName: string) => {
                             <Users class="mb-4 h-16 w-16 text-muted-foreground" />
                             <h3 class="mb-2 text-lg font-semibold">Estadísticas de Actividad</h3>
                             <p class="mb-6 max-w-md text-muted-foreground">
-                                Las estadísticas de actividad del usuario estarán disponibles próximamente.
-                                Aquí podrás ver el historial de accesos, últimas acciones realizadas y más.
+                                Las estadísticas de actividad del usuario estarán disponibles próximamente. Aquí podrás ver el historial de accesos,
+                                últimas acciones realizadas y más.
                             </p>
                         </div>
                     </CardContent>

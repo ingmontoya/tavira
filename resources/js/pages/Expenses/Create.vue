@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { Save, ArrowLeft, Calculator, CreditCard, Receipt, AlertTriangle, CheckCircle } from 'lucide-vue-next';
+import { AlertTriangle, ArrowLeft, Calculator, CheckCircle, CreditCard, Receipt, Save } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 import { formatCurrency } from '../../utils';
 
@@ -101,7 +101,7 @@ const form = useForm({
 // Computed properties
 const selectedCategory = computed(() => {
     if (!form.expense_category_id) return null;
-    return props.categories.find(cat => cat.id === parseInt(form.expense_category_id));
+    return props.categories.find((cat) => cat.id === parseInt(form.expense_category_id));
 });
 
 const allCreditAccounts = computed(() => {
@@ -110,7 +110,7 @@ const allCreditAccounts = computed(() => {
 
 const selectedSupplier = computed(() => {
     if (!form.supplier_id) return null;
-    return props.suppliers.find(supplier => supplier.id === parseInt(form.supplier_id));
+    return props.suppliers.find((supplier) => supplier.id === parseInt(form.supplier_id));
 });
 
 const showVendorFields = computed(() => {
@@ -118,38 +118,44 @@ const showVendorFields = computed(() => {
 });
 
 // Watch for category changes to set default accounts
-watch(() => form.expense_category_id, (newCategoryId) => {
-    if (newCategoryId) {
-        const category = props.categories.find(cat => cat.id === parseInt(newCategoryId));
-        if (category) {
-            if (category.default_debit_account && !form.debit_account_id) {
-                form.debit_account_id = category.default_debit_account.id.toString();
-            }
-            if (category.default_credit_account && !form.credit_account_id) {
-                form.credit_account_id = category.default_credit_account.id.toString();
+watch(
+    () => form.expense_category_id,
+    (newCategoryId) => {
+        if (newCategoryId) {
+            const category = props.categories.find((cat) => cat.id === parseInt(newCategoryId));
+            if (category) {
+                if (category.default_debit_account && !form.debit_account_id) {
+                    form.debit_account_id = category.default_debit_account.id.toString();
+                }
+                if (category.default_credit_account && !form.credit_account_id) {
+                    form.credit_account_id = category.default_credit_account.id.toString();
+                }
             }
         }
-    }
-});
+    },
+);
 
 // Watch for supplier changes to populate vendor fields
-watch(() => form.supplier_id, (newSupplierId) => {
-    if (newSupplierId) {
-        const supplier = props.suppliers.find(s => s.id === parseInt(newSupplierId));
-        if (supplier) {
-            form.vendor_name = supplier.name;
-            form.vendor_document = supplier.document_number;
-            form.vendor_email = supplier.email || '';
-            form.vendor_phone = supplier.phone || '';
+watch(
+    () => form.supplier_id,
+    (newSupplierId) => {
+        if (newSupplierId) {
+            const supplier = props.suppliers.find((s) => s.id === parseInt(newSupplierId));
+            if (supplier) {
+                form.vendor_name = supplier.name;
+                form.vendor_document = supplier.document_number;
+                form.vendor_email = supplier.email || '';
+                form.vendor_phone = supplier.phone || '';
+            }
+        } else {
+            // Clear vendor fields when no supplier is selected
+            form.vendor_name = '';
+            form.vendor_document = '';
+            form.vendor_email = '';
+            form.vendor_phone = '';
         }
-    } else {
-        // Clear vendor fields when no supplier is selected
-        form.vendor_name = '';
-        form.vendor_document = '';
-        form.vendor_email = '';
-        form.vendor_phone = '';
-    }
-});
+    },
+);
 
 // Calculate total when subtotal or tax changes
 watch([() => form.subtotal, () => form.tax_amount], () => {
@@ -161,7 +167,7 @@ const submit = () => {
     form.post('/expenses', {
         onSuccess: () => {
             // Will redirect to show page
-        }
+        },
     });
 };
 
@@ -185,9 +191,7 @@ const cancel = () => {
                     <div class="flex items-center justify-between">
                         <div class="space-y-1">
                             <h2 class="text-2xl font-semibold tracking-tight">Crear Nuevo Gasto</h2>
-                            <p class="text-sm text-muted-foreground">
-                                Complete la información del gasto y su mapeo contable
-                            </p>
+                            <p class="text-sm text-muted-foreground">Complete la información del gasto y su mapeo contable</p>
                         </div>
                         <div class="flex items-center space-x-2">
                             <Button type="button" variant="outline" @click="cancel">
@@ -201,9 +205,9 @@ const cancel = () => {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <!-- Main Information -->
-                        <div class="lg:col-span-2 space-y-6">
+                        <div class="space-y-6 lg:col-span-2">
                             <!-- Basic Information -->
                             <Card>
                                 <CardHeader>
@@ -213,7 +217,7 @@ const cancel = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
                                             <Label for="expense_category_id" class="required">Categoría</Label>
                                             <Select v-model="form.expense_category_id" required>
@@ -223,7 +227,7 @@ const cancel = () => {
                                                 <SelectContent>
                                                     <SelectItem v-for="category in categories" :key="category.id" :value="category.id.toString()">
                                                         <div class="flex items-center gap-2">
-                                                            <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: category.color }"></div>
+                                                            <div class="h-3 w-3 rounded-full" :style="{ backgroundColor: category.color }"></div>
                                                             {{ category.name }}
                                                         </div>
                                                     </SelectItem>
@@ -236,12 +240,7 @@ const cancel = () => {
 
                                         <div class="space-y-2">
                                             <Label for="expense_date" class="required">Fecha del Gasto</Label>
-                                            <Input
-                                                id="expense_date"
-                                                v-model="form.expense_date"
-                                                type="date"
-                                                required
-                                            />
+                                            <Input id="expense_date" v-model="form.expense_date" type="date" required />
                                         </div>
                                     </div>
 
@@ -284,15 +283,13 @@ const cancel = () => {
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <p class="text-xs text-muted-foreground">
-                                            Si selecciona un proveedor, sus datos se cargarán automáticamente
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Si selecciona un proveedor, sus datos se cargarán automáticamente</p>
                                     </div>
 
                                     <!-- Vendor Fields (manual entry) -->
-                                    <div v-if="showVendorFields || selectedSupplier" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div v-if="showVendorFields || selectedSupplier" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div class="space-y-2">
-                                            <Label for="vendor_name" :class="{ 'required': showVendorFields }">Nombre del Proveedor</Label>
+                                            <Label for="vendor_name" :class="{ required: showVendorFields }">Nombre del Proveedor</Label>
                                             <Input
                                                 id="vendor_name"
                                                 v-model="form.vendor_name"
@@ -334,14 +331,14 @@ const cancel = () => {
                                         </div>
                                     </div>
 
-                                    <div v-if="selectedSupplier" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div v-if="selectedSupplier" class="rounded-lg border border-blue-200 bg-blue-50 p-3">
                                         <div class="flex items-center gap-2 text-blue-800">
                                             <AlertTriangle class="h-4 w-4" />
                                             <span class="text-sm font-medium">Proveedor Seleccionado</span>
                                         </div>
-                                        <p class="text-sm text-blue-600 mt-1">
-                                            Los datos del proveedor "{{ selectedSupplier.name }}" se han cargado automáticamente.
-                                            Para modificar esta información, desseleccione el proveedor e ingrese los datos manualmente.
+                                        <p class="mt-1 text-sm text-blue-600">
+                                            Los datos del proveedor "{{ selectedSupplier.name }}" se han cargado automáticamente. Para modificar esta
+                                            información, desseleccione el proveedor e ingrese los datos manualmente.
                                         </p>
                                     </div>
                                 </CardContent>
@@ -356,48 +353,26 @@ const cancel = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                                         <div class="space-y-2">
                                             <Label for="subtotal" class="required">Subtotal</Label>
-                                            <Input
-                                                id="subtotal"
-                                                v-model.number="form.subtotal"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                required
-                                            />
+                                            <Input id="subtotal" v-model.number="form.subtotal" type="number" step="0.01" min="0" required />
                                         </div>
 
                                         <div class="space-y-2">
                                             <Label for="tax_amount">Impuestos</Label>
-                                            <Input
-                                                id="tax_amount"
-                                                v-model.number="form.tax_amount"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                            />
+                                            <Input id="tax_amount" v-model.number="form.tax_amount" type="number" step="0.01" min="0" />
                                         </div>
 
                                         <div class="space-y-2">
                                             <Label for="total_amount" class="required">Total</Label>
-                                            <Input
-                                                id="total_amount"
-                                                :value="formatCurrency(form.total_amount)"
-                                                disabled
-                                                class="font-bold"
-                                            />
+                                            <Input id="total_amount" :value="formatCurrency(form.total_amount)" disabled class="font-bold" />
                                         </div>
                                     </div>
 
                                     <div class="space-y-2">
                                         <Label for="due_date">Fecha de Vencimiento</Label>
-                                        <Input
-                                            id="due_date"
-                                            v-model="form.due_date"
-                                            type="date"
-                                        />
+                                        <Input id="due_date" v-model="form.due_date" type="date" />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -410,29 +385,24 @@ const cancel = () => {
                                 <CardContent class="space-y-4">
                                     <div class="space-y-2">
                                         <Label for="notes">Notas</Label>
-                                        <Textarea
-                                            id="notes"
-                                            v-model="form.notes"
-                                            placeholder="Observaciones adicionales..."
-                                            rows="3"
-                                        />
+                                        <Textarea id="notes" v-model="form.notes" placeholder="Observaciones adicionales..." rows="3" />
                                     </div>
 
-                                    <div v-if="selectedCategory?.requires_approval" class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <div v-if="selectedCategory?.requires_approval" class="rounded-lg border border-amber-200 bg-amber-50 p-3">
                                         <div class="flex items-center gap-2 text-amber-800">
                                             <AlertTriangle class="h-4 w-4" />
                                             <span class="text-sm font-medium">Aprobación Requerida</span>
                                         </div>
-                                        <p class="text-sm text-amber-700 mt-1">
+                                        <p class="mt-1 text-sm text-amber-700">
                                             Este gasto será enviado automáticamente para aprobación debido a la categoría seleccionada.
                                         </p>
                                     </div>
-                                    <div v-else class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div v-else class="rounded-lg border border-green-200 bg-green-50 p-3">
                                         <div class="flex items-center gap-2 text-green-800">
                                             <CheckCircle class="h-4 w-4" />
                                             <span class="text-sm font-medium">Aprobación Automática</span>
                                         </div>
-                                        <p class="text-sm text-green-700 mt-1">
+                                        <p class="mt-1 text-sm text-green-700">
                                             Este gasto será aprobado automáticamente y estará listo para ser pagado.
                                         </p>
                                     </div>
@@ -462,9 +432,7 @@ const cancel = () => {
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        <p class="text-xs text-muted-foreground">
-                                            Esta cuenta registrará el gasto incurrido
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Esta cuenta registrará el gasto incurrido</p>
                                     </div>
 
                                     <div class="space-y-2">
@@ -478,14 +446,22 @@ const cancel = () => {
                                                 <SelectItem v-if="assetAccounts.length > 0" disabled class="font-semibold text-primary">
                                                     Activos (Pagos Inmediatos)
                                                 </SelectItem>
-                                                <SelectItem v-for="account in assetAccounts" :key="`asset-${account.id}`" :value="account.id.toString()">
+                                                <SelectItem
+                                                    v-for="account in assetAccounts"
+                                                    :key="`asset-${account.id}`"
+                                                    :value="account.id.toString()"
+                                                >
                                                     <span class="ml-4">{{ account.full_name }}</span>
                                                 </SelectItem>
                                                 <!-- Liability Accounts (Cuentas por Pagar) -->
                                                 <SelectItem v-if="liabilityAccounts.length > 0" disabled class="font-semibold text-primary">
                                                     Pasivos (Cuentas por Pagar)
                                                 </SelectItem>
-                                                <SelectItem v-for="account in liabilityAccounts" :key="`liability-${account.id}`" :value="account.id.toString()">
+                                                <SelectItem
+                                                    v-for="account in liabilityAccounts"
+                                                    :key="`liability-${account.id}`"
+                                                    :value="account.id.toString()"
+                                                >
                                                     <span class="ml-4">{{ account.full_name }}</span>
                                                 </SelectItem>
                                             </SelectContent>
@@ -496,15 +472,26 @@ const cancel = () => {
                                     </div>
 
                                     <!-- Preview of accounting entry -->
-                                    <div v-if="form.debit_account_id && form.credit_account_id && form.total_amount > 0" class="mt-4 p-3 bg-muted rounded-lg">
-                                        <h4 class="text-sm font-medium mb-2">Vista Previa del Asiento Contable:</h4>
+                                    <div
+                                        v-if="form.debit_account_id && form.credit_account_id && form.total_amount > 0"
+                                        class="mt-4 rounded-lg bg-muted p-3"
+                                    >
+                                        <h4 class="mb-2 text-sm font-medium">Vista Previa del Asiento Contable:</h4>
                                         <div class="space-y-1 text-xs">
                                             <div class="flex justify-between">
-                                                <span>Débito: {{ expenseAccounts.find(acc => acc.id === parseInt(form.debit_account_id))?.full_name }}</span>
+                                                <span
+                                                    >Débito:
+                                                    {{ expenseAccounts.find((acc) => acc.id === parseInt(form.debit_account_id))?.full_name }}</span
+                                                >
                                                 <span class="font-mono">{{ formatCurrency(form.total_amount) }}</span>
                                             </div>
                                             <div class="flex justify-between">
-                                                <span>Crédito: {{ allCreditAccounts.find(acc => acc.id === parseInt(form.credit_account_id))?.full_name }}</span>
+                                                <span
+                                                    >Crédito:
+                                                    {{
+                                                        allCreditAccounts.find((acc) => acc.id === parseInt(form.credit_account_id))?.full_name
+                                                    }}</span
+                                                >
                                                 <span class="font-mono">{{ formatCurrency(form.total_amount) }}</span>
                                             </div>
                                         </div>
@@ -516,7 +503,7 @@ const cancel = () => {
                             <Card v-if="selectedCategory">
                                 <CardHeader>
                                     <CardTitle class="flex items-center gap-2">
-                                        <div class="w-4 h-4 rounded-full" :style="{ backgroundColor: selectedCategory.color }"></div>
+                                        <div class="h-4 w-4 rounded-full" :style="{ backgroundColor: selectedCategory.color }"></div>
                                         {{ selectedCategory.name }}
                                     </CardTitle>
                                 </CardHeader>
@@ -524,7 +511,7 @@ const cancel = () => {
                                     <p class="text-sm text-muted-foreground">
                                         {{ selectedCategory.description }}
                                     </p>
-                                    <div v-if="selectedCategory.requires_approval" class="flex items-center gap-2 text-amber-600 text-xs">
+                                    <div v-if="selectedCategory.requires_approval" class="flex items-center gap-2 text-xs text-amber-600">
                                         <AlertTriangle class="h-3 w-3" />
                                         Requiere aprobación
                                     </div>
@@ -540,7 +527,7 @@ const cancel = () => {
 
 <style scoped>
 .required::after {
-    content: " *";
+    content: ' *';
     color: red;
 }
 </style>

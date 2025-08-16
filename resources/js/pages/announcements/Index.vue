@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import DropdownAction from '@/components/DataTableDropDown.vue';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { MessageSquare, Plus, Search, Eye, Edit, Trash2, Copy, Users } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { Copy, Edit, Eye, MessageSquare, Plus, Search, Trash2, Users } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 
 interface Announcement {
     id: number;
@@ -62,36 +62,44 @@ const selectedPriority = ref(props.filters.priority || '');
 const selectedType = ref(props.filters.type || '');
 const showPinned = ref(props.filters.pinned || false);
 
-watch([searchTerm, selectedStatus, selectedPriority, selectedType, showPinned], () => {
-    router.get(route('announcements.index'), {
-        search: searchTerm.value,
-        status: selectedStatus.value,
-        priority: selectedPriority.value,
-        type: selectedType.value,
-        pinned: showPinned.value || undefined,
-    }, {
-        preserveState: true,
-        replace: true,
-    });
-}, { debounce: 300 });
+watch(
+    [searchTerm, selectedStatus, selectedPriority, selectedType, showPinned],
+    () => {
+        router.get(
+            route('announcements.index'),
+            {
+                search: searchTerm.value,
+                status: selectedStatus.value,
+                priority: selectedPriority.value,
+                type: selectedType.value,
+                pinned: showPinned.value || undefined,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    },
+    { debounce: 300 },
+);
 
 const priorityLabels = {
     urgent: 'Urgente',
     important: 'Importante',
-    normal: 'Normal'
+    normal: 'Normal',
 };
 
 const typeLabels = {
     general: 'General',
     administrative: 'Administrativo',
     maintenance: 'Mantenimiento',
-    emergency: 'Emergencia'
+    emergency: 'Emergencia',
 };
 
 const statusLabels = {
     draft: 'Borrador',
     published: 'Publicado',
-    archived: 'Archivado'
+    archived: 'Archivado',
 };
 
 const formatDate = (date: string) => {
@@ -100,7 +108,7 @@ const formatDate = (date: string) => {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -130,11 +138,15 @@ const getDropdownActions = (announcement: Announcement) => [
         icon: Copy,
         action: () => duplicate(announcement),
     },
-    ...(announcement.requires_confirmation ? [{
-        label: 'Ver Confirmaciones',
-        icon: Users,
-        href: route('announcements.confirmations', announcement.id),
-    }] : []),
+    ...(announcement.requires_confirmation
+        ? [
+              {
+                  label: 'Ver Confirmaciones',
+                  icon: Users,
+                  href: route('announcements.confirmations', announcement.id),
+              },
+          ]
+        : []),
     {
         label: 'Eliminar',
         icon: Trash2,
@@ -145,7 +157,7 @@ const getDropdownActions = (announcement: Announcement) => [
 
 const breadcrumbs = [
     { title: 'Comunicación', href: '#' },
-    { title: 'Anuncios', href: route('announcements.index') }
+    { title: 'Anuncios', href: route('announcements.index') },
 ];
 </script>
 
@@ -158,9 +170,7 @@ const breadcrumbs = [
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-900">Anuncios</h1>
-                    <p class="text-sm text-gray-600 mt-1">
-                        Gestiona los anuncios para los residentes
-                    </p>
+                    <p class="mt-1 text-sm text-gray-600">Gestiona los anuncios para los residentes</p>
                 </div>
                 <Button as-child>
                     <Link :href="route('announcements.create')">
@@ -171,7 +181,7 @@ const breadcrumbs = [
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">Total</CardTitle>
@@ -219,14 +229,10 @@ const breadcrumbs = [
                     <CardTitle>Filtros</CardTitle>
                 </CardHeader>
                 <CardContent class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-6">
                         <div class="relative">
-                            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <Input
-                                v-model="searchTerm"
-                                placeholder="Buscar anuncios..."
-                                class="pl-10"
-                            />
+                            <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                            <Input v-model="searchTerm" placeholder="Buscar anuncios..." class="pl-10" />
                         </div>
 
                         <Select v-model="selectedStatus">
@@ -263,16 +269,17 @@ const breadcrumbs = [
                             </SelectContent>
                         </Select>
 
-                        <Button
-                            :variant="showPinned ? 'default' : 'outline'"
-                            @click="showPinned = !showPinned"
-                        >
-                            Solo Fijados
-                        </Button>
+                        <Button :variant="showPinned ? 'default' : 'outline'" @click="showPinned = !showPinned"> Solo Fijados </Button>
 
                         <Button
                             variant="outline"
-                            @click="searchTerm = ''; selectedStatus = ''; selectedPriority = ''; selectedType = ''; showPinned = false"
+                            @click="
+                                searchTerm = '';
+                                selectedStatus = '';
+                                selectedPriority = '';
+                                selectedType = '';
+                                showPinned = false;
+                            "
                         >
                             Limpiar
                         </Button>
@@ -304,12 +311,10 @@ const breadcrumbs = [
                         >
                             <TableCell>
                                 <div class="flex items-center gap-2">
-                                    <div v-if="announcement.is_pinned" class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                    <div v-if="announcement.is_pinned" class="h-2 w-2 rounded-full bg-yellow-500"></div>
                                     <div>
                                         <div class="font-medium">{{ announcement.title }}</div>
-                                        <div class="text-sm text-gray-500 line-clamp-1">
-                                            {{ announcement.content.substring(0, 100) }}...
-                                        </div>
+                                        <div class="line-clamp-1 text-sm text-gray-500">{{ announcement.content.substring(0, 100) }}...</div>
                                     </div>
                                 </div>
                             </TableCell>
@@ -326,13 +331,17 @@ const breadcrumbs = [
                             <TableCell>
                                 <div class="text-sm">
                                     <div class="font-medium">{{ announcement.target_scope_display || 'General' }}</div>
-                                    <div v-if="announcement.target_details" class="text-gray-500 text-xs">
+                                    <div v-if="announcement.target_details" class="text-xs text-gray-500">
                                         {{ announcement.target_details }}
                                     </div>
                                 </div>
                             </TableCell>
                             <TableCell>
-                                <Badge :variant="announcement.status === 'published' ? 'default' : announcement.status === 'draft' ? 'secondary' : 'outline'">
+                                <Badge
+                                    :variant="
+                                        announcement.status === 'published' ? 'default' : announcement.status === 'draft' ? 'secondary' : 'outline'
+                                    "
+                                >
                                     {{ statusLabels[announcement.status] }}
                                 </Badge>
                             </TableCell>
@@ -347,15 +356,13 @@ const breadcrumbs = [
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="announcements.data.length === 0">
-                            <TableCell :colspan="8" class="text-center py-8 text-gray-500">
-                                No se encontraron anuncios
-                            </TableCell>
+                            <TableCell :colspan="8" class="py-8 text-center text-gray-500"> No se encontraron anuncios </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
 
                 <!-- Pagination would go here if needed -->
-                <div v-if="announcements.links" class="p-4 border-t">
+                <div v-if="announcements.links" class="border-t p-4">
                     <!-- Add pagination component if available -->
                 </div>
             </Card>

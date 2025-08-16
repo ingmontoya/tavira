@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Progress } from '@/components/ui/progress';
-import { computed } from 'vue';
 import type { BatchProgressData } from '@/types';
+import { computed } from 'vue';
 
 interface Props {
     progress: BatchProgressData;
@@ -49,38 +48,22 @@ const textSizeClass = computed(() => {
 <template>
     <div class="space-y-2">
         <!-- Labels and Percentage -->
-        <div v-if="showLabels || showPercentage" class="flex justify-between items-center">
-            <div v-if="showLabels" :class="['font-medium', textSizeClass]">
-                Progreso de envío
-            </div>
-            <div v-if="showPercentage" :class="['font-medium', textSizeClass]">
-                {{ Math.round(progress.percentage) }}%
-            </div>
+        <div v-if="showLabels || showPercentage" class="flex items-center justify-between">
+            <div v-if="showLabels" :class="['font-medium', textSizeClass]">Progreso de envío</div>
+            <div v-if="showPercentage" :class="['font-medium', textSizeClass]">{{ Math.round(progress.percentage) }}%</div>
         </div>
 
         <!-- Multi-segment Progress Bar -->
-        <div :class="['w-full bg-gray-200 rounded-full overflow-hidden', heightClass]">
-            <div class="h-full flex">
+        <div :class="['w-full overflow-hidden rounded-full bg-gray-200', heightClass]">
+            <div class="flex h-full">
                 <!-- Sent (Green) -->
-                <div 
-                    v-if="successWidth > 0"
-                    class="bg-green-500 transition-all duration-300"
-                    :style="{ width: `${successWidth}%` }"
-                ></div>
-                
+                <div v-if="successWidth > 0" class="bg-green-500 transition-all duration-300" :style="{ width: `${successWidth}%` }"></div>
+
                 <!-- Failed (Red) -->
-                <div 
-                    v-if="failedWidth > 0"
-                    class="bg-red-500 transition-all duration-300"
-                    :style="{ width: `${failedWidth}%` }"
-                ></div>
-                
+                <div v-if="failedWidth > 0" class="bg-red-500 transition-all duration-300" :style="{ width: `${failedWidth}%` }"></div>
+
                 <!-- Pending (Orange) -->
-                <div 
-                    v-if="pendingWidth > 0"
-                    class="bg-orange-400 transition-all duration-300"
-                    :style="{ width: `${pendingWidth}%` }"
-                ></div>
+                <div v-if="pendingWidth > 0" class="bg-orange-400 transition-all duration-300" :style="{ width: `${pendingWidth}%` }"></div>
             </div>
         </div>
 
@@ -90,32 +73,26 @@ const textSizeClass = computed(() => {
                 <div :class="['font-medium text-green-600', textSizeClass]">
                     {{ progress.sent }}
                 </div>
-                <div :class="['text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">
-                    Enviadas
-                </div>
+                <div :class="['text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">Enviadas</div>
             </div>
-            
+
             <div class="text-center">
                 <div :class="['font-medium text-red-600', textSizeClass]">
                     {{ progress.failed }}
                 </div>
-                <div :class="['text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">
-                    Fallidas
-                </div>
+                <div :class="['text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">Fallidas</div>
             </div>
-            
+
             <div class="text-center">
                 <div :class="['font-medium text-orange-600', textSizeClass]">
                     {{ progress.pending }}
                 </div>
-                <div :class="['text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">
-                    Pendientes
-                </div>
+                <div :class="['text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">Pendientes</div>
             </div>
         </div>
 
         <!-- Status Text -->
-        <div v-if="showLabels" :class="['text-muted-foreground text-center', props.size === 'sm' ? 'text-xs' : 'text-xs']">
+        <div v-if="showLabels" :class="['text-center text-muted-foreground', props.size === 'sm' ? 'text-xs' : 'text-xs']">
             {{ progress.current_status }}
         </div>
     </div>
