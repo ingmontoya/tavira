@@ -17,7 +17,7 @@ import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, g
 import { ArrowLeft, CheckCircle, ChevronsUpDown, Eye, FileText, Filter, Mail, Plus, Search, X, XCircle } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { cn, valueUpdater } from '@/utils';
-import type { Invoice, EligibleInvoicesResponse, EligibleInvoiceFilters, Apartment, EmailTemplate, CreateInvoiceEmailBatchData } from '@/types';
+import type { EligibleInvoice, EligibleInvoicesResponse, EligibleInvoiceFilters, Apartment, EmailTemplate, CreateInvoiceEmailBatchData } from '@/types';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -52,6 +52,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// Debug props
+console.log('Props received:', props);
+console.log('Email templates:', props.emailTemplates);
+
 // Get page data for errors and flash messages
 const page = usePage();
 const errors = computed(() => page.props.errors || {});
@@ -81,38 +85,38 @@ const customFilters = ref<EligibleInvoiceFilters>({
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
-const rowSelection = ref<Record<string, boolean>>({});
+const rowSelection = ref<Record<string | number, boolean>>({});
+
+// Initialize row selection properly
+console.log('Initial row selection state:', rowSelection.value);
 
 // Step state
 const currentStep = ref(1);
 const totalSteps = 3;
 
 // Column helper
-const columnHelper = createColumnHelper<EligibleInvoicesResponse>();
+const columnHelper = createColumnHelper<EligibleInvoice>();
 
 const columns = [
-    columnHelper.display({
+    {
         id: 'select',
-        header: ({ table }) =>
-            h(Checkbox, {
-                checked: table.getIsAllPageRowsSelected(),
-                indeterminate: table.getIsSomePageRowsSelected(),
-                'onUpdate:checked': (value) => table.toggleAllPageRowsSelected(!!value),
-                ariaLabel: 'Select all',
-            }),
-        cell: ({ row }) =>
-            h(Checkbox, {
-                checked: row.getIsSelected(),
-                'onUpdate:checked': (value) => {
-                    row.toggleSelected(!!value);
-                    updateSelectedInvoices();
-                },
-                ariaLabel: 'Select row',
-            }),
+        header: 'Seleccionar',
+        accessorKey: 'id',
         enableSorting: false,
         enableHiding: false,
-    }),
-    columnHelper.accessor('data.invoice_number', {
+        cell: ({ row }) => {
+            const invoiceId = row.original.id;
+            return `<div class="flex items-center justify-center">
+                <input 
+                    type="checkbox" 
+                    data-invoice-id="${invoiceId}"
+                    ${isInvoiceSelected(invoiceId) ? 'checked' : ''}
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer invoice-checkbox"
+                />
+            </div>`;
+        },
+    },
+    columnHelper.accessor('invoice_number', {
         header: ({ column }) => {
             return h(
                 Button,
@@ -128,28 +132,33 @@ const columns = [
             return h('div', { class: 'font-medium' }, invoice.invoice_number);
         },
     }),
-    columnHelper.accessor('data.apartment.full_address', {
+    columnHelper.accessor('apartment_number', {
         header: 'Apartamento',
         cell: ({ row }) => {
-            const apartment = row.original;
-            console.log(apartment);
+            const invoice = row.original;
+            console.log('Invoice data:', invoice);
 
-            if (!apartment) {
+            if (!invoice.apartment_number) {
                 return h('div', { class: 'flex flex-col' }, [
                     h('span', { class: 'font-medium text-red-600' }, 'Sin apartamento'),
                     h('span', { class: 'text-sm text-muted-foreground' }, 'N/A'),
                 ]);
             }
             return h('div', { class: 'flex flex-col' }, [
-                h('span', { class: 'font-medium' }, apartment.apartment_number || 'Dirección no disponible'),
-                h('span', { class: 'text-sm text-muted-foreground' }, `#${apartment.apartment_number || 'N/A'}`),
+                h('span', { class: 'font-medium' }, invoice.apartment_number || 'Dirección no disponible'),
+                h('span', { class: 'text-sm text-muted-foreground' }, `#${invoice.apartment_number || 'N/A'}`),
             ]);
         },
     }),
-    columnHelper.accessor('type_label', {
+    columnHelper.accessor('type', {
         header: 'Tipo',
         cell: ({ row }) => {
-            return h('span', { class: 'text-sm' }, row.original.type_label);
+            const typeLabels = {
+                'monthly': 'Mensual',
+                'individual': 'Individual', 
+                'late_fee': 'Intereses'
+            };
+            return h('span', { class: 'text-sm' }, typeLabels[row.original.type] || row.original.type);
         },
     }),
     columnHelper.accessor('billing_period_label', {
@@ -172,7 +181,7 @@ const columns = [
             );
         },
     }),
-    columnHelper.accessor('balance_due', {
+    columnHelper.accessor('total_amount', {
         header: 'Saldo',
         cell: ({ row }) => {
             const balance = parseFloat(row.original.total_amount?.toString() || '0');
@@ -189,12 +198,20 @@ const columns = [
         header: 'Estado',
         cell: ({ row }) => {
             const invoice = row.original;
+            const statusLabels = {
+                'pending': { text: 'Pendiente', class: 'bg-yellow-100 text-yellow-800' },
+                'paid': { text: 'Pagado', class: 'bg-green-100 text-green-800' },
+                'overdue': { text: 'Vencido', class: 'bg-red-100 text-red-800' },
+                'partial': { text: 'Pago Parcial', class: 'bg-orange-100 text-orange-800' },
+                'cancelled': { text: 'Cancelado', class: 'bg-gray-100 text-gray-800' }
+            };
+            const statusInfo = statusLabels[invoice.status] || { text: invoice.status, class: 'bg-gray-100 text-gray-800' };
             return h(
                 Badge,
                 {
-                    class: invoice.status_badge?.class,
+                    class: statusInfo.class,
                 },
-                () => invoice.status_badge?.text,
+                () => statusInfo.text,
             );
         },
     }),
@@ -230,6 +247,9 @@ const table = useVueTable({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     manualPagination: true,
+    enableRowSelection: true,
+    enableMultiRowSelection: true,
+    getRowId: (row) => row.id,
     onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
     onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
     onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
@@ -242,11 +262,131 @@ const table = useVueTable({
     },
 });
 
+// Manual selection management
+const manualSelectedIds = ref<number[]>([]);
+
 // Update selected invoices
 const updateSelectedInvoices = () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     form.invoice_ids = selectedRows.map((row) => row.original.id);
+    console.log('Selected invoice IDs:', form.invoice_ids);
+    console.log('Table row selection state:', table.getState().rowSelection);
 };
+
+// Manual toggle functions
+const toggleInvoiceSelection = (invoiceId: number) => {
+    const index = manualSelectedIds.value.indexOf(invoiceId);
+    if (index > -1) {
+        manualSelectedIds.value.splice(index, 1);
+    } else {
+        manualSelectedIds.value.push(invoiceId);
+    }
+    form.invoice_ids = [...manualSelectedIds.value];
+    console.log('Manual selection updated:', form.invoice_ids);
+};
+
+const toggleAllSelection = () => {
+    if (manualSelectedIds.value.length === tableData.value.length) {
+        // Deselect all
+        manualSelectedIds.value = [];
+    } else {
+        // Select all
+        manualSelectedIds.value = tableData.value.map(invoice => invoice.id);
+    }
+    form.invoice_ids = [...manualSelectedIds.value];
+    console.log('Manual select all updated:', form.invoice_ids);
+};
+
+const isInvoiceSelected = (invoiceId: number) => {
+    return manualSelectedIds.value.includes(invoiceId);
+};
+
+const areAllSelected = computed(() => {
+    return tableData.value.length > 0 && manualSelectedIds.value.length === tableData.value.length;
+});
+
+const areSomeSelected = computed(() => {
+    return manualSelectedIds.value.length > 0 && manualSelectedIds.value.length < tableData.value.length;
+});
+
+// Handle select all change
+const handleSelectAllChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    console.log('Select all changed:', target.checked);
+    
+    if (target.checked) {
+        // Select all
+        manualSelectedIds.value = tableData.value.map(invoice => invoice.id);
+    } else {
+        // Deselect all
+        manualSelectedIds.value = [];
+    }
+    
+    form.invoice_ids = [...manualSelectedIds.value];
+    console.log('Select all updated:', form.invoice_ids);
+};
+
+// Handle individual checkbox change
+const handleCheckboxChange = (event: Event, invoiceId: number) => {
+    const target = event.target as HTMLInputElement;
+    console.log('Individual checkbox changed:', invoiceId, target.checked);
+    toggleInvoiceSelection(invoiceId);
+};
+
+// Utility functions for table display
+const getTypeLabel = (type: string) => {
+    const typeLabels = {
+        'monthly': 'Mensual',
+        'individual': 'Individual', 
+        'late_fee': 'Intereses'
+    };
+    return typeLabels[type] || type;
+};
+
+const getStatusLabel = (status: string) => {
+    const statusLabels = {
+        'pending': 'Pendiente',
+        'paid': 'Pagado',
+        'overdue': 'Vencido',
+        'partial': 'Pago Parcial',
+        'cancelled': 'Cancelado'
+    };
+    return statusLabels[status] || status;
+};
+
+const getStatusBadgeClass = (status: string) => {
+    const statusClasses = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'paid': 'bg-green-100 text-green-800',
+        'overdue': 'bg-red-100 text-red-800',
+        'partial': 'bg-orange-100 text-orange-800',
+        'cancelled': 'bg-gray-100 text-gray-800'
+    };
+    return statusClasses[status] || 'bg-gray-100 text-gray-800';
+};
+
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+};
+
+const formatAmount = (amount: string | number) => {
+    return parseFloat(amount.toString()).toLocaleString();
+};
+
+const isOverdue = (invoice: any) => {
+    const dueDate = new Date(invoice.due_date);
+    return invoice.status === 'overdue' || (invoice.status === 'pending' && dueDate < new Date());
+};
+
+// Watch for selection changes
+watch(
+    rowSelection,
+    (newSelection) => {
+        console.log('Row selection changed:', newSelection);
+        updateSelectedInvoices();
+    },
+    { deep: true }
+);
 
 // Apply filters
 const applyFilters = () => {
@@ -283,11 +423,29 @@ const clearFilters = () => {
 
 // Submit form
 const submitForm = () => {
-    form.post('/invoices/email', {
-        onSuccess: () => {
-            // Redirect will be handled by the controller
+    // Create filters based on selected invoices
+    const filters = {
+        invoice_ids: manualSelectedIds.value,
+        apartment_ids: [...new Set(selectedInvoices.value.map(inv => inv.apartment_id))],
+        // Add other filters if needed
+    };
+
+    // Update form data to match controller expectations
+    const submitData = {
+        name: form.name,
+        description: form.description,
+        filters: filters,
+        email_settings: {
+            template: form.template_id,
+            include_pdf: true,
         },
-    });
+        schedule_send: form.send_immediately,
+    };
+
+    console.log('Submitting data:', submitData);
+
+    // Submit using router.post
+    router.post('/invoices/email', submitData);
 };
 
 // Step navigation
@@ -328,7 +486,7 @@ const typeOptions = [
 ];
 
 // Computed properties
-const selectedCount = computed(() => form.invoice_ids.length);
+const selectedCount = computed(() => manualSelectedIds.value.length);
 const canProceed = computed(() => {
     switch (currentStep.value) {
         case 1: return form.name.trim().length > 0;
@@ -340,12 +498,12 @@ const canProceed = computed(() => {
 
 // Get selected invoices for preview
 const selectedInvoices = computed(() => {
-    return tableData.value.filter(invoice => form.invoice_ids.includes(invoice.id));
+    return tableData.value.filter(invoice => manualSelectedIds.value.includes(invoice.id));
 });
 
 // Calculate total amount
 const totalAmount = computed(() => {
-    return selectedInvoices.value.reduce((sum, invoice) => sum + parseFloat(invoice.balance_due.toString()), 0);
+    return selectedInvoices.value.reduce((sum, invoice) => sum + parseFloat(invoice.total_amount.toString()), 0);
 });
 </script>
 
@@ -554,7 +712,7 @@ const totalAmount = computed(() => {
                             </Button>
 
                             <div class="text-sm text-muted-foreground">
-                                {{ selectedCount }} facturas seleccionadas
+                                <strong>{{ selectedCount }} de {{ tableData.length }}</strong> facturas seleccionadas
                             </div>
                         </div>
                     </div>
@@ -570,38 +728,89 @@ const totalAmount = computed(() => {
                     </CardHeader>
 
                     <CardContent>
+                        <!-- Select All Checkbox -->
+                        <div class="mb-4 flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="select-all"
+                                :checked="areAllSelected"
+                                @change="handleSelectAllChange"
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <label for="select-all" class="text-sm font-medium">
+                                Seleccionar todas las facturas ({{ tableData.length }})
+                            </label>
+                        </div>
+                        
                         <div class="rounded-md border">
                             <Table>
                                 <TableHeader>
-                                    <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                                        <TableHead v-for="header in headerGroup.headers" :key="header.id">
-                                            <FlexRender
-                                                v-if="!header.isPlaceholder"
-                                                :render="header.column.columnDef.header"
-                                                :props="header.getContext()"
-                                            />
-                                        </TableHead>
+                                    <TableRow>
+                                        <TableHead class="w-16">Seleccionar</TableHead>
+                                        <TableHead>Número</TableHead>
+                                        <TableHead>Apartamento</TableHead>
+                                        <TableHead>Tipo</TableHead>
+                                        <TableHead>Período</TableHead>
+                                        <TableHead>Vencimiento</TableHead>
+                                        <TableHead>Saldo</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                        <TableHead>Acciones</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <template v-if="table.getRowModel().rows?.length">
+                                    <template v-if="tableData.length">
                                         <TableRow
-                                            v-for="row in table.getRowModel().rows"
-                                            :key="row.id"
-                                            :data-state="row.getIsSelected() ? 'selected' : undefined"
-                                            class="cursor-pointer transition-colors hover:bg-muted/50"
+                                            v-for="invoice in tableData"
+                                            :key="invoice.id"
+                                            class="transition-colors hover:bg-muted/50"
+                                            :class="{ 'bg-blue-50': isInvoiceSelected(invoice.id) }"
                                         >
-                                            <TableCell
-                                                v-for="cell in row.getVisibleCells()"
-                                                :key="cell.id"
-                                            >
-                                                <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                                            <TableCell class="text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    :checked="isInvoiceSelected(invoice.id)"
+                                                    @change="(e) => handleCheckboxChange(e, invoice.id)"
+                                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                                                />
+                                            </TableCell>
+                                            <TableCell class="font-medium">{{ invoice.invoice_number }}</TableCell>
+                                            <TableCell>
+                                                <div class="flex flex-col">
+                                                    <span class="font-medium">{{ invoice.apartment_number || 'Sin apartamento' }}</span>
+                                                    <span class="text-sm text-muted-foreground">#{{ invoice.apartment_number || 'N/A' }}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span class="text-sm">{{ getTypeLabel(invoice.type) }}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span class="text-sm">{{ invoice.billing_period_label }}</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div :class="isOverdue(invoice) ? 'font-medium text-red-600' : 'text-muted-foreground'">
+                                                    {{ formatDate(invoice.due_date) }}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div class="font-medium text-orange-600">
+                                                    ${{ formatAmount(invoice.total_amount) }}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge :class="getStatusBadgeClass(invoice.status)">
+                                                    {{ getStatusLabel(invoice.status) }}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button variant="ghost" size="sm" @click="() => router.visit(`/invoices/${invoice.id}`)">
+                                                    <Eye class="h-4 w-4" />
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     </template>
                                     <template v-else>
                                         <TableRow>
-                                            <TableCell :colSpan="columns.length" class="h-24 text-center">
+                                            <TableCell :colSpan="9" class="h-24 text-center">
                                                 No se encontraron facturas elegibles.
                                             </TableCell>
                                         </TableRow>
@@ -657,7 +866,7 @@ const totalAmount = computed(() => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem
-                                            v-for="template in emailTemplates"
+                                            v-for="template in props.emailTemplates"
                                             :key="template.id"
                                             :value="template.id.toString()"
                                         >
@@ -701,11 +910,11 @@ const totalAmount = computed(() => {
                                     <div>
                                         <div class="font-medium text-sm">{{ invoice.invoice_number }}</div>
                                         <div class="text-xs text-muted-foreground">
-                                            {{ invoice.apartment?.full_address || 'Sin apartamento asignado' }}
+                                            {{ invoice.apartment_number || 'Sin apartamento asignado' }}
                                         </div>
                                     </div>
                                     <div class="text-sm font-medium">
-                                        ${{ parseFloat(invoice.balance_due.toString()).toLocaleString() }}
+                                        ${{ parseFloat(invoice.total_amount.toString()).toLocaleString() }}
                                     </div>
                                 </div>
                             </div>

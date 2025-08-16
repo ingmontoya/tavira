@@ -276,7 +276,7 @@ export function useNavigation() {
         {
             title: 'Comunicación',
             icon: MessageSquare,
-            visible: hasPermission('view_correspondence') || hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors') || hasPermission('view_admin_email') || hasPermission('view_council_email'),
+            visible: hasPermission('view_correspondence') || hasPermission('view_announcements') || hasPermission('invite_visitors') || hasPermission('receive_notifications') || hasPermission('send_pqrs') || hasPermission('send_messages_to_admin') || hasPermission('manage_visitors') || hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates'),
             items: [
                 {
                     title: 'Correspondencia',
@@ -288,7 +288,7 @@ export function useNavigation() {
                 {
                     title: 'Correo Electrónico',
                     icon: Mail,
-                    visible: hasPermission('view_admin_email') || hasPermission('view_council_email'),
+                    visible: hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates'),
                     items: [
                         {
                             title: 'Correo Administración',
@@ -303,6 +303,13 @@ export function useNavigation() {
                             icon: Mail,
                             tourId: 'nav-email-concejo',
                             visible: hasPermission('view_council_email'),
+                        },
+                        {
+                            title: 'Plantillas de Email',
+                            href: '/email-templates',
+                            icon: FileText,
+                            tourId: 'nav-email-templates',
+                            visible: hasPermission('manage_email_templates'),
                         },
                     ],
                 },

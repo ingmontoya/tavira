@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -55,22 +56,24 @@ const flashError = computed(() => page.props.flash?.error);
 // Real-time updates
 const refreshInterval = ref<number | null>(null);
 
-// Send batch
-const sendBatch = () => {
-    if (confirm(`¿Estás seguro de que deseas enviar el lote "${props.batch.name}" con ${props.batch.total_invoices} facturas?`)) {
-        router.post(`/invoices/email/${props.batch.id}/send`);
-    }
+// Dialog states
+const showSendDialog = ref(false);
+const showCancelDialog = ref(false);
+const showRetryDialog = ref(false);
+const showDeleteDialog = ref(false);
+
+// Delete batch functions
+const openDeleteDialog = () => {
+    showDeleteDialog.value = true;
 };
 
-// Delete batch
-const deleteBatch = () => {
-    if (confirm('¿Estás seguro de que deseas eliminar este lote de envío?')) {
-        router.delete(`/invoices/email/${props.batch.id}`, {
-            onSuccess: () => {
-                router.visit('/invoices/email');
-            },
-        });
-    }
+const confirmDeleteBatch = () => {
+    showDeleteDialog.value = false;
+    router.delete(`/invoices/email/${props.batch.id}`, {
+        onSuccess: () => {
+            router.visit('/invoices/email');
+        },
+    });
 };
 
 // Retry failed delivery
@@ -164,6 +167,70 @@ computed(() => {
         refreshInterval.value = null;
     }
 });
+
+// Send batch functions
+const openSendDialog = () => {
+    showSendDialog.value = true;
+};
+
+const confirmSendBatch = () => {
+    showSendDialog.value = false;
+    router.post(`/invoices/email/${props.batch.id}/send`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            // Auto-refresh will start if status changes to 'procesando'
+            refreshData();
+        },
+        onError: (errors) => {
+            console.error('Error sending batch:', errors);
+        }
+    });
+};
+
+// Cancel batch functions
+const openCancelDialog = () => {
+    showCancelDialog.value = true;
+};
+
+const confirmCancelBatch = () => {
+    showCancelDialog.value = false;
+    router.post(`/invoices/email/${props.batch.id}/cancel`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            refreshData();
+        }
+    });
+};
+
+// Retry batch functions
+const openRetryDialog = () => {
+    showRetryDialog.value = true;
+};
+
+const confirmRetryBatch = () => {
+    showRetryDialog.value = false;
+    router.post(`/invoices/email/${props.batch.id}/retry`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            refreshData();
+        }
+    });
+};
+
+// Check if batch can be sent
+const canSend = computed(() => {
+    return ['draft', 'scheduled'].includes(props.batch.status);
+});
+
+// Check if batch can be cancelled
+const canCancel = computed(() => {
+    return props.batch.can_be_cancelled;
+});
+
+// Check if batch can be retried
+const canRetry = computed(() => {
+    return props.batch.can_be_restarted;
+});
 </script>
 
 <template>
@@ -181,6 +248,36 @@ computed(() => {
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <!-- Send Button -->
+                    <Button 
+                        v-if="canSend" 
+                        @click="openSendDialog" 
+                        class="bg-green-600 hover:bg-green-700"
+                    >
+                        <Send class="mr-2 h-4 w-4" />
+                        Enviar Lote
+                    </Button>
+                    
+                    <!-- Cancel Button -->
+                    <Button 
+                        v-if="canCancel" 
+                        @click="openCancelDialog" 
+                        variant="destructive"
+                    >
+                        <XCircle class="mr-2 h-4 w-4" />
+                        Cancelar
+                    </Button>
+                    
+                    <!-- Retry Button -->
+                    <Button 
+                        v-if="canRetry" 
+                        @click="openRetryDialog" 
+                        variant="outline"
+                    >
+                        <RefreshCw class="mr-2 h-4 w-4" />
+                        Reintentar
+                    </Button>
+                    
                     <Button @click="refreshData" variant="outline" size="sm">
                         <RefreshCw class="h-4 w-4" />
                     </Button>
@@ -287,17 +384,8 @@ computed(() => {
             </div>
 
             <!-- Actions -->
-            <Card v-if="batch.can_send || batch.can_edit || batch.can_delete" class="p-4">
+            <Card v-if="batch.can_edit || batch.can_delete" class="p-4">
                 <div class="flex items-center gap-2">
-                    <Button 
-                        v-if="batch.can_send && batch.status === 'listo'"
-                        @click="sendBatch"
-                        class="bg-green-600 hover:bg-green-700"
-                    >
-                        <Send class="mr-2 h-4 w-4" />
-                        Enviar Lote
-                    </Button>
-
                     <Button 
                         v-if="batch.can_edit"
                         variant="outline"
@@ -312,7 +400,7 @@ computed(() => {
                     <Button 
                         v-if="batch.can_delete"
                         variant="outline"
-                        @click="deleteBatch"
+                        @click="openDeleteDialog"
                         class="text-red-600 hover:text-red-700"
                     >
                         <Trash2 class="mr-2 h-4 w-4" />
@@ -518,5 +606,147 @@ computed(() => {
                 </CardContent>
             </Card>
         </div>
+
+        <!-- Send Confirmation Dialog -->
+        <Dialog v-model:open="showSendDialog">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center space-x-2">
+                        <Send class="h-5 w-5 text-green-600" />
+                        <span>Confirmar Envío de Lote</span>
+                    </DialogTitle>
+                    <DialogDescription>
+                        ¿Estás seguro de que quieres enviar este lote de emails?
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div class="py-4 space-y-2">
+                    <div class="text-sm">
+                        <strong>Lote:</strong> {{ batch.name }}
+                    </div>
+                    <div class="text-sm">
+                        <strong>Total de facturas:</strong> {{ batch.total_invoices }}
+                    </div>
+                    <div class="text-sm text-muted-foreground">
+                        Una vez iniciado el envío, este proceso no se puede deshacer.
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="showSendDialog = false">
+                        Cancelar
+                    </Button>
+                    <Button @click="confirmSendBatch" class="bg-green-600 hover:bg-green-700">
+                        <Send class="mr-2 h-4 w-4" />
+                        Sí, Enviar Lote
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Cancel Confirmation Dialog -->
+        <Dialog v-model:open="showCancelDialog">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center space-x-2">
+                        <XCircle class="h-5 w-5 text-red-600" />
+                        <span>Confirmar Cancelación</span>
+                    </DialogTitle>
+                    <DialogDescription>
+                        ¿Estás seguro de que quieres cancelar este lote?
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div class="py-4 space-y-2">
+                    <div class="text-sm">
+                        <strong>Lote:</strong> {{ batch.name }}
+                    </div>
+                    <div class="text-sm text-muted-foreground">
+                        Esta acción detendrá todos los envíos pendientes y no se puede deshacer.
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="showCancelDialog = false">
+                        No, Mantener
+                    </Button>
+                    <Button variant="destructive" @click="confirmCancelBatch">
+                        <XCircle class="mr-2 h-4 w-4" />
+                        Sí, Cancelar Lote
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Retry Confirmation Dialog -->
+        <Dialog v-model:open="showRetryDialog">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center space-x-2">
+                        <RefreshCw class="h-5 w-5 text-orange-600" />
+                        <span>Confirmar Reintento</span>
+                    </DialogTitle>
+                    <DialogDescription>
+                        ¿Quieres reintentar los envíos fallidos de este lote?
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div class="py-4 space-y-2">
+                    <div class="text-sm">
+                        <strong>Lote:</strong> {{ batch.name }}
+                    </div>
+                    <div class="text-sm">
+                        <strong>Envíos fallidos:</strong> {{ batch.failed_count }}
+                    </div>
+                    <div class="text-sm text-muted-foreground">
+                        Esto intentará enviar nuevamente solo los emails que fallaron.
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="showRetryDialog = false">
+                        Cancelar
+                    </Button>
+                    <Button @click="confirmRetryBatch" variant="outline">
+                        <RefreshCw class="mr-2 h-4 w-4" />
+                        Sí, Reintentar
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Delete Confirmation Dialog -->
+        <Dialog v-model:open="showDeleteDialog">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center space-x-2">
+                        <Trash2 class="h-5 w-5 text-red-600" />
+                        <span>Confirmar Eliminación</span>
+                    </DialogTitle>
+                    <DialogDescription>
+                        ¿Estás seguro de que deseas eliminar este lote de envío?
+                    </DialogDescription>
+                </DialogHeader>
+                
+                <div class="py-4 space-y-2">
+                    <div class="text-sm">
+                        <strong>Lote:</strong> {{ batch.name }}
+                    </div>
+                    <div class="text-sm text-muted-foreground">
+                        Esta acción no se puede deshacer. Se eliminará permanentemente el lote y todos sus registros de envío.
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" @click="showDeleteDialog = false">
+                        Cancelar
+                    </Button>
+                    <Button variant="destructive" @click="confirmDeleteBatch">
+                        <Trash2 class="mr-2 h-4 w-4" />
+                        Sí, Eliminar Lote
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

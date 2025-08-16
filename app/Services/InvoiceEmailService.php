@@ -37,11 +37,15 @@ class InvoiceEmailService
         DB::beginTransaction();
 
         try {
+            // Calculate total invoices based on filters
+            $totalInvoices = $this->countBatchInvoices($data['filters'] ?? []);
+            
             $batch = InvoiceEmailBatch::create([
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
                 'filters' => $data['filters'] ?? [],
                 'email_settings' => array_merge($this->defaultEmailSettings, $data['email_settings'] ?? []),
+                'total_invoices' => $totalInvoices,
                 'status' => 'draft',
                 'created_by' => auth()->id(),
             ]);
@@ -49,6 +53,7 @@ class InvoiceEmailService
             $batch->addToProcessingLog('Lote creado', [
                 'filters' => $data['filters'] ?? [],
                 'email_settings' => $data['email_settings'] ?? [],
+                'total_invoices' => $totalInvoices,
             ]);
 
             DB::commit();
@@ -237,8 +242,10 @@ class InvoiceEmailService
                 return false;
             }
 
-            // Batch insert deliveries
-            InvoiceEmailDelivery::insert($deliveries);
+            // Create deliveries individually to ensure proper casting
+            foreach ($deliveries as $deliveryData) {
+                InvoiceEmailDelivery::create($deliveryData);
+            }
 
             // Update batch statistics
             $batch->update([
@@ -377,21 +384,18 @@ class InvoiceEmailService
 
         try {
             $invoice = $delivery->invoice;
-            $attachments = [];
-
+            
+            // Generate PDF content (for now, use dummy content)
+            $pdfContent = "PDF content for invoice {$invoice->invoice_number}"; // This would be actual PDF generation
+            
             // Generate PDF if required
             if ($delivery->email_variables['include_pdf'] ?? true) {
                 // This would integrate with existing PDF generation
-                // $attachments[] = $this->generateInvoicePdf($invoice);
+                // $pdfContent = $this->generateInvoicePdf($invoice);
             }
 
             Mail::to($delivery->recipient_email, $delivery->recipient_name)
-                ->send(new InvoiceMail(
-                    $invoice,
-                    $delivery->email_variables,
-                    $delivery->email_template_used,
-                    $attachments
-                ));
+                ->send(new InvoiceMail($invoice, $pdfContent));
 
             $delivery->markAsSent(
                 provider: config('mail.default'),
@@ -482,6 +486,12 @@ class InvoiceEmailService
     private function buildInvoiceQuery(array $filters): \Illuminate\Database\Eloquent\Builder
     {
         $query = Invoice::query();
+
+        // Handle specific invoice IDs first (highest priority)
+        if (! empty($filters['invoice_ids'])) {
+            $query->whereIn('id', $filters['invoice_ids']);
+            return $query; // Return early if specific IDs are provided
+        }
 
         if (! empty($filters['apartment_ids'])) {
             $query->whereIn('apartment_id', $filters['apartment_ids']);
