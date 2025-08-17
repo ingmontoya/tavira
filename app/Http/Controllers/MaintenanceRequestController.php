@@ -7,6 +7,8 @@ use App\Models\ConjuntoConfig;
 use App\Models\MaintenanceCategory;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceStaff;
+use App\Notifications\MaintenanceRequestCreated;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -182,7 +184,12 @@ class MaintenanceRequestController extends Controller
         $validated['requested_by_user_id'] = Auth::id();
         $validated['status'] = MaintenanceRequest::STATUS_CREATED;
 
-        MaintenanceRequest::create($validated);
+        $maintenanceRequest = MaintenanceRequest::create($validated);
+        $maintenanceRequest->load(['maintenance_category', 'requested_by']);
+
+        // Send notification to administrative users
+        $notificationService = app(NotificationService::class);
+        $notificationService->notifyAdministrative(new MaintenanceRequestCreated($maintenanceRequest));
 
         return redirect()->route('maintenance-requests.index')
             ->with('success', 'Solicitud de mantenimiento creada exitosamente.');

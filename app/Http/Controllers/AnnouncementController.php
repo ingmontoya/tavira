@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Announcement;
 use App\Models\User;
+use App\Notifications\AnnouncementPublished;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -133,6 +135,22 @@ class AnnouncementController extends Controller
         }
 
         $announcement = Announcement::create($validated);
+        $announcement->load('user');
+
+        // Send notification only if announcement is published
+        if ($validated['status'] === 'published') {
+            $notificationService = app(NotificationService::class);
+            
+            // Notify based on targeting
+            if ($announcement->target_audience === 'all') {
+                $notificationService->notifyByRole('resident', new AnnouncementPublished($announcement));
+                $notificationService->notifyAdministrative(new AnnouncementPublished($announcement));
+            } elseif ($announcement->target_audience === 'residents') {
+                $notificationService->notifyByRole('resident', new AnnouncementPublished($announcement));
+            } elseif ($announcement->target_audience === 'admin') {
+                $notificationService->notifyAdministrative(new AnnouncementPublished($announcement));
+            }
+        }
 
         $message = $validated['status'] === 'published'
             ? 'Anuncio publicado exitosamente.'

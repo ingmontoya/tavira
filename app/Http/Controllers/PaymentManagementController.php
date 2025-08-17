@@ -9,6 +9,8 @@ use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Resident;
+use App\Notifications\PaymentReceived;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -207,6 +209,10 @@ class PaymentManagementController extends Controller
 
             // Automatically apply payment to invoices (FIFO)
             $applications = $payment->applyToInvoices();
+
+            // Send notification to administrative users
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyAdministrative(new PaymentReceived($payment));
 
             session()->flash('success', [
                 'message' => 'Pago registrado y aplicado exitosamente.',

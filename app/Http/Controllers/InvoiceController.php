@@ -9,6 +9,8 @@ use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PaymentConcept;
+use App\Notifications\InvoiceGenerated;
+use App\Services\NotificationService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -148,6 +150,11 @@ class InvoiceController extends Controller
                 }
 
                 $invoice->calculateTotals();
+                $invoice->load('apartment');
+
+                // Send notification to administrative users
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyAdministrative(new InvoiceGenerated($invoice));
 
                 return redirect()->route('invoices.show', $invoice)
                     ->with('success', 'Factura creada exitosamente.');
