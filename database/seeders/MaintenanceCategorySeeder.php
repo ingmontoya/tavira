@@ -19,6 +19,7 @@ class MaintenanceCategorySeeder extends Seeder
             if ($this->command) {
                 $this->command->warn('No se encontró configuración de conjunto. Asegúrate de ejecutar primero ConjuntoConfigSeeder.');
             }
+
             return;
         }
 

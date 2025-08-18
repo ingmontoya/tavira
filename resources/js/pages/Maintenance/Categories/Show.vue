@@ -44,7 +44,7 @@ const props = defineProps<Props>();
 
 const priorityLabels = {
     1: 'Crítica',
-    2: 'Alta', 
+    2: 'Alta',
     3: 'Media',
     4: 'Baja',
 };
@@ -158,7 +158,10 @@ const breadcrumbs = [
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <h4 class="text-sm font-medium text-gray-700">Nivel de Prioridad</h4>
-                                <Badge class="mt-1" :variant="category.priority_level <= 2 ? 'destructive' : category.priority_level === 3 ? 'default' : 'secondary'">
+                                <Badge
+                                    class="mt-1"
+                                    :variant="category.priority_level <= 2 ? 'destructive' : category.priority_level === 3 ? 'default' : 'secondary'"
+                                >
                                     {{ priorityLabels[category.priority_level as keyof typeof priorityLabels] || 'Desconocida' }}
                                 </Badge>
                             </div>
@@ -179,19 +182,17 @@ const breadcrumbs = [
                             </div>
                             <div>
                                 <h4 class="text-sm font-medium text-gray-700">Horas Estimadas</h4>
-                                <p class="mt-1 text-sm text-gray-900">{{ category.estimated_hours ? `${category.estimated_hours}h` : 'No definidas' }}</p>
+                                <p class="mt-1 text-sm text-gray-900">
+                                    {{ category.estimated_hours ? `${category.estimated_hours}h` : 'No definidas' }}
+                                </p>
                             </div>
                         </div>
 
                         <Separator />
 
                         <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                            <div>
-                                <span class="font-medium">Creada:</span> {{ formatDate(category.created_at) }}
-                            </div>
-                            <div>
-                                <span class="font-medium">Actualizada:</span> {{ formatDate(category.updated_at) }}
-                            </div>
+                            <div><span class="font-medium">Creada:</span> {{ formatDate(category.created_at) }}</div>
+                            <div><span class="font-medium">Actualizada:</span> {{ formatDate(category.updated_at) }}</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -234,10 +235,10 @@ const breadcrumbs = [
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow 
-                                    v-for="request in category.maintenance_requests" 
+                                <TableRow
+                                    v-for="request in category.maintenance_requests"
                                     :key="request.id"
-                                    class="hover:bg-gray-50 cursor-pointer"
+                                    class="cursor-pointer hover:bg-gray-50"
                                     @click="router.visit(route('maintenance-requests.show', request.id))"
                                 >
                                     <TableCell class="font-medium">{{ request.title }}</TableCell>

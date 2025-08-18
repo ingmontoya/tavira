@@ -48,7 +48,7 @@ const breadcrumbs = [
 
 const filteredNotifications = computed(() => {
     if (selectedTab.value === 'unread') {
-        return props.notifications.filter(n => !n.read_at);
+        return props.notifications.filter((n) => !n.read_at);
     }
     return props.notifications;
 });
@@ -62,7 +62,7 @@ const markAsRead = async (notificationId: string) => {
                 'Content-Type': 'application/json',
             },
         });
-        
+
         router.reload({ only: ['notifications', 'counts'] });
     } catch (error) {
         console.error('Error marking notification as read:', error);
@@ -78,7 +78,7 @@ const markAllAsRead = async () => {
                 'Content-Type': 'application/json',
             },
         });
-        
+
         router.reload({ only: ['notifications', 'counts'] });
     } catch (error) {
         console.error('Error marking all notifications as read:', error);
@@ -94,7 +94,7 @@ const deleteNotification = async (notificationId: string) => {
                 'Content-Type': 'application/json',
             },
         });
-        
+
         router.reload({ only: ['notifications', 'counts'] });
     } catch (error) {
         console.error('Error deleting notification:', error);
@@ -165,9 +165,7 @@ const formatDate = (dateString: string) => {
                 <div class="flex items-center space-x-3">
                     <Bell class="h-6 w-6 text-blue-600" />
                     <h1 class="text-2xl font-semibold text-gray-900">Notificaciones</h1>
-                    <Badge v-if="counts.unread > 0" variant="destructive">
-                        {{ counts.unread }} sin leer
-                    </Badge>
+                    <Badge v-if="counts.unread > 0" variant="destructive"> {{ counts.unread }} sin leer </Badge>
                 </div>
                 <div class="flex items-center space-x-3">
                     <Button v-if="counts.unread > 0" variant="outline" @click="markAllAsRead">
@@ -178,21 +176,11 @@ const formatDate = (dateString: string) => {
             </div>
 
             <!-- Tabs -->
-            <div class="flex space-x-1 bg-gray-100 rounded-lg p-1">
-                <Button
-                    :variant="selectedTab === 'all' ? 'default' : 'ghost'"
-                    size="sm"
-                    @click="selectedTab = 'all'"
-                    class="flex-1"
-                >
+            <div class="flex space-x-1 rounded-lg bg-gray-100 p-1">
+                <Button :variant="selectedTab === 'all' ? 'default' : 'ghost'" size="sm" @click="selectedTab = 'all'" class="flex-1">
                     Todas ({{ counts.total }})
                 </Button>
-                <Button
-                    :variant="selectedTab === 'unread' ? 'default' : 'ghost'"
-                    size="sm"
-                    @click="selectedTab = 'unread'"
-                    class="flex-1"
-                >
+                <Button :variant="selectedTab === 'unread' ? 'default' : 'ghost'" size="sm" @click="selectedTab = 'unread'" class="flex-1">
                     Sin leer ({{ counts.unread }})
                 </Button>
             </div>
@@ -203,16 +191,10 @@ const formatDate = (dateString: string) => {
                     v-for="notification in filteredNotifications"
                     :key="notification.id"
                     class="relative overflow-hidden transition-all duration-200 hover:shadow-md"
-                    :class="[
-                        'rounded-lg border bg-white p-4',
-                        notification.read_at ? 'border-gray-200' : 'border-blue-200 bg-blue-50'
-                    ]"
+                    :class="['rounded-lg border bg-white p-4', notification.read_at ? 'border-gray-200' : 'border-blue-200 bg-blue-50']"
                 >
                     <!-- Unread indicator -->
-                    <div
-                        v-if="!notification.read_at"
-                        class="absolute left-0 top-0 h-full w-1 bg-blue-500"
-                    />
+                    <div v-if="!notification.read_at" class="absolute top-0 left-0 h-full w-1 bg-blue-500" />
 
                     <div class="flex items-start space-x-4">
                         <!-- Icon -->
@@ -223,7 +205,7 @@ const formatDate = (dateString: string) => {
                         </div>
 
                         <!-- Content -->
-                        <div class="flex-1 min-w-0">
+                        <div class="min-w-0 flex-1">
                             <div class="flex items-start justify-between">
                                 <div>
                                     <div class="flex items-center space-x-2">
@@ -237,8 +219,10 @@ const formatDate = (dateString: string) => {
                                     <h3 class="mt-1 text-sm font-medium text-gray-900">
                                         {{ notification.data.title || notification.data.message }}
                                     </h3>
-                                    <p v-if="notification.data.title && notification.data.message !== notification.data.title" 
-                                       class="mt-1 text-sm text-gray-600">
+                                    <p
+                                        v-if="notification.data.title && notification.data.message !== notification.data.title"
+                                        class="mt-1 text-sm text-gray-600"
+                                    >
                                         {{ notification.data.message }}
                                     </p>
                                 </div>
@@ -254,12 +238,7 @@ const formatDate = (dateString: string) => {
                                     >
                                         <Check class="h-4 w-4" />
                                     </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="deleteNotification(notification.id)"
-                                        title="Eliminar"
-                                    >
+                                    <Button variant="ghost" size="sm" @click="deleteNotification(notification.id)" title="Eliminar">
                                         <Trash2 class="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -267,28 +246,21 @@ const formatDate = (dateString: string) => {
 
                             <!-- Action button -->
                             <div v-if="notification.data.action_url" class="mt-3">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    @click="navigateToAction(notification)"
-                                >
-                                    Ver detalles
-                                </Button>
+                                <Button variant="outline" size="sm" @click="navigateToAction(notification)"> Ver detalles </Button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Empty state -->
-                <div v-if="filteredNotifications.length === 0" class="text-center py-12">
+                <div v-if="filteredNotifications.length === 0" class="py-12 text-center">
                     <BellOff class="mx-auto h-12 w-12 text-gray-400" />
                     <h3 class="mt-2 text-sm font-medium text-gray-900">
                         {{ selectedTab === 'unread' ? 'No hay notificaciones sin leer' : 'No hay notificaciones' }}
                     </h3>
                     <p class="mt-1 text-sm text-gray-500">
-                        {{ selectedTab === 'unread' 
-                            ? 'Todas las notificaciones han sido leídas.' 
-                            : 'No se encontraron notificaciones en el sistema.' 
+                        {{
+                            selectedTab === 'unread' ? 'Todas las notificaciones han sido leídas.' : 'No se encontraron notificaciones en el sistema.'
                         }}
                     </p>
                 </div>

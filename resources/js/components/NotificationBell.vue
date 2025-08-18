@@ -38,7 +38,7 @@ const loadNotifications = async () => {
         isLoading.value = true;
         const response = await fetch('/notifications/unread');
         const data = await response.json();
-        
+
         notifications.value = data.notifications;
         counts.value = data.counts;
     } catch (error) {
@@ -57,9 +57,9 @@ const markAsRead = async (notificationId: string) => {
                 'Content-Type': 'application/json',
             },
         });
-        
+
         // Remove from local state
-        notifications.value = notifications.value.filter(n => n.id !== notificationId);
+        notifications.value = notifications.value.filter((n) => n.id !== notificationId);
         counts.value.unread = Math.max(0, counts.value.unread - 1);
     } catch (error) {
         console.error('Error marking notification as read:', error);
@@ -107,13 +107,13 @@ const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return 'Ahora';
     if (diffInMinutes < 60) return `${diffInMinutes}m`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours}h`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}d`;
 };
@@ -121,11 +121,11 @@ const formatTimeAgo = (dateString: string) => {
 // Load initial counts on mount
 onMounted(() => {
     fetch('/notifications/counts')
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
             counts.value = data;
         })
-        .catch(error => {
+        .catch((error) => {
             console.error('Error loading notification counts:', error);
         });
 });
@@ -145,52 +145,38 @@ onMounted(() => {
 
 <template>
     <div class="notification-dropdown relative">
-        <Button
-            variant="ghost"
-            size="sm"
-            @click="toggleDropdown"
-            class="relative p-2"
-        >
+        <Button variant="ghost" size="sm" @click="toggleDropdown" class="relative p-2">
             <Bell class="h-5 w-5" />
             <Badge
                 v-if="hasUnread"
                 variant="destructive"
-                class="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-xs"
             >
                 {{ counts.unread > 99 ? '99+' : counts.unread }}
             </Badge>
         </Button>
 
         <!-- Dropdown -->
-        <div
-            v-if="isOpen"
-            class="absolute right-0 top-full mt-2 w-80 max-w-sm z-50"
-        >
-            <Card class="shadow-lg border">
+        <div v-if="isOpen" class="absolute top-full right-0 z-50 mt-2 w-80 max-w-sm">
+            <Card class="border shadow-lg">
                 <CardContent class="p-0">
                     <!-- Header -->
-                    <div class="flex items-center justify-between p-4 border-b">
+                    <div class="flex items-center justify-between border-b p-4">
                         <h3 class="font-semibold text-gray-900">Notificaciones</h3>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            @click="isOpen = false"
-                        >
+                        <Button variant="ghost" size="sm" @click="isOpen = false">
                             <X class="h-4 w-4" />
                         </Button>
                     </div>
 
                     <!-- Loading state -->
-                    <div v-if="isLoading" class="p-4 text-center text-gray-500">
-                        Cargando...
-                    </div>
+                    <div v-if="isLoading" class="p-4 text-center text-gray-500">Cargando...</div>
 
                     <!-- Notifications list -->
                     <div v-else-if="notifications.length > 0" class="max-h-96 overflow-y-auto">
                         <div
                             v-for="notification in notifications.slice(0, 5)"
                             :key="notification.id"
-                            class="flex items-start space-x-3 p-4 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                            class="flex cursor-pointer items-start space-x-3 border-b p-4 last:border-b-0 hover:bg-gray-50"
                             @click="navigateToNotification(notification)"
                         >
                             <!-- Icon -->
@@ -201,11 +187,11 @@ onMounted(() => {
                             </div>
 
                             <!-- Content -->
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900 truncate">
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-medium text-gray-900">
                                     {{ notification.data.title || notification.data.message }}
                                 </p>
-                                <p class="text-xs text-gray-500 mt-1">
+                                <p class="mt-1 text-xs text-gray-500">
                                     {{ formatTimeAgo(notification.created_at) }}
                                 </p>
                             </div>
@@ -215,7 +201,7 @@ onMounted(() => {
                                 variant="ghost"
                                 size="sm"
                                 @click.stop="markAsRead(notification.id)"
-                                class="opacity-0 group-hover:opacity-100 transition-opacity"
+                                class="opacity-0 transition-opacity group-hover:opacity-100"
                             >
                                 <Check class="h-3 w-3" />
                             </Button>
@@ -224,18 +210,13 @@ onMounted(() => {
 
                     <!-- Empty state -->
                     <div v-else class="p-8 text-center">
-                        <Bell class="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <Bell class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                         <p class="text-sm text-gray-500">No hay notificaciones nuevas</p>
                     </div>
 
                     <!-- Footer -->
-                    <div class="p-3 border-t bg-gray-50">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            @click="goToNotifications"
-                            class="w-full text-center"
-                        >
+                    <div class="border-t bg-gray-50 p-3">
+                        <Button variant="ghost" size="sm" @click="goToNotifications" class="w-full text-center">
                             Ver todas las notificaciones
                         </Button>
                     </div>

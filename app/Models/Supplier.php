@@ -55,6 +55,11 @@ class Supplier extends Model
         return $this->hasMany(Expense::class);
     }
 
+    public function maintenanceRequests(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequest::class);
+    }
+
     // Scopes
     public function scopeForConjunto($query, int $conjuntoConfigId)
     {

@@ -7,6 +7,7 @@ use App\Models\ConjuntoConfig;
 use App\Models\MaintenanceCategory;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceStaff;
+use App\Models\Supplier;
 use App\Notifications\MaintenanceRequestCreated;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,7 @@ class MaintenanceRequestController extends Controller
         $this->middleware('permission:approve_maintenance_requests')->only(['approve']);
         $this->middleware('permission:assign_maintenance_requests')->only(['assign']);
         $this->middleware('permission:complete_maintenance_requests')->only(['startWork', 'complete']);
+        $this->middleware('permission:edit_maintenance_requests')->only(['nextState']);
     }
 
     public function index(Request $request): Response
@@ -38,6 +40,7 @@ class MaintenanceRequestController extends Controller
             'requestedBy',
             'assignedStaff',
             'approvedBy',
+            'supplier',
         ])->where('conjunto_config_id', $conjuntoConfig->id);
 
         // Filter by status
@@ -177,12 +180,12 @@ class MaintenanceRequestController extends Controller
     {
         // Remove # if present
         $hex = ltrim($hex, '#');
-        
+
         // Convert hex to RGB
         $r = hexdec(substr($hex, 0, 2));
         $g = hexdec(substr($hex, 2, 2));
         $b = hexdec(substr($hex, 4, 2));
-        
+
         return "rgba($r, $g, $b, $opacity)";
     }
 
@@ -198,6 +201,10 @@ class MaintenanceRequestController extends Controller
                 ->with('apartmentType')
                 ->orderBy('number')
                 ->get(),
+            'suppliers' => Supplier::where('conjunto_config_id', $conjuntoConfig->id)
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -211,15 +218,24 @@ class MaintenanceRequestController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
+            'project_type' => 'required|in:internal,external',
+            'status' => 'required|in:created,evaluation,budgeted,pending_approval,approved,assigned,in_progress,completed,closed,rejected,suspended',
             'location' => 'nullable|string|max:255',
             'estimated_cost' => 'nullable|numeric|min:0',
             'estimated_completion_date' => 'nullable|date|after:today',
             'requires_council_approval' => 'boolean',
+            // Vendor fields (optional)
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'vendor_quote_amount' => 'nullable|numeric|min:0',
+            'vendor_quote_description' => 'nullable|string',
+            'vendor_quote_valid_until' => 'nullable|date|after:today',
+            'vendor_contact_name' => 'nullable|string|max:255',
+            'vendor_contact_phone' => 'nullable|string|max:20',
+            'vendor_contact_email' => 'nullable|email|max:255',
         ]);
 
         $validated['conjunto_config_id'] = $conjuntoConfig->id;
         $validated['requested_by_user_id'] = Auth::id();
-        $validated['status'] = MaintenanceRequest::STATUS_CREATED;
 
         $maintenanceRequest = MaintenanceRequest::create($validated);
         $maintenanceRequest->load(['maintenanceCategory', 'requestedBy']);
@@ -241,6 +257,7 @@ class MaintenanceRequestController extends Controller
             'assignedStaff',
             'approvedBy',
             'workOrders.assignedStaff',
+            'documents.uploadedBy',
         ]);
 
         return Inertia::render('Maintenance/Requests/Show', [
@@ -248,6 +265,18 @@ class MaintenanceRequestController extends Controller
             'staff' => MaintenanceStaff::where('conjunto_config_id', $maintenanceRequest->conjunto_config_id)
                 ->where('is_active', true)
                 ->get(),
+            'permissions' => [
+                'can_approve' => Auth::user()->can('approve_maintenance_requests'),
+                'can_assign' => Auth::user()->can('assign_maintenance_requests'),
+                'can_complete' => Auth::user()->can('complete_maintenance_requests'),
+                'can_edit' => Auth::user()->can('edit_maintenance_requests'),
+                'can_delete' => Auth::user()->can('delete_maintenance_requests'),
+            ],
+            'nextState' => [
+                'can_transition' => $maintenanceRequest->canTransitionToNextState(),
+                'next_status' => $maintenanceRequest->getNextStatus(),
+                'next_status_label' => $maintenanceRequest->getNextStatusLabel(),
+            ],
         ]);
     }
 
@@ -259,6 +288,7 @@ class MaintenanceRequestController extends Controller
             'maintenanceRequest' => $maintenanceRequest->load([
                 'maintenanceCategory',
                 'apartment',
+                'supplier',
             ]),
             'categories' => MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
                 ->where('is_active', true)
@@ -266,6 +296,10 @@ class MaintenanceRequestController extends Controller
             'apartments' => Apartment::where('conjunto_config_id', $conjuntoConfig->id)
                 ->with('apartmentType')
                 ->orderBy('number')
+                ->get(),
+            'suppliers' => Supplier::where('conjunto_config_id', $conjuntoConfig->id)
+                ->where('is_active', true)
+                ->orderBy('name')
                 ->get(),
         ]);
     }
@@ -278,10 +312,20 @@ class MaintenanceRequestController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
+            'project_type' => 'required|in:internal,external',
+            'status' => 'required|in:created,evaluation,budgeted,pending_approval,approved,assigned,in_progress,completed,closed,rejected,suspended',
             'location' => 'nullable|string|max:255',
             'estimated_cost' => 'nullable|numeric|min:0',
             'estimated_completion_date' => 'nullable|date',
             'requires_council_approval' => 'boolean',
+            // Vendor fields (optional)
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'vendor_quote_amount' => 'nullable|numeric|min:0',
+            'vendor_quote_description' => 'nullable|string',
+            'vendor_quote_valid_until' => 'nullable|date',
+            'vendor_contact_name' => 'nullable|string|max:255',
+            'vendor_contact_phone' => 'nullable|string|max:20',
+            'vendor_contact_email' => 'nullable|email|max:255',
         ]);
 
         $maintenanceRequest->update($validated);
@@ -356,5 +400,35 @@ class MaintenanceRequestController extends Controller
         ]);
 
         return back()->with('success', 'Solicitud completada exitosamente.');
+    }
+
+    public function nextState(MaintenanceRequest $maintenanceRequest): RedirectResponse
+    {
+        if (! $maintenanceRequest->canTransitionToNextState()) {
+            return back()->with('error', 'Esta solicitud no puede avanzar al siguiente estado.');
+        }
+
+        $nextStatus = $maintenanceRequest->getNextStatus();
+        $nextStatusLabel = $maintenanceRequest->getNextStatusLabel();
+
+        // Handle special cases that require additional fields
+        if ($nextStatus === MaintenanceRequest::STATUS_APPROVED) {
+            $maintenanceRequest->update([
+                'status' => $nextStatus,
+                'approved_by_user_id' => Auth::id(),
+                'council_approved_at' => $maintenanceRequest->requires_council_approval ? now() : null,
+            ]);
+        } elseif ($nextStatus === MaintenanceRequest::STATUS_COMPLETED) {
+            $maintenanceRequest->update([
+                'status' => $nextStatus,
+                'actual_completion_date' => now(),
+            ]);
+        } else {
+            $maintenanceRequest->update([
+                'status' => $nextStatus,
+            ]);
+        }
+
+        return back()->with('success', "Solicitud avanzada a: {$nextStatusLabel}");
     }
 }

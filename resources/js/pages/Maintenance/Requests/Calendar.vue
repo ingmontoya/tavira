@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useNavigation } from '@/composables/useNavigation';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { Calendar, CalendarDays, Filter, List, X } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import { useNavigation } from '@/composables/useNavigation';
 
 export interface CalendarEvent {
     id: number;
@@ -113,7 +113,7 @@ const filteredRequests = computed(() => {
     let filtered = props.requests;
 
     if (selectedStatus.value && selectedStatus.value !== 'all') {
-        filtered = filtered.filter(request => request.status === selectedStatus.value);
+        filtered = filtered.filter((request) => request.status === selectedStatus.value);
     }
 
     return filtered;
@@ -124,7 +124,7 @@ const currentMonthEvents = computed(() => {
     const monthStart = `${year}-${month.toString().padStart(2, '0')}-01`;
     const monthEnd = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of month
 
-    return props.events.filter(event => {
+    return props.events.filter((event) => {
         // Compare as strings to avoid timezone issues
         return event.start >= monthStart && event.start <= monthEnd;
     });
@@ -132,7 +132,7 @@ const currentMonthEvents = computed(() => {
 
 const eventsByDate = computed(() => {
     const grouped: Record<string, CalendarEvent[]> = {};
-    currentMonthEvents.value.forEach(event => {
+    currentMonthEvents.value.forEach((event) => {
         const date = event.start;
         if (!grouped[date]) {
             grouped[date] = [];
@@ -148,14 +148,18 @@ const applyFilters = () => {
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of the month
 
-    router.get('/maintenance-requests-calendar', {
-        status: selectedStatus.value === 'all' ? '' : selectedStatus.value,
-        start: startDate,
-        end: endDate,
-    }, {
-        preserveState: true,
-        replace: true,
-    });
+    router.get(
+        '/maintenance-requests-calendar',
+        {
+            status: selectedStatus.value === 'all' ? '' : selectedStatus.value,
+            start: startDate,
+            end: endDate,
+        },
+        {
+            preserveState: true,
+            replace: true,
+        },
+    );
 };
 
 const clearFilters = () => {
@@ -255,12 +259,7 @@ watch(selectedMonth, () => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div class="space-y-2">
                             <Label for="month">Mes</Label>
-                            <Input
-                                id="month"
-                                v-model="selectedMonth"
-                                type="month"
-                                class="w-full"
-                            />
+                            <Input id="month" v-model="selectedMonth" type="month" class="w-full" />
                         </div>
 
                         <div class="space-y-2">
@@ -304,23 +303,28 @@ watch(selectedMonth, () => {
                 </CardHeader>
                 <CardContent>
                     <!-- Calendar Grid -->
-                    <div class="grid grid-cols-7 gap-2 mb-4">
+                    <div class="mb-4 grid grid-cols-7 gap-2">
                         <!-- Day headers -->
-                        <div v-for="day in ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']" :key="day"
-                             class="p-2 text-center text-sm font-medium text-gray-500 border-b">
+                        <div
+                            v-for="day in ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']"
+                            :key="day"
+                            class="border-b p-2 text-center text-sm font-medium text-gray-500"
+                        >
                             {{ day }}
                         </div>
 
                         <!-- Calendar days -->
-                        <div v-for="day in getDaysInMonth()" :key="`day-${day}`"
-                             class="min-h-[100px] p-2 border border-gray-200 bg-white">
+                        <div v-for="day in getDaysInMonth()" :key="`day-${day}`" class="min-h-[100px] border border-gray-200 bg-white p-2">
                             <template v-if="day">
-                                <div class="text-sm font-medium mb-1">{{ day }}</div>
+                                <div class="mb-1 text-sm font-medium">{{ day }}</div>
                                 <div v-if="eventsByDate[getDateString(day)]" class="space-y-1">
-                                    <div v-for="event in eventsByDate[getDateString(day)]" :key="event.id"
-                                         class="text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity"
-                                         :style="{ backgroundColor: event.backgroundColor, color: 'white' }"
-                                         @click="navigateToRequest(event.id)">
+                                    <div
+                                        v-for="event in eventsByDate[getDateString(day)]"
+                                        :key="event.id"
+                                        class="cursor-pointer rounded p-1 text-xs transition-opacity hover:opacity-80"
+                                        :style="{ backgroundColor: event.backgroundColor, color: 'white' }"
+                                        @click="navigateToRequest(event.id)"
+                                    >
                                         {{ event.title.length > 15 ? event.title.substring(0, 15) + '...' : event.title }}
                                     </div>
                                 </div>
@@ -337,9 +341,12 @@ watch(selectedMonth, () => {
                 </CardHeader>
                 <CardContent>
                     <div v-if="filteredRequests.length > 0" class="space-y-3">
-                        <div v-for="request in filteredRequests.slice(0, 10)" :key="request.id"
-                             class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                             @click="navigateToRequest(request.id)">
+                        <div
+                            v-for="request in filteredRequests.slice(0, 10)"
+                            :key="request.id"
+                            class="flex cursor-pointer items-center justify-between rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+                            @click="navigateToRequest(request.id)"
+                        >
                             <div class="flex-1">
                                 <div class="flex items-center space-x-2">
                                     <h4 class="font-medium">{{ request.title }}</h4>
@@ -347,10 +354,10 @@ watch(selectedMonth, () => {
                                         {{ request.maintenance_category.name }}
                                     </Badge>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-1">
+                                <p class="mt-1 text-sm text-gray-600">
                                     {{ formatDate(request.estimated_completion_date) }}
                                 </p>
-                                <div class="flex items-center space-x-2 mt-2">
+                                <div class="mt-2 flex items-center space-x-2">
                                     <Badge :variant="request.priority_badge_color as any" class="text-xs">
                                         {{ priorityLabels[request.priority] }}
                                     </Badge>
@@ -361,19 +368,15 @@ watch(selectedMonth, () => {
                             </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-600">{{ request.requested_by.name }}</p>
-                                <p v-if="request.assigned_staff" class="text-xs text-gray-500">
-                                    Asignado: {{ request.assigned_staff.name }}
-                                </p>
+                                <p v-if="request.assigned_staff" class="text-xs text-gray-500">Asignado: {{ request.assigned_staff.name }}</p>
                             </div>
                         </div>
 
                         <div v-if="filteredRequests.length > 10" class="text-center">
-                            <Button variant="outline" @click="goToList">
-                                Ver todas las solicitudes ({{ filteredRequests.length }})
-                            </Button>
+                            <Button variant="outline" @click="goToList"> Ver todas las solicitudes ({{ filteredRequests.length }}) </Button>
                         </div>
                     </div>
-                    <div v-else class="text-center py-8 text-gray-500">
+                    <div v-else class="py-8 text-center text-gray-500">
                         <Calendar class="mx-auto h-12 w-12 text-gray-400" />
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No hay solicitudes programadas</h3>
                         <p class="mt-1 text-sm text-gray-500">No se encontraron solicitudes con fechas estimadas para el período seleccionado.</p>

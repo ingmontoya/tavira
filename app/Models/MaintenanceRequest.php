@@ -16,13 +16,22 @@ class MaintenanceRequest extends Model
         'requested_by_user_id',
         'assigned_staff_id',
         'approved_by_user_id',
+        'supplier_id',
         'title',
         'description',
         'priority',
+        'project_type',
         'status',
         'location',
         'estimated_cost',
         'actual_cost',
+        'vendor_quote_amount',
+        'vendor_quote_description',
+        'vendor_quote_attachments',
+        'vendor_quote_valid_until',
+        'vendor_contact_name',
+        'vendor_contact_phone',
+        'vendor_contact_email',
         'estimated_completion_date',
         'actual_completion_date',
         'requires_council_approval',
@@ -34,11 +43,14 @@ class MaintenanceRequest extends Model
     protected $casts = [
         'estimated_cost' => 'decimal:2',
         'actual_cost' => 'decimal:2',
+        'vendor_quote_amount' => 'decimal:2',
+        'vendor_quote_valid_until' => 'date',
         'estimated_completion_date' => 'date',
         'actual_completion_date' => 'date',
         'requires_council_approval' => 'boolean',
         'council_approved_at' => 'datetime',
         'attachments' => 'array',
+        'vendor_quote_attachments' => 'array',
         'notes' => 'array',
     ];
 
@@ -72,6 +84,10 @@ class MaintenanceRequest extends Model
 
     public const PRIORITY_CRITICAL = 'critical';
 
+    public const PROJECT_TYPE_INTERNAL = 'internal';
+
+    public const PROJECT_TYPE_EXTERNAL = 'external';
+
     public function conjuntoConfig(): BelongsTo
     {
         return $this->belongsTo(ConjuntoConfig::class);
@@ -102,6 +118,11 @@ class MaintenanceRequest extends Model
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
     public function workOrders(): HasMany
     {
         return $this->hasMany(WorkOrder::class);
@@ -110,6 +131,11 @@ class MaintenanceRequest extends Model
     public function expenses(): MorphMany
     {
         return $this->morphMany(Expense::class, 'expensable');
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(MaintenanceRequestDocument::class);
     }
 
     public function getStatusBadgeColorAttribute(): string
@@ -143,7 +169,7 @@ class MaintenanceRequest extends Model
 
     public function canBeApproved(): bool
     {
-        return in_array($this->status, [self::STATUS_BUDGETED, self::STATUS_PENDING_APPROVAL]);
+        return $this->status === self::STATUS_PENDING_APPROVAL;
     }
 
     public function canBeAssigned(): bool
@@ -159,5 +185,91 @@ class MaintenanceRequest extends Model
     public function canBeCompleted(): bool
     {
         return $this->status === self::STATUS_IN_PROGRESS;
+    }
+
+    public function isExternalProject(): bool
+    {
+        return $this->project_type === self::PROJECT_TYPE_EXTERNAL;
+    }
+
+    public function hasVendorQuote(): bool
+    {
+        return $this->vendor_quote_amount !== null && $this->vendor_quote_description !== null;
+    }
+
+    public function isVendorQuoteValid(): bool
+    {
+        if (! $this->vendor_quote_valid_until) {
+            return true; // No expiration date means it's valid
+        }
+
+        return $this->vendor_quote_valid_until->isFuture();
+    }
+
+    public function getVendorDisplayName(): string
+    {
+        if ($this->supplier_id && $this->supplier) {
+            return $this->supplier->name;
+        }
+
+        return $this->vendor_contact_name ?: 'Proveedor externo';
+    }
+
+    public function getVendorContactInfo(): array
+    {
+        if ($this->supplier_id && $this->supplier) {
+            return [
+                'name' => $this->supplier->contact_name ?: $this->supplier->name,
+                'phone' => $this->supplier->contact_phone ?: $this->supplier->phone,
+                'email' => $this->supplier->contact_email ?: $this->supplier->email,
+            ];
+        }
+
+        return [
+            'name' => $this->vendor_contact_name,
+            'phone' => $this->vendor_contact_phone,
+            'email' => $this->vendor_contact_email,
+        ];
+    }
+
+    public function getNextStatus(): ?string
+    {
+        return match ($this->status) {
+            self::STATUS_CREATED => self::STATUS_EVALUATION,
+            self::STATUS_EVALUATION => self::STATUS_BUDGETED,
+            self::STATUS_BUDGETED => self::STATUS_PENDING_APPROVAL,
+            self::STATUS_PENDING_APPROVAL => self::STATUS_APPROVED,
+            self::STATUS_APPROVED => self::STATUS_ASSIGNED,
+            self::STATUS_ASSIGNED => self::STATUS_IN_PROGRESS,
+            self::STATUS_IN_PROGRESS => self::STATUS_COMPLETED,
+            self::STATUS_COMPLETED => self::STATUS_CLOSED,
+            default => null, // No next status for closed, rejected, or suspended
+        };
+    }
+
+    public function canTransitionToNextState(): bool
+    {
+        return $this->getNextStatus() !== null;
+    }
+
+    public function getNextStatusLabel(): ?string
+    {
+        $nextStatus = $this->getNextStatus();
+        if (! $nextStatus) {
+            return null;
+        }
+
+        $statusLabels = [
+            self::STATUS_EVALUATION => 'En Evaluación',
+            self::STATUS_BUDGETED => 'Presupuestada',
+            self::STATUS_PENDING_APPROVAL => 'Pendiente Aprobación',
+            self::STATUS_APPROVED => 'Aprobada',
+            self::STATUS_ASSIGNED => 'Asignada',
+            self::STATUS_IN_PROGRESS => 'En Progreso',
+            self::STATUS_COMPLETED => 'Completada',
+            self::STATUS_CLOSED => 'Cerrada',
+        ];
+
+        return $statusLabels[$nextStatus] ?? null;
     }
 }

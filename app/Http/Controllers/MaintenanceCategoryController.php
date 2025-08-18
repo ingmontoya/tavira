@@ -110,20 +110,20 @@ class MaintenanceCategoryController extends Controller
     {
         try {
             $conjuntoConfig = ConjuntoConfig::first();
-            
-            if (!$conjuntoConfig) {
+
+            if (! $conjuntoConfig) {
                 return redirect()->route('maintenance-categories.index')
                     ->with('error', 'No se encontró configuración de conjunto. Configure primero el conjunto residencial.');
             }
 
-            $seeder = new MaintenanceCategorySeeder();
+            $seeder = new MaintenanceCategorySeeder;
             $seeder->run();
 
             return redirect()->route('maintenance-categories.index')
                 ->with('success', 'Categorías de mantenimiento predeterminadas creadas exitosamente.');
         } catch (\Exception $e) {
             return redirect()->route('maintenance-categories.index')
-                ->with('error', 'Error al crear las categorías: ' . $e->getMessage());
+                ->with('error', 'Error al crear las categorías: '.$e->getMessage());
         }
     }
 }

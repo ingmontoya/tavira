@@ -172,9 +172,7 @@ const breadcrumbs = [
                                 <Mail class="h-4 w-4 text-gray-500" />
                                 <span class="text-sm">{{ staff.email }}</span>
                             </div>
-                            <div v-if="!staff.phone && !staff.email" class="text-sm text-gray-400">
-                                Sin información de contacto
-                            </div>
+                            <div v-if="!staff.phone && !staff.email" class="text-sm text-gray-400">Sin información de contacto</div>
                         </div>
 
                         <Separator />
@@ -196,12 +194,8 @@ const breadcrumbs = [
                         <Separator />
 
                         <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                            <div>
-                                <span class="font-medium">Registrado:</span> {{ formatDate(staff.created_at) }}
-                            </div>
-                            <div>
-                                <span class="font-medium">Actualizado:</span> {{ formatDate(staff.updated_at) }}
-                            </div>
+                            <div><span class="font-medium">Registrado:</span> {{ formatDate(staff.created_at) }}</div>
+                            <div><span class="font-medium">Actualizado:</span> {{ formatDate(staff.updated_at) }}</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -280,10 +274,10 @@ const breadcrumbs = [
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow 
-                                    v-for="request in staff.maintenance_requests" 
+                                <TableRow
+                                    v-for="request in staff.maintenance_requests"
                                     :key="request.id"
-                                    class="hover:bg-gray-50 cursor-pointer"
+                                    class="cursor-pointer hover:bg-gray-50"
                                     @click="router.visit(route('maintenance-requests.show', request.id))"
                                 >
                                     <TableCell class="font-medium">{{ request.title }}</TableCell>

@@ -41,7 +41,10 @@ const submit = () => {
     // Convert specialties string to array
     const submissionData = {
         ...form.data(),
-        specialties: form.specialties.split(',').map(s => s.trim()).filter(s => s.length > 0),
+        specialties: form.specialties
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0),
     };
 
     form.transform(() => submissionData).put(route('maintenance-staff.update', props.staff.id));
@@ -113,16 +116,10 @@ const breadcrumbs = [
                         <!-- Información Personal -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium">Información Personal</h3>
-                            
+
                             <div class="space-y-2">
                                 <Label for="name">Nombre Completo *</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    placeholder="Ej: Juan Pérez García"
-                                    required
-                                />
+                                <Input id="name" v-model="form.name" type="text" placeholder="Ej: Juan Pérez García" required />
                                 <div v-if="form.errors.name" class="text-sm text-red-600">
                                     {{ form.errors.name }}
                                 </div>
@@ -131,12 +128,7 @@ const breadcrumbs = [
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="phone">Teléfono</Label>
-                                    <Input
-                                        id="phone"
-                                        v-model="form.phone"
-                                        type="tel"
-                                        placeholder="Ej: +57 300 123 4567"
-                                    />
+                                    <Input id="phone" v-model="form.phone" type="tel" placeholder="Ej: +57 300 123 4567" />
                                     <div v-if="form.errors.phone" class="text-sm text-red-600">
                                         {{ form.errors.phone }}
                                     </div>
@@ -144,12 +136,7 @@ const breadcrumbs = [
 
                                 <div class="space-y-2">
                                     <Label for="email">Correo Electrónico</Label>
-                                    <Input
-                                        id="email"
-                                        v-model="form.email"
-                                        type="email"
-                                        placeholder="ejemplo@correo.com"
-                                    />
+                                    <Input id="email" v-model="form.email" type="email" placeholder="ejemplo@correo.com" />
                                     <div v-if="form.errors.email" class="text-sm text-red-600">
                                         {{ form.errors.email }}
                                     </div>
@@ -160,7 +147,7 @@ const breadcrumbs = [
                         <!-- Información Profesional -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium">Información Profesional</h3>
-                            
+
                             <div class="space-y-2">
                                 <Label for="specialties">Especialidades</Label>
                                 <Textarea
@@ -177,14 +164,7 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="hourly_rate">Tarifa por Hora (COP)</Label>
-                                <Input
-                                    id="hourly_rate"
-                                    v-model="form.hourly_rate"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="Ej: 50000"
-                                />
+                                <Input id="hourly_rate" v-model="form.hourly_rate" type="number" min="0" step="0.01" placeholder="Ej: 50000" />
                                 <div v-if="form.errors.hourly_rate" class="text-sm text-red-600">
                                     {{ form.errors.hourly_rate }}
                                 </div>
@@ -194,33 +174,19 @@ const breadcrumbs = [
                         <!-- Configuraciones -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium">Configuraciones</h3>
-                            
+
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_internal"
-                                        v-model:checked="form.is_internal"
-                                    />
-                                    <Label for="is_internal" class="text-sm">
-                                        Personal interno
-                                    </Label>
+                                    <Checkbox id="is_internal" v-model:checked="form.is_internal" />
+                                    <Label for="is_internal" class="text-sm"> Personal interno </Label>
                                 </div>
-                                <p class="text-sm text-gray-500 ml-6">
-                                    Marcar si es empleado directo del conjunto (no contratista externo)
-                                </p>
+                                <p class="ml-6 text-sm text-gray-500">Marcar si es empleado directo del conjunto (no contratista externo)</p>
 
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_active"
-                                        v-model:checked="form.is_active"
-                                    />
-                                    <Label for="is_active" class="text-sm">
-                                        Personal activo
-                                    </Label>
+                                    <Checkbox id="is_active" v-model:checked="form.is_active" />
+                                    <Label for="is_active" class="text-sm"> Personal activo </Label>
                                 </div>
-                                <p class="text-sm text-gray-500 ml-6">
-                                    Solo el personal activo puede recibir asignaciones de trabajo
-                                </p>
+                                <p class="ml-6 text-sm text-gray-500">Solo el personal activo puede recibir asignaciones de trabajo</p>
                             </div>
                         </div>
 

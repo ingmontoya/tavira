@@ -33,6 +33,8 @@ export interface MaintenanceRequest {
     title: string;
     description: string;
     priority: 'low' | 'medium' | 'high' | 'critical';
+    status: string;
+    project_type: string;
     location: string | null;
     estimated_cost: number | null;
     estimated_completion_date: string | null;
@@ -63,9 +65,11 @@ const form = useForm({
     title: props.maintenanceRequest.title,
     description: props.maintenanceRequest.description,
     priority: props.maintenanceRequest.priority,
+    status: props.maintenanceRequest.status,
+    project_type: props.maintenanceRequest.project_type,
     location: props.maintenanceRequest.location || '',
     estimated_cost: props.maintenanceRequest.estimated_cost?.toString() || '',
-    estimated_completion_date: props.maintenanceRequest.estimated_completion_date 
+    estimated_completion_date: props.maintenanceRequest.estimated_completion_date
         ? props.maintenanceRequest.estimated_completion_date.split('T')[0]
         : '',
     requires_council_approval: props.maintenanceRequest.requires_council_approval,
@@ -150,7 +154,7 @@ const breadcrumbs = [
                 </CardHeader>
                 <CardContent>
                     <form @submit.prevent="submit" class="space-y-6">
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                             <!-- Categoría -->
                             <div class="space-y-2">
                                 <Label for="maintenance_category_id">Categoría *</Label>
@@ -190,18 +194,38 @@ const breadcrumbs = [
                                     {{ form.errors.priority }}
                                 </div>
                             </div>
+
+                            <!-- Estado -->
+                            <div class="space-y-2">
+                                <Label for="status">Estado *</Label>
+                                <Select v-model="form.status">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccionar estado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="created">Creada</SelectItem>
+                                        <SelectItem value="evaluation">En Evaluación</SelectItem>
+                                        <SelectItem value="budgeted">Presupuestada</SelectItem>
+                                        <SelectItem value="pending_approval">Pendiente Aprobación</SelectItem>
+                                        <SelectItem value="approved">Aprobada</SelectItem>
+                                        <SelectItem value="assigned">Asignada</SelectItem>
+                                        <SelectItem value="in_progress">En Progreso</SelectItem>
+                                        <SelectItem value="completed">Completada</SelectItem>
+                                        <SelectItem value="closed">Cerrada</SelectItem>
+                                        <SelectItem value="rejected">Rechazada</SelectItem>
+                                        <SelectItem value="suspended">Suspendida</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <div v-if="form.errors.status" class="text-sm text-red-600">
+                                    {{ form.errors.status }}
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Título -->
                         <div class="space-y-2">
                             <Label for="title">Título *</Label>
-                            <Input
-                                id="title"
-                                v-model="form.title"
-                                type="text"
-                                placeholder="Ej: Reparación de grifo en cocina"
-                                required
-                            />
+                            <Input id="title" v-model="form.title" type="text" placeholder="Ej: Reparación de grifo en cocina" required />
                             <div v-if="form.errors.title" class="text-sm text-red-600">
                                 {{ form.errors.title }}
                             </div>
@@ -219,6 +243,23 @@ const breadcrumbs = [
                             />
                             <div v-if="form.errors.description" class="text-sm text-red-600">
                                 {{ form.errors.description }}
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Proyecto -->
+                        <div class="space-y-2">
+                            <Label for="project_type">Tipo de Proyecto *</Label>
+                            <Select v-model="form.project_type">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Seleccionar tipo de proyecto" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="internal">Mantenimiento Interno</SelectItem>
+                                    <SelectItem value="external">Proyecto Externo / Contratista</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <div v-if="form.errors.project_type" class="text-sm text-red-600">
+                                {{ form.errors.project_type }}
                             </div>
                         </div>
 
@@ -245,12 +286,7 @@ const breadcrumbs = [
                             <!-- Ubicación -->
                             <div class="space-y-2">
                                 <Label for="location">Ubicación Específica</Label>
-                                <Input
-                                    id="location"
-                                    v-model="form.location"
-                                    type="text"
-                                    placeholder="Ej: Cocina, baño principal, área común, etc."
-                                />
+                                <Input id="location" v-model="form.location" type="text" placeholder="Ej: Cocina, baño principal, área común, etc." />
                                 <div v-if="form.errors.location" class="text-sm text-red-600">
                                     {{ form.errors.location }}
                                 </div>
@@ -261,14 +297,7 @@ const breadcrumbs = [
                             <!-- Costo Estimado -->
                             <div class="space-y-2">
                                 <Label for="estimated_cost">Costo Estimado (COP)</Label>
-                                <Input
-                                    id="estimated_cost"
-                                    v-model="form.estimated_cost"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                                <Input id="estimated_cost" v-model="form.estimated_cost" type="number" min="0" step="0.01" placeholder="0.00" />
                                 <div v-if="form.errors.estimated_cost" class="text-sm text-red-600">
                                     {{ form.errors.estimated_cost }}
                                 </div>
@@ -277,11 +306,7 @@ const breadcrumbs = [
                             <!-- Fecha Estimada -->
                             <div class="space-y-2">
                                 <Label for="estimated_completion_date">Fecha Estimada de Completación</Label>
-                                <Input
-                                    id="estimated_completion_date"
-                                    v-model="form.estimated_completion_date"
-                                    type="date"
-                                />
+                                <Input id="estimated_completion_date" v-model="form.estimated_completion_date" type="date" />
                                 <div v-if="form.errors.estimated_completion_date" class="text-sm text-red-600">
                                     {{ form.errors.estimated_completion_date }}
                                 </div>
@@ -290,13 +315,8 @@ const breadcrumbs = [
 
                         <!-- Requiere Aprobación del Concejo -->
                         <div class="flex items-center space-x-2">
-                            <Checkbox
-                                id="requires_council_approval"
-                                v-model:checked="form.requires_council_approval"
-                            />
-                            <Label for="requires_council_approval" class="text-sm">
-                                Requiere aprobación del concejo
-                            </Label>
+                            <Checkbox id="requires_council_approval" v-model:checked="form.requires_council_approval" />
+                            <Label for="requires_council_approval" class="text-sm"> Requiere aprobación del concejo </Label>
                         </div>
                         <div v-if="selectedCategory?.requires_approval" class="text-sm text-blue-600">
                             ℹ️ Esta categoría requiere automáticamente aprobación del concejo

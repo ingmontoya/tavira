@@ -182,7 +182,7 @@ class PaymentConceptMappingController extends Controller
                 ]);
             }
 
-            $seeder = new PaymentConceptSeeder();
+            $seeder = new PaymentConceptSeeder;
             $seeder->run();
 
             return back()->with('success', 'Conceptos de pago creados exitosamente.');
@@ -196,19 +196,19 @@ class PaymentConceptMappingController extends Controller
     public function seedPaymentConceptMappings()
     {
         try {
-            if (!ChartOfAccounts::exists()) {
+            if (! ChartOfAccounts::exists()) {
                 return back()->withErrors([
                     'seed_mappings' => 'Debe crear el plan de cuentas antes de configurar los mapeos.',
                 ]);
             }
 
-            if (!PaymentConcept::exists()) {
+            if (! PaymentConcept::exists()) {
                 return back()->withErrors([
                     'seed_mappings' => 'Debe crear los conceptos de pago antes de configurar los mapeos.',
                 ]);
             }
 
-            $seeder = new PaymentConceptAccountMappingSeeder();
+            $seeder = new PaymentConceptAccountMappingSeeder;
             $seeder->run();
 
             return back()->with('success', 'Mapeos por defecto creados exitosamente.');

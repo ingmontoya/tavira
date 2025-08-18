@@ -140,7 +140,7 @@ class AnnouncementController extends Controller
         // Send notification only if announcement is published
         if ($validated['status'] === 'published') {
             $notificationService = app(NotificationService::class);
-            
+
             // Notify based on targeting
             if ($announcement->target_audience === 'all') {
                 $notificationService->notifyByRole('resident', new AnnouncementPublished($announcement));

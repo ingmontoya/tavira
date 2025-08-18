@@ -194,8 +194,8 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
 
                     <div class="flex gap-2">
                         <!-- Botón para crear conceptos de pago -->
-                        <Button 
-                            @click="seedPaymentConcepts" 
+                        <Button
+                            @click="seedPaymentConcepts"
                             variant="outline"
                             :disabled="has_payment_concepts"
                             :title="has_payment_concepts ? 'Ya existen conceptos de pago' : 'Crear conceptos de pago básicos'"
@@ -205,11 +205,17 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                         </Button>
 
                         <!-- Botón para crear mapeos por defecto -->
-                        <Button 
-                            @click="seedPaymentConceptMappings" 
+                        <Button
+                            @click="seedPaymentConceptMappings"
                             variant="outline"
                             :disabled="!has_payment_concepts || !has_chart_of_accounts"
-                            :title="!has_chart_of_accounts ? 'Debe crear el plan de cuentas primero' : !has_payment_concepts ? 'Debe crear los conceptos de pago primero' : 'Crear mapeos por defecto'"
+                            :title="
+                                !has_chart_of_accounts
+                                    ? 'Debe crear el plan de cuentas primero'
+                                    : !has_payment_concepts
+                                      ? 'Debe crear los conceptos de pago primero'
+                                      : 'Crear mapeos por defecto'
+                            "
                         >
                             <Settings class="mr-2 h-4 w-4" />
                             Crear Mapeos por Defecto
@@ -258,7 +264,10 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-red-800">Plan de cuentas requerido</h3>
                             <div class="mt-2 text-sm text-red-700">
-                                <p>Debe crear el plan de cuentas contable antes de configurar los mapeos. Vaya a Configuración Contable para inicializar el plan de cuentas.</p>
+                                <p>
+                                    Debe crear el plan de cuentas contable antes de configurar los mapeos. Vaya a Configuración Contable para
+                                    inicializar el plan de cuentas.
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -7,14 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useNavigation } from '@/composables/useNavigation';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { Edit, Eye, Plus, Search, Trash2, Wrench, X, CalendarDays } from 'lucide-vue-next';
+import { CalendarDays, Edit, Eye, Plus, Search, Trash2, Wrench, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
-import { useNavigation } from '@/composables/useNavigation';
 
 export interface MaintenanceRequest {
     id: number;
@@ -294,7 +294,6 @@ const breadcrumbs = [
     <Head title="Solicitudes de Mantenimiento" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header with title and action buttons -->
             <div class="flex items-center justify-between">
@@ -433,7 +432,7 @@ const breadcrumbs = [
                                         v-for="row in table.getRowModel().rows"
                                         :key="row.id"
                                         :data-state="row.getIsSelected() && 'selected'"
-                                        class="hover:bg-gray-50 cursor-pointer"
+                                        class="cursor-pointer hover:bg-gray-50"
                                         @click="router.visit(route('maintenance-requests.show', row.original.id))"
                                     >
                                         <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">

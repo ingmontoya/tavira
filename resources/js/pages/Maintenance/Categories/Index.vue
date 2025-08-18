@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useNavigation } from '@/composables/useNavigation';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { Edit, Eye, Plus, Settings, Trash2, Database } from 'lucide-vue-next';
+import { Database, Edit, Eye, Plus, Settings, Trash2 } from 'lucide-vue-next';
 import { h, ref } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
-import { useNavigation } from '@/composables/useNavigation';
 
 export interface MaintenanceCategory {
     id: number;
@@ -224,47 +224,51 @@ const table = useVueTable({
 
             <!-- Table -->
             <Card>
-            <div class="p-6">
-                <div class="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                                <TableHead
-                                    v-for="header in headerGroup.headers"
-                                    :key="header.id"
-                                    :class="cn('text-left', header.column.getCanSort() && 'cursor-pointer select-none')"
-                                    @click="header.column.getToggleSortingHandler()?.($event)"
-                                >
-                                    <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            <template v-if="table.getRowModel().rows?.length">
-                                <TableRow
-                                    v-for="row in table.getRowModel().rows"
-                                    :key="row.id"
-                                    :data-state="row.getIsSelected() && 'selected'"
-                                    class="hover:bg-gray-50 cursor-pointer"
-                                    @click="router.visit(route('maintenance-categories.show', row.original.id))"
-                                >
-                                    <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
-                                    </TableCell>
+                <div class="p-6">
+                    <div class="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                                    <TableHead
+                                        v-for="header in headerGroup.headers"
+                                        :key="header.id"
+                                        :class="cn('text-left', header.column.getCanSort() && 'cursor-pointer select-none')"
+                                        @click="header.column.getToggleSortingHandler()?.($event)"
+                                    >
+                                        <FlexRender
+                                            v-if="!header.isPlaceholder"
+                                            :render="header.column.columnDef.header"
+                                            :props="header.getContext()"
+                                        />
+                                    </TableHead>
                                 </TableRow>
-                            </template>
-                            <template v-else>
-                                <TableRow>
-                                    <TableCell :colspan="columns.length" class="h-24 text-center">
-                                        No se encontraron categorías de mantenimiento.
-                                    </TableCell>
-                                </TableRow>
-                            </template>
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                <template v-if="table.getRowModel().rows?.length">
+                                    <TableRow
+                                        v-for="row in table.getRowModel().rows"
+                                        :key="row.id"
+                                        :data-state="row.getIsSelected() && 'selected'"
+                                        class="cursor-pointer hover:bg-gray-50"
+                                        @click="router.visit(route('maintenance-categories.show', row.original.id))"
+                                    >
+                                        <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                                            <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                                        </TableCell>
+                                    </TableRow>
+                                </template>
+                                <template v-else>
+                                    <TableRow>
+                                        <TableCell :colspan="columns.length" class="h-24 text-center">
+                                            No se encontraron categorías de mantenimiento.
+                                        </TableCell>
+                                    </TableRow>
+                                </template>
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
-            </div>
-        </Card>
+            </Card>
         </div>
     </AppLayout>
 </template>

@@ -128,13 +128,7 @@ const breadcrumbs = [
                             <!-- Nombre -->
                             <div class="space-y-2">
                                 <Label for="name">Nombre *</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    placeholder="Ej: Plomería, Electricidad, Pintura"
-                                    required
-                                />
+                                <Input id="name" v-model="form.name" type="text" placeholder="Ej: Plomería, Electricidad, Pintura" required />
                                 <div v-if="form.errors.name" class="text-sm text-red-600">
                                     {{ form.errors.name }}
                                 </div>
@@ -219,33 +213,21 @@ const breadcrumbs = [
                         <!-- Configuraciones -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium">Configuraciones</h3>
-                            
+
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="requires_approval"
-                                        v-model:checked="form.requires_approval"
-                                    />
-                                    <Label for="requires_approval" class="text-sm">
-                                        Requiere aprobación del concejo automáticamente
-                                    </Label>
+                                    <Checkbox id="requires_approval" v-model:checked="form.requires_approval" />
+                                    <Label for="requires_approval" class="text-sm"> Requiere aprobación del concejo automáticamente </Label>
                                 </div>
-                                <p class="text-sm text-gray-500 ml-6">
+                                <p class="ml-6 text-sm text-gray-500">
                                     Las solicitudes de esta categoría requerirán aprobación del concejo por defecto
                                 </p>
 
                                 <div class="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="is_active"
-                                        v-model:checked="form.is_active"
-                                    />
-                                    <Label for="is_active" class="text-sm">
-                                        Categoría activa
-                                    </Label>
+                                    <Checkbox id="is_active" v-model:checked="form.is_active" />
+                                    <Label for="is_active" class="text-sm"> Categoría activa </Label>
                                 </div>
-                                <p class="text-sm text-gray-500 ml-6">
-                                    Solo las categorías activas están disponibles para nuevas solicitudes
-                                </p>
+                                <p class="ml-6 text-sm text-gray-500">Solo las categorías activas están disponibles para nuevas solicitudes</p>
                             </div>
                         </div>
 

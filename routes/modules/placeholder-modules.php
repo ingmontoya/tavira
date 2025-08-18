@@ -42,9 +42,9 @@ Route::get('users', function () {
 })->name('users.index')->middleware('rate.limit:strict');
 
 // Documents
-Route::get('documents', function () {
-    return Inertia::render('Documents/Index');
-})->name('documents.index')->middleware(['rate.limit:default', 'can:view_announcements']);
+Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index'])
+    ->name('documents.index')
+    ->middleware(['rate.limit:default', 'can:view_announcements']);
 
 Route::get('minutes', function () {
     return Inertia::render('Minutes/Index');
