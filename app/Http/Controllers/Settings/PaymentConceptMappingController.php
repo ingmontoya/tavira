@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ChartOfAccounts;
 use App\Models\PaymentConcept;
 use App\Models\PaymentConceptAccountMapping;
+use Database\Seeders\PaymentConceptAccountMappingSeeder;
+use Database\Seeders\PaymentConceptSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -86,6 +88,8 @@ class PaymentConceptMappingController extends Controller
             'concepts_without_mapping' => $conceptsWithoutMapping,
             'income_accounts' => $incomeAccounts,
             'asset_accounts' => $assetAccounts,
+            'has_payment_concepts' => PaymentConcept::exists(),
+            'has_chart_of_accounts' => ChartOfAccounts::exists(),
         ]);
     }
 
@@ -167,5 +171,51 @@ class PaymentConceptMappingController extends Controller
         $status = $mapping->is_active ? 'activado' : 'desactivado';
 
         return back()->with('success', "Mapeo {$status} exitosamente.");
+    }
+
+    public function seedPaymentConcepts()
+    {
+        try {
+            if (PaymentConcept::exists()) {
+                return back()->withErrors([
+                    'seed_concepts' => 'Ya existen conceptos de pago en el sistema.',
+                ]);
+            }
+
+            $seeder = new PaymentConceptSeeder();
+            $seeder->run();
+
+            return back()->with('success', 'Conceptos de pago creados exitosamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'seed_concepts' => 'Error al crear conceptos de pago: '.$e->getMessage(),
+            ]);
+        }
+    }
+
+    public function seedPaymentConceptMappings()
+    {
+        try {
+            if (!ChartOfAccounts::exists()) {
+                return back()->withErrors([
+                    'seed_mappings' => 'Debe crear el plan de cuentas antes de configurar los mapeos.',
+                ]);
+            }
+
+            if (!PaymentConcept::exists()) {
+                return back()->withErrors([
+                    'seed_mappings' => 'Debe crear los conceptos de pago antes de configurar los mapeos.',
+                ]);
+            }
+
+            $seeder = new PaymentConceptAccountMappingSeeder();
+            $seeder->run();
+
+            return back()->with('success', 'Mapeos por defecto creados exitosamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'seed_mappings' => 'Error al crear mapeos por defecto: '.$e->getMessage(),
+            ]);
+        }
     }
 }

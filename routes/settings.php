@@ -61,6 +61,8 @@ Route::middleware('auth')->group(function () {
     Route::put('settings/payment-concept-mapping/{mapping}', [PaymentConceptMappingController::class, 'update'])->name('settings.payment-concept-mapping.update')->middleware('can:manage_accounting');
     Route::delete('settings/payment-concept-mapping/{mapping}', [PaymentConceptMappingController::class, 'destroy'])->name('settings.payment-concept-mapping.destroy')->middleware('can:manage_accounting');
     Route::post('settings/payment-concept-mapping/create-defaults', [PaymentConceptMappingController::class, 'createDefaultMappings'])->name('settings.payment-concept-mapping.create-defaults')->middleware('can:manage_accounting');
+    Route::post('settings/payment-concept-mapping/seed-concepts', [PaymentConceptMappingController::class, 'seedPaymentConcepts'])->name('settings.payment-concept-mapping.seed-concepts')->middleware('can:manage_accounting');
+    Route::post('settings/payment-concept-mapping/seed-mappings', [PaymentConceptMappingController::class, 'seedPaymentConceptMappings'])->name('settings.payment-concept-mapping.seed-mappings')->middleware('can:manage_accounting');
     Route::post('settings/payment-concept-mapping/{mapping}/toggle-active', [PaymentConceptMappingController::class, 'toggleActive'])->name('settings.payment-concept-mapping.toggle-active')->middleware('can:manage_accounting');
 
     // Accounting Settings Routes

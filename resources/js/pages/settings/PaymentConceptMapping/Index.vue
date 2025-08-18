@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { CheckCircle, Plus, Settings, Trash2, XCircle } from 'lucide-vue-next';
+import { CheckCircle, Database, Plus, Settings, Trash2, XCircle } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface PaymentConcept {
@@ -53,6 +53,8 @@ interface Props {
     concepts_without_mapping: PaymentConcept[];
     income_accounts: Account[];
     asset_accounts: Account[];
+    has_payment_concepts: boolean;
+    has_chart_of_accounts: boolean;
 }
 
 const props = defineProps<Props>();
@@ -155,6 +157,14 @@ const createDefaultMappings = () => {
     router.post(route('settings.payment-concept-mapping.create-defaults'));
 };
 
+const seedPaymentConcepts = () => {
+    router.post(route('settings.payment-concept-mapping.seed-concepts'));
+};
+
+const seedPaymentConceptMappings = () => {
+    router.post(route('settings.payment-concept-mapping.seed-mappings'));
+};
+
 const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
         common_expense: 'bg-blue-100 text-blue-800',
@@ -183,20 +193,79 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                     </div>
 
                     <div class="flex gap-2">
-                        <Button v-if="hasUnmappedConcepts" @click="createDefaultMappings" variant="outline">
+                        <!-- Botón para crear conceptos de pago -->
+                        <Button 
+                            @click="seedPaymentConcepts" 
+                            variant="outline"
+                            :disabled="has_payment_concepts"
+                            :title="has_payment_concepts ? 'Ya existen conceptos de pago' : 'Crear conceptos de pago básicos'"
+                        >
+                            <Database class="mr-2 h-4 w-4" />
+                            Crear Conceptos
+                        </Button>
+
+                        <!-- Botón para crear mapeos por defecto -->
+                        <Button 
+                            @click="seedPaymentConceptMappings" 
+                            variant="outline"
+                            :disabled="!has_payment_concepts || !has_chart_of_accounts"
+                            :title="!has_chart_of_accounts ? 'Debe crear el plan de cuentas primero' : !has_payment_concepts ? 'Debe crear los conceptos de pago primero' : 'Crear mapeos por defecto'"
+                        >
                             <Settings class="mr-2 h-4 w-4" />
                             Crear Mapeos por Defecto
                         </Button>
 
-                        <Button @click="openCreateDialog">
+                        <!-- Botón original para mapeos individuales -->
+                        <Button v-if="hasUnmappedConcepts" @click="createDefaultMappings" variant="outline">
+                            <Settings class="mr-2 h-4 w-4" />
+                            Mapear Faltantes
+                        </Button>
+
+                        <Button @click="openCreateDialog" :disabled="!has_payment_concepts">
                             <Plus class="mr-2 h-4 w-4" />
                             Nuevo Mapeo
                         </Button>
                     </div>
                 </div>
 
+                <!-- Alert for no payment concepts -->
+                <div v-if="!has_payment_concepts" class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <Database class="h-5 w-5 text-blue-400" />
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">No hay conceptos de pago configurados</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <p>Para comenzar, debe crear los conceptos de pago básicos (administración, multas, parqueaderos, etc.).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert for no chart of accounts -->
+                <div v-else-if="!has_chart_of_accounts" class="rounded-lg border border-red-200 bg-red-50 p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Plan de cuentas requerido</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>Debe crear el plan de cuentas contable antes de configurar los mapeos. Vaya a Configuración Contable para inicializar el plan de cuentas.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Alert for unmapped concepts -->
-                <div v-if="hasUnmappedConcepts" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <div v-else-if="hasUnmappedConcepts" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">

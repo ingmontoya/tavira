@@ -16,8 +16,9 @@ class MaintenanceCategorySeeder extends Seeder
         $conjuntoConfig = ConjuntoConfig::first();
 
         if (! $conjuntoConfig) {
-            $this->command->warn('No se encontró configuración de conjunto. Asegúrate de ejecutar primero ConjuntoConfigSeeder.');
-
+            if ($this->command) {
+                $this->command->warn('No se encontró configuración de conjunto. Asegúrate de ejecutar primero ConjuntoConfigSeeder.');
+            }
             return;
         }
 
@@ -111,6 +112,9 @@ class MaintenanceCategorySeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Categorías de mantenimiento creadas exitosamente.');
+        // Only call info if command is available (when run from Artisan)
+        if ($this->command) {
+            $this->command->info('Categorías de mantenimiento creadas exitosamente.');
+        }
     }
 }

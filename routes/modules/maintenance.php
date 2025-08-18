@@ -21,6 +21,8 @@ Route::patch('maintenance-requests/{maintenanceRequest}/complete', [MaintenanceR
 
 // Maintenance Category routes
 Route::resource('maintenance-categories', MaintenanceCategoryController::class);
+Route::post('maintenance-categories/seed', [MaintenanceCategoryController::class, 'seedCategories'])
+    ->name('maintenance-categories.seed');
 
 // Maintenance Staff routes
 Route::resource('maintenance-staff', MaintenanceStaffController::class);

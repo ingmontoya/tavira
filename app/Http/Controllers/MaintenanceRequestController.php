@@ -113,8 +113,8 @@ class MaintenanceRequestController extends Controller
                 'category' => $request->maintenanceCategory->name,
                 'categoryColor' => $request->maintenanceCategory->color,
                 'url' => route('maintenance-requests.show', $request->id),
-                'backgroundColor' => $this->getEventColor($request->status, $request->priority),
-                'borderColor' => $request->maintenanceCategory->color,
+                'backgroundColor' => $this->getEventBackgroundColor($request->maintenanceCategory->color, $request->priority, $request->status),
+                'borderColor' => $this->getEventBorderColor($request->priority, $request->status),
             ];
         })->filter(function ($event) {
             return $event['start'] !== null;
@@ -127,17 +127,40 @@ class MaintenanceRequestController extends Controller
         ]);
     }
 
-    private function getEventColor(string $status, string $priority): string
+    private function getEventBackgroundColor(string $categoryColor, string $priority, string $status): string
     {
-        // Priority colors take precedence for urgent items
-        if ($priority === 'critical') {
-            return '#dc2626';
-        } // red-600
-        if ($priority === 'high') {
-            return '#ea580c';
-        } // orange-600
+        // Use category color as base, but adjust opacity based on status
+        $opacity = match ($status) {
+            'created', 'evaluation' => '0.6',
+            'budgeted', 'pending_approval' => '0.7',
+            'approved', 'assigned' => '0.8',
+            'in_progress' => '0.9',
+            'completed' => '0.95',
+            'closed' => '0.5',
+            'rejected', 'suspended' => '0.4',
+            default => '0.8',
+        };
 
-        // Status colors for normal/low priority
+        // For critical/high priority, use a more saturated version
+        if ($priority === 'critical' || $priority === 'high') {
+            $opacity = '1.0';
+        }
+
+        // Convert hex to rgba for opacity
+        return $this->hexToRgba($categoryColor, (float) $opacity);
+    }
+
+    private function getEventBorderColor(string $priority, string $status): string
+    {
+        // Border color indicates priority and urgency
+        if ($priority === 'critical') {
+            return '#dc2626'; // red-600
+        }
+        if ($priority === 'high') {
+            return '#ea580c'; // orange-600
+        }
+
+        // Status-based border for normal/low priority
         return match ($status) {
             'created', 'evaluation' => '#6b7280', // gray-500
             'budgeted', 'pending_approval' => '#d97706', // amber-600
@@ -145,8 +168,22 @@ class MaintenanceRequestController extends Controller
             'in_progress' => '#059669', // emerald-600
             'completed' => '#16a34a', // green-600
             'closed' => '#4b5563', // gray-600
+            'rejected', 'suspended' => '#dc2626', // red-600
             default => '#6b7280', // gray-500
         };
+    }
+
+    private function hexToRgba(string $hex, float $opacity): string
+    {
+        // Remove # if present
+        $hex = ltrim($hex, '#');
+        
+        // Convert hex to RGB
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        
+        return "rgba($r, $g, $b, $opacity)";
     }
 
     public function create(): Response
@@ -185,7 +222,7 @@ class MaintenanceRequestController extends Controller
         $validated['status'] = MaintenanceRequest::STATUS_CREATED;
 
         $maintenanceRequest = MaintenanceRequest::create($validated);
-        $maintenanceRequest->load(['maintenance_category', 'requested_by']);
+        $maintenanceRequest->load(['maintenanceCategory', 'requestedBy']);
 
         // Send notification to administrative users
         $notificationService = app(NotificationService::class);

@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { Edit, Eye, Plus, Settings, Trash2 } from 'lucide-vue-next';
+import { Edit, Eye, Plus, Settings, Trash2, Database } from 'lucide-vue-next';
 import { h, ref } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 import { useNavigation } from '@/composables/useNavigation';
@@ -205,6 +205,14 @@ const table = useVueTable({
                     <h1 class="text-2xl font-semibold text-gray-900">Categorías de Mantenimiento</h1>
                 </div>
                 <div class="flex items-center space-x-3">
+                    <Button
+                        v-if="hasPermission('create_maintenance_categories') && categories.length === 0"
+                        @click="router.post(route('maintenance-categories.seed'))"
+                        variant="outline"
+                    >
+                        <Database class="mr-2 h-4 w-4" />
+                        Crear Categorías Predeterminadas
+                    </Button>
                     <Link v-if="hasPermission('create_maintenance_categories')" :href="route('maintenance-categories.create')">
                         <Button>
                             <Plus class="mr-2 h-4 w-4" />

@@ -140,6 +140,8 @@ class PaymentConceptSeeder extends Seeder
             );
         }
 
-        $this->command->info('Payment concepts seeded successfully.');
+        if ($this->command) {
+            $this->command->info('Payment concepts seeded successfully.');
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConjuntoConfig;
 use App\Models\MaintenanceCategory;
+use Database\Seeders\MaintenanceCategorySeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,7 +15,7 @@ class MaintenanceCategoryController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view_maintenance_categories')->only(['index', 'show']);
-        $this->middleware('permission:create_maintenance_categories')->only(['create', 'store']);
+        $this->middleware('permission:create_maintenance_categories')->only(['create', 'store', 'seedCategories']);
         $this->middleware('permission:edit_maintenance_categories')->only(['edit', 'update']);
         $this->middleware('permission:delete_maintenance_categories')->only(['destroy']);
     }
@@ -103,5 +104,26 @@ class MaintenanceCategoryController extends Controller
 
         return redirect()->route('maintenance-categories.index')
             ->with('success', 'Categoría de mantenimiento eliminada exitosamente.');
+    }
+
+    public function seedCategories(): RedirectResponse
+    {
+        try {
+            $conjuntoConfig = ConjuntoConfig::first();
+            
+            if (!$conjuntoConfig) {
+                return redirect()->route('maintenance-categories.index')
+                    ->with('error', 'No se encontró configuración de conjunto. Configure primero el conjunto residencial.');
+            }
+
+            $seeder = new MaintenanceCategorySeeder();
+            $seeder->run();
+
+            return redirect()->route('maintenance-categories.index')
+                ->with('success', 'Categorías de mantenimiento predeterminadas creadas exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('maintenance-categories.index')
+                ->with('error', 'Error al crear las categorías: ' . $e->getMessage());
+        }
     }
 }
