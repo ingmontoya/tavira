@@ -1,4 +1,4 @@
-# Permisos de Correo Electrónico - Habitta
+# Permisos de Correo Electrónico - Tavira
 
 ## Separación de Permisos Implementada
 

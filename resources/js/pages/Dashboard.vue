@@ -8,7 +8,7 @@
             <div class="mb-8">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
-                        <h1 class="text-3xl font-bold tracking-tight">Dashboard Habitta</h1>
+                        <h1 class="text-3xl font-bold tracking-tight">Dashboard Tavira</h1>
                         <p class="text-muted-foreground">Resumen general del Sistema de Gestión para Propiedad Horizontal</p>
                     </div>
                     <div class="flex items-center space-x-4">

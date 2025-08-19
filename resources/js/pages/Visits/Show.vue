@@ -316,7 +316,7 @@ onMounted(() => {
                             <div class="mb-3 text-center">
                                 <div class="mb-2 inline-flex items-center gap-1 rounded bg-white/10 px-2 py-1 backdrop-blur-sm">
                                     <Shield class="h-3 w-3 text-yellow-300" />
-                                    <span class="text-xs font-bold text-yellow-100">HABITTA ACCESS</span>
+                                    <span class="text-xs font-bold text-yellow-100">Tavira ACCESS</span>
                                 </div>
                                 <h2 class="text-lg font-bold">PASE DE VISITA</h2>
                             </div>

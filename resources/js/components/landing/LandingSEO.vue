@@ -6,7 +6,7 @@
         <!-- SEO Meta Tags -->
         <meta name="description" :content="metaDescription" />
         <meta name="keywords" :content="metaKeywords" />
-        <meta name="author" content="Habitta" />
+        <meta name="author" content="Tavira" />
         <meta name="robots" content="index, follow" />
         <meta name="language" :content="currentLocale" />
 
@@ -16,7 +16,7 @@
         <meta property="og:description" :content="metaDescription" />
         <meta property="og:image" content="/images/og-image.jpg" />
         <meta property="og:url" :content="currentUrl" />
-        <meta property="og:site_name" content="Habitta" />
+        <meta property="og:site_name" content="Tavira" />
         <meta property="og:locale" :content="ogLocale" />
 
         <!-- Twitter Card Meta Tags -->
@@ -36,7 +36,7 @@
         <!-- Preconnect for Performance -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
         <!-- DNS Prefetch -->
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -55,27 +55,27 @@ const currentLocale = computed(() => locale.value);
 
 const metaTitle = computed(() =>
     currentLocale.value === 'es'
-        ? 'Habitta - Gestión Inteligente de Conjuntos Residenciales en Colombia'
-        : 'Habitta - Smart Residential Complex Management in Colombia',
+        ? 'Tavira - Gestión simple, comunidades fuertes'
+        : 'Tavira - Simple management, strong communities',
 );
 
 const metaDescription = computed(() =>
     currentLocale.value === 'es'
-        ? 'La plataforma más avanzada para administrar conjuntos residenciales en Colombia. Gestión de residentes, pagos, comunicaciones y más con IA. Prueba gratis 30 días.'
-        : 'The most advanced platform for managing residential complexes in Colombia. Resident management, payments, communications and more with AI. Free 30-day trial.',
+        ? 'Tavira: la nueva forma de administrar propiedad horizontal. Eficiencia y claridad para tu conjunto residencial en Colombia. Prueba gratis 30 días.'
+        : 'Tavira: the new way to manage horizontal property. Efficiency and clarity for your residential complex in Colombia. Free 30-day trial.',
 );
 
 const metaKeywords = computed(() =>
     currentLocale.value === 'es'
-        ? 'gestión conjuntos residenciales, administración propiedad horizontal, software administración, pagos conjuntos, gestión residentes Colombia, proptech'
-        : 'residential complex management, property management software, apartment administration, HOA management, residents management Colombia, proptech',
+        ? 'Tavira, gestión simple conjuntos residenciales, administración propiedad horizontal, software administración eficiente, pagos conjuntos, gestión residentes Colombia, proptech, comunidades fuertes'
+        : 'Tavira, simple residential complex management, property management software, efficient apartment administration, HOA management, residents management Colombia, proptech, strong communities',
 );
 
 const currentUrl = computed(() => {
     if (typeof window !== 'undefined') {
         return window.location.href;
     }
-    return 'https://habitta.com';
+    return 'https://tavira.com';
 });
 
 const alternateUrls = computed(() => ({
@@ -89,7 +89,7 @@ const structuredData = computed(() => {
     const baseData = {
         '@context': 'https://schema.org',
         '@type': 'SoftwareApplication',
-        name: 'Habitta',
+        name: 'Tavira',
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         offers: {
@@ -105,13 +105,13 @@ const structuredData = computed(() => {
             reviewCount: '250',
         },
         description: metaDescription.value,
-        url: 'https://habitta.com',
+        url: 'https://tavira.com',
         author: {
             '@type': 'Organization',
-            name: 'Habitta',
-            url: 'https://habitta.com',
+            name: 'Tavira',
+            url: 'https://tavira.com',
         },
-        screenshot: 'https://habitta.com/images/dashboard-screenshot.jpg',
+        screenshot: 'https://tavira.com/images/dashboard-screenshot.jpg',
         softwareVersion: '2.0',
         datePublished: '2024-01-01',
         dateModified: '2024-12-01',

@@ -52,7 +52,7 @@ class ExpenseApprovalNotification extends Notification implements ShouldQueue
             ->action('Ver Gasto', url("/expenses/{$this->expense->id}"))
             ->line('Puedes aprobar o rechazar este gasto desde el panel de administración.')
             ->salutation('Saludos,')
-            ->salutation('Sistema de Gestión Habitta');
+            ->salutation('Sistema de Gestión Tavira');
     }
 
     protected function pendingCouncilMail(object $notifiable): MailMessage
@@ -71,7 +71,7 @@ class ExpenseApprovalNotification extends Notification implements ShouldQueue
             ->action('Revisar y Aprobar', url("/expenses/{$this->expense->id}"))
             ->line('Este gasto supera el umbral de $4,000,000 COP y requiere tu aprobación.')
             ->salutation('Cordialmente,')
-            ->salutation('Sistema de Gestión Habitta');
+            ->salutation('Sistema de Gestión Tavira');
     }
 
     protected function approvedMail(object $notifiable): MailMessage
@@ -88,7 +88,7 @@ class ExpenseApprovalNotification extends Notification implements ShouldQueue
             ->action('Ver Gasto', url("/expenses/{$this->expense->id}"))
             ->line('El gasto está ahora listo para ser pagado.')
             ->salutation('Saludos,')
-            ->salutation('Sistema de Gestión Habitta');
+            ->salutation('Sistema de Gestión Tavira');
     }
 
     protected function rejectedMail(object $notifiable): MailMessage
@@ -103,7 +103,7 @@ class ExpenseApprovalNotification extends Notification implements ShouldQueue
             ->action('Ver Gasto', url("/expenses/{$this->expense->id}"))
             ->line('Puedes revisar los comentarios y crear un nuevo gasto si es necesario.')
             ->salutation('Saludos,')
-            ->salutation('Sistema de Gestión Habitta');
+            ->salutation('Sistema de Gestión Tavira');
     }
 
     protected function overdueMail(object $notifiable): MailMessage
@@ -123,7 +123,7 @@ class ExpenseApprovalNotification extends Notification implements ShouldQueue
             ->action('Marcar como Pagado', url("/expenses/{$this->expense->id}"))
             ->line('Por favor, procede con el pago lo antes posible.')
             ->salutation('Urgente,')
-            ->salutation('Sistema de Gestión Habitta');
+            ->salutation('Sistema de Gestión Tavira');
     }
 
     public function toArray(object $notifiable): array

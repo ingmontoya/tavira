@@ -1,29 +1,29 @@
 <template>
-    <nav class="relative z-50 bg-slate-900 px-6 py-4">
+    <nav class="relative z-50 bg-[#1D3557] px-6 py-4">
         <div class="mx-auto flex max-w-7xl items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500">
-                    <span class="text-xl font-bold text-white">H</span>
+                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#06D6A0] shadow-lg">
+                    <span class="text-xl font-bold text-white font-brand">T</span>
                 </div>
-                <span class="text-xl font-bold text-white">Habitta</span>
+                <span class="text-2xl font-bold text-white font-brand tracking-tight">Tavira</span>
             </div>
 
-            <div class="flex items-center space-x-2 sm:space-x-4">
+            <div class="flex items-center space-x-2 sm:space-x-6">
                 <LanguageSwitcher />
                 <Link
                     v-if="$page.props.auth.user"
                     :href="route('dashboard')"
-                    class="transform rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2.5 font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-cyan-600 hover:to-blue-700 hover:shadow-xl"
+                    class="inline-flex items-center rounded-lg bg-gradient-to-r from-[#1D3557] to-[#06D6A0] px-6 py-3 font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:from-[#2a4870] hover:to-[#07e8b5]"
                 >
                     {{ $t('nav.dashboard') }}
                 </Link>
                 <template v-else>
-                    <Link :href="route('login')" class="rounded-lg px-4 py-2 text-white/80 transition-colors duration-200 hover:text-white">
+                    <Link :href="route('login')" class="rounded-lg px-4 py-2 text-white/80 font-medium transition-colors duration-200 hover:text-[#06D6A0] hover:bg-white/10">
                         {{ $t('nav.login') }}
                     </Link>
                     <Link
                         :href="route('register')"
-                        class="flex-shrink-0 transform rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-2 py-1.5 text-xs font-medium text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:from-cyan-600 hover:to-blue-700 hover:shadow-xl sm:px-6 sm:py-2.5 sm:text-base"
+                        class="flex-shrink-0 inline-flex items-center rounded-lg bg-[#06D6A0] px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-[#07e8b5] sm:px-6 sm:py-3 sm:text-base"
                     >
                         {{ $t('nav.register') }}
                     </Link>

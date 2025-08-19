@@ -24,7 +24,7 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Registro de Administrador" description="Configura tu conjunto residencial con Habitta">
+    <AuthBase title="Registro de Administrador" description="Configura tu conjunto residencial con Tavira">
         <Head title="Registro de Administrador" />
 
         <div class="space-y-6">

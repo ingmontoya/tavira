@@ -1,4 +1,4 @@
-# Configuración de Correo Electrónico - Habitta
+# Configuración de Correo Electrónico - Tavira
 
 ## Descripción
 Se ha implementado un sistema completo de configuración de correo electrónico a través de settings, permitiendo configurar las cuentas de correo para administración y concejo desde la interfaz web.

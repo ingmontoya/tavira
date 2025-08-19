@@ -104,9 +104,9 @@ const useTemplate = (template: string) => {
 };
 
 const quickRecipients = [
-    { name: 'Administración', email: 'admin@habitta.com' },
-    { name: 'Gerencia', email: 'gerencia@habitta.com' },
-    { name: 'Contabilidad', email: 'contabilidad@habitta.com' },
+    { name: 'Administración', email: 'admin@Tavira.com' },
+    { name: 'Gerencia', email: 'gerencia@Tavira.com' },
+    { name: 'Contabilidad', email: 'contabilidad@Tavira.com' },
 ];
 
 const addRecipient = (email: string) => {

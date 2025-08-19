@@ -94,7 +94,7 @@ const processedBody = computed(() => {
         '{{overdue_amount}}': '$180.000',
         '{{days_overdue}}': '15',
         '{{user_name}}': 'Juan Pérez',
-        '{{login_url}}': 'https://habitta.com/login',
+        '{{login_url}}': 'https://Tavira.com/login',
         '{{announcement_title}}': 'Mantenimiento Programado',
         '{{announcement_content}}': 'Informamos que se realizará mantenimiento en las áreas comunes...',
         '{{announcement_date}}': '15/01/2024',

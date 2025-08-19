@@ -22,7 +22,7 @@ class InvoiceEmailService
         $this->defaultEmailSettings = [
             'template' => 'invoice',
             'subject' => 'Factura de Administración - {{invoice_number}}',
-            'sender_name' => config('app.name', 'Habitta'),
+            'sender_name' => config('app.name', 'Tavira'),
             'reply_to' => config('mail.from.address'),
             'include_pdf' => true,
             'include_payment_link' => false,

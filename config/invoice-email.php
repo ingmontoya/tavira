@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file contains the configuration options for the invoice email
-    | system in Habitta. These settings control how invoice emails are
+    | system in Tavira. These settings control how invoice emails are
     | sent, tracked, and managed throughout the application.
     |
     */

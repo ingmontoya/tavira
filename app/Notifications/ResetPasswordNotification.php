@@ -22,7 +22,7 @@ class ResetPasswordNotification extends ResetPassword
         ], false));
 
         return (new MailMessage)
-            ->subject('Restablecer Contraseña - Habitta')
+            ->subject('Restablecer Contraseña - Tavira')
             ->view('emails.reset-password', [
                 'url' => $url,
                 'count' => config('auth.passwords.'.config('auth.defaults.passwords').'.expire'),

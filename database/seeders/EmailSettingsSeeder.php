@@ -44,7 +44,7 @@ class EmailSettingsSeeder extends Seeder
             // Template settings
             $emailSettings->use_html_templates = true;
             $emailSettings->email_header_logo = '';
-            $emailSettings->email_footer_text = 'Habitta - Sistema de Gestión de Conjuntos Residenciales';
+            $emailSettings->email_footer_text = 'Tavira - Sistema de Gestión de Conjuntos Residenciales';
             $emailSettings->email_template_colors = [
                 'primary' => '#3b82f6',
                 'secondary' => '#6b7280',

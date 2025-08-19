@@ -66,7 +66,7 @@ php artisan reserve-fund:appropriate --force
 **Programación sugerida en cron:**
 ```bash
 # Ejecutar el 5to día de cada mes para el mes anterior
-0 6 5 * * cd /path/to/habitta && php artisan reserve-fund:appropriate
+0 6 5 * * cd /path/to/Tavira && php artisan reserve-fund:appropriate
 ```
 
 ##### **C. Asiento Contable Generado**
@@ -142,7 +142,7 @@ php artisan accounting:close-month --force
 **Programación sugerida en cron:**
 ```bash
 # Ejecutar el 1er día de cada mes a las 2 AM para cerrar el mes anterior
-0 2 1 * * cd /path/to/habitta && php artisan accounting:close-month
+0 2 1 * * cd /path/to/Tavira && php artisan accounting:close-month
 ```
 
 ##### **C. Resultado del Cierre**
@@ -311,10 +311,10 @@ php artisan db:seed --class=ChartOfAccountsSeeder
 ```bash
 # Agregar a crontab para automatización completa
 # Apropiación de reserva mensual
-0 6 5 * * cd /path/to/habitta && php artisan reserve-fund:appropriate
+0 6 5 * * cd /path/to/Tavira && php artisan reserve-fund:appropriate
 
 # Cierre contable mensual
-0 2 1 * * cd /path/to/habitta && php artisan accounting:close-month
+0 2 1 * * cd /path/to/Tavira && php artisan accounting:close-month
 ```
 
 ### **3. Configurar Settings (Opcional)**
@@ -395,7 +395,7 @@ php artisan test tests/Unit/Services/ReserveFundServiceTest.php
 
 ## ✅ **CONCLUSIÓN**
 
-El Sprint 1 de mejoras contables ha sido **exitosamente completado** con una implementación que eleva el módulo contable de Habitta desde una **calificación de 95/100 a 98/100**.
+El Sprint 1 de mejoras contables ha sido **exitosamente completado** con una implementación que eleva el módulo contable de Tavira desde una **calificación de 95/100 a 98/100**.
 
 Las mejoras implementadas proporcionan:
 - **Automatización completa** del fondo de reserva según Ley 675
@@ -403,7 +403,7 @@ Las mejoras implementadas proporcionan:
 - **Validaciones de integridad** que previenen errores contables
 - **Suite de tests robusta** que garantiza la calidad del código
 
-El sistema mantiene **100% de compatibilidad** con la funcionalidad existente mientras agrega capacidades empresariales que posicionan a Habitta como la solución líder en gestión contable para propiedad horizontal en Colombia.
+El sistema mantiene **100% de compatibilidad** con la funcionalidad existente mientras agrega capacidades empresariales que posicionan a Tavira como la solución líder en gestión contable para propiedad horizontal en Colombia.
 
 **Todas las funcionalidades están listas para producción y han sido exhaustivamente probadas.**
 

@@ -2,7 +2,7 @@
 
 ## Resumen de Implementación
 
-El sistema completo de envío de facturas por email ha sido implementado exitosamente en Habitta. Todos los componentes están operativos y listos para uso en producción.
+El sistema completo de envío de facturas por email ha sido implementado exitosamente en Tavira. Todos los componentes están operativos y listos para uso en producción.
 
 ## Componentes Implementados
 

@@ -1,8 +1,8 @@
-# Proceso de Facturación Mensual - Habitta
+# Proceso de Facturación Mensual - Tavira
 
 ## ✅ Validación Completa del Sistema
 
-Este documento describe el proceso **validado y funcional** de facturación mensual automática en Habitta, incluyendo la integración contable automática.
+Este documento describe el proceso **validado y funcional** de facturación mensual automática en Tavira, incluyendo la integración contable automática.
 
 ## Comando Principal
 
@@ -79,7 +79,7 @@ Por cada factura creada:
 ## Resultados de Prueba Validados
 
 ### Escenario de Prueba
-- **Conjunto**: "Conjunto de Prueba Habitta"
+- **Conjunto**: "Conjunto de Prueba Tavira"
 - **Apartamentos**: 20 (10 Tipo A + 10 Tipo B)
 - **Período**: Diciembre 2024
 
@@ -150,7 +150,7 @@ WHERE reference_type = 'invoice';
 ### 2. 🔄 Automatización Recomendada
 ```bash
 # Comando cron para ejecutar el primer día de cada mes
-0 0 1 * * cd /path/to/habitta && php artisan invoices:generate-monthly
+0 0 1 * * cd /path/to/Tavira && php artisan invoices:generate-monthly
 ```
 
 ### 3. 🚨 Validaciones Pre-Ejecución

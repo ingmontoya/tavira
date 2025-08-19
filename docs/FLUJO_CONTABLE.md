@@ -1,8 +1,8 @@
-# 📊 FLUJO CONTABLE AUTOMATIZADO - HABITTA
+# 📊 FLUJO CONTABLE AUTOMATIZADO - Tavira
 
 ## 🎯 Resumen Ejecutivo
 
-Habitta implementa un sistema contable automatizado que genera asientos contables en tiempo real siguiendo las normas colombianas (Decreto 2650). Cada transacción financiera (facturación, pagos, reversiones) produce automáticamente sus respectivos documentos contables.
+Tavira implementa un sistema contable automatizado que genera asientos contables en tiempo real siguiendo las normas colombianas (Decreto 2650). Cada transacción financiera (facturación, pagos, reversiones) produce automáticamente sus respectivos documentos contables.
 
 ## 🏗️ Arquitectura del Sistema Contable
 
@@ -426,6 +426,6 @@ $metricas = [
 
 ---
 
-**Documento generado automáticamente - Habitta v1.0**  
+**Documento generado automáticamente - Tavira v1.0**  
 **Fecha**: Agosto 2024  
 **Última actualización**: `date('Y-m-d H:i:s')`

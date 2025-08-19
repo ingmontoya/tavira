@@ -199,7 +199,7 @@
     @endif
 
     <div class="footer">
-        Reporte generado el {{ $generatedAt }} | Habitta - Sistema de Gestión de Conjuntos Residenciales
+        Reporte generado el {{ $generatedAt }} | Tavira - Sistema de Gestión de Conjuntos Residenciales
     </div>
 </body>
 </html>

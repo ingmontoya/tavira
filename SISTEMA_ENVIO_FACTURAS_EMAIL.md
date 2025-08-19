@@ -1,8 +1,8 @@
-# Sistema de Envío de Facturas por Email - Habitta
+# Sistema de Envío de Facturas por Email - Tavira
 
 ## Resumen del Sistema Implementado
 
-Se ha diseñado e implementado un sistema completo de envío manual de facturas por email para Habitta, siguiendo las mejores prácticas de Vue 3 + TypeScript + shadcn/ui. El sistema permite a los administradores crear lotes de envío, seleccionar facturas, y gestionar el proceso de envío con seguimiento detallado.
+Se ha diseñado e implementado un sistema completo de envío manual de facturas por email para Tavira, siguiendo las mejores prácticas de Vue 3 + TypeScript + shadcn/ui. El sistema permite a los administradores crear lotes de envío, seleccionar facturas, y gestionar el proceso de envío con seguimiento detallado.
 
 ## Arquitectura del Sistema
 

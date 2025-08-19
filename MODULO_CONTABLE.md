@@ -1,4 +1,4 @@
-# MÓDULO CONTABLE - HABITTA
+# MÓDULO CONTABLE - Tavira
 ## Sistema de Contabilidad por Partida Doble para Propiedad Horizontal
 
 ---
@@ -302,7 +302,7 @@ Apartamentos morosos: 18/120 (15%)
 
 ## 🎯 CONCLUSIÓN DEL FLUJO
 
-El módulo contable de Habitta revoluciona la gestión financiera de conjuntos residenciales al automatizar completamente el ciclo contable desde la facturación hasta los reportes financieros. Su integración nativa con los procesos de propiedad horizontal elimina errores manuales, mejora la transparencia hacia los propietarios y garantiza el cumplimiento de todas las obligaciones legales y contables.
+El módulo contable de Tavira revoluciona la gestión financiera de conjuntos residenciales al automatizar completamente el ciclo contable desde la facturación hasta los reportes financieros. Su integración nativa con los procesos de propiedad horizontal elimina errores manuales, mejora la transparencia hacia los propietarios y garantiza el cumplimiento de todas las obligaciones legales y contables.
 
 El sistema no solo registra transacciones, sino que proporciona inteligencia financiera que permite a los administradores tomar decisiones informadas, optimizar recursos y mantener la confianza de la comunidad de propietarios.
 

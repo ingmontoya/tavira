@@ -25,7 +25,7 @@
         "sectionTitle": "Funcionalidades que",
         "sectionTitleHighlight": "Revolucionan",
         "sectionTitleEnd": "la Administración",
-        "sectionDescription": "Descubre cómo Habitta está diseñada para transformar la gestión de conjuntos residenciales con tecnología innovadora",
+        "sectionDescription": "Descubre cómo Tavira está diseñada para transformar la gestión de conjuntos residenciales con tecnología innovadora",
         "management": {
             "title": "Gestión Integral",
             "description": "Administra residentes, apartamentos y pagos desde una sola plataforma"
@@ -45,7 +45,7 @@
     },
     "benefits": {
         "sectionTitle": "¿Por qué elegir",
-        "sectionTitleHighlight": "Habitta?",
+        "sectionTitleHighlight": "Tavira?",
         "sectionDescription": "Beneficios reales diseñados para transformar la gestión de tu conjunto residencial",
         "timeSaving": {
             "title": "Ahorro de Tiempo",
@@ -107,11 +107,11 @@
     "testimonials": {
         "sectionTitle": "Lo que dicen nuestros",
         "sectionTitleHighlight": "Clientes",
-        "sectionDescription": "Experiencias de administradores que están mejorando su gestión con Habitta",
+        "sectionDescription": "Experiencias de administradores que están mejorando su gestión con Tavira",
         "maria": {
             "name": "María González",
             "role": "Administradora - Conjunto Villa Hermosa",
-            "content": "Habitta está mejorando significativamente nuestra gestión. Procesos que tomaban días ahora son mucho más eficientes."
+            "content": "Tavira está mejorando significativamente nuestra gestión. Procesos que tomaban días ahora son mucho más eficientes."
         },
         "carlos": {
             "name": "Carlos Mendoza",
@@ -128,7 +128,7 @@
         "sectionTitle": "Implementación",
         "sectionTitleHighlight": "Rápida",
         "sectionTitleEnd": "y Sencilla",
-        "sectionDescription": "Comienza a usar Habitta en menos de 24 horas con nuestro proceso de configuración guiada",
+        "sectionDescription": "Comienza a usar Tavira en menos de 24 horas con nuestro proceso de configuración guiada",
         "step1": {
             "title": "Registro e Configuración",
             "description": "Crea tu cuenta y configura tu conjunto con nuestro asistente inteligente. Importa datos existentes en minutos."
@@ -145,7 +145,7 @@
     "cta": {
         "title": "¿Listo para Transformar tu",
         "titleHighlight": "Conjunto?",
-        "description": "Sé parte del cambio en la gestión de conjuntos residenciales. Únete a administradores que están transformando su trabajo con Habitta. Sin compromisos, sin configuración compleja.",
+        "description": "Sé parte del cambio en la gestión de conjuntos residenciales. Únete a administradores que están transformando su trabajo con Tavira. Sin compromisos, sin configuración compleja.",
         "primary": "Empezar",
         "primaryFull": "Comenzar Prueba Gratuita",
         "secondary": "Demo",
@@ -159,7 +159,7 @@
     },
     "footer": {
         "description": "Innovando la gestión de conjuntos residenciales en Colombia. Creamos soluciones que transforman la administración con tecnología de vanguardia.",
-        "copyright": "© 2024 Habitta. Todos los derechos reservados.",
+        "copyright": "© 2024 Tavira. Todos los derechos reservados.",
         "product": {
             "title": "Producto",
             "features": "Funcionalidades",

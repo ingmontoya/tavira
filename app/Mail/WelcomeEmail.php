@@ -28,7 +28,7 @@ class WelcomeEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '¡Bienvenido a Habitta! - Tu cuenta ha sido creada',
+            subject: '¡Bienvenido a Tavira! - Tu cuenta ha sido creada',
         );
     }
 

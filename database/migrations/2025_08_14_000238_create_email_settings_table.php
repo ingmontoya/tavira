@@ -43,7 +43,7 @@ return new class extends Migration
             // Email Templates
             ['group' => 'email', 'name' => 'use_html_templates', 'payload' => json_encode(true), 'locked' => false],
             ['group' => 'email', 'name' => 'email_header_logo', 'payload' => json_encode(''), 'locked' => false],
-            ['group' => 'email', 'name' => 'email_footer_text', 'payload' => json_encode('Habitta - Sistema de Gestión de Conjuntos Residenciales'), 'locked' => false],
+            ['group' => 'email', 'name' => 'email_footer_text', 'payload' => json_encode('Tavira - Sistema de Gestión de Conjuntos Residenciales'), 'locked' => false],
             ['group' => 'email', 'name' => 'email_template_colors', 'payload' => json_encode([
                 'primary' => '#3b82f6',
                 'secondary' => '#6b7280',

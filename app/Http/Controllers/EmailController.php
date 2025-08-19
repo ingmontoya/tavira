@@ -221,7 +221,7 @@ class EmailController extends Controller
                     'Name' => 'María González - Apt 102',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Solicitud de certificación de paz y salvo',
@@ -233,11 +233,11 @@ class EmailController extends Controller
             [
                 'ID' => '2',
                 'From' => [
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ],
                 'To' => [[
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ]],
                 'Subject' => 'Informe mensual de administración - Enero 2025',
@@ -249,11 +249,11 @@ class EmailController extends Controller
             [
                 'ID' => '3',
                 'From' => [
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Aprobación de presupuesto obras comunes',
@@ -269,7 +269,7 @@ class EmailController extends Controller
                     'Name' => 'Empresa de Mantenimiento',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Cotización mantenimiento ascensores',
@@ -285,7 +285,7 @@ class EmailController extends Controller
                     'Name' => 'Carlos Rodríguez - Apt 205',
                 ],
                 'To' => [[
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ]],
                 'Subject' => 'Queja por ruido en horas nocturnas',
@@ -297,7 +297,7 @@ class EmailController extends Controller
             [
                 'ID' => '6',
                 'From' => [
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ],
                 'To' => [[
@@ -317,7 +317,7 @@ class EmailController extends Controller
                     'Name' => 'Contadora Externa',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Estados financieros diciembre 2024',
@@ -329,7 +329,7 @@ class EmailController extends Controller
             [
                 'ID' => '8',
                 'From' => [
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ],
                 'To' => [[
@@ -349,7 +349,7 @@ class EmailController extends Controller
                     'Name' => 'Empresa de Vigilancia',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Reporte semanal de seguridad',
@@ -365,7 +365,7 @@ class EmailController extends Controller
                     'Name' => 'Ana Martínez - Apt 301',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Solicitud permiso para renovación apartamento',
@@ -393,7 +393,7 @@ class EmailController extends Controller
                     'Name' => 'María González - Apt 102',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Solicitud de certificación de paz y salvo',
@@ -406,11 +406,11 @@ class EmailController extends Controller
             '2' => [
                 'ID' => '2',
                 'From' => [
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ],
                 'To' => [[
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ]],
                 'Subject' => 'Informe mensual de administración - Enero 2025',
@@ -423,11 +423,11 @@ class EmailController extends Controller
             '3' => [
                 'ID' => '3',
                 'From' => [
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ],
                 'To' => [[
-                    'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                    'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                     'Name' => $adminConfig['name'] ?: 'Administración',
                 ]],
                 'Subject' => 'Aprobación de presupuesto obras comunes',
@@ -444,7 +444,7 @@ class EmailController extends Controller
                     'Name' => 'Carlos Rodríguez - Apt 205',
                 ],
                 'To' => [[
-                    'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                    'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                     'Name' => $councilConfig['name'] ?: 'Concejo',
                 ]],
                 'Subject' => 'Queja por ruido en horas nocturnas',
@@ -459,11 +459,11 @@ class EmailController extends Controller
         return $emails[$id] ?? [
             'ID' => $id,
             'From' => [
-                'Address' => $adminConfig['address'] ?: 'admin@habitta.com',
+                'Address' => $adminConfig['address'] ?: 'admin@Tavira.com',
                 'Name' => $adminConfig['name'] ?: 'Administración',
             ],
             'To' => [[
-                'Address' => $councilConfig['address'] ?: 'concejo@habitta.com',
+                'Address' => $councilConfig['address'] ?: 'concejo@Tavira.com',
                 'Name' => $councilConfig['name'] ?: 'Concejo',
             ]],
             'Subject' => 'Correo de ejemplo',

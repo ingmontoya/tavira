@@ -10,7 +10,7 @@ Settings → Mapeo Contable
 
 ### **Navegación Visual:**
 ```
-🏠 Habitta
+🏠 Tavira
 ├── Dashboard
 ├── Apartamentos  
 ├── Residentes

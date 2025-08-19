@@ -1,14 +1,14 @@
-# Prueba del Sistema Completo - Habitta
+# Prueba del Sistema Completo - Tavira
 
 ## Descripción General
 
-Este documento describe el ejercicio de prueba integral del sistema Habitta que simula un conjunto residencial real con 100 apartamentos, facturas, pagos y transacciones contables. El ejercicio está diseñado para validar la funcionalidad completa del sistema en un entorno controlado.
+Este documento describe el ejercicio de prueba integral del sistema Tavira que simula un conjunto residencial real con 100 apartamentos, facturas, pagos y transacciones contables. El ejercicio está diseñado para validar la funcionalidad completa del sistema en un entorno controlado.
 
 ## Configuración del Escenario
 
 ### Conjunto Residencial Creado
 
-**Conjunto Residencial Habitta Test**
+**Conjunto Residencial Tavira Test**
 - **Ubicación**: Bogotá, Colombia
 - **Estructura**: 5 torres (Torre A, B, C, D, E)
 - **Distribución**: 4 pisos por torre, 5 apartamentos por piso
@@ -207,7 +207,7 @@ ORDER BY saldo_total DESC;
 ### Explicación Detallada
 
 #### Sistema Normal de Contabilización
-En el funcionamiento normal de Habitta:
+En el funcionamiento normal de Tavira:
 
 1. **Al crear una factura** → Se dispara evento `InvoiceCreated`
 2. **Al registrar un pago** → Se dispara evento para generar asientos contables
@@ -269,7 +269,7 @@ GROUP BY reference_type, status;
 
 ## Conclusiones
 
-El ejercicio demuestra que el sistema Habitta:
+El ejercicio demuestra que el sistema Tavira:
 
 1. **Maneja correctamente** la facturación masiva y automática
 2. **Procesa adecuadamente** diferentes escenarios de pago

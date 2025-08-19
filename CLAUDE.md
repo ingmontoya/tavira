@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Habitta is a comprehensive property management platform for residential complexes (condominiums/HOAs) in Colombia. It's built as a multitenant SaaS application using Laravel 12, Vue 3 with Composition API, Inertia.js, and shadcn/ui Vue components.
+Tavira is a comprehensive property management platform for residential complexes (condominiums/HOAs) in Colombia. It's built as a multitenant SaaS application using Laravel 12, Vue 3 with Composition API, Inertia.js, and shadcn/ui Vue components.
 
 ## Development Commands
 

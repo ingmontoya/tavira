@@ -32,7 +32,7 @@ class TestConjuntoSeeder extends Seeder
     private function createConjuntoConfig(): ConjuntoConfig
     {
         return ConjuntoConfig::create([
-            'name' => 'Conjunto de Prueba Habitta',
+            'name' => 'Conjunto de Prueba Tavira',
             'description' => 'Conjunto residencial de prueba para validar facturación mensual',
             'number_of_towers' => 2,
             'floors_per_tower' => 2,

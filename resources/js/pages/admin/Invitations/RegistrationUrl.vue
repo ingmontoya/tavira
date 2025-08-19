@@ -85,8 +85,8 @@ const shareUrl = async () => {
     if (navigator.share) {
         try {
             await navigator.share({
-                title: 'Invitación a Habitta',
-                text: `Has sido invitado a unirte a Habitta como ${getRoleLabel(props.invitation.role)}`,
+                title: 'Invitación a Tavira',
+                text: `Has sido invitado a unirte a Tavira como ${getRoleLabel(props.invitation.role)}`,
                 url: props.registrationUrl,
             });
         } catch (err) {

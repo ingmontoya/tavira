@@ -14,7 +14,7 @@
                         <div class="h-3 w-3 rounded-full bg-yellow-400"></div>
                         <div class="h-3 w-3 rounded-full bg-green-400"></div>
                     </div>
-                    <div class="text-sm text-white/70">habitta.com/dashboard</div>
+                    <div class="text-sm text-white/70">Tavira.com/dashboard</div>
                 </div>
 
                 <div class="space-y-4">

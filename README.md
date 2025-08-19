@@ -1,6 +1,6 @@
-# 🏠 Habitta - Sistema Integral de Gestión para Propiedad Horizontal
+# 🏠 Tavira - Sistema Integral de Gestión para Propiedad Horizontal
 
-**Habitta** es una plataforma digital todo-en-uno diseñada para la gestión moderna de conjuntos residenciales y edificios bajo el régimen de propiedad horizontal. El sistema está optimizado para la gestión eficiente de un conjunto residencial, facilitando a administradores, consejos y residentes la operación transparente y automatizada de la comunidad.
+**Tavira** es una plataforma digital todo-en-uno diseñada para la gestión moderna de conjuntos residenciales y edificios bajo el régimen de propiedad horizontal. El sistema está optimizado para la gestión eficiente de un conjunto residencial, facilitando a administradores, consejos y residentes la operación transparente y automatizada de la comunidad.
 
 La plataforma incluye herramientas para la administración de residentes, finanzas completas con facturación automática, seguimiento de pagos, acuerdos de pago, gestión de apartamentos y mucho más. Está diseñada para ser usada tanto desde un panel web como desde dispositivos móviles.
 

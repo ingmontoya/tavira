@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restablecer Contraseña - Habitta</title>
+    <title>Restablecer Contraseña - Tavira</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -82,14 +82,14 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">Habitta</div>
+            <div class="logo">Tavira</div>
             <h1 class="title">Restablecer Contraseña</h1>
         </div>
 
         <div class="content">
             <p>Hola,</p>
             
-            <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Habitta. Si fuiste tú quien hizo esta solicitud, haz clic en el botón de abajo para crear una nueva contraseña:</p>
+            <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Tavira. Si fuiste tú quien hizo esta solicitud, haz clic en el botón de abajo para crear una nueva contraseña:</p>
 
             <div style="text-align: center;">
                 <a href="{{ $url }}" class="button">Restablecer Contraseña</a>
@@ -115,7 +115,7 @@
         </div>
 
         <div class="footer">
-            <p><strong>Equipo de Seguridad Habitta</strong><br>
+            <p><strong>Equipo de Seguridad Tavira</strong><br>
             La solución completa para la administración de conjuntos residenciales</p>
             
             <p style="margin-top: 20px; font-size: 12px;">

@@ -7,7 +7,7 @@
             <div class="ml-3 flex-1">
                 <p class="text-sm text-blue-700">
                     <span class="font-medium">¡Configuración inicial requerida!</span>
-                    Para utilizar todas las funcionalidades de Habitta, primero debes configurar tu conjunto residencial.
+                    Para utilizar todas las funcionalidades de Tavira, primero debes configurar tu conjunto residencial.
                 </p>
             </div>
             <div class="ml-4 flex-shrink-0">

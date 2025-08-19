@@ -83,7 +83,7 @@ const getSubmitTabIndex = () => {
 <template>
     <AuthBase
         :title="invitation ? 'Completar registro' : 'Crear cuenta'"
-        :description="invitation ? 'Has sido invitado para unirte a Habitta' : 'Únete a Habitta'"
+        :description="invitation ? 'Has sido invitado para unirte a Tavira' : 'Únete a Tavira'"
     >
         <Head :title="invitation ? 'Completar registro' : 'Crear cuenta'" />
 

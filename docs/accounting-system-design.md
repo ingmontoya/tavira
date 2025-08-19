@@ -1,4 +1,4 @@
-# Diseño del Sistema Contable - Habitta
+# Diseño del Sistema Contable - Tavira
 
 > **Estado:** ✅ IMPLEMENTADO - Backend Core Completado  
 > **Fecha:** 2025-08-01  
@@ -547,4 +547,4 @@ database/seeders/
 └── ChartOfAccountsSeeder.php ✅
 ```
 
-Este diseño ha sido implementado exitosamente y proporciona la base técnica completa para el módulo contable integrado con el sistema existente de Habitta.
+Este diseño ha sido implementado exitosamente y proporciona la base técnica completa para el módulo contable integrado con el sistema existente de Tavira.

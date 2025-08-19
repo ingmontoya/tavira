@@ -1,4 +1,4 @@
-# Módulo de Correo Electrónico - Habitta
+# Módulo de Correo Electrónico - Tavira
 
 ## Descripción
 Se ha implementado un módulo completo de correo electrónico en el menú de comunicación con dos vistas separadas: una para administración y otra para concejo.

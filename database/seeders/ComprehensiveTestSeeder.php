@@ -100,7 +100,7 @@ class ComprehensiveTestSeeder extends Seeder
     private function createConjuntoConfig(): ConjuntoConfig
     {
         return ConjuntoConfig::create([
-            'name' => 'Conjunto Residencial Habitta Test',
+            'name' => 'Conjunto Residencial Tavira Test',
             'description' => 'Conjunto residencial de prueba con 100 apartamentos distribuidos en 5 torres',
             'number_of_towers' => 5,
             'floors_per_tower' => 4,
@@ -122,7 +122,7 @@ class ComprehensiveTestSeeder extends Seeder
                 'contact_info' => [
                     'address' => 'Calle 123 #45-67, Bogotá, Colombia',
                     'phone' => '+57 1 234-5678',
-                    'email' => 'admin@habittatest.com',
+                    'email' => 'admin@Taviratest.com',
                     'nit' => '900123456-7',
                 ],
             ],

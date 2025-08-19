@@ -23,7 +23,7 @@
         "sectionTitle": "Features that",
         "sectionTitleHighlight": "Revolutionize",
         "sectionTitleEnd": "Administration",
-        "sectionDescription": "Discover how Habitta transforms residential complex management with cutting-edge technology",
+        "sectionDescription": "Discover how Tavira transforms residential complex management with cutting-edge technology",
         "management": {
             "title": "Comprehensive Management",
             "description": "Manage residents, apartments, and payments from a single platform"
@@ -43,7 +43,7 @@
     },
     "benefits": {
         "sectionTitle": "Why choose",
-        "sectionTitleHighlight": "Habitta?",
+        "sectionTitleHighlight": "Tavira?",
         "sectionDescription": "Proven results that transform your residential complex management",
         "timeSaving": {
             "title": "Time Saving",
@@ -105,11 +105,11 @@
     "testimonials": {
         "sectionTitle": "What our",
         "sectionTitleHighlight": "Clients",
-        "sectionDescription": "Real testimonials from administrators who transformed their management with Habitta",
+        "sectionDescription": "Real testimonials from administrators who transformed their management with Tavira",
         "maria": {
             "name": "María González",
             "role": "Administrator - Villa Hermosa Complex",
-            "content": "Habitta completely transformed our management. What used to take days, we now do in minutes."
+            "content": "Tavira completely transformed our management. What used to take days, we now do in minutes."
         },
         "carlos": {
             "name": "Carlos Mendoza",
@@ -126,7 +126,7 @@
         "sectionTitle": "Fast and",
         "sectionTitleHighlight": "Simple",
         "sectionTitleEnd": "Implementation",
-        "sectionDescription": "Start using Habitta in less than 24 hours with our guided setup process",
+        "sectionDescription": "Start using Tavira in less than 24 hours with our guided setup process",
         "step1": {
             "title": "Registration & Setup",
             "description": "Create your account and configure your complex with our smart assistant. Import existing data in minutes."
@@ -143,7 +143,7 @@
     "cta": {
         "title": "Ready to Transform your",
         "titleHighlight": "Complex?",
-        "description": "Join hundreds of administrators who have already optimized their management with Habitta. No commitments, no complex setup.",
+        "description": "Join hundreds of administrators who have already optimized their management with Tavira. No commitments, no complex setup.",
         "primary": "Start Free Trial",
         "secondary": "Schedule Personalized Demo",
         "benefits": {
@@ -155,7 +155,7 @@
     },
     "footer": {
         "description": "The leading platform for residential complex management in Colombia. We transform administration with cutting-edge technology.",
-        "copyright": "© 2024 Habitta. All rights reserved.",
+        "copyright": "© 2024 Tavira. All rights reserved.",
         "product": {
             "title": "Product",
             "features": "Features",

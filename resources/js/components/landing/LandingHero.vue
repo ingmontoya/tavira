@@ -1,24 +1,24 @@
 <template>
-    <section class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 px-6 py-20">
+    <section class="relative overflow-hidden bg-gradient-to-br from-[#1D3557] via-[#2a4870] to-[#06D6A0] px-6 py-20">
         <!-- Background Elements -->
         <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute -top-1/2 -right-1/2 h-full w-full rounded-full bg-gradient-to-l from-cyan-500/10 to-transparent blur-3xl"></div>
-            <div class="absolute -bottom-1/2 -left-1/2 h-full w-full rounded-full bg-gradient-to-r from-blue-500/10 to-transparent blur-3xl"></div>
+            <div class="absolute -top-1/2 -right-1/2 h-full w-full rounded-full bg-gradient-to-l from-[#06D6A0]/15 to-transparent blur-3xl"></div>
+            <div class="absolute -bottom-1/2 -left-1/2 h-full w-full rounded-full bg-gradient-to-r from-[#1D3557]/20 to-transparent blur-3xl"></div>
         </div>
 
         <div class="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
             <div :class="['space-y-8 transition-all duration-1000', isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0']">
                 <div class="space-y-6">
                     <div
-                        class="inline-flex items-center space-x-2 rounded-full border border-cyan-500/20 bg-white/10 px-4 py-2 text-cyan-300 backdrop-blur-sm"
+                        class="inline-flex items-center space-x-2 rounded-full border border-[#06D6A0]/30 bg-white/15 px-4 py-2 text-[#06D6A0] backdrop-blur-sm"
                     >
-                        <span class="h-2 w-2 animate-pulse rounded-full bg-cyan-400"></span>
+                        <span class="h-2 w-2 animate-pulse rounded-full bg-[#06D6A0]"></span>
                         <span class="text-sm font-medium">{{ $t('hero.badge') }}</span>
                     </div>
 
-                    <h1 class="text-5xl leading-tight font-bold text-white lg:text-7xl">
+                    <h1 class="text-5xl leading-tight font-bold text-white font-brand lg:text-7xl">
                         {{ $t('hero.title') }}
-                        <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                        <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
                             {{ $t('hero.titleHighlight') }}
                         </span>
                         <br />{{ $t('hero.titleEnd') }}
@@ -33,7 +33,7 @@
                     <Link
                         v-if="!$page.props.auth.user"
                         :href="route('register')"
-                        class="group flex-shrink-0 transform rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-cyan-600 hover:to-blue-700 hover:shadow-cyan-500/25 sm:px-8 sm:py-4 sm:text-lg"
+                        class="group flex-shrink-0 transform rounded-xl bg-[#06D6A0] px-3 py-2 text-xs font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#07e8b5] hover:shadow-[#06D6A0]/40 sm:px-8 sm:py-4 sm:text-lg"
                     >
                         <span class="flex items-center justify-center space-x-2">
                             <span class="sm:hidden">{{ $t('hero.ctaPrimary') }}</span>
@@ -45,7 +45,7 @@
                     </Link>
 
                     <button
-                        class="flex-shrink-0 rounded-xl border-2 border-white/30 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/10 sm:px-8 sm:py-4 sm:text-lg"
+                        class="flex-shrink-0 rounded-xl border-2 border-[#06D6A0]/40 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#06D6A0]/15 hover:border-[#06D6A0]/60 sm:px-8 sm:py-4 sm:text-lg"
                     >
                         <span class="sm:hidden">{{ $t('hero.ctaSecondary') }}</span>
                         <span class="hidden sm:inline">{{ $t('hero.ctaSecondaryFull') }}</span>
