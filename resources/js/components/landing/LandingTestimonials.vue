@@ -1,5 +1,5 @@
 <template>
-    <section class="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 px-6 py-20">
+    <section class="bg-gradient-to-br from-[#1D3557] via-[#2a4870] to-[#06D6A0] px-6 py-20">
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-4xl font-bold text-white lg:text-5xl">

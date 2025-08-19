@@ -4,7 +4,7 @@
             <div class="grid gap-8 md:grid-cols-4">
                 <div class="md:col-span-2">
                     <div class="mb-6 flex items-center space-x-3">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D3557] to-[#06D6A0] shadow-lg">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#1D3557] shadow-lg">
                             <span class="text-xl font-bold text-white font-brand">T</span>
                         </div>
                         <span class="text-3xl font-bold text-[#1D3557] font-brand tracking-tight">Tavira</span>
@@ -12,7 +12,7 @@
                     <p class="mb-6 max-w-lg text-[#1D3557] text-lg leading-relaxed">
                         {{ $t('footer.description') }}
                     </p>
-                    <div class="inline-flex items-center rounded-full bg-gradient-to-r from-[#1D3557] to-[#06D6A0] px-4 py-2 text-sm font-medium text-white shadow-md">
+                    <div class="inline-flex items-center rounded-xl bg-[#FF6868] px-4 py-2 text-sm font-medium text-white shadow-md">
                         Gestión simple, comunidades fuertes
                     </div>
                     <div class="mt-6 text-sm text-gray-500">{{ $t('footer.copyright') }}</div>
