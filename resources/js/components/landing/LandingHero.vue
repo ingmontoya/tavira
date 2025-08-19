@@ -1,5 +1,5 @@
 <template>
-    <section class="relative overflow-hidden bg-gradient-to-br from-[#1D3557] via-[#2a4870] to-[#06D6A0] px-6 py-20">
+    <section id="hero" class="relative overflow-hidden bg-gradient-to-br from-[#1D3557] via-[#1D3557] to-[#06D6A0] px-6 py-16 md:py-20">
         <!-- Background Elements -->
         <div class="absolute inset-0 overflow-hidden">
             <div class="absolute -top-1/2 -right-1/2 h-full w-full rounded-full bg-gradient-to-l from-[#06D6A0]/15 to-transparent blur-3xl"></div>
@@ -16,7 +16,7 @@
                         <span class="text-sm font-medium">{{ $t('hero.badge') }}</span>
                     </div>
 
-                    <h1 class="text-5xl leading-tight font-bold text-white font-brand lg:text-7xl">
+                    <h1 class="text-4xl md:text-5xl lg:text-7xl leading-tight font-bold text-white font-brand">
                         {{ $t('hero.title') }}
                         <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
                             {{ $t('hero.titleHighlight') }}
@@ -24,7 +24,7 @@
                         <br />{{ $t('hero.titleEnd') }}
                     </h1>
 
-                    <p class="max-w-lg text-xl leading-relaxed text-white/80">
+                    <p class="max-w-lg text-lg md:text-xl leading-relaxed text-white/85">
                         {{ $t('hero.description') }}
                     </p>
                 </div>
@@ -33,7 +33,7 @@
                     <Link
                         v-if="!$page.props.auth.user"
                         :href="route('register')"
-                        class="group flex-shrink-0 transform rounded-xl bg-[#06D6A0] px-3 py-2 text-xs font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#07e8b5] hover:shadow-[#06D6A0]/40 sm:px-8 sm:py-4 sm:text-lg"
+                        class="group flex-shrink-0 transform rounded-xl bg-[#FF6B6B] px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#ff5555] hover:shadow-[#FF6B6B]/40"
                     >
                         <span class="flex items-center justify-center space-x-2">
                             <span class="sm:hidden">{{ $t('hero.ctaPrimary') }}</span>
@@ -45,7 +45,7 @@
                     </Link>
 
                     <button
-                        class="flex-shrink-0 rounded-xl border-2 border-[#06D6A0]/40 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#06D6A0]/15 hover:border-[#06D6A0]/60 sm:px-8 sm:py-4 sm:text-lg"
+                        class="flex-shrink-0 rounded-xl border-2 border-[#06D6A0]/50 px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#06D6A0]/20 hover:border-[#06D6A0]/70"
                     >
                         <span class="sm:hidden">{{ $t('hero.ctaSecondary') }}</span>
                         <span class="hidden sm:inline">{{ $t('hero.ctaSecondaryFull') }}</span>

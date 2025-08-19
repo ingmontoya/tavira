@@ -1,10 +1,10 @@
 <template>
-    <section class="bg-white px-6 py-20">
+    <section id="how-it-works" class="bg-white px-6 py-20">
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-4xl font-bold text-gray-900 lg:text-5xl">
                     {{ $t('howItWorks.sectionTitle') }}
-                    <span class="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent">
                         {{ $t('howItWorks.sectionTitleHighlight') }}
                     </span>
                     {{ $t('howItWorks.sectionTitleEnd') }}
@@ -17,7 +17,7 @@
             <div class="grid gap-8 md:grid-cols-3">
                 <div v-for="(step, index) in steps" :key="index" class="text-center">
                     <div
-                        class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-2xl font-bold text-white"
+                        class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#1D3557] to-[#06D6A0] text-2xl font-bold text-white"
                     >
                         {{ index + 1 }}
                     </div>

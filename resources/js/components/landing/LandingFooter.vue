@@ -22,16 +22,16 @@
                     <h4 class="mb-6 font-bold text-[#1D3557] text-lg">{{ $t('footer.product.title') }}</h4>
                     <ul class="space-y-3 text-sm text-gray-600">
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.product.features') }}</a>
+                            <a href="#features" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('features')">{{ $t('footer.product.features') }}</a>
                         </li>
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.product.pricing') }}</a>
+                            <a href="#benefits" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('benefits')">{{ $t('footer.product.pricing') }}</a>
                         </li>
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.product.security') }}</a>
+                            <a href="#detailed-features" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('detailed-features')">{{ $t('footer.product.security') }}</a>
                         </li>
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.product.integrations') }}</a>
+                            <a href="#how-it-works" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('how-it-works')">{{ $t('footer.product.integrations') }}</a>
                         </li>
                     </ul>
                 </div>
@@ -40,16 +40,16 @@
                     <h4 class="mb-6 font-bold text-[#1D3557] text-lg">{{ $t('footer.support.title') }}</h4>
                     <ul class="space-y-3 text-sm text-gray-600">
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.support.helpCenter') }}</a>
+                            <a href="#testimonials" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('testimonials')">{{ $t('footer.support.helpCenter') }}</a>
                         </li>
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.support.contact') }}</a>
+                            <a href="#cta" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('cta')">{{ $t('footer.support.contact') }}</a>
                         </li>
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.support.status') }}</a>
+                            <a href="#hero" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('hero')">{{ $t('footer.support.status') }}</a>
                         </li>
                         <li>
-                            <a href="#" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium">{{ $t('footer.support.api') }}</a>
+                            <a href="#features" class="transition-colors duration-200 hover:text-[#06D6A0] hover:font-medium cursor-pointer" @click="scrollToSection('features')">{{ $t('footer.support.api') }}</a>
                         </li>
                     </ul>
                 </div>
@@ -57,3 +57,15 @@
         </div>
     </footer>
 </template>
+
+<script setup lang="ts">
+const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+        element.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+};
+</script>

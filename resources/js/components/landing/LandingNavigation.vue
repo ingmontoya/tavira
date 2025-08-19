@@ -23,7 +23,7 @@
                     </Link>
                     <Link
                         :href="route('register')"
-                        class="flex-shrink-0 inline-flex items-center rounded-lg bg-[#06D6A0] px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-[#07e8b5] sm:px-6 sm:py-3 sm:text-base"
+                        class="flex-shrink-0 inline-flex items-center rounded-lg bg-[#FF6B6B] px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-[#ff5555] sm:px-6 sm:py-3 sm:text-base"
                     >
                         {{ $t('nav.register') }}
                     </Link>

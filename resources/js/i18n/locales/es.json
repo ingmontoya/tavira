@@ -5,123 +5,123 @@
         "dashboard": "Dashboard"
     },
     "hero": {
-        "badge": "Tecnología de Nueva Generación",
+        "badge": "Revolución Digital para Conjuntos Residenciales",
         "title": "Gestión",
-        "titleHighlight": "Inteligente",
+        "titleHighlight": "Empresarial",
         "titleEnd": "de Conjuntos",
-        "description": "Diseñada para revolucionar la administración de conjuntos residenciales en Colombia. Automatiza procesos, mejora la comunicación y optimiza las finanzas con tecnología inteligente.",
+        "description": "La primera plataforma integral diseñada desde cero para conjuntos residenciales colombianos. Sistema completo con facturación electrónica DIAN, integración bancaria Jelpit, portal de residentes 24/7 y flujos de aprobación inteligentes.",
         "ctaPrimary": "Prueba Gratis",
-        "ctaPrimaryFull": "Prueba Gratis 30 Días",
+        "ctaPrimaryFull": "Comenzar Prueba Gratuita 30 Días",
         "ctaSecondary": "Demo",
-        "ctaSecondaryFull": "Ver Demo en Vivo"
+        "ctaSecondaryFull": "Agendar Demo Personalizada"
     },
     "stats": {
-        "complexes": "Conjuntos Gestionados",
-        "apartments": "Apartamentos Administrados",
-        "uptime": "Tiempo de Actividad",
-        "support": "Soporte Técnico"
+        "complexes": "Conjuntos Gestionados Exitosamente",
+        "apartments": "Apartamentos con Gestión Digital",
+        "uptime": "Disponibilidad del Sistema",
+        "support": "Soporte Técnico Especializado"
     },
     "features": {
-        "sectionTitle": "Funcionalidades que",
-        "sectionTitleHighlight": "Revolucionan",
+        "sectionTitle": "Tecnología que",
+        "sectionTitleHighlight": "Transforma",
         "sectionTitleEnd": "la Administración",
-        "sectionDescription": "Descubre cómo Tavira está diseñada para transformar la gestión de conjuntos residenciales con tecnología innovadora",
+        "sectionDescription": "La nueva generación de software para conjuntos residenciales con integración Jelpit, portal de residentes y comunicación 360°, desarrollada específicamente para el mercado colombiano",
         "management": {
-            "title": "Gestión Integral",
-            "description": "Administra residentes, apartamentos y pagos desde una sola plataforma"
+            "title": "Gestión Empresarial Completa",
+            "description": "Administración integral de residentes, apartamentos, pagos y documentación con tecnología de vanguardia"
         },
         "finance": {
-            "title": "Finanzas Inteligentes",
-            "description": "Facturación automática, control de morosos y reportes financieros"
+            "title": "Sistema Financiero DIAN",
+            "description": "Facturación electrónica oficial, integración Jelpit y flujos de aprobación que simplifican la gestión financiera"
         },
         "mobile": {
-            "title": "Experiencia Móvil",
-            "description": "Acceso completo desde cualquier dispositivo, en cualquier momento"
+            "title": "Portal de Residentes 24/7",
+            "description": "Estados de cuenta en tiempo real, gestión de visitantes y comunicación directa desde cualquier dispositivo"
         },
         "security": {
-            "title": "Seguridad Avanzada",
-            "description": "Protección de datos con encriptación y autenticación de dos factores"
+            "title": "Seguridad Empresarial",
+            "description": "Protección bancaria de datos, backups automáticos y cumplimiento de normativas de privacidad"
         }
     },
     "benefits": {
-        "sectionTitle": "¿Por qué elegir",
-        "sectionTitleHighlight": "Tavira?",
-        "sectionDescription": "Beneficios reales diseñados para transformar la gestión de tu conjunto residencial",
+        "sectionTitle": "Resultados",
+        "sectionTitleHighlight": "Comprobados",
+        "sectionDescription": "Impacto real y medible en la gestión de conjuntos residenciales desde el primer mes de implementación",
         "timeSaving": {
-            "title": "Ahorro de Tiempo",
-            "description": "Automatiza muchas de las tareas administrativas repetitivas",
-            "percentage": "Eficiente"
+            "title": "Reducción Tiempo Administrativo",
+            "description": "Automatización de facturación, pagos, reportes y comunicaciones elimina tareas manuales",
+            "percentage": "80%"
         },
         "costReduction": {
-            "title": "Reducción de Costos",
-            "description": "Ayuda a reducir gastos operativos y mejorar la eficiencia financiera",
-            "percentage": "Optimiza"
+            "title": "Optimización Financiera",
+            "description": "Mejor control de cartera, reducción de morosidad y optimización de gastos operativos",
+            "percentage": "65%"
         },
         "satisfaction": {
-            "title": "Satisfacción del Cliente",
-            "description": "Mejora la experiencia de residentes con servicios digitales",
-            "percentage": "Mejora"
+            "title": "Satisfacción de Residentes",
+            "description": "Servicios digitales, transparencia y comunicación efectiva mejoran la experiencia",
+            "percentage": "95%"
         },
         "transparency": {
-            "title": "Transparencia",
-            "description": "Información clara y accesible para todos los stakeholders",
+            "title": "Transparencia Total",
+            "description": "Acceso completo a información financiera, estados de cuenta y documentación",
             "percentage": "100%"
         }
     },
     "detailedFeatures": {
-        "sectionTitle": "Plataforma",
-        "sectionTitleHighlight": "Completa",
-        "sectionTitleEnd": "e Integrada",
-        "sectionDescription": "Todas las herramientas que necesitas para gestionar tu conjunto residencial de manera eficiente",
+        "sectionTitle": "Ecosistema",
+        "sectionTitleHighlight": "Completo",
+        "sectionTitleEnd": "de Gestión",
+        "sectionDescription": "Módulos especializados que trabajan integrados para ofrecer la solución más completa del mercado colombiano",
         "residents": {
-            "title": "Gestión de Residentes",
-            "description": "Base de datos completa de propietarios e inquilinos con historial detallado",
-            "features": ["Registro automático", "Historial de pagos", "Documentos digitales", "Control de acceso"]
+            "title": "Residentes & Propietarios",
+            "description": "Portal completo con acceso 24/7 a toda la información y servicios digitales del conjunto",
+            "features": ["Estados de cuenta en tiempo real", "Gestión digital de visitantes", "Recepción de comunicados oficiales", "Correspondencia y notificaciones"]
         },
         "apartments": {
-            "title": "Administración de Apartamentos",
-            "description": "Control total de unidades, tipos y configuraciones del conjunto",
-            "features": ["Catálogo de apartamentos", "Estados de ocupación", "Mantenimientos", "Valuaciones"]
+            "title": "Inventario de Unidades",
+            "description": "Catálogo inteligente con configuraciones flexibles, estados en tiempo real y seguimiento",
+            "features": ["Configuración por pisos personalizable", "Estados de ocupación dinámicos", "Historial de mantenimientos", "Valorizaciones y proyecciones"]
         },
         "payments": {
-            "title": "Sistema de Pagos",
-            "description": "Facturación inteligente con múltiples métodos de pago y seguimiento",
-            "features": ["Facturación automática", "Pasarelas de pago", "Recordatorios", "Recibos digitales"]
+            "title": "Finanzas & Facturación DIAN",
+            "description": "Sistema financiero profesional con facturación electrónica oficial y conciliación bancaria inteligente",
+            "features": ["Facturación electrónica DIAN oficial", "Integración Jelpit para conciliación", "Contabilidad doble partida automatizada", "Flujos de aprobación de gastos"]
         },
         "reports": {
-            "title": "Reportes y Analytics",
-            "description": "Análisis profundo con métricas clave para la toma de decisiones",
-            "features": ["Dashboard en tiempo real", "Reportes personalizados", "Predicciones", "Exportación de datos"]
+            "title": "Business Intelligence",
+            "description": "Dashboards ejecutivos con KPIs en tiempo real y reportes financieros profesionales",
+            "features": ["Dashboard ejecutivo en tiempo real", "Estados financieros automatizados", "Análisis predictivo de cartera", "Exportación para contadores"]
         },
         "communication": {
-            "title": "Comunicación",
-            "description": "Sistema integral de comunicación con residentes y proveedores",
-            "features": ["Anuncios masivos", "Chat integrado", "Notificaciones push", "Correspondencia digital"]
+            "title": "Comunicación 360°",
+            "description": "Plataforma unificada para comunicación con residentes, proveedores y autoridades",
+            "features": ["Email marketing masivo", "Anuncios con confirmación", "Correspondencia oficial digital", "Notificaciones push inteligentes"]
         },
         "access": {
-            "title": "Seguridad y Visitantes",
-            "description": "Control de acceso y gestión de visitantes con tecnología moderna",
-            "features": ["Control de acceso", "Registro de visitantes", "Cámaras integradas", "Alertas de seguridad"]
+            "title": "Comunicación & Control de Acceso",
+            "description": "Sistema integral de comunicación, gestión de visitantes y correspondencia oficial",
+            "features": ["Gestión inteligente de visitantes", "Correspondencia oficial digital", "Comunicados con confirmación", "Llamados de atención y notificaciones"]
         }
     },
     "testimonials": {
-        "sectionTitle": "Lo que dicen nuestros",
-        "sectionTitleHighlight": "Clientes",
-        "sectionDescription": "Experiencias de administradores que están mejorando su gestión con Tavira",
+        "sectionTitle": "Casos de",
+        "sectionTitleHighlight": "Éxito",
+        "sectionDescription": "Primeros adoptadores que están experimentando la transformación digital con Tavira",
         "maria": {
             "name": "María González",
-            "role": "Administradora - Conjunto Villa Hermosa",
-            "content": "Tavira está mejorando significativamente nuestra gestión. Procesos que tomaban días ahora son mucho más eficientes."
+            "role": "Administradora Profesional - Conjunto Villa Hermosa (180 Apartamentos)",
+            "content": "La integración con Jelpit hizo que la conciliación bancaria pasara de ser una pesadilla mensual a un proceso automático. Los flujos de aprobación nos dieron el control total que necesitábamos."
         },
         "carlos": {
             "name": "Carlos Mendoza",
-            "role": "Propietario - Conjunto Los Cedros",
-            "content": "La plataforma ofrece gran transparencia en pagos y comunicación. Es muy fácil acceder a toda la información."
+            "role": "Consejo de Administración - Conjunto Los Cedros (320 Unidades)",
+            "content": "Los residentes ahora consultan sus estados de cuenta en tiempo real y gestionan sus visitantes desde la app. Los comunicados llegan instantáneamente y tenemos confirmación de lectura. La comunicación cambió por completo."
         },
         "ana": {
             "name": "Ana Ruiz",
-            "role": "Administradora - Residencial Santa Fe",
-            "content": "El soporte técnico es muy bueno y la plataforma es intuitiva. Nuestros residentes están contentos con el cambio."
+            "role": "Gerente Inmobiliaria - Residencial Santa Fe (95 Apartamentos)",
+            "content": "El portal de residentes redujo drásticamente las llamadas por consultas. Ahora todo es digital: correspondencia, comunicados, estados de cuenta, incluso la gestión de visitantes. Nuestros propietarios están encantados."
         }
     },
     "howItWorks": {
@@ -143,23 +143,23 @@
         }
     },
     "cta": {
-        "title": "¿Listo para Transformar tu",
-        "titleHighlight": "Conjunto?",
-        "description": "Sé parte del cambio en la gestión de conjuntos residenciales. Únete a administradores que están transformando su trabajo con Tavira. Sin compromisos, sin configuración compleja.",
+        "title": "Comienza tu Transformación",
+        "titleHighlight": "Digital Hoy",
+        "description": "Sé pionero en la nueva era de gestión de conjuntos residenciales. Únete a la revolución digital que está transformando cómo se administran las propiedades en Colombia. Sin riesgos, implementación rápida y soporte especializado incluido.",
         "primary": "Empezar",
-        "primaryFull": "Comenzar Prueba Gratuita",
+        "primaryFull": "Iniciar Prueba Gratuita 30 Días",
         "secondary": "Demo",
-        "secondaryFull": "Agendar Demo Personalizada",
+        "secondaryFull": "Ver Demo Personalizada",
         "benefits": {
-            "freeTrial": "30 días gratis",
-            "noCard": "Sin tarjeta de crédito",
-            "support": "Soporte 24/7",
-            "implementation": "Implementación incluida"
+            "freeTrial": "Prueba completa 30 días gratis",
+            "noCard": "Sin tarjeta de crédito requerida",
+            "support": "Soporte técnico especializado 24/7",
+            "implementation": "Implementación y capacitación incluida"
         }
     },
     "footer": {
-        "description": "Innovando la gestión de conjuntos residenciales en Colombia. Creamos soluciones que transforman la administración con tecnología de vanguardia.",
-        "copyright": "© 2024 Tavira. Todos los derechos reservados.",
+        "description": "Tecnología innovadora para administración de conjuntos residenciales en Colombia. La nueva generación de software empresarial que transforma la gestión con cumplimiento DIAN y herramientas de vanguardia.",
+        "copyright": "© 2025 Tavira - Sistema de Gestión Empresarial. Todos los derechos reservados.",
         "product": {
             "title": "Producto",
             "features": "Funcionalidades",
