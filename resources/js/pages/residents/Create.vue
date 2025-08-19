@@ -47,6 +47,11 @@ interface FormData {
     email_notifications: boolean;
     whatsapp_notifications: boolean;
     whatsapp_number: string;
+    dian_address: string;
+    dian_city_id: number | null;
+    dian_legal_organization_type: number | null;
+    dian_tributary_regime: number | null;
+    dian_tributary_liability: number | null;
 }
 
 const props = defineProps({
@@ -75,6 +80,11 @@ const form = useForm<FormData>({
     email_notifications: true,
     whatsapp_notifications: false,
     whatsapp_number: '',
+    dian_address: '',
+    dian_city_id: null,
+    dian_legal_organization_type: null,
+    dian_tributary_regime: null,
+    dian_tributary_liability: null,
 });
 
 // UI state
@@ -87,6 +97,7 @@ const validationRules = {
     step2: ['apartment_id', 'resident_type', 'start_date'],
     step3: [],
     step4: [],
+    step5: [],
 };
 
 const steps = [
@@ -124,9 +135,16 @@ const steps = [
     },
     {
         id: 3,
-        title: 'Configuración',
-        description: 'Notificaciones y preferencias',
+        title: 'Configuración DIAN',
+        description: 'Datos para facturación electrónica',
         icon: Settings,
+        fields: ['dian_address', 'dian_city_id', 'dian_legal_organization_type', 'dian_tributary_regime', 'dian_tributary_liability'],
+    },
+    {
+        id: 4,
+        title: 'Notificaciones',
+        description: 'Preferencias de notificaciones',
+        icon: Mail,
         fields: ['email_notifications', 'whatsapp_notifications', 'whatsapp_number'],
     },
 ];
@@ -420,7 +438,7 @@ const statusOptions = [
             </Card>
 
             <!-- Step Navigation -->
-            <div class="mb-8 grid grid-cols-4 gap-4">
+            <div class="mb-8 grid grid-cols-5 gap-4">
                 <div
                     v-for="(step, index) in steps"
                     :key="step.id"
@@ -945,11 +963,119 @@ const statusOptions = [
                             </CardContent>
                         </Card>
 
-                        <!-- Step 4: Configuration -->
+                        <!-- Step 4: DIAN Configuration -->
                         <Card v-if="currentStep === 3">
                             <CardHeader>
                                 <CardTitle class="flex items-center gap-2">
                                     <Settings class="h-5 w-5" />
+                                    Configuración DIAN
+                                </CardTitle>
+                                <CardDescription> Datos opcionales para facturación electrónica DIAN </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-6">
+                                <!-- Address -->
+                                <div class="space-y-2">
+                                    <Label for="dian_address">Dirección para Factura Electrónica</Label>
+                                    <Input
+                                        id="dian_address"
+                                        v-model="form.dian_address"
+                                        placeholder="Dirección personalizada para DIAN (opcional)"
+                                        :class="{ 'border-red-500': form.errors.dian_address }"
+                                    />
+                                    <p class="text-xs text-muted-foreground">
+                                        Si no se especifica, se usará la dirección del apartamento
+                                    </p>
+                                    <p v-if="form.errors.dian_address" class="text-sm text-red-600">
+                                        {{ form.errors.dian_address }}
+                                    </p>
+                                </div>
+
+                                <!-- City ID -->
+                                <div class="space-y-2">
+                                    <Label for="dian_city_id">Código Ciudad DIAN</Label>
+                                    <Input
+                                        id="dian_city_id"
+                                        v-model="form.dian_city_id"
+                                        type="number"
+                                        placeholder="11001 (Bogotá por defecto)"
+                                        :class="{ 'border-red-500': form.errors.dian_city_id }"
+                                    />
+                                    <p class="text-xs text-muted-foreground">
+                                        Código de municipio según DIAN (por defecto: 11001 - Bogotá)
+                                    </p>
+                                    <p v-if="form.errors.dian_city_id" class="text-sm text-red-600">
+                                        {{ form.errors.dian_city_id }}
+                                    </p>
+                                </div>
+
+                                <!-- Legal Organization Type -->
+                                <div class="space-y-2">
+                                    <Label for="dian_legal_organization_type">Tipo Organización Legal</Label>
+                                    <Select v-model="form.dian_legal_organization_type">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar tipo (por defecto: Persona Natural)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem :value="1">Persona Natural</SelectItem>
+                                            <SelectItem :value="2">Persona Jurídica</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Por defecto: Persona Natural
+                                    </p>
+                                    <p v-if="form.errors.dian_legal_organization_type" class="text-sm text-red-600">
+                                        {{ form.errors.dian_legal_organization_type }}
+                                    </p>
+                                </div>
+
+                                <!-- Tributary Regime -->
+                                <div class="space-y-2">
+                                    <Label for="dian_tributary_regime">Régimen Tributario</Label>
+                                    <Select v-model="form.dian_tributary_regime">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar régimen (por defecto: Simplificado)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem :value="1">Régimen Simplificado</SelectItem>
+                                            <SelectItem :value="2">Régimen Común</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Por defecto: Régimen Simplificado
+                                    </p>
+                                    <p v-if="form.errors.dian_tributary_regime" class="text-sm text-red-600">
+                                        {{ form.errors.dian_tributary_regime }}
+                                    </p>
+                                </div>
+
+                                <!-- Tributary Liability -->
+                                <div class="space-y-2">
+                                    <Label for="dian_tributary_liability">Responsabilidad Tributaria</Label>
+                                    <Select v-model="form.dian_tributary_liability">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar responsabilidad (por defecto: No Responsable)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem :value="1">No Responsable</SelectItem>
+                                            <SelectItem :value="2">Responsable de IVA</SelectItem>
+                                            <SelectItem :value="3">Agente de Retención</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Por defecto: No Responsable
+                                    </p>
+                                    <p v-if="form.errors.dian_tributary_liability" class="text-sm text-red-600">
+                                        {{ form.errors.dian_tributary_liability }}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Step 5: Configuration -->
+                        <Card v-if="currentStep === 4">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2">
+                                    <Mail class="h-5 w-5" />
                                     Configuración de Notificaciones
                                 </CardTitle>
                                 <CardDescription> Configura las preferencias de notificaciones del residente </CardDescription>

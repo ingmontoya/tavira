@@ -31,6 +31,12 @@ class Resident extends Model
         'email_notifications',
         'whatsapp_notifications',
         'whatsapp_number',
+        'electronic_invoicing_preference',
+        'dian_address',
+        'dian_city_id',
+        'dian_legal_organization_type',
+        'dian_tributary_regime',
+        'dian_tributary_liability',
     ];
 
     protected $casts = [

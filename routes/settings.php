@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Settings\AccountingSettingsController;
+use App\Http\Controllers\Settings\DianSettingsController;
 use App\Http\Controllers\Settings\EmailSettingsController;
 use App\Http\Controllers\Settings\ExpenseSettingsController;
 use App\Http\Controllers\Settings\PasswordController;
@@ -68,6 +69,12 @@ Route::middleware('auth')->group(function () {
     // Accounting Settings Routes
     Route::get('settings/accounting', [AccountingSettingsController::class, 'index'])->name('settings.accounting.index')->middleware('can:manage_accounting');
     Route::post('settings/accounting/initialize-accounts', [AccountingSettingsController::class, 'initializeAccounts'])->name('settings.accounting.initialize-accounts')->middleware('can:manage_accounting');
+
+    // DIAN Settings Routes
+    Route::get('settings/dian', [DianSettingsController::class, 'index'])->name('settings.dian.index')->middleware('can:edit_conjunto_config');
+    Route::post('settings/dian', [DianSettingsController::class, 'update'])->name('settings.dian.update')->middleware('can:edit_conjunto_config');
+    Route::post('settings/dian/test-factus-connection', [DianSettingsController::class, 'testFactusConnection'])->name('settings.dian.test-factus-connection')->middleware('can:edit_conjunto_config');
+    Route::post('settings/dian/test-factus-invoice', [DianSettingsController::class, 'testFactusInvoice'])->name('settings.dian.test-factus-invoice')->middleware('can:edit_conjunto_config');
 
     // User Management Routes in Settings
     Route::get('settings/users', [UserController::class, 'index'])->name('settings.users.index')->middleware('can:view_users');

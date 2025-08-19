@@ -66,6 +66,11 @@ const sidebarNavItems = computed((): NavItem[] =>
             href: '/settings/payment-concept-mapping',
             visible: hasPermission('manage_accounting'),
         },
+        {
+            title: 'Configuración DIAN',
+            href: '/settings/dian',
+            visible: hasPermission('edit_conjunto_config'),
+        },
     ].filter((item) => item.visible !== false),
 );
 

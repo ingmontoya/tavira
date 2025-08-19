@@ -100,6 +100,11 @@ class ResidentController extends Controller
             'email_notifications' => ['boolean'],
             'whatsapp_notifications' => ['boolean'],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
+            'dian_address' => ['nullable', 'string', 'max:255'],
+            'dian_city_id' => ['nullable', 'integer'],
+            'dian_legal_organization_type' => ['nullable', 'integer'],
+            'dian_tributary_regime' => ['nullable', 'integer'],
+            'dian_tributary_liability' => ['nullable', 'integer'],
         ]);
 
         // Verify apartment exists (single conjunto application)
@@ -160,6 +165,11 @@ class ResidentController extends Controller
             'email_notifications' => ['boolean'],
             'whatsapp_notifications' => ['boolean'],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
+            'dian_address' => ['nullable', 'string', 'max:255'],
+            'dian_city_id' => ['nullable', 'integer'],
+            'dian_legal_organization_type' => ['nullable', 'integer'],
+            'dian_tributary_regime' => ['nullable', 'integer'],
+            'dian_tributary_liability' => ['nullable', 'integer'],
         ]);
 
         // Verify apartment exists (single conjunto application)

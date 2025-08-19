@@ -56,6 +56,12 @@ Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPa
 Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'downloadPdf'])->name('invoices.pdf')->middleware('can:view_payments');
 Route::post('invoices/{invoice}/send-email', [InvoiceController::class, 'sendByEmail'])->name('invoices.send-email')->middleware('can:edit_payments');
 
+// Electronic Invoicing - DIAN Integration
+Route::post('api/invoices/{invoice}/electronic-invoice', [InvoiceController::class, 'sendElectronicInvoice'])->name('invoices.send-electronic')->middleware('can:edit_payments');
+Route::get('invoices/{invoice}/electronic-pdf', [InvoiceController::class, 'downloadElectronicPdf'])->name('invoices.electronic-pdf')->middleware('can:view_payments');
+Route::get('invoices/{invoice}/electronic-xml', [InvoiceController::class, 'downloadElectronicXml'])->name('invoices.electronic-xml')->middleware('can:view_payments');
+Route::get('invoices/{invoice}/view-electronic', [InvoiceController::class, 'viewElectronicInvoice'])->name('invoices.view-electronic')->middleware('can:view_payments');
+
 // Payment Concepts Management
 Route::resource('payment-concepts', PaymentConceptController::class)->middleware('can:view_payments');
 Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptController::class, 'toggle'])->name('payment-concepts.toggle')->middleware('can:edit_payments');

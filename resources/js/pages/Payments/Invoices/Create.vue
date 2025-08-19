@@ -71,6 +71,9 @@ const form = useForm({
     billing_period_year: new Date().getFullYear(),
     billing_period_month: new Date().getMonth() + 1,
     notes: '',
+    dian_observation: '',
+    dian_payment_method: null,
+    dian_currency: '',
     items: [
         {
             payment_concept_id: '',
@@ -341,6 +344,76 @@ watch(
 
                                 <div v-if="form.errors.items" class="text-sm text-red-600">
                                     {{ form.errors.items }}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- DIAN Configuration -->
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Configuración DIAN (Opcional)</CardTitle>
+                                <CardDescription> Configuración específica para facturación electrónica </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-4">
+                                <!-- Observation -->
+                                <div>
+                                    <Label for="dian_observation">Observación DIAN</Label>
+                                    <Textarea 
+                                        id="dian_observation" 
+                                        v-model="form.dian_observation" 
+                                        placeholder="Observación personalizada para la factura electrónica (opcional)"
+                                        rows="3"
+                                    />
+                                    <p class="text-xs text-muted-foreground">
+                                        Si no se especifica, se usará la observación por defecto
+                                    </p>
+                                    <div v-if="form.errors.dian_observation" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.dian_observation }}
+                                    </div>
+                                </div>
+
+                                <!-- Payment Method -->
+                                <div>
+                                    <Label for="dian_payment_method">Método de Pago DIAN</Label>
+                                    <Select v-model="form.dian_payment_method">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar método de pago (por defecto: Efectivo)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem :value="1">Efectivo</SelectItem>
+                                            <SelectItem :value="2">Transferencia Bancaria</SelectItem>
+                                            <SelectItem :value="10">Consignación Bancaria</SelectItem>
+                                            <SelectItem :value="42">Tarjeta de Crédito</SelectItem>
+                                            <SelectItem :value="47">Tarjeta Débito</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Por defecto: Efectivo (código 1)
+                                    </p>
+                                    <div v-if="form.errors.dian_payment_method" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.dian_payment_method }}
+                                    </div>
+                                </div>
+
+                                <!-- Currency -->
+                                <div>
+                                    <Label for="dian_currency">Moneda</Label>
+                                    <Select v-model="form.dian_currency">
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar moneda (por defecto: COP)" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="COP">Peso Colombiano (COP)</SelectItem>
+                                            <SelectItem value="USD">Dólar Estadounidense (USD)</SelectItem>
+                                            <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p class="text-xs text-muted-foreground">
+                                        Por defecto: Peso Colombiano (COP)
+                                    </p>
+                                    <div v-if="form.errors.dian_currency" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.dian_currency }}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

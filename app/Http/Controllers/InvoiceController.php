@@ -107,6 +107,9 @@ class InvoiceController extends Controller
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.unit_price' => 'required|numeric|min:0',
                 'items.*.notes' => 'nullable|string|max:500',
+                'dian_observation' => 'nullable|string|max:1000',
+                'dian_payment_method' => 'nullable|integer',
+                'dian_currency' => 'nullable|string|size:3',
             ]);
 
             // Check for duplicate monthly invoice
@@ -136,6 +139,9 @@ class InvoiceController extends Controller
                     'billing_period_year' => $validated['billing_period_year'] ?? now()->year,
                     'billing_period_month' => $validated['billing_period_month'] ?? now()->month,
                     'notes' => $validated['notes'],
+                    'dian_observation' => $validated['dian_observation'],
+                    'dian_payment_method' => $validated['dian_payment_method'],
+                    'dian_currency' => $validated['dian_currency'],
                 ]);
 
                 foreach ($validated['items'] as $itemData) {
@@ -151,6 +157,9 @@ class InvoiceController extends Controller
 
                 $invoice->calculateTotals();
                 $invoice->load('apartment');
+
+                // Check if this invoice should be eligible for electronic invoicing
+                $this->evaluateElectronicInvoicing($invoice);
 
                 // Send notification to administrative users
                 $notificationService = app(NotificationService::class);
@@ -232,6 +241,9 @@ class InvoiceController extends Controller
             'billing_period_year' => $validated['billing_period_year'] ?? $invoice->billing_period_year,
             'billing_period_month' => $validated['billing_period_month'] ?? $invoice->billing_period_month,
             'notes' => $validated['notes'],
+            'dian_observation' => $validated['dian_observation'],
+            'dian_payment_method' => $validated['dian_payment_method'],
+            'dian_currency' => $validated['dian_currency'],
         ]);
 
         $invoice->items()->delete();
@@ -366,6 +378,10 @@ class InvoiceController extends Controller
                     }
 
                     $invoice->calculateTotals();
+
+                    // Check if this invoice should be eligible for electronic invoicing
+                    $this->evaluateElectronicInvoicing($invoice);
+
                     $generatedCount++;
                 }
 
@@ -418,6 +434,257 @@ class InvoiceController extends Controller
             return back()->with('success', 'Factura enviada por correo electrónico exitosamente.');
         } catch (\Exception $e) {
             return back()->withErrors(['email' => 'Error al enviar el correo electrónico: '.$e->getMessage()]);
+        }
+    }
+
+    /**
+     * Send electronic invoice to DIAN via Factus
+     */
+    public function sendElectronicInvoice(Request $request, Invoice $invoice)
+    {
+        try {
+            $electronicInvoicingService = app(\App\Services\ElectronicInvoicingService::class);
+
+            // Check if electronic invoicing should be used for this invoice
+            if (! $electronicInvoicingService->shouldUseElectronicInvoicing($invoice)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Esta factura no requiere facturación electrónica según la configuración actual.',
+                ]);
+            }
+
+            // Send electronic invoice
+            $result = $electronicInvoicingService->sendElectronicInvoice($invoice);
+
+            if ($result['success']) {
+                // Update invoice with electronic invoice data
+                $invoice->update([
+                    'electronic_invoice_status' => 'sent',
+                    'electronic_invoice_uuid' => $result['uuid'] ?? null,
+                    'electronic_invoice_cufe' => $result['cufe'] ?? null,
+                    'electronic_invoice_sent_at' => now(),
+                    'factus_id' => $result['factus_id'] ?? null,
+                    'electronic_invoice_public_url' => $result['bill']['public_url'] ?? null,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Factura enviada exitosamente a la DIAN',
+                    'uuid' => $result['uuid'] ?? null,
+                    'cufe' => $result['cufe'] ?? null,
+                ]);
+            }
+
+            // Update invoice with failed status
+            $invoice->update([
+                'electronic_invoice_status' => 'failed',
+                'electronic_invoice_error' => $result['message'] ?? 'Error desconocido',
+            ]);
+
+            return response()->json($result);
+
+        } catch (\Exception $e) {
+            // Update invoice with failed status
+            $invoice->update([
+                'electronic_invoice_status' => 'failed',
+                'electronic_invoice_error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al enviar factura electrónica: '.$e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Evaluate if this invoice should be eligible for electronic invoicing
+     */
+    private function evaluateElectronicInvoicing(Invoice $invoice): void
+    {
+        try {
+            $electronicInvoicingService = app(\App\Services\ElectronicInvoicingService::class);
+
+            // Check if electronic invoicing should be used for this invoice
+            $shouldUse = $electronicInvoicingService->shouldUseElectronicInvoicing($invoice);
+
+            $invoice->update([
+                'can_be_electronic' => $shouldUse,
+                'electronic_invoice_status' => $shouldUse ? 'pending' : null,
+            ]);
+
+        } catch (\Exception $e) {
+            // If there's an error evaluating, default to false
+            $invoice->update(['can_be_electronic' => false]);
+        }
+    }
+
+    /**
+     * Download electronic invoice PDF from Factus
+     */
+    public function downloadElectronicPdf(Invoice $invoice)
+    {
+        if (! $invoice->factus_id || $invoice->electronic_invoice_status !== 'sent') {
+            return back()->withErrors(['error' => 'Esta factura no tiene una versión electrónica disponible para descargar.']);
+        }
+
+        try {
+            $electronicInvoicingService = app(\App\Services\ElectronicInvoicingService::class);
+            $conjunto = $invoice->apartment?->conjuntoConfig ?? ConjuntoConfig::where('is_active', true)->first();
+
+            if (! $conjunto) {
+                return back()->withErrors(['error' => 'No se encontró configuración del conjunto.']);
+            }
+
+            // Configure Factus service with conjunto's technical config
+            $factusService = app(\App\Services\FactusApiService::class);
+            $technicalConfig = $conjunto->dian_technical_config ?: [];
+
+            $factusService->setConfig([
+                'base_url' => $technicalConfig['factus_base_url'] ?? 'https://api-sandbox.factus.com.co',
+                'email' => $technicalConfig['factus_email'] ?? '',
+                'password' => $technicalConfig['factus_password'] ?? '',
+                'client_id' => $technicalConfig['factus_client_id'] ?? '',
+                'client_secret' => $technicalConfig['factus_client_secret'] ?? '',
+            ]);
+
+            $result = $factusService->getInvoicePdf($invoice->factus_id);
+
+            if ($result['success']) {
+                return response($result['data'])
+                    ->header('Content-Type', 'application/pdf')
+                    ->header('Content-Disposition', "attachment; filename=\"factura-electronica-{$invoice->invoice_number}.pdf\"");
+            }
+
+            return back()->withErrors(['error' => 'Error al descargar el PDF: '.$result['message']]);
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error al descargar el PDF: '.$e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download electronic invoice XML from Factus
+     */
+    public function downloadElectronicXml(Invoice $invoice)
+    {
+        if (! $invoice->factus_id || $invoice->electronic_invoice_status !== 'sent') {
+            return back()->withErrors(['error' => 'Esta factura no tiene una versión electrónica disponible para descargar.']);
+        }
+
+        try {
+            $electronicInvoicingService = app(\App\Services\ElectronicInvoicingService::class);
+            $conjunto = $invoice->apartment?->conjuntoConfig ?? ConjuntoConfig::where('is_active', true)->first();
+
+            if (! $conjunto) {
+                return back()->withErrors(['error' => 'No se encontró configuración del conjunto.']);
+            }
+
+            // Configure Factus service with conjunto's technical config
+            $factusService = app(\App\Services\FactusApiService::class);
+            $technicalConfig = $conjunto->dian_technical_config ?: [];
+
+            $factusService->setConfig([
+                'base_url' => $technicalConfig['factus_base_url'] ?? 'https://api-sandbox.factus.com.co',
+                'email' => $technicalConfig['factus_email'] ?? '',
+                'password' => $technicalConfig['factus_password'] ?? '',
+                'client_id' => $technicalConfig['factus_client_id'] ?? '',
+                'client_secret' => $technicalConfig['factus_client_secret'] ?? '',
+            ]);
+
+            $result = $factusService->getInvoiceXml($invoice->factus_id);
+
+            if ($result['success']) {
+                return response($result['data'])
+                    ->header('Content-Type', 'application/xml')
+                    ->header('Content-Disposition', "attachment; filename=\"factura-electronica-{$invoice->invoice_number}.xml\"");
+            }
+
+            return back()->withErrors(['error' => 'Error al descargar el XML: '.$result['message']]);
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error al descargar el XML: '.$e->getMessage()]);
+        }
+    }
+
+    /**
+     * View electronic invoice - prioritize public_url, fallback to PDF download
+     */
+    public function viewElectronicInvoice(Invoice $invoice)
+    {
+        try {
+            // First, check if we have a stored public_url and redirect to it
+            if ($invoice->electronic_invoice_public_url) {
+                return redirect()->away($invoice->electronic_invoice_public_url);
+            }
+
+            $conjunto = $invoice->apartment?->conjuntoConfig ?? ConjuntoConfig::where('is_active', true)->first();
+
+            if (! $conjunto) {
+                return back()->withErrors(['error' => 'No se encontró configuración del conjunto.']);
+            }
+
+            // Configure Factus service with conjunto's technical config
+            $factusService = app(\App\Services\FactusApiService::class);
+            $technicalConfig = $conjunto->dian_technical_config ?: [];
+
+            $factusService->setConfig([
+                'base_url' => $technicalConfig['factus_base_url'] ?? 'https://api-sandbox.factus.com.co',
+                'email' => $technicalConfig['factus_email'] ?? '',
+                'password' => $technicalConfig['factus_password'] ?? '',
+                'client_id' => $technicalConfig['factus_client_id'] ?? '',
+                'client_secret' => $technicalConfig['factus_client_secret'] ?? '',
+            ]);
+
+            // Search for the invoice by reference code
+            $searchResult = $factusService->searchInvoiceByReference($invoice->invoice_number);
+
+            if (! $searchResult['success']) {
+                return back()->withErrors(['error' => 'Error al buscar factura en Factus: '.$searchResult['message']]);
+            }
+
+            $responseData = $searchResult['data']['data'] ?? [];
+            $bills = $responseData['data'] ?? [];
+
+            if (empty($bills)) {
+                return back()->withErrors(['error' => 'No se encontró la factura electrónica en Factus.']);
+            }
+
+            // Get the first bill (should only be one with unique reference code)
+            $bill = $bills[0];
+            $factusId = $bill['id'];
+            $factusNumber = $bill['number']; // This is what we need for the PDF download
+            $publicUrl = $bill['public_url'] ?? null;
+
+            // Update the invoice with the factus_id and public_url if not set
+            if (! $invoice->factus_id || ! $invoice->electronic_invoice_public_url) {
+                $invoice->update([
+                    'factus_id' => $factusId,
+                    'electronic_invoice_uuid' => $bill['uuid'] ?? null,
+                    'electronic_invoice_cufe' => $bill['cufe'] ?? null,
+                    'electronic_invoice_status' => 'sent',
+                    'electronic_invoice_public_url' => $publicUrl,
+                ]);
+            }
+
+            // If we found a public_url, redirect to it
+            if ($publicUrl) {
+                return redirect()->away($publicUrl);
+            }
+
+            // Fallback: Get the PDF using the correct endpoint and invoice number
+            $result = $factusService->getInvoicePdf($factusNumber);
+
+            if ($result['success']) {
+                return response($result['data'])
+                    ->header('Content-Type', 'application/pdf')
+                    ->header('Content-Disposition', "inline; filename=\"factura-electronica-{$invoice->invoice_number}.pdf\"");
+            }
+
+            return back()->withErrors(['error' => 'Error al obtener el PDF: '.$result['message']]);
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error al ver la factura electrónica: '.$e->getMessage()]);
         }
     }
 }

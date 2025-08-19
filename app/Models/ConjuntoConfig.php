@@ -16,12 +16,31 @@ class ConjuntoConfig extends Model
         'is_active',
         'tower_names',
         'configuration_metadata',
+        // DIAN Electronic Invoicing
+        'dian_electronic_invoicing_enabled',
+        'dian_electronic_invoicing_mode',
+        'dian_electronic_invoicing_min_amount',
+        'dian_numbering_ranges',
+        'dian_municipalities',
+        'dian_taxes',
+        'dian_measurement_units',
+        'dian_company_info',
+        'dian_technical_config',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'tower_names' => 'array',
         'configuration_metadata' => 'array',
+        // DIAN Electronic Invoicing casts
+        'dian_electronic_invoicing_enabled' => 'boolean',
+        'dian_electronic_invoicing_min_amount' => 'decimal:2',
+        'dian_numbering_ranges' => 'array',
+        'dian_municipalities' => 'array',
+        'dian_taxes' => 'array',
+        'dian_measurement_units' => 'array',
+        'dian_company_info' => 'array',
+        'dian_technical_config' => 'array',
     ];
 
     public function apartmentTypes(): HasMany

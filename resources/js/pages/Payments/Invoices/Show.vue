@@ -8,9 +8,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { AlertTriangle, Building, CheckCircle, CreditCard, Download, Edit, ExternalLink, Mail, Printer, Receipt, Trash2 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -92,6 +92,14 @@ interface Invoice {
     payment_reference?: string;
     notes?: string;
     days_overdue?: number;
+    can_be_electronic?: boolean;
+    electronic_invoice_status?: string;
+    electronic_invoice_uuid?: string;
+    electronic_invoice_cufe?: string;
+    electronic_invoice_sent_at?: string;
+    electronic_invoice_error?: string;
+    factus_id?: string;
+    electronic_invoice_public_url?: string;
     apartment: {
         id: number;
         number: string;
@@ -112,22 +120,7 @@ const props = defineProps<{
 
 const { success, error } = useToast();
 
-const showPaymentDialog = ref(false);
 
-const paymentForm = useForm({
-    amount: props.invoice.balance_due,
-    payment_method: '',
-    payment_reference: '',
-});
-
-const submitPayment = () => {
-    paymentForm.post(`/invoices/${props.invoice.id}/mark-paid`, {
-        onSuccess: () => {
-            showPaymentDialog.value = false;
-            paymentForm.reset();
-        },
-    });
-};
 
 const deleteInvoice = () => {
     if (confirm('¿Estás seguro de que deseas eliminar esta factura?')) {
@@ -178,6 +171,119 @@ const canEdit = !['paid', 'cancelled'].includes(props.invoice.status);
 const canDelete = !['paid', 'partial'].includes(props.invoice.status);
 const canReceivePayment = ['pending', 'partial', 'overdue'].includes(props.invoice.status) && props.invoice.balance_due > 0;
 const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status === 'pending' && new Date(props.invoice.due_date) < new Date());
+
+// Electronic invoicing variables
+const sendingElectronic = ref(false);
+const electronInvoiceError = ref<string | null>(null);
+
+// Local reactive copy of electronic invoice status to avoid prop mutation
+const localElectronicStatus = ref(props.invoice.electronic_invoice_status);
+const localElectronicUuid = ref(props.invoice.electronic_invoice_uuid);
+const localElectronicCufe = ref(props.invoice.electronic_invoice_cufe);
+const localFactusId = ref(props.invoice.factus_id);
+
+// Electronic invoicing computed properties
+const shouldShowElectronicInvoicing = computed(() => {
+    // Show if DIAN is enabled and this invoice can be electronic
+    return props.invoice.can_be_electronic || props.invoice.electronic_invoice_status;
+});
+
+const getElectronicInvoiceButtonText = computed(() => {
+    if (sendingElectronic.value) return 'Enviando...';
+    if (localElectronicStatus.value === 'sent') return 'Enviado';
+    if (localElectronicStatus.value === 'failed') return 'Reintentar DIAN';
+    return 'Enviar DIAN';
+});
+
+const getElectronicInvoiceStatusText = computed(() => {
+    switch (localElectronicStatus.value) {
+        case 'sent':
+            return 'Factura enviada exitosamente a la DIAN';
+        case 'failed':
+            return 'Error al enviar factura a la DIAN';
+        case 'pending':
+            return 'Pendiente de envío a la DIAN';
+        default:
+            return 'Disponible para envío electrónico DIAN';
+    }
+});
+
+const electronInvoiceStatusClass = computed(() => {
+    switch (localElectronicStatus.value) {
+        case 'sent':
+            return 'border-green-200 bg-green-50';
+        case 'failed':
+            return 'border-red-200 bg-red-50';
+        case 'pending':
+            return 'border-yellow-200 bg-yellow-50';
+        default:
+            return 'border-blue-200 bg-blue-50';
+    }
+});
+
+const electronInvoiceStatusIconClass = computed(() => {
+    switch (localElectronicStatus.value) {
+        case 'sent':
+            return 'text-green-600';
+        case 'failed':
+            return 'text-red-600';
+        case 'pending':
+            return 'text-yellow-600';
+        default:
+            return 'text-blue-600';
+    }
+});
+
+// Electronic invoicing function
+const sendElectronicInvoice = async () => {
+    sendingElectronic.value = true;
+    electronInvoiceError.value = null;
+
+    try {
+        const response = await fetch(`/api/invoices/${props.invoice.id}/electronic-invoice`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            success('Factura enviada exitosamente a la DIAN');
+            // Update local state instead of mutating props
+            localElectronicStatus.value = 'sent';
+            localElectronicUuid.value = result.uuid;
+            localElectronicCufe.value = result.cufe;
+            localFactusId.value = result.factus_id;
+        } else {
+            electronInvoiceError.value = result.message;
+            localElectronicStatus.value = 'failed';
+            error('Error al enviar factura a la DIAN: ' + result.message);
+        }
+    } catch {
+        electronInvoiceError.value = 'Error de conexión';
+        localElectronicStatus.value = 'failed';
+        error('Error al enviar factura a la DIAN');
+    } finally {
+        sendingElectronic.value = false;
+    }
+};
+
+// Electronic invoice download functions
+const downloadElectronicPDF = () => {
+    window.open(`/invoices/${props.invoice.id}/electronic-pdf`, '_blank');
+};
+
+const downloadElectronicXML = () => {
+    window.open(`/invoices/${props.invoice.id}/electronic-xml`, '_blank');
+};
+
+// View electronic invoice function (searches and displays PDF)
+const viewElectronicInvoice = () => {
+    window.open(`/invoices/${props.invoice.id}/view-electronic`, '_blank');
+};
 </script>
 
 <template>
@@ -207,6 +313,17 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                         Enviar Email
                     </Button>
 
+                    <Button
+                        v-if="shouldShowElectronicInvoicing"
+                        variant="outline"
+                        size="sm"
+                        @click="sendElectronicInvoice"
+                        :disabled="sendingElectronic || localElectronicStatus === 'sent'"
+                    >
+                        <ExternalLink class="mr-2 h-4 w-4" />
+                        {{ getElectronicInvoiceButtonText }}
+                    </Button>
+
                     <Button v-if="canEdit" asChild variant="outline" size="sm">
                         <Link :href="`/invoices/${invoice.id}/edit`">
                             <Edit class="mr-2 h-4 w-4" />
@@ -234,6 +351,42 @@ const isOverdue = props.invoice.status === 'overdue' || (props.invoice.status ==
                             </span>
                         </p>
                     </div>
+                </div>
+            </div>
+
+            <!-- Electronic Invoicing Status -->
+            <div v-if="shouldShowElectronicInvoicing" class="rounded-lg border p-4" :class="electronInvoiceStatusClass">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <ExternalLink class="h-5 w-5" :class="electronInvoiceStatusIconClass" />
+                        <div>
+                            <h3 class="font-medium">Facturación Electrónica DIAN</h3>
+                            <p class="text-sm text-muted-foreground">
+                                {{ getElectronicInvoiceStatusText }}
+                            </p>
+                        </div>
+                    </div>
+                    <div v-if="localElectronicUuid || invoice.electronic_invoice_uuid" class="text-right">
+                        <p class="text-xs font-mono text-muted-foreground">UUID</p>
+                        <p class="text-xs font-mono">{{ localElectronicUuid || invoice.electronic_invoice_uuid }}</p>
+                    </div>
+                </div>
+
+                <div v-if="localElectronicCufe || invoice.electronic_invoice_cufe" class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono">
+                    <strong>CUFE:</strong> {{ localElectronicCufe || invoice.electronic_invoice_cufe }}
+                </div>
+
+                <div v-if="electronInvoiceError" class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                    <strong>Error:</strong> {{ electronInvoiceError }}
+                </div>
+
+                <!-- Action buttons for electronic invoices -->
+                <div v-if="shouldShowElectronicInvoicing" class="mt-3 flex flex-wrap gap-2">
+                    <!-- View electronic invoice (searches in Factus) -->
+                    <Button variant="outline" size="sm" @click="viewElectronicInvoice">
+                        <ExternalLink class="mr-2 h-4 w-4" />
+                        Ver PDF DIAN
+                    </Button>
                 </div>
             </div>
 

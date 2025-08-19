@@ -27,6 +27,18 @@ class Invoice extends Model
         'payment_method',
         'payment_reference',
         'notes',
+        // Electronic invoicing fields
+        'electronic_invoice_status',
+        'electronic_invoice_uuid',
+        'electronic_invoice_cufe',
+        'electronic_invoice_sent_at',
+        'electronic_invoice_error',
+        'can_be_electronic',
+        'factus_id',
+        'electronic_invoice_public_url',
+        'dian_observation',
+        'dian_payment_method',
+        'dian_currency',
     ];
 
     protected $casts = [
@@ -39,6 +51,9 @@ class Invoice extends Model
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'balance_amount' => 'decimal:2',
+        // Electronic invoicing casts
+        'electronic_invoice_sent_at' => 'datetime',
+        'can_be_electronic' => 'boolean',
     ];
 
     protected $appends = [
