@@ -1,11 +1,13 @@
 <template>
-    <nav class="relative z-50 bg-[#1D3557] px-6 py-4">
+    <nav class="relative z-50 bg-[#1D3557] px-6">
         <div class="mx-auto flex max-w-7xl items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#06D6A0] shadow-lg">
-                    <span class="text-xl font-bold text-white font-brand">T</span>
-                </div>
-                <span class="text-2xl font-bold text-white font-brand tracking-tight">Tavira</span>
+            <div class="flex items-center">
+                <Link :href="route('home')" class="flex items-center">
+                    <div class="w-48 overflow-hidden">
+                        <AppLogoIcon :black="true" class="h-full w-full object-contain" />
+                    </div>
+                    <span class="sr-only">Tavira</span>
+                </Link>
             </div>
 
             <div class="flex items-center space-x-2 sm:space-x-6">
@@ -36,4 +38,5 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import LanguageSwitcher from '../LanguageSwitcher.vue';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
 </script>

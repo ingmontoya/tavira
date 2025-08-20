@@ -205,7 +205,7 @@ const getSubmitTabIndex = () => {
 
                     <Button
                         type="submit"
-                        class="mt-4 w-full bg-gradient-to-r from-[#3887FE] to-[#8338EA] font-extrabold"
+                        class="mt-4 w-full bg-gradient-to-r from-[#1D3557] to-[#06D6A0] font-extrabold"
                         :tabindex="getSubmitTabIndex()"
                         :disabled="form.processing"
                     >

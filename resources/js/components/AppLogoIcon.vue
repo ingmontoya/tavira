@@ -8,11 +8,13 @@ defineOptions({
 interface Props {
     className?: HTMLAttributes['class'];
     type?: string;
+    black?: boolean;
 }
 
 defineProps<Props>();
 </script>
 
 <template>
-    <img :src="type === 'iso' ? '/img/iso_modulyx.png' : '/img/modulyx.png'" alt="Logo" :class="$attrs.className" />
+    <img v-if="black" :src="type === 'iso' ? '/img/t2.svg' : '/img/tavira_logo.svg'" alt="Logo" :class="$attrs.className" />
+    <img v-else :src="type === 'iso' ? '/img/t2.svg' : '/img/tavira_logo_blanco.svg'" alt="Logo" :class="$attrs.className" />
 </template>
