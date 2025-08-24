@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\DashboardResource;
 use App\Models\Announcement;
 use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
@@ -29,7 +30,11 @@ class ResidentDashboardController extends Controller
         $conjuntoConfig = ConjuntoConfig::first();
 
         if (! $apartment) {
-            return redirect()->route('dashboard')->with('error', 'No se encontró información del apartamento asignado.');
+            // Show a specific page for residents without apartment instead of redirecting back
+            return Inertia::render('residents/NoApartment', [
+                'conjuntoName' => $conjuntoConfig?->name ?? 'Tu Conjunto',
+                'message' => 'Aún no tienes un apartamento asignado. Por favor contacta al administrador.',
+            ]);
         }
 
         // Get account status for this apartment
@@ -73,15 +78,15 @@ class ResidentDashboardController extends Controller
     private function getAccountStatus(Apartment $apartment): array
     {
         // Calculate current balance based on invoices and payments
-        $totalInvoiced = $apartment->invoices()
+        $totalInvoiced = (float) $apartment->invoices()
             ->whereIn('status', ['pending', 'overdue', 'partial'])
             ->sum('total_amount');
 
-        $totalPaid = $apartment->invoices()
+        $totalPaid = (float) $apartment->invoices()
             ->whereIn('status', ['pending', 'overdue', 'partial'])
             ->sum('paid_amount');
 
-        $balance = $totalPaid - $totalInvoiced;
+        $balance = $totalInvoiced - $totalPaid; // Pending amount (positive = owes money)
 
         return [
             'balance' => $balance,
@@ -98,15 +103,17 @@ class ResidentDashboardController extends Controller
             ->first();
 
         if ($nextInvoice) {
+            $pendingAmount = (float) $nextInvoice->total_amount - (float) ($nextInvoice->paid_amount ?? 0);
+
             return [
-                'amount' => $nextInvoice->total_amount - $nextInvoice->paid_amount,
+                'amount' => max(0, $pendingAmount), // Ensure non-negative
                 'dueDate' => $nextInvoice->due_date->format('d M Y'),
                 'description' => $nextInvoice->description ?? 'Pago de administración',
             ];
         }
 
         return [
-            'amount' => 0,
+            'amount' => 0.0,
             'dueDate' => 'Sin pagos pendientes',
             'description' => '',
         ];
@@ -276,5 +283,90 @@ class ResidentDashboardController extends Controller
 
         // Sort by date descending and take latest 6
         return $transactions->sortByDesc('date')->take(6)->values()->all();
+    }
+
+    /**
+     * API endpoint for mobile app dashboard
+     */
+    public function apiIndex(Request $request)
+    {
+        $user = $request->user();
+
+        // Check if user has resident or propietario role
+        if (! $user->hasRole(['residente', 'propietario'])) {
+            return response()->json([
+                'error' => 'Acceso denegado. Este dashboard es solo para residentes y propietarios.',
+            ], 403);
+        }
+
+        // Get apartment information
+        $apartment = $user->apartment;
+
+        if (! $apartment) {
+            return response()->json([
+                'error' => 'No se encontró información del apartamento asignado.',
+            ], 404);
+        }
+
+        // Load necessary relationships
+        $user->load(['resident.apartment.apartmentType']);
+        $apartment->load(['apartmentType', 'invoices', 'payments']);
+
+        // Get account status and payment info
+        $accountStatus = $this->getAccountStatus($apartment);
+        $nextPayment = $this->getNextPayment($apartment);
+
+        // Compile dashboard data
+        $dashboardData = [
+            'user' => $user,
+            'apartment' => $apartment,
+            'current_balance' => (float) ($accountStatus['balance'] ?? 0),
+            'next_payment_amount' => (float) ($nextPayment['amount'] ?? 0),
+            'next_payment_due' => $nextPayment['dueDate'] ?? null,
+            'unread_notifications' => $user->unreadNotifications()->count(),
+            'pending_visits' => Visit::where('apartment_id', $apartment->id)
+                ->where('status', 'pending')
+                ->count(),
+            'open_maintenance_requests' => 0, // Will implement when maintenance model is available
+            'unread_announcements' => Announcement::forUser($user->id)
+                ->whereDoesntHave('confirmations', function ($query) use ($user) {
+                    $query->where('user_id', $user->id)->whereNotNull('read_at');
+                })
+                ->count(),
+            'payments_this_year' => $apartment->payments()
+                ->whereYear('payment_date', now()->year)
+                ->count(),
+            'visits_this_month' => Visit::where('apartment_id', $apartment->id)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->count(),
+            'last_payment_date' => $apartment->payments()
+                ->latest('payment_date')
+                ->first()?->payment_date,
+            'last_payment_amount' => $apartment->payments()
+                ->latest('payment_date')
+                ->first()?->amount ?? 0,
+            'latest_invoices' => $apartment->invoices()
+                ->with('items.paymentConcept')
+                ->latest()
+                ->take(3)
+                ->get(),
+            'recent_payments' => $apartment->payments()
+                ->with('applications.invoice')
+                ->latest('payment_date')
+                ->take(3)
+                ->get(),
+            'latest_announcements' => Announcement::forUser($user->id)
+                ->with('createdBy')
+                ->latest()
+                ->take(3)
+                ->get(),
+            'recent_visits' => Visit::where('apartment_id', $apartment->id)
+                ->latest()
+                ->take(3)
+                ->get(),
+        ];
+
+        return new DashboardResource($dashboardData);
     }
 }

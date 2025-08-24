@@ -109,4 +109,118 @@ class NotificationController extends Controller
 
         return response()->json(['message' => 'Notificación no encontrada'], 404);
     }
+
+    // API methods for mobile app
+    
+    /**
+     * API: Get all notifications for authenticated user.
+     */
+    public function apiIndex()
+    {
+        $user = Auth::user();
+        $notifications = $this->notificationService->getAllNotifications($user, 50);
+
+        return response()->json([
+            'success' => true,
+            'data' => $notifications->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'type' => $notification->type,
+                    'data' => $notification->data,
+                    'read_at' => $notification->read_at?->toISOString(),
+                    'created_at' => $notification->created_at?->toISOString(),
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * API: Get unread notifications for authenticated user.
+     */
+    public function apiUnread()
+    {
+        $user = Auth::user();
+        $notifications = $this->notificationService->getUnreadNotifications($user);
+
+        return response()->json([
+            'success' => true,
+            'data' => $notifications->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'type' => $notification->type,
+                    'data' => $notification->data,
+                    'created_at' => $notification->created_at?->toISOString(),
+                ];
+            }),
+        ]);
+    }
+
+    /**
+     * API: Get notification counts for authenticated user.
+     */
+    public function apiCounts()
+    {
+        $user = Auth::user();
+        $counts = $this->notificationService->getNotificationCounts($user);
+
+        return response()->json([
+            'success' => true,
+            'data' => $counts,
+        ]);
+    }
+
+    /**
+     * API: Mark a notification as read.
+     */
+    public function apiMarkAsRead(string $id)
+    {
+        $success = $this->notificationService->markAsRead($id);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Notificación marcada como leída',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Notificación no encontrada',
+        ], 404);
+    }
+
+    /**
+     * API: Mark all notifications as read for authenticated user.
+     */
+    public function apiMarkAllAsRead()
+    {
+        $user = Auth::user();
+        $count = $this->notificationService->markAllAsRead($user);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Se marcaron {$count} notificaciones como leídas",
+            'count' => $count,
+        ]);
+    }
+
+    /**
+     * API: Delete a notification.
+     */
+    public function apiDelete(string $id)
+    {
+        $success = $this->notificationService->deleteNotification($id);
+
+        if ($success) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Notificación eliminada',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Notificación no encontrada',
+        ], 404);
+    }
 }

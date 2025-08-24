@@ -21,8 +21,13 @@ class DashboardController extends Controller
         $user = $request->user();
 
         // Check if user is a resident or propietario (should use resident dashboard)
+        // But only redirect if they have an apartment assigned to avoid redirect loop
         if ($user->hasRole(['residente', 'propietario'])) {
-            return redirect()->route('resident.dashboard');
+            // Check if user has an apartment before redirecting
+            if ($user->apartment) {
+                return redirect()->route('resident.dashboard');
+            }
+            // If no apartment, let them stay on this dashboard but with limited access
         }
 
         $selectedMonth = $request->get('month', now()->format('Y-m'));

@@ -27,6 +27,16 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
+        // For API requests (mobile app), use simpler validation for login
+        if ($this->expectsJson() || $this->is('api/*')) {
+            return [
+                'email' => ['required', 'string', 'email', 'max:255'],
+                'password' => ['required', 'string'],
+                'remember' => ['boolean'],
+            ];
+        }
+
+        // For web requests, use strict validation
         return [
             'email' => [
                 'required',
@@ -59,9 +69,17 @@ class LoginRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'email' => strtolower(trim($this->email ?? '')),
-        ]);
+        // Only apply transformations for web requests
+        if (! $this->expectsJson() && ! $this->is('api/*')) {
+            $this->merge([
+                'email' => strtolower(trim($this->email ?? '')),
+            ]);
+        } else {
+            // For API requests, just trim email
+            $this->merge([
+                'email' => trim($this->email ?? ''),
+            ]);
+        }
     }
 
     /**

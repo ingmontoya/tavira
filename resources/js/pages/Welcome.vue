@@ -12,6 +12,7 @@ import LandingTestimonials from '../components/landing/LandingTestimonials.vue';
 </script>
 
 <template>
+    <!-- Test HMR - remove this comment -->
     <div class="min-h-screen overflow-x-hidden">
         <!-- SEO Meta Tags -->
         <LandingSEO />

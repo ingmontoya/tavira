@@ -27,7 +27,7 @@ return new class extends Migration
             $table->dropColumn([
                 'dian_observation',
                 'dian_payment_method',
-                'dian_currency'
+                'dian_currency',
             ]);
         });
     }

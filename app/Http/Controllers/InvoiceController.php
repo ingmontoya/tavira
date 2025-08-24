@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\InvoiceGenerationException;
+use App\Http\Resources\InvoiceResource;
 use App\Mail\InvoiceMail;
 use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
@@ -685,6 +686,220 @@ class InvoiceController extends Controller
 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al ver la factura electrónica: '.$e->getMessage()]);
+        }
+    }
+
+    // =====================================================
+    // MOBILE API METHODS
+    // =====================================================
+
+    /**
+     * API: Get account statement for authenticated user's apartment
+     * Returns all invoices for the user's apartment with summary information
+     */
+    public function apiAccountStatement(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            // Get user's apartment through resident relationship
+            $apartment = $user->apartment;
+
+            if (! $apartment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró apartamento asociado al usuario.',
+                ], 404);
+            }
+
+            // Get all invoices for the user's apartment
+            $query = Invoice::with(['apartment', 'items.paymentConcept'])
+                ->where('apartment_id', $apartment->id);
+
+            // Optional filtering by status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Optional filtering by year
+            if ($request->filled('year')) {
+                $query->where('billing_period_year', $request->year);
+            }
+
+            $invoices = $query->orderBy('billing_date', 'desc')->get();
+
+            // Calculate summary statistics
+            $totalPending = $invoices->where('status', 'pending')->sum('total_amount');
+            $totalOverdue = $invoices->filter(function ($invoice) {
+                return $invoice->status !== 'paid' && $invoice->due_date?->isPast();
+            })->sum('total_amount');
+            $totalPaid = $invoices->where('status', 'paid')->sum('total_amount');
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'apartment' => [
+                        'number' => $apartment->number,
+                        'tower' => $apartment->tower,
+                        'type' => $apartment->apartmentType->name ?? null,
+                    ],
+                    'summary' => [
+                        'total_pending' => $totalPending,
+                        'total_overdue' => $totalOverdue,
+                        'total_paid' => $totalPaid,
+                        'invoice_count' => $invoices->count(),
+                    ],
+                    'invoices' => InvoiceResource::collection($invoices),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el estado de cuenta: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Get paginated invoices for authenticated user's apartment
+     * Returns invoices with pagination for mobile app listing
+     */
+    public function apiResidentIndex(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            // Get user's apartment through resident relationship
+            $apartment = $user->apartment;
+
+            if (! $apartment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró apartamento asociado al usuario.',
+                ], 404);
+            }
+
+            // Build query for user's apartment invoices
+            $query = Invoice::with(['apartment', 'items.paymentConcept'])
+                ->where('apartment_id', $apartment->id);
+
+            // Optional filtering by status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Optional filtering by type
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
+
+            // Optional filtering by year
+            if ($request->filled('year')) {
+                $query->where('billing_period_year', $request->year);
+            }
+
+            // Optional filtering by month
+            if ($request->filled('month')) {
+                $query->where('billing_period_month', $request->month);
+            }
+
+            // Search by invoice number
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where('invoice_number', 'like', "%{$search}%");
+            }
+
+            // Order by most recent first
+            $query->orderBy('billing_date', 'desc');
+
+            // Paginate results (default 15 per page for mobile)
+            $perPage = $request->get('per_page', 15);
+            $invoices = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => InvoiceResource::collection($invoices),
+                'meta' => [
+                    'current_page' => $invoices->currentPage(),
+                    'last_page' => $invoices->lastPage(),
+                    'per_page' => $invoices->perPage(),
+                    'total' => $invoices->total(),
+                    'from' => $invoices->firstItem(),
+                    'to' => $invoices->lastItem(),
+                ],
+                'apartment' => [
+                    'number' => $apartment->number,
+                    'tower' => $apartment->tower,
+                    'type' => $apartment->apartmentType->name ?? null,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener las facturas: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Get detailed invoice information for authenticated user
+     * Returns complete invoice details if it belongs to the user's apartment
+     */
+    public function apiShow(Request $request, Invoice $invoice)
+    {
+        try {
+            $user = $request->user();
+
+            // Get user's apartment through resident relationship
+            $apartment = $user->apartment;
+
+            if (! $apartment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró apartamento asociado al usuario.',
+                ], 404);
+            }
+
+            // Verify the invoice belongs to the user's apartment
+            if ($invoice->apartment_id !== $apartment->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permisos para ver esta factura.',
+                ], 403);
+            }
+
+            // Load relationships for complete invoice details
+            $invoice->load([
+                'apartment.apartmentType',
+                'items.paymentConcept',
+                'paymentApplications.payment.createdBy',
+                'paymentApplications' => function ($query) {
+                    $query->orderBy('applied_date', 'desc');
+                },
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => new InvoiceResource($invoice),
+                'payment_history' => $invoice->paymentApplications->map(function ($application) {
+                    return [
+                        'id' => $application->id,
+                        'amount' => $application->applied_amount,
+                        'applied_date' => $application->applied_date->toISOString(),
+                        'payment_method' => $application->payment->payment_method ?? null,
+                        'reference' => $application->payment->payment_reference ?? null,
+                        'created_by' => $application->payment->createdBy->name ?? null,
+                    ];
+                }),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los detalles de la factura: '.$e->getMessage(),
+            ], 500);
         }
     }
 }

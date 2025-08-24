@@ -163,13 +163,21 @@ class RegisteredUserController extends Controller
 
             $user->assignRole($role);
 
-            // For mass invitations, store the apartment association for later resident profile completion
-            // Note: Resident record creation is deferred until user completes their profile
-            // with required fields like document_type, document_number, etc.
+            // For mass invitations, create basic resident record with apartment association
             if ($invitation->is_mass_invitation && isset($validated['apartment_id'])) {
-                // TODO: Implement a mechanism to associate user with apartment
-                // This could be done through a user profile completion flow
-                // or by storing the apartment_id in user metadata
+                // Create basic resident record to establish user-apartment relationship
+                \App\Models\Resident::create([
+                    'first_name' => $validated['name'], // Use name as first_name initially
+                    'last_name' => '', // Will be updated when profile is completed
+                    'email' => $email,
+                    'apartment_id' => $validated['apartment_id'],
+                    'resident_type' => 'Owner', // Default type, can be updated later
+                    'status' => 'Active',
+                    'start_date' => now(),
+                    // Other required fields will be updated when user completes profile
+                    'document_type' => 'CC', // Default, to be updated
+                    'document_number' => 'PENDING', // Placeholder, to be updated
+                ]);
             }
 
             // For individual invitations, mark as accepted

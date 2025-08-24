@@ -63,10 +63,13 @@ class PaymentMethodAccountMappingController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        // Get cash accounts (assets with type 'cash' or 'bank')
+        // Get cash accounts (assets under "DISPONIBLE" - codes starting with 1105 for cash and 1110 for banks)
         $cashAccounts = ChartOfAccounts::where('is_active', true)
-            ->whereIn('type', ['asset'])
-            ->whereIn('subtype', ['cash', 'bank'])
+            ->where('account_type', 'asset')
+            ->where(function ($query) {
+                $query->where('code', 'like', '1105%')  // Cash accounts
+                      ->orWhere('code', 'like', '1110%'); // Bank accounts
+            })
             ->orderBy('code')
             ->get();
 
@@ -119,10 +122,13 @@ class PaymentMethodAccountMappingController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        // Get cash accounts (assets with type 'cash' or 'bank')
+        // Get cash accounts (assets under "DISPONIBLE" - codes starting with 1105 for cash and 1110 for banks)
         $cashAccounts = ChartOfAccounts::where('is_active', true)
-            ->whereIn('type', ['asset'])
-            ->whereIn('subtype', ['cash', 'bank'])
+            ->where('account_type', 'asset')
+            ->where(function ($query) {
+                $query->where('code', 'like', '1105%')  // Cash accounts
+                      ->orWhere('code', 'like', '1110%'); // Bank accounts
+            })
             ->orderBy('code')
             ->get();
 

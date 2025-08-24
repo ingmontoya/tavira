@@ -28,10 +28,10 @@ return new class extends Migration
         Schema::table('residents', function (Blueprint $table) {
             $table->dropColumn([
                 'dian_address',
-                'dian_city_id', 
+                'dian_city_id',
                 'dian_legal_organization_type',
                 'dian_tributary_regime',
-                'dian_tributary_liability'
+                'dian_tributary_liability',
             ]);
         });
     }
