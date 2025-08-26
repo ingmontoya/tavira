@@ -347,6 +347,7 @@ export function useNavigation() {
                 hasPermission('invite_visitors') ||
                 hasPermission('receive_notifications') ||
                 hasPermission('send_pqrs') ||
+                hasPermission('manage_pqrs') ||
                 hasPermission('send_messages_to_admin') ||
                 hasPermission('manage_visitors') ||
                 hasPermission('view_admin_email') ||
@@ -435,7 +436,7 @@ export function useNavigation() {
                     href: '/pqrs',
                     icon: FileQuestion,
                     tourId: 'nav-pqrs',
-                    visible: hasPermission('send_pqrs'),
+                    visible: hasPermission('send_pqrs') || hasPermission('manage_pqrs'),
                 },
                 {
                     title: 'Mensajería',
