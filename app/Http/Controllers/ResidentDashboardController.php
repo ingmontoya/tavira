@@ -176,7 +176,7 @@ class ResidentDashboardController extends Controller
                     'id' => $announcement->id,
                     'title' => $announcement->title,
                     'content' => $announcement->content,
-                    'date' => $announcement->published_at?->toISOString() ?? $announcement->created_at->toISOString(),
+                    'date' => $announcement->published_at?->toISOString() ?? $announcement->created_at?->toISOString() ?? now()->toISOString(),
                     'isNew' => ! $announcement->isReadBy($userId),
                 ];
             })
@@ -230,7 +230,7 @@ class ResidentDashboardController extends Controller
                     'id' => $correspondence->id,
                     'sender' => $correspondence->sender_company ?? $correspondence->sender_name,
                     'description' => $correspondence->description ?? ucfirst($correspondence->type),
-                    'receivedDate' => $correspondence->received_at->toISOString(),
+                    'receivedDate' => $correspondence->received_at?->toISOString() ?? $correspondence->created_at?->toISOString() ?? now()->toISOString(),
                     'status' => $statusMap[$correspondence->status] ?? ucfirst($correspondence->status),
                 ];
             })
@@ -255,7 +255,7 @@ class ResidentDashboardController extends Controller
                     'type' => 'invoice',
                     'description' => $invoice->description ?? 'Factura de administración',
                     'amount' => $invoice->total_amount,
-                    'date' => $invoice->created_at->toISOString(),
+                    'date' => $invoice->created_at?->toISOString() ?? now()->toISOString(),
                 ];
             });
 

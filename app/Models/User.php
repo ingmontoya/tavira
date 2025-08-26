@@ -120,4 +120,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->position ? "{$this->name} - {$this->position}" : $this->name;
     }
+
+    /**
+     * Get all reservations made by this user.
+     */
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
 }

@@ -431,4 +431,135 @@ class MaintenanceRequestController extends Controller
 
         return back()->with('success', "Solicitud avanzada a: {$nextStatusLabel}");
     }
+
+    /**
+     * Get maintenance schedule data for mobile app (resident view)
+     */
+    public function apiResidentIndex(Request $request)
+    {
+        $user = Auth::user();
+        $conjuntoConfig = ConjuntoConfig::first();
+
+        // Get resident's apartment
+        $resident = $user->resident;
+        if (!$resident) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no tiene apartamento asignado'
+            ], 400);
+        }
+
+        $query = MaintenanceRequest::with([
+            'maintenanceCategory',
+            'apartment',
+            'requestedBy',
+            'assignedStaff',
+        ])->where('conjunto_config_id', $conjuntoConfig->id)
+          ->where(function ($q) use ($resident) {
+              // Show requests that affect the resident's apartment or are general building maintenance
+              $q->where('apartment_id', $resident->apartment_id)
+                ->orWhereNull('apartment_id'); // General building maintenance
+          });
+
+        // Filter by status - show only active/relevant requests
+        $query->whereIn('status', [
+            'assigned',
+            'in_progress', 
+            'approved',
+            'pending_approval'
+        ]);
+
+        // Get upcoming maintenance (next 30 days)
+        $query->where(function ($q) {
+            $q->whereDate('estimated_completion_date', '>=', now())
+              ->whereDate('estimated_completion_date', '<=', now()->addDays(30));
+        });
+
+        $maintenanceRequests = $query->orderBy('estimated_completion_date')->limit(20)->get();
+
+        // Transform data for mobile app
+        $scheduleData = $maintenanceRequests->map(function ($request) {
+            return [
+                'id' => $request->id,
+                'title' => $request->title,
+                'description' => $request->description,
+                'category' => [
+                    'name' => $request->maintenanceCategory->name,
+                    'color' => $request->maintenanceCategory->color,
+                ],
+                'priority' => $request->priority,
+                'priority_label' => $this->getPriorityLabel($request->priority),
+                'status' => $request->status,
+                'status_label' => $this->getStatusLabel($request->status),
+                'estimated_date' => $request->estimated_completion_date?->format('Y-m-d'),
+                'estimated_date_formatted' => $request->estimated_completion_date?->format('d M Y'),
+                'location' => $request->location,
+                'apartment' => $request->apartment ? [
+                    'number' => $request->apartment->number,
+                    'floor' => $request->apartment->floor,
+                ] : null,
+                'is_general_maintenance' => is_null($request->apartment_id),
+                'assigned_staff' => $request->assignedStaff ? [
+                    'name' => $request->assignedStaff->name,
+                    'phone' => $request->assignedStaff->phone,
+                ] : null,
+                'affects_resident' => $request->apartment_id === $resident->apartment_id,
+            ];
+        });
+
+        // Get maintenance categories for filtering
+        $categories = MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
+            ->where('is_active', true)
+            ->select('id', 'name', 'color')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'schedule' => $scheduleData,
+                'categories' => $categories,
+                'summary' => [
+                    'total_requests' => $scheduleData->count(),
+                    'personal_requests' => $scheduleData->where('affects_resident', true)->count(),
+                    'general_maintenance' => $scheduleData->where('is_general_maintenance', true)->count(),
+                    'next_maintenance_date' => $scheduleData->first()['estimated_date_formatted'] ?? null
+                ]
+            ]
+        ]);
+    }
+
+    /**
+     * Get priority label in Spanish
+     */
+    private function getPriorityLabel(string $priority): string
+    {
+        return match ($priority) {
+            'low' => 'Baja',
+            'medium' => 'Media',
+            'high' => 'Alta',
+            'critical' => 'Crítica',
+            default => 'Media',
+        };
+    }
+
+    /**
+     * Get status label in Spanish
+     */
+    private function getStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'created' => 'Creada',
+            'evaluation' => 'En Evaluación',
+            'budgeted' => 'Presupuestada',
+            'pending_approval' => 'Pendiente Aprobación',
+            'approved' => 'Aprobada',
+            'assigned' => 'Asignada',
+            'in_progress' => 'En Progreso',
+            'completed' => 'Completada',
+            'closed' => 'Cerrada',
+            'rejected' => 'Rechazada',
+            'suspended' => 'Suspendida',
+            default => 'Desconocido',
+        };
+    }
 }

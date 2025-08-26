@@ -25,8 +25,8 @@ class UserResource extends JsonResource
                 $this->relationLoaded('resident'),
                 new ApartmentResource($this->resident?->apartment)
             ),
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString() ?? now()->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString() ?? now()->toISOString(),
         ];
     }
 }

@@ -18,7 +18,7 @@ class PaymentApplicationResource extends JsonResource
             'id' => $this->id,
             'invoice_number' => $this->invoice->invoice_number,
             'applied_amount' => $this->applied_amount,
-            'application_date' => $this->created_at->toISOString(),
+            'application_date' => $this->created_at?->toISOString() ?? now()->toISOString(),
         ];
     }
 }

@@ -155,6 +155,20 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             ->name('requests.documents.upload');
     });
 
+    // === RESIDENT MAINTENANCE (for mobile app compatibility) ===
+    Route::prefix('resident/maintenance')->name('api.resident.maintenance.')->group(function () {
+        Route::get('/requests', [MaintenanceRequestController::class, 'apiResidentIndex'])
+            ->name('requests.index');
+        Route::post('/requests', [MaintenanceRequestController::class, 'apiStore'])
+            ->name('requests.store');
+        Route::get('/requests/{request}', [MaintenanceRequestController::class, 'apiShow'])
+            ->name('requests.show');
+        Route::put('/requests/{request}', [MaintenanceRequestController::class, 'apiUpdate'])
+            ->name('requests.update');
+        Route::post('/requests/{request}/documents', [MaintenanceRequestController::class, 'apiUploadDocument'])
+            ->name('requests.documents.upload');
+    });
+
     // === NOTIFICATIONS ===
     Route::prefix('notifications')->name('api.notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'apiIndex'])
@@ -183,6 +197,35 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             ->name('tickets.messages.store');
         Route::post('/tickets/{ticket}/reopen', [SupportTicketController::class, 'apiReopen'])
             ->name('tickets.reopen');
+    });
+
+    // === RESERVATIONS ===
+    Route::prefix('reservations')->name('api.reservations.')->group(function () {
+        // Reservable assets
+        Route::get('/assets', [\App\Http\Controllers\Api\ReservableAssetController::class, 'index'])
+            ->name('assets.index');
+        Route::get('/assets/{reservableAsset}', [\App\Http\Controllers\Api\ReservableAssetController::class, 'show'])
+            ->name('assets.show');
+        Route::get('/assets/{reservableAsset}/availability', [\App\Http\Controllers\Api\ReservableAssetController::class, 'availability'])
+            ->name('assets.availability');
+        Route::get('/asset-types', [\App\Http\Controllers\Api\ReservableAssetController::class, 'types'])
+            ->name('asset-types');
+
+        // User reservations
+        Route::get('/', [\App\Http\Controllers\Api\ReservationController::class, 'index'])
+            ->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\ReservationController::class, 'store'])
+            ->name('store');
+        Route::get('/stats', [\App\Http\Controllers\Api\ReservationController::class, 'stats'])
+            ->name('stats');
+        Route::get('/upcoming', [\App\Http\Controllers\Api\ReservationController::class, 'upcoming'])
+            ->name('upcoming');
+        Route::get('/{reservation}', [\App\Http\Controllers\Api\ReservationController::class, 'show'])
+            ->name('show');
+        Route::put('/{reservation}', [\App\Http\Controllers\Api\ReservationController::class, 'update'])
+            ->name('update');
+        Route::delete('/{reservation}', [\App\Http\Controllers\Api\ReservationController::class, 'destroy'])
+            ->name('destroy');
     });
 
     // === LEGACY DASHBOARD (for backward compatibility) ===

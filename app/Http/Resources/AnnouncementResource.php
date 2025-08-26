@@ -28,7 +28,7 @@ class AnnouncementResource extends JsonResource
             'target_apartments' => $this->targetApartments->pluck('number')->toArray(),
             'published_at' => $this->published_at?->toISOString(),
             'expires_at' => $this->expires_at?->toISOString(),
-            'created_at' => $this->created_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString() ?? now()->toISOString(),
         ];
     }
 }

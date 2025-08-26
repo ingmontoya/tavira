@@ -40,8 +40,8 @@ class MaintenanceRequestResource extends JsonResource
                 'id' => $this->assignedTo?->id,
                 'name' => $this->assignedTo?->name,
             ]),
-            'created_at' => $this->created_at->toISOString(),
-            'updated_at' => $this->updated_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString() ?? now()->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString() ?? now()->toISOString(),
         ];
     }
 }

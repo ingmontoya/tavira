@@ -17,7 +17,7 @@ class PaymentResource extends JsonResource
         return [
             'id' => $this->id,
             'payment_number' => $this->payment_number,
-            'payment_date' => $this->payment_date->toISOString(),
+            'payment_date' => $this->payment_date?->toISOString() ?? now()->toISOString(),
             'amount' => $this->amount,
             'method' => $this->method,
             'reference' => $this->reference,
@@ -28,7 +28,7 @@ class PaymentResource extends JsonResource
                 'tower' => $this->apartment->tower,
             ],
             'applications' => PaymentApplicationResource::collection($this->whenLoaded('applications')),
-            'created_at' => $this->created_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString() ?? now()->toISOString(),
         ];
     }
 }

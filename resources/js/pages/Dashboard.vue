@@ -497,112 +497,147 @@ const initCharts = async () => {
 
         // Residents by Tower Chart
         if (towerChart.value && props.charts?.residentsByTower?.length > 0) {
-            new Chart(towerChart.value, {
-                type: 'pie',
-                data: {
-                    labels: props.charts.residentsByTower.map((item) => item.name),
-                    datasets: [
-                        {
-                            data: props.charts.residentsByTower.map((item) => item.residents),
-                            backgroundColor: props.charts.residentsByTower.map((item) => item.color),
-                            borderWidth: 2,
-                            borderColor: '#ffffff',
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
+            // Validate and sanitize data
+            const validTowerData = props.charts.residentsByTower.filter(item => 
+                item && 
+                typeof item.residents === 'number' && 
+                !isNaN(item.residents) && 
+                item.residents >= 0 &&
+                item.name &&
+                item.color
+            );
+
+            if (validTowerData.length > 0) {
+                new Chart(towerChart.value, {
+                    type: 'pie',
+                    data: {
+                        labels: validTowerData.map((item) => item.name),
+                        datasets: [
+                            {
+                                data: validTowerData.map((item) => Math.max(0, item.residents)),
+                                backgroundColor: validTowerData.map((item) => item.color),
+                                borderWidth: 2,
+                                borderColor: '#ffffff',
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                },
                             },
                         },
                     },
-                },
-            });
+                });
+            }
         }
 
         // Payment Status Chart
         if (statusChart.value && props.charts?.paymentsByStatus?.length > 0) {
-            new Chart(statusChart.value, {
-                type: 'doughnut',
-                data: {
-                    labels: props.charts.paymentsByStatus.map((item) => item.status),
-                    datasets: [
-                        {
-                            data: props.charts.paymentsByStatus.map((item) => item.count),
-                            backgroundColor: props.charts.paymentsByStatus.map((item) => item.color),
-                            borderWidth: 2,
-                            borderColor: '#ffffff',
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true,
+            // Validate and sanitize data
+            const validStatusData = props.charts.paymentsByStatus.filter(item => 
+                item && 
+                typeof item.count === 'number' && 
+                !isNaN(item.count) && 
+                item.count >= 0 &&
+                item.status &&
+                item.color
+            );
+
+            if (validStatusData.length > 0) {
+                new Chart(statusChart.value, {
+                    type: 'doughnut',
+                    data: {
+                        labels: validStatusData.map((item) => item.status),
+                        datasets: [
+                            {
+                                data: validStatusData.map((item) => Math.max(0, item.count)),
+                                backgroundColor: validStatusData.map((item) => item.color),
+                                borderWidth: 2,
+                                borderColor: '#ffffff',
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                },
                             },
                         },
                     },
-                },
-            });
+                });
+            }
         }
 
         // Payment Trend Chart
         if (trendChart.value && props.charts?.paymentTrend?.length > 0) {
-            new Chart(trendChart.value, {
-                type: 'line',
-                data: {
-                    labels: props.charts.paymentTrend.map((item) => item.label),
-                    datasets: [
-                        {
-                            label: 'Recaudo',
-                            data: props.charts.paymentTrend.map((item) => item.amount),
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#3b82f6',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 6,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)',
+            // Validate and sanitize data
+            const validTrendData = props.charts.paymentTrend.filter(item => 
+                item && 
+                typeof item.amount === 'number' && 
+                !isNaN(item.amount) && 
+                item.amount >= 0 &&
+                item.label
+            );
+
+            if (validTrendData.length > 0) {
+                new Chart(trendChart.value, {
+                    type: 'line',
+                    data: {
+                        labels: validTrendData.map((item) => item.label),
+                        datasets: [
+                            {
+                                label: 'Recaudo',
+                                data: validTrendData.map((item) => Math.max(0, item.amount)),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#3b82f6',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 6,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)',
+                                },
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                },
                             },
                         },
-                        x: {
-                            grid: {
+                        plugins: {
+                            legend: {
                                 display: false,
                             },
                         },
                     },
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                    },
-                },
-            });
+                });
+            }
         }
     } catch (error) {
         console.error('Error loading Chart.js:', error);

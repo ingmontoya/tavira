@@ -113,6 +113,14 @@ class RolePermissionSeeder extends Seeder
 
             // Council/Consejo specific
             'review_provider_proposals',
+
+            // Reservations Management
+            'view_reservations',
+            'create_reservations',
+            'edit_reservations',
+            'delete_reservations',
+            'manage_reservable_assets',
+            'approve_reservations',
         ];
 
         foreach ($permissions as $permission) {
@@ -145,6 +153,7 @@ class RolePermissionSeeder extends Seeder
             'view_correspondence', 'create_correspondence', 'edit_correspondence', 'delete_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
             'view_admin_email', 'create_admin_email', 'edit_admin_email', 'delete_admin_email', 'manage_email_templates', // Admin solo puede ver su email
             'view_access_logs', 'manage_visitors', 'view_security_reports',
+            'view_reservations', 'create_reservations', 'edit_reservations', 'delete_reservations', 'manage_reservable_assets', 'approve_reservations',
         ]);
 
         $consejo->givePermissionTo([
@@ -161,6 +170,7 @@ class RolePermissionSeeder extends Seeder
             'view_access_logs',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
             'review_provider_proposals',
+            'view_reservations', 'create_reservations', 'edit_reservations', 'approve_reservations',
         ]);
 
         $propietario->givePermissionTo([
@@ -168,6 +178,7 @@ class RolePermissionSeeder extends Seeder
             'view_announcements',
             'view_correspondence',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
+            'view_reservations', 'create_reservations', 'edit_reservations',
         ]);
 
         $residente->givePermissionTo([
@@ -175,6 +186,7 @@ class RolePermissionSeeder extends Seeder
             'view_announcements',
             'view_correspondence',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
+            'view_reservations', 'create_reservations', 'edit_reservations',
         ]);
 
         $porteria->givePermissionTo([

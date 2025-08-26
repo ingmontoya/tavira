@@ -78,6 +78,11 @@ class ConjuntoConfig extends Model
         return $this->hasMany(MaintenanceRequest::class);
     }
 
+    public function reservableAssets(): HasMany
+    {
+        return $this->hasMany(ReservableAsset::class);
+    }
+
     public function getEstimatedApartmentsCountAttribute(): int
     {
         $totalApartments = 0;

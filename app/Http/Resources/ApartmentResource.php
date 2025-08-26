@@ -28,7 +28,7 @@ class ApartmentResource extends JsonResource
                 'description' => $this->apartmentType?->description,
             ],
             'status' => $this->status,
-            'created_at' => $this->created_at->toISOString(),
+            'created_at' => $this->created_at?->toISOString() ?? now()->toISOString(),
         ];
     }
 }
