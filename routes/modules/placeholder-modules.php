@@ -25,9 +25,6 @@ Route::get('notifications', function () {
     return Inertia::render('Notifications/Index');
 })->name('notifications.index')->middleware('can:receive_notifications');
 
-Route::get('pqrs', function () {
-    return Inertia::render('PQRS/Index');
-})->name('pqrs.index')->middleware('can:send_pqrs');
 
 Route::get('messages', function () {
     return Inertia::render('Messages/Index');

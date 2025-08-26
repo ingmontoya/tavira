@@ -5,6 +5,7 @@ use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\PqrsController;
 use App\Http\Controllers\ResidentAnnouncementController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -15,6 +16,17 @@ Route::post('correspondence/{correspondence}/deliver', [CorrespondenceController
     ->name('correspondence.deliver')->middleware(['rate.limit:default']);
 Route::delete('correspondence/attachments/{attachment}', [CorrespondenceController::class, 'deleteAttachment'])
     ->name('correspondence.attachments.destroy')->middleware(['rate.limit:default']);
+
+// PQRS Management
+Route::resource('pqrs', PqrsController::class)->middleware(['rate.limit:default']);
+Route::post('pqrs/{pqrs}/assign', [PqrsController::class, 'assign'])
+    ->name('pqrs.assign')->middleware(['rate.limit:default', 'can:manage_pqrs']);
+Route::post('pqrs/{pqrs}/resolve', [PqrsController::class, 'resolve'])
+    ->name('pqrs.resolve')->middleware(['rate.limit:default', 'can:manage_pqrs']);
+Route::post('pqrs/{pqrs}/rate', [PqrsController::class, 'rate'])
+    ->name('pqrs.rate')->middleware(['rate.limit:default']);
+Route::delete('pqrs/attachments/{attachment}', [PqrsController::class, 'deleteAttachment'])
+    ->name('pqrs.attachments.destroy')->middleware(['rate.limit:default']);
 
 Route::get('announcements', function () {
     return Inertia::render('Announcements/Index');
