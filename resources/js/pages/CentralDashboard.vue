@@ -213,6 +213,6 @@ const breadcrumbs = [
 ]
 
 const loginToTenant = (tenantId: string) => {
-    router.post(`/tenants/${tenantId}/login`)
+    router.post(`/tenants/${tenantId}/impersonate`)
 }
 </script>

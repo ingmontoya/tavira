@@ -1,8 +1,9 @@
 <template>
+
     <Head title="Gestión de Tenants" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -25,14 +26,11 @@
                         <div>
                             <Label for="search">Búsqueda General</Label>
                             <div class="relative mt-3">
-                                <Icon name="search" class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                                <Input
-                                    id="search"
-                                    v-model="searchForm.search"
-                                    placeholder="Buscar por nombre, email o ID..."
-                                    @input="debouncedSearch"
-                                    class="max-w-md pl-10"
-                                />
+                                <Icon name="search"
+                                    class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                                <Input id="search" v-model="searchForm.search"
+                                    placeholder="Buscar por nombre, email o ID..." @input="debouncedSearch"
+                                    class="max-w-md pl-10" />
                             </div>
                         </div>
 
@@ -60,7 +58,8 @@
                                 <Icon name="x" class="h-4 w-4" />
                                 Limpiar filtros
                             </Button>
-                            <div class="text-sm text-muted-foreground">Mostrando {{ filteredCount }} de {{ tenants.total }} tenants</div>
+                            <div class="text-sm text-muted-foreground">Mostrando {{ filteredCount }} de {{ tenants.total
+                                }} tenants</div>
                         </div>
                     </div>
                 </CardContent>
@@ -88,12 +87,9 @@
                                 </div>
                             </TableCell>
                         </TableRow>
-                        <TableRow
-                            v-for="tenant in tenants.data"
-                            :key="tenant.id"
+                        <TableRow v-for="tenant in tenants.data" :key="tenant.id"
                             class="cursor-pointer transition-colors hover:bg-muted/50"
-                            @click="router.visit(`/tenants/${tenant.id}`)"
-                        >
+                            @click="router.visit(`/tenants/${tenant.id}`)">
                             <TableCell>
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
@@ -101,7 +97,8 @@
                                     </div>
                                     <div>
                                         <p class="font-medium">{{ tenant.name }}</p>
-                                        <p class="text-sm text-muted-foreground">ID: {{ tenant.id.substring(0, 8) }}...</p>
+                                        <p class="text-sm text-muted-foreground">ID: {{ tenant.id.substring(0, 8) }}...
+                                        </p>
                                     </div>
                                 </div>
                             </TableCell>
@@ -110,17 +107,16 @@
                             </TableCell>
                             <TableCell>
                                 <div class="flex flex-wrap gap-1">
-                                    <Badge v-for="domain in tenant.domains" :key="domain" variant="secondary" class="text-xs">
+                                    <Badge v-for="domain in tenant.domains" :key="domain" variant="secondary"
+                                        class="text-xs">
                                         {{ domain }}
                                     </Badge>
-                                    <span v-if="tenant.domains.length === 0" class="text-sm text-muted-foreground">Sin dominios</span>
+                                    <span v-if="tenant.domains.length === 0" class="text-sm text-muted-foreground">Sin
+                                        dominios</span>
                                 </div>
                             </TableCell>
                             <TableCell>
-                                <Badge 
-                                    :variant="getStatusVariant(tenant.status)"
-                                    class="capitalize"
-                                >
+                                <Badge :variant="getStatusVariant(tenant.status)" class="capitalize">
                                     {{ getStatusText(tenant.status) }}
                                 </Badge>
                             </TableCell>
@@ -129,13 +125,8 @@
                             </TableCell>
                             <TableCell class="text-right">
                                 <div class="flex items-center justify-end gap-2" @click.stop>
-                                    <Button
-                                        v-if="tenant.status === 'active'"
-                                        variant="outline"
-                                        size="sm"
-                                        @click="impersonateTenant(tenant.id)"
-                                        class="gap-1"
-                                    >
+                                    <Button v-if="tenant.status === 'active'" variant="outline" size="sm"
+                                        @click="impersonateTenant(tenant.id)" class="gap-1">
                                         <Icon name="log-in" class="h-4 w-4" />
                                         Ingresar
                                     </Button>
@@ -155,27 +146,18 @@
                                                 Editar
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                v-if="tenant.status === 'active'"
-                                                @click="suspendTenant(tenant.id)"
-                                                class="text-orange-600"
-                                            >
+                                            <DropdownMenuItem v-if="tenant.status === 'active'"
+                                                @click="suspendTenant(tenant.id)" class="text-orange-600">
                                                 <Icon name="pause" class="h-4 w-4 mr-2" />
                                                 Suspender
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                v-if="tenant.status !== 'active'"
-                                                @click="activateTenant(tenant.id)"
-                                                class="text-green-600"
-                                            >
+                                            <DropdownMenuItem v-if="tenant.status !== 'active'"
+                                                @click="activateTenant(tenant.id)" class="text-green-600">
                                                 <Icon name="play" class="h-4 w-4 mr-2" />
                                                 Activar
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem
-                                                @click="deleteTenant(tenant.id)"
-                                                class="text-red-600"
-                                            >
+                                            <DropdownMenuItem @click="deleteTenant(tenant.id)" class="text-red-600">
                                                 <Icon name="trash" class="h-4 w-4 mr-2" />
                                                 Eliminar
                                             </DropdownMenuItem>
@@ -194,20 +176,12 @@
                     Mostrando {{ tenants.from }} a {{ tenants.to }} de {{ tenants.total }} tenants
                 </div>
                 <div class="space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!tenants.prev_page_url"
-                        @click="router.visit(tenants.prev_page_url)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="!tenants.prev_page_url"
+                        @click="router.visit(tenants.prev_page_url)">
                         Anterior
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!tenants.next_page_url"
-                        @click="router.visit(tenants.next_page_url)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="!tenants.next_page_url"
+                        @click="router.visit(tenants.next_page_url)">
                         Siguiente
                     </Button>
                 </div>

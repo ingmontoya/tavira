@@ -19,7 +19,7 @@ class RegisteredUserController extends Controller
     /**
      * Show the admin registration page.
      */
-    public function createAdmin(): Response
+    public function createAdmin(): Response|RedirectResponse
     {
         // Check if there are any admin users already registered
         $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
@@ -72,7 +72,7 @@ class RegisteredUserController extends Controller
                 ->orderBy('floor')
                 ->orderBy('number')
                 ->get()
-                ->map(fn ($apartment) => [
+                ->map(fn($apartment) => [
                     'id' => $apartment->id,
                     'number' => $apartment->number,
                     'tower' => $apartment->tower,
