@@ -39,7 +39,12 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'auth.user' => $request->user(),
+            'auth' => [
+                'user' => $request->user(),
+                'is_impersonating' => session('is_impersonating', false),
+                'tenant_name' => session('tenant_name'),
+                'original_admin_id' => session('original_admin_id'),
+            ],
             'ziggy' => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
