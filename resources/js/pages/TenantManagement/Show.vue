@@ -1,8 +1,9 @@
 <template>
+
     <Head :title="tenant.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -18,11 +19,8 @@
                         <Icon name="arrow-left" class="h-4 w-4" />
                         Volver
                     </Button>
-                    <Button
-                        v-if="tenant.status === 'active'"
-                        @click="impersonateTenant"
-                        class="bg-green-600 hover:bg-green-700 gap-2"
-                    >
+                    <Button v-if="tenant.status === 'active'" @click="impersonateTenant"
+                        class="bg-green-600 hover:bg-green-700 gap-2">
                         <Icon name="log-in" class="h-4 w-4" />
                         Ingresar al Tenant
                     </Button>
@@ -95,11 +93,8 @@
                             <p class="text-muted-foreground">No hay dominios configurados</p>
                         </div>
                         <div v-else class="space-y-4">
-                            <div
-                                v-for="domain in tenant.domains"
-                                :key="domain.id"
-                                class="flex items-center justify-between rounded-lg border p-4"
-                            >
+                            <div v-for="domain in tenant.domains" :key="domain.id"
+                                class="flex items-center justify-between rounded-lg border p-4">
                                 <div class="flex items-center gap-3">
                                     <Icon name="globe" class="h-4 w-4 text-blue-600" />
                                     <div>
@@ -155,37 +150,22 @@
                 </CardHeader>
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <Button
-                            v-if="tenant.status === 'active'"
-                            @click="impersonateTenant"
-                            class="bg-green-600 hover:bg-green-700 gap-2"
-                        >
+                        <Button v-if="tenant.status === 'active'" @click="impersonateTenant"
+                            class="bg-green-600 hover:bg-green-700 gap-2">
                             <Icon name="log-in" class="h-4 w-4" />
                             Ingresar al Tenant
                         </Button>
-                        <Button
-                            v-if="tenant.status === 'active'"
-                            variant="outline"
-                            @click="suspendTenant"
-                            class="text-orange-600 border-orange-200 hover:bg-orange-50 gap-2"
-                        >
+                        <Button v-if="tenant.status === 'active'" variant="outline" @click="suspendTenant"
+                            class="text-orange-600 border-orange-200 hover:bg-orange-50 gap-2">
                             <Icon name="pause" class="h-4 w-4" />
                             Suspender Tenant
                         </Button>
-                        <Button
-                            v-if="tenant.status !== 'active'"
-                            variant="outline"
-                            @click="activateTenant"
-                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2"
-                        >
+                        <Button v-if="tenant.status !== 'active'" variant="outline" @click="activateTenant"
+                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
                             <Icon name="play" class="h-4 w-4" />
                             Activar Tenant
                         </Button>
-                        <Button
-                            variant="destructive"
-                            @click="deleteTenant"
-                            class="gap-2"
-                        >
+                        <Button variant="destructive" @click="deleteTenant" class="gap-2">
                             <Icon name="trash" class="h-4 w-4" />
                             Eliminar Tenant
                         </Button>
@@ -202,7 +182,8 @@
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <pre class="text-xs bg-muted p-4 rounded-md overflow-auto">{{ JSON.stringify(tenant.raw_data, null, 2) }}</pre>
+                    <pre
+                        class="text-xs bg-muted p-4 rounded-md overflow-auto">{{ JSON.stringify(tenant.raw_data, null, 2) }}</pre>
                 </CardContent>
             </Card>
         </div>
