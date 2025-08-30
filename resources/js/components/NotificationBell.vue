@@ -2,7 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { Bell, Check, X } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -30,6 +30,12 @@ const notifications = ref<Notification[]>([]);
 const counts = ref<NotificationCounts>({ unread: 0, total: 0 });
 const isOpen = ref(false);
 const isLoading = ref(false);
+const page = usePage();
+
+// Check if we're in tenant context (not central dashboard)
+const isTenantContext = computed(() => {
+    return !window.location.pathname.startsWith('/dashboard') || page.props.auth?.tenant_id;
+});
 
 const hasUnread = computed(() => counts.value.unread > 0);
 
@@ -118,16 +124,29 @@ const formatTimeAgo = (dateString: string) => {
     return `${diffInDays}d`;
 };
 
-// Load initial counts on mount
+// Load initial counts on mount (only in tenant context)
 onMounted(() => {
-    fetch('/notifications/counts')
-        .then((response) => response.json())
-        .then((data) => {
-            counts.value = data;
-        })
-        .catch((error) => {
-            console.error('Error loading notification counts:', error);
-        });
+    if (isTenantContext.value) {
+        fetch('/notifications/counts')
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                counts.value = data;
+            })
+            .catch((error) => {
+                console.error('Error loading notification counts:', error);
+                // Set default counts on error
+                counts.value = {
+                    unread: 0,
+                    total: 0,
+                    urgent: 0,
+                };
+            });
+    }
 });
 
 // Close dropdown when clicking outside

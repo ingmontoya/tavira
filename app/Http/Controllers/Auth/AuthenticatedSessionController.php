@@ -20,7 +20,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response
     {
-        $canRegisterAdmin = ! User::role(['superadmin', 'admin_conjunto'])->exists();
+        try {
+            $canRegisterAdmin = ! User::role(['superadmin', 'admin_conjunto'])->exists();
+        } catch (\Exception $e) {
+            // If roles don't exist yet (e.g., in a new tenant), allow admin registration
+            $canRegisterAdmin = true;
+        }
 
         return Inertia::render('auth/Login', [
             'canResetPassword' => Route::has('password.request'),

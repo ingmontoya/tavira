@@ -40,6 +40,13 @@ export function useNavigation() {
     const permissions = computed(() => page.props.auth?.permissions || []);
     const roles = computed(() => page.props.auth?.roles || []);
     const conjuntoConfigured = computed(() => page.props.conjuntoConfigured || { exists: false, isActive: false });
+    
+    // Check if we're in the central dashboard context
+    const isCentralDashboard = computed(() => {
+        const centralPaths = ['/dashboard', '/tenants', '/tenants/create'];
+        const isCentralPath = centralPaths.some(path => window.location.pathname.startsWith(path));
+        return isCentralPath && roles.value.includes('superadmin');
+    });
 
     const hasPermission = (permission: string): boolean => {
         // Ensure permissions array exists and is not empty
@@ -52,10 +59,15 @@ export function useNavigation() {
     // Check if navigation should be enabled (conjunto configured OR accessing allowed routes)
     const isNavigationEnabled = (item: any): boolean => {
         // Always allow dashboard and configuration routes
-        const alwaysAllowedRoutes = ['/dashboard', '/conjunto-config', '/settings', '/profile', '/support', '/docs'];
+        const alwaysAllowedRoutes = ['/dashboard', '/conjunto-config', '/settings', '/profile', '/support', '/docs', '/tenants'];
 
         // Check if the item href matches any always allowed route
         if (item.href && alwaysAllowedRoutes.some((route) => item.href.startsWith(route))) {
+            return true;
+        }
+
+        // For central dashboard context, always enable navigation
+        if (isCentralDashboard.value) {
             return true;
         }
 
@@ -518,6 +530,35 @@ export function useNavigation() {
         },
     ]);
 
+    // Central dashboard navigation items (for superadmin)
+    const centralNavItems = computed((): NavItem[] => [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+            icon: LayoutGrid,
+            visible: true,
+        },
+        {
+            title: 'Gestión de Tenants',
+            icon: Building2,
+            visible: true,
+            items: [
+                {
+                    title: 'Ver Tenants',
+                    href: '/tenants',
+                    icon: Users,
+                    visible: true,
+                },
+                {
+                    title: 'Crear Tenant',
+                    href: '/tenants/create',
+                    icon: Building2,
+                    visible: true,
+                },
+            ],
+        },
+    ]);
+
     const footerNavItems = computed((): NavItem[] => [
         {
             title: 'Soporte',
@@ -558,7 +599,13 @@ export function useNavigation() {
         permissions,
         roles,
         hasPermission,
-        mainNavItems: computed(() => filterVisibleItems(mainNavItems.value)),
+        mainNavItems: computed(() => {
+            // Use central navigation when in central dashboard context
+            if (isCentralDashboard.value) {
+                return filterVisibleItems(centralNavItems.value);
+            }
+            return filterVisibleItems(mainNavItems.value);
+        }),
         footerNavItems: computed(() => filterVisibleItems(footerNavItems.value)),
     };
 }
