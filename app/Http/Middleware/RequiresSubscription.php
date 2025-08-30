@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Models\TenantSubscription;
+use Closure;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
+class RequiresSubscription
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        // Only apply to authenticated users
+        if (!Auth::check()) {
+            return $next($request);
+        }
+
+        $user = Auth::user();
+
+        // Skip for users with specific roles that don't need subscriptions
+        if ($user->hasAnyRole(['superadmin', 'admin_sistema'])) {
+            return $next($request);
+        }
+
+        // Skip for certain routes that should always be accessible
+        $allowedRoutes = [
+            'subscription.*',
+            'logout',
+            'verification.*',
+            'password.*',
+            'profile.*',
+            'wompi.webhook',
+            'user-profile-information.update',
+        ];
+
+        foreach ($allowedRoutes as $route) {
+            if ($request->routeIs($route)) {
+                return $next($request);
+            }
+        }
+
+        // Check if user is an admin without tenant (central admin)
+        if ($user->hasRole('admin') && !$user->tenant_id) {
+            // Check if user has an active subscription
+            $activeSubscription = TenantSubscription::where(function ($query) use ($user) {
+                $query->whereNull('tenant_id') // For new signups
+                      ->orWhere('tenant_id', $user->tenant_id);
+            })
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
+            ->first();
+
+            // If no active subscription, redirect to plan selection
+            if (!$activeSubscription) {
+                return redirect()->route('subscription.plans')
+                    ->with('info', 'Para continuar, debes seleccionar y pagar un plan de suscripción.');
+            }
+
+            // If subscription exists but no tenant, create the tenant
+            if ($activeSubscription && !$user->tenant_id) {
+                $this->createTenantForUser($user, $activeSubscription);
+            }
+        }
+
+        return $next($request);
+    }
+
+    /**
+     * Create a tenant for the user based on their active subscription
+     */
+    private function createTenantForUser($user, $subscription)
+    {
+        try {
+            // Get stored subscription data from payment
+            $paymentData = $subscription->payment_data;
+            
+            if (!$paymentData || !isset($paymentData['conjunto_name'])) {
+                // If no payment data, redirect to complete setup
+                return redirect()->route('subscription.complete-setup')
+                    ->with('info', 'Por favor completa la configuración de tu conjunto.');
+            }
+
+            // Create tenant
+            $tenant = \App\Models\Tenant::create([
+                'name' => $paymentData['conjunto_name'],
+                'data' => [
+                    'address' => $paymentData['conjunto_address'] ?? null,
+                    'city' => $paymentData['city'] ?? 'Bogotá',
+                    'region' => $paymentData['region'] ?? 'Bogotá D.C.',
+                    'plan' => $subscription->plan_name,
+                    'subscription_id' => $subscription->id,
+                ],
+            ]);
+
+            // Update user with tenant association
+            $user->update(['tenant_id' => $tenant->id]);
+
+            // Update subscription with tenant_id
+            $subscription->update(['tenant_id' => $tenant->id]);
+
+            // Log tenant creation
+            \Illuminate\Support\Facades\Log::info('Tenant created for user after subscription payment', [
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id,
+                'subscription_id' => $subscription->id,
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error creating tenant for user', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscription->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+}
