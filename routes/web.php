@@ -12,6 +12,7 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         // Include module route files outside of middleware groups
         require __DIR__ . '/modules/placeholder-modules.php';
+        require __DIR__ . '/modules/subscription-payment.php';
 
         Route::middleware(['auth', 'verified'])->group(function () {
             // Central dashboard for tenant management

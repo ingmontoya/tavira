@@ -240,14 +240,15 @@ class TenantManagementController extends Controller
     {
         $data = $this->getTenantData($tenant);
         if (($data['status'] ?? 'pending') !== 'active') {
-            return back()->with('error', 'Solo puedes acceder a tenants activos');
+            return response()->json(['error' => 'Solo puedes acceder a tenants activos'], 409);
         }
 
         $domain = $tenant->domains->first();
         if (!$domain) {
-            return back()->with('error', 'El tenant no tiene dominio configurado');
+            return response()->json(['error' => 'El tenant no tiene dominio configurado'], 409);
         }
 
+<<<<<<< Updated upstream
         // First, ensure the user exists in the tenant database
         $tenantUserId = $this->ensureUserExistsInTenant($tenant, auth()->id());
 
@@ -262,6 +263,59 @@ class TenantManagementController extends Controller
         }
         $impersonationUrl = $tenantUrl . '/impersonate/' . $token->token;
 
+=======
+        // Check if user exists in tenant context
+        $currentUser = auth()->user();
+        
+        try {
+            // Initialize tenant context to check for user
+            tenancy()->initialize($tenant);
+            
+            // Try to find user in tenant database (by email)
+            $tenantUser = \App\Models\User::where('email', $currentUser->email)->first();
+            
+            if (!$tenantUser) {
+                // Create user in tenant context if not exists
+                $tenantUser = \App\Models\User::create([
+                    'name' => $currentUser->name,
+                    'email' => $currentUser->email,
+                    'email_verified_at' => now(), // Auto-verify since they're already verified in central
+                    'password' => $currentUser->password, // Copy password hash
+                ]);
+                
+                // Assign admin role if user is superadmin in central
+                if ($currentUser->hasRole('superadmin')) {
+                    $tenantUser->assignRole('admin');
+                }
+            } else {
+                // If user exists but not verified, verify them
+                if (!$tenantUser->email_verified_at) {
+                    $tenantUser->update(['email_verified_at' => now()]);
+                }
+                
+                // Ensure admin role for superadmin users
+                if ($currentUser->hasRole('superadmin') && !$tenantUser->hasRole('admin')) {
+                    $tenantUser->assignRole('admin');
+                }
+            }
+            
+            // Generate impersonation token
+            $token = tenancy()->impersonate($tenant, $tenantUser->id, '/dashboard');
+            
+        } catch (\Exception $e) {
+            \Log::error('Impersonation error: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al configurar la impersonación'], 409);
+        } finally {
+            // Always end tenancy context
+            tenancy()->end();
+        }
+
+        // Redirect to tenant's impersonation endpoint
+        $protocol = app()->environment('local') ? 'http://' : 'https://';
+        $port = app()->environment('local') ? ':8000' : '';
+        $impersonationUrl = $protocol . $domain->domain . $port . "/impersonate/{$token->token}";
+
+>>>>>>> Stashed changes
         return Inertia::location($impersonationUrl);
     }
 
