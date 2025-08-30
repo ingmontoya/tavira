@@ -25,17 +25,17 @@ Route::get('notifications', function () {
     return Inertia::render('Notifications/Index');
 })->name('notifications.index')->middleware('can:receive_notifications');
 
-Route::get('pqrs', function () {
-    return Inertia::render('PQRS/Index');
-})->name('pqrs.index')->middleware('can:send_pqrs');
+Route::get('pqrs', [\App\Http\Controllers\PqrsController::class, 'index'])
+    ->name('pqrs.index')
+    ->middleware('can:send_pqrs');
 
-Route::get('messages', function () {
-    return Inertia::render('Messages/Index');
-})->name('messages.index')->middleware('can:send_messages_to_admin');
+Route::get('messages', [\App\Http\Controllers\MessagesController::class, 'index'])
+    ->name('messages.index')
+    ->middleware('can:send_messages_to_admin');
 
-Route::get('provider-proposals', function () {
-    return Inertia::render('ProviderProposals/Index');
-})->name('provider-proposals.index')->middleware('can:review_provider_proposals');
+Route::get('provider-proposals', [\App\Http\Controllers\ProviderProposalsController::class, 'index'])
+    ->name('provider-proposals.index')
+    ->middleware('can:review_provider_proposals');
 
 Route::get('users', function () {
     return Inertia::render('Users/Index');
@@ -46,9 +46,9 @@ Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index
     ->name('documents.index')
     ->middleware(['rate.limit:default', 'can:view_announcements']);
 
-Route::get('minutes', function () {
-    return Inertia::render('Minutes/Index');
-})->name('minutes.index')->middleware(['rate.limit:default', 'can:view_announcements']);
+Route::get('minutes', [\App\Http\Controllers\MinutesController::class, 'index'])
+    ->name('minutes.index')
+    ->middleware(['rate.limit:default', 'can:view_announcements']);
 
 // Security
 Route::get('security', function () {

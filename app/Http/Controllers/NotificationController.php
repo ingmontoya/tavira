@@ -62,10 +62,22 @@ class NotificationController extends Controller
      */
     public function counts()
     {
-        $user = Auth::user();
-        $counts = $this->notificationService->getNotificationCounts($user);
-
-        return response()->json($counts);
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['error' => 'User not authenticated'], 401);
+            }
+            
+            $counts = $this->notificationService->getNotificationCounts($user);
+            return response()->json($counts);
+        } catch (\Exception $e) {
+            // Return default counts if service fails
+            return response()->json([
+                'unread' => 0,
+                'total' => 0,
+                'urgent' => 0,
+            ]);
+        }
     }
 
     /**

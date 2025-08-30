@@ -20,6 +20,22 @@ class EnsureConjuntoConfigured
             return $next($request);
         }
 
+        // Check if we're in a tenant context by checking if tenant() function exists and returns a value
+        $isTenantContext = function_exists('tenant') && tenant() !== null;
+        
+        // If we're NOT in a tenant context (i.e., we're in central domain), skip this middleware
+        if (!$isTenantContext) {
+            // Share default values for central domain
+            Inertia::share([
+                'conjuntoConfigured' => [
+                    'exists' => false,
+                    'isActive' => false,
+                    'name' => null,
+                ],
+            ]);
+            return $next($request);
+        }
+
         $conjunto = ConjuntoConfig::first();
 
         // Share the conjunto configuration status with all Inertia responses
@@ -38,6 +54,7 @@ class EnsureConjuntoConfigured
             'profile.*',
             'settings.*',
             'dashboard', // Allow dashboard access
+            'verification.*', // Allow email verification routes
         ];
 
         foreach ($allowedRoutes as $pattern) {

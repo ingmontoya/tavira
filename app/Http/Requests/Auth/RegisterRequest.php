@@ -34,21 +34,12 @@ class RegisterRequest extends FormRequest
             'password_confirmation' => ['required', 'string'],
         ];
 
-        // Add email validation for admin registration
+        // Add email validation for admin registration or regular registration
         if ($this->routeIs('register.admin') || $this->routeIs('register.admin.store')) {
             $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
         } else {
-            // Token required for regular invitation-based registration
-            $rules['token'] = ['required', 'string', 'exists:invitations,token'];
-
-            // If token is for a mass invitation, email and apartment are required
-            if ($this->has('token')) {
-                $invitation = \App\Models\Invitation::where('token', $this->token)->first();
-                if ($invitation && $invitation->is_mass_invitation) {
-                    $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
-                    $rules['apartment_id'] = ['required', 'exists:apartments,id'];
-                }
-            }
+            // Allow direct registration for now (no invitation system)
+            $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users'];
         }
 
         return $rules;
@@ -65,6 +56,10 @@ class RegisterRequest extends FormRequest
             'name.regex' => 'The name may only contain letters, spaces, hyphens, apostrophes, and periods.',
             'email.unique' => 'This email address is already registered.',
             'password.confirmed' => 'The password confirmation does not match.',
+            'tenant_name.required' => 'The tenant name is required.',
+            'tenant_subdomain.required' => 'The subdomain is required.',
+            'tenant_subdomain.regex' => 'The subdomain may only contain lowercase letters, numbers, and hyphens.',
+            'tenant_subdomain.unique' => 'This subdomain is already taken.',
         ];
     }
 

@@ -36,69 +36,73 @@ const submit = () => {
                         Registro de Administrador
                     </CardTitle>
                     <CardDescription class="text-amber-700">
-                        Como primer administrador, tendrás acceso completo para gestionar el conjunto residencial y crear invitaciones para otros
-                        usuarios.
+                        Como administrador central, podrás crear y gestionar conjuntos residenciales. Después del registro podrás escoger un plan y crear tu primer conjunto.
                     </CardDescription>
                 </CardHeader>
             </Card>
 
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid gap-4">
-                    <div class="grid gap-2">
-                        <Label for="name">Nombre completo</Label>
-                        <Input
-                            id="name"
-                            type="text"
-                            required
-                            autofocus
-                            :tabindex="1"
-                            autocomplete="name"
-                            v-model="form.name"
-                            placeholder="Tu nombre completo"
-                        />
-                        <InputError :message="form.errors.name" />
-                    </div>
+                    <!-- Administrator Information -->
+                    <div class="space-y-4 rounded-lg border border-gray-200 p-4">
+                        <h3 class="font-medium text-gray-900">Información del Administrador Central</h3>
+                        
+                        <div class="grid gap-2">
+                            <Label for="name">Nombre completo</Label>
+                            <Input
+                                id="name"
+                                type="text"
+                                required
+                                autofocus
+                                :tabindex="1"
+                                autocomplete="name"
+                                v-model="form.name"
+                                placeholder="Tu nombre completo"
+                            />
+                            <InputError :message="form.errors.name" />
+                        </div>
 
-                    <div class="grid gap-2">
-                        <Label for="email">Correo electrónico</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            required
-                            :tabindex="2"
-                            autocomplete="email"
-                            v-model="form.email"
-                            placeholder="admin@conjunto.com"
-                        />
-                        <InputError :message="form.errors.email" />
-                    </div>
+                        <div class="grid gap-2">
+                            <Label for="email">Correo electrónico</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                required
+                                :tabindex="2"
+                                autocomplete="email"
+                                v-model="form.email"
+                                placeholder="admin@ejemplo.com"
+                            />
+                            <InputError :message="form.errors.email" />
+                        </div>
 
-                    <div class="grid gap-2">
-                        <Label for="password">Contraseña</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            :tabindex="3"
-                            autocomplete="new-password"
-                            v-model="form.password"
-                            placeholder="Crea una contraseña segura"
-                        />
-                        <InputError :message="form.errors.password" />
-                    </div>
+                        <div class="grid gap-2">
+                            <Label for="password">Contraseña</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                required
+                                :tabindex="3"
+                                autocomplete="new-password"
+                                v-model="form.password"
+                                placeholder="Crea una contraseña segura"
+                            />
+                            <InputError :message="form.errors.password" />
+                        </div>
 
-                    <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirmar contraseña</Label>
-                        <Input
-                            id="password_confirmation"
-                            type="password"
-                            required
-                            :tabindex="4"
-                            autocomplete="new-password"
-                            v-model="form.password_confirmation"
-                            placeholder="Confirma tu contraseña"
-                        />
-                        <InputError :message="form.errors.password_confirmation" />
+                        <div class="grid gap-2">
+                            <Label for="password_confirmation">Confirmar contraseña</Label>
+                            <Input
+                                id="password_confirmation"
+                                type="password"
+                                required
+                                :tabindex="4"
+                                autocomplete="new-password"
+                                v-model="form.password_confirmation"
+                                placeholder="Confirma tu contraseña"
+                            />
+                            <InputError :message="form.errors.password_confirmation" />
+                        </div>
                     </div>
 
                     <Button
@@ -108,7 +112,7 @@ const submit = () => {
                         :disabled="form.processing"
                     >
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                        Crear cuenta de administrador
+                        Crear Cuenta de Administrador Central
                     </Button>
                 </div>
 
