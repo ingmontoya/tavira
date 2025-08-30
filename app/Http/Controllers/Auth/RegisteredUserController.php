@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Models\Tenant;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -18,10 +19,10 @@ class RegisteredUserController extends Controller
     /**
      * Show the admin registration page.
      */
-    public function createAdmin(): Response
+    public function createAdmin(): Response|RedirectResponse
     {
         // Check if there are any admin users already registered
-        $hasAdmins = User::role(['superadmin', 'admin_conjunto'])->exists();
+        $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
 
         if ($hasAdmins) {
             return redirect()->route('login')
@@ -37,7 +38,7 @@ class RegisteredUserController extends Controller
     public function create(): Response|RedirectResponse
     {
         $token = request('token');
-        $hasAdmins = User::role(['superadmin', 'admin_conjunto'])->exists();
+        $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
 
         // If no token provided
         if (! $token) {
@@ -47,11 +48,9 @@ class RegisteredUserController extends Controller
                     ->with('info', 'Registra la cuenta de administrador para comenzar.');
             }
 
-            // If admins exist, allow free registration
-            return Inertia::render('auth/Register', [
-                'invitation' => null,
-                'apartment' => null,
-            ]);
+            // If admins exist, redirect to login (no free registration)
+            return redirect()->route('login')
+                ->with('info', 'El registro está disponible solo mediante invitación. Por favor inicia sesión si ya tienes una cuenta.');
         }
 
         // If token provided, validate invitation
@@ -73,7 +72,7 @@ class RegisteredUserController extends Controller
                 ->orderBy('floor')
                 ->orderBy('number')
                 ->get()
-                ->map(fn ($apartment) => [
+                ->map(fn($apartment) => [
                     'id' => $apartment->id,
                     'number' => $apartment->number,
                     'tower' => $apartment->tower,
@@ -102,7 +101,7 @@ class RegisteredUserController extends Controller
     public function storeAdmin(RegisterRequest $request): RedirectResponse
     {
         // Check if there are any admin users already registered
-        $hasAdmins = User::role(['superadmin', 'admin_conjunto'])->exists();
+        $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
 
         if ($hasAdmins) {
             return redirect()->route('login')
@@ -111,19 +110,23 @@ class RegisteredUserController extends Controller
 
         $validated = $request->validated();
 
+        // Create the central admin user (without tenant association)
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            // No tenant_id - this is a central admin account
         ]);
 
-        $user->assignRole('admin_conjunto');
+        // Assign central admin role
+        $user->assignRole('admin');
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return to_route('verification.notice');
+        return redirect()->route('verification.notice')
+            ->with('success', 'Cuenta de administrador central creada exitosamente. Después de verificar tu correo podrás crear tu conjunto y escoger un plan.');
     }
 
     /**
@@ -188,22 +191,9 @@ class RegisteredUserController extends Controller
                 ]);
             }
         } else {
-            // Handle free registration (when admins exist)
-            $hasAdmins = User::role(['superadmin', 'admin_conjunto'])->exists();
-
-            if (! $hasAdmins) {
-                return redirect()->route('register.admin')
-                    ->with('error', 'Debe registrar un administrador primero.');
-            }
-
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-            ]);
-
-            // Assign default role for free registration
-            $user->assignRole('residente');
+            // No invitation token - this should not happen due to redirect in create method
+            return redirect()->route('login')
+                ->with('error', 'Registro no autorizado. El registro está disponible solo mediante invitación.');
         }
 
         event(new Registered($user));

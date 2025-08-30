@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Http\Controllers\TenantImpersonationController;
+use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+
+/*
+|--------------------------------------------------------------------------
+| Tenant Routes
+|--------------------------------------------------------------------------
+|
+| Here you can register the tenant routes for your application.
+| These routes are loaded by the TenantRouteServiceProvider.
+|
+| Feel free to customize them however you want. Good luck!
+|
+*/
+
+Route::middleware([
+    'web',
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
+    });
+
+    // Official tenancy impersonation route
+    Route::get('/impersonate/{token}', function ($token) {
+        return \Stancl\Tenancy\Features\UserImpersonation::makeResponse($token);
+    });
+
+    // Authentication routes for tenants
+    require __DIR__ . '/auth.php';
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        
+        // Tenant-specific module route files
+        require __DIR__ . '/modules/dashboard.php';
+        require __DIR__ . '/modules/reports.php';
+        require __DIR__ . '/modules/residents.php';
+        require __DIR__ . '/modules/conjunto-config.php';
+        require __DIR__ . '/modules/apartments.php';
+        require __DIR__ . '/modules/finance.php';
+        require __DIR__ . '/modules/accounting.php';
+        require __DIR__ . '/modules/communication.php';
+        require __DIR__ . '/modules/visits.php';
+        require __DIR__ . '/modules/users.php';
+        require __DIR__ . '/modules/maintenance.php';
+        require __DIR__ . '/modules/reservations.php';
+        require __DIR__ . '/modules/notifications.php';
+        require __DIR__ . '/modules/support.php';
+    });
+
+    // Settings routes for tenants
+    require __DIR__ . '/settings.php';
+});

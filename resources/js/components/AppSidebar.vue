@@ -11,7 +11,7 @@ const { mainNavItems, footerNavItems } = useNavigation();
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset" class="relative overflow-hidden">
+    <Sidebar collapsible="icon" variant="inset">
         <SidebarHeader class="relative z-10">
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -30,7 +30,7 @@ const { mainNavItems, footerNavItems } = useNavigation();
             </div>
         </SidebarContent>
 
-        <SidebarFooter class="relative z-10">
+        <SidebarFooter class="relative z-10 shrink-0">
             <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>

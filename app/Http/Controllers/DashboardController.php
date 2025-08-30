@@ -125,7 +125,7 @@ class DashboardController extends Controller
 
     private function getResidentsByTower()
     {
-        // Intentar obtener datos reales primero
+        // Obtener datos reales únicamente
         $realData = DB::table('apartments')
             ->join('residents', 'apartments.id', '=', 'residents.apartment_id')
             ->join('conjunto_configs', 'apartments.conjunto_config_id', '=', 'conjunto_configs.id')
@@ -134,75 +134,44 @@ class DashboardController extends Controller
             ->groupBy('apartments.tower', 'conjunto_configs.name')
             ->get();
 
-        if ($realData->count() > 0) {
-            return $realData->map(function ($item, $index) {
-                return [
-                    'name' => "Torre {$item->tower} - {$item->conjunto_name}",
-                    'residents' => $item->residents,
-                    'color' => $this->generateColor($index),
-                ];
-            })->values();
-        }
-
-        // Fallback a datos mock si no hay datos reales
-        $conjunto = ConjuntoConfig::first(); // Obtener el conjunto único
-        $conjuntoName = $conjunto ? $conjunto->name : 'Vista Hermosa';
-        $towerNames = $conjunto && $conjunto->tower_names ? $conjunto->tower_names : ['A', 'B', 'C'];
-        // dd($conjunto, $conjuntoName, $towerNames);
-
-        $towers = collect();
-        $colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
-        $residents = [89, 76, 65, 82, 94, 71]; // Mock residents data
-
-        foreach ($towerNames as $index => $towerName) {
-            $towers->push([
-                'name' => "Torre {$towerName} - {$conjuntoName}",
-                'residents' => $residents[$index] ?? 50 + ($index * 10), // Fallback calculation
-                'color' => $colors[$index] ?? '#6b7280', // Default gray color
-            ]);
-        }
-
-        return $towers;
+        return $realData->map(function ($item, $index) {
+            return [
+                'name' => "Torre {$item->tower} - {$item->conjunto_name}",
+                'residents' => $item->residents,
+                'color' => $this->generateColor($index),
+            ];
+        })->values();
     }
 
     private function getOccupancyStatus()
     {
-        // Intentar obtener datos reales primero
+        // Obtener datos reales únicamente
         $realData = DB::table('apartments')
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->get();
 
-        if ($realData->count() > 0) {
-            $statusColors = [
-                'Occupied' => '#10b981',
-                'Available' => '#3b82f6',
-                'Maintenance' => '#f59e0b',
-                'Reserved' => '#8b5cf6',
+        $statusColors = [
+            'Occupied' => '#10b981',
+            'Available' => '#3b82f6',
+            'Maintenance' => '#f59e0b',
+            'Reserved' => '#8b5cf6',
+        ];
+
+        $statusLabels = [
+            'Occupied' => 'Ocupados',
+            'Available' => 'Disponibles',
+            'Maintenance' => 'Mantenimiento',
+            'Reserved' => 'Reservados',
+        ];
+
+        return $realData->map(function ($item) use ($statusColors, $statusLabels) {
+            return [
+                'status' => $statusLabels[$item->status] ?? $item->status,
+                'count' => $item->count,
+                'color' => $statusColors[$item->status] ?? '#6b7280',
             ];
-
-            $statusLabels = [
-                'Occupied' => 'Ocupados',
-                'Available' => 'Disponibles',
-                'Maintenance' => 'Mantenimiento',
-                'Reserved' => 'Reservados',
-            ];
-
-            return $realData->map(function ($item) use ($statusColors, $statusLabels) {
-                return [
-                    'status' => $statusLabels[$item->status] ?? $item->status,
-                    'count' => $item->count,
-                    'color' => $statusColors[$item->status] ?? '#6b7280',
-                ];
-            })->values();
-        }
-
-        // Fallback a datos mock
-        return collect([
-            ['status' => 'Ocupados', 'count' => 145, 'color' => '#10b981'],
-            ['status' => 'Disponibles', 'count' => 28, 'color' => '#3b82f6'],
-            ['status' => 'Mantenimiento', 'count' => 9, 'color' => '#f59e0b'],
-        ]);
+        })->values();
     }
 
     private function getRecentActivity()
@@ -598,18 +567,8 @@ class DashboardController extends Controller
             });
         }
 
-        // Datos estimados basados en el número de apartamentos (más realista)
-        $totalApartments = Apartment::count();
-        $baseAmount = $totalApartments * 8000; // Estimado por apartamento
-
-        return collect([
-            ['category' => 'Servicios Públicos', 'amount' => $baseAmount * 0.35, 'percentage' => 35, 'color' => '#3b82f6'],
-            ['category' => 'Mantenimiento', 'amount' => $baseAmount * 0.27, 'percentage' => 27, 'color' => '#ef4444'],
-            ['category' => 'Seguridad', 'amount' => $baseAmount * 0.17, 'percentage' => 17, 'color' => '#10b981'],
-            ['category' => 'Aseo', 'amount' => $baseAmount * 0.11, 'percentage' => 11, 'color' => '#f59e0b'],
-            ['category' => 'Administración', 'amount' => $baseAmount * 0.06, 'percentage' => 6, 'color' => '#8b5cf6'],
-            ['category' => 'Jardinería', 'amount' => $baseAmount * 0.04, 'percentage' => 4, 'color' => '#06b6d4'],
-        ]);
+        // Sin datos contables, retornar colección vacía
+        return collect();
     }
 
     private function getPaymentTrend(): \Illuminate\Support\Collection

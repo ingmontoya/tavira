@@ -1,6 +1,8 @@
 <template>
-    <AppLayout>
-        <AppContent class="space-y-6 p-6" data-tour="dashboard">
+    <Head title="Dashboard" />
+
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4" data-tour="dashboard">
             <!-- Setup Banner -->
             <ConjuntoSetupBanner />
 
@@ -367,7 +369,7 @@
                     </Card>
                 </div>
             </Card>
-        </AppContent>
+        </div>
 
         <!-- Virtual Tour Component -->
         <VirtualTour ref="virtualTourRef" :steps="tourSteps" @complete="onTourComplete" @close="onTourClose" />
@@ -375,7 +377,6 @@
 </template>
 
 <script setup lang="ts">
-import AppContent from '@/components/AppContent.vue';
 import ConjuntoSetupBanner from '@/components/ConjuntoSetupBanner.vue';
 import Icon from '@/components/Icon.vue';
 import { Card } from '@/components/ui/card';
@@ -383,7 +384,7 @@ import VirtualTour from '@/components/VirtualTour.vue';
 import { useFlow1Tour } from '@/composables/useFlow1Tour';
 import { useTourState } from '@/composables/useTourState';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref } from 'vue';
 
 const props = defineProps({
@@ -422,6 +423,13 @@ const selectedMonth = ref(props.selectedMonth);
 const virtualTourRef = ref(null);
 const { tourSteps } = useFlow1Tour();
 const { hasSavedTour, savedTourStep, checkSavedTour } = useTourState();
+
+const breadcrumbs = [
+    {
+        title: 'Escritorio',
+        href: '/dashboard',
+    },
+];
 
 const startTour = () => {
     if (virtualTourRef.value) {
