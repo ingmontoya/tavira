@@ -213,11 +213,16 @@ class SubscriptionPaymentController extends Controller
                     ]);
 
                     if ($paymentResult['success']) {
-                        return Inertia::render('Subscription/Success', [
-                            'transaction' => $transaction,
-                            'subscription' => $paymentResult['subscription'],
-                            'tenant' => $paymentResult['tenant'],
+                        // Payment was processed successfully, redirect to dashboard
+                        Log::info('Payment successful, redirecting to dashboard', [
+                            'subscription_id' => $paymentResult['subscription']->id ?? null,
+                            'user_id' => auth()->id()
                         ]);
+                        
+                        return redirect()->route('dashboard')
+                            ->with('success', 'Pago procesado exitosamente. ¡Bienvenido a Tavira!')
+                            ->with('subscription', $paymentResult['subscription'])
+                            ->with('new_subscription', true);
                     } else {
                         Log::error('Payment processing failed', [
                             'error' => $paymentResult['error'] ?? 'Unknown error',
@@ -228,9 +233,41 @@ class SubscriptionPaymentController extends Controller
             }
         }
 
+        // If we get here, either no reference/id was provided or transaction wasn't approved
+        // Check if user now has an active subscription (might have been processed via webhook)
+        $user = auth()->user();
+        if ($user) {
+            $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->orWhere(function ($q) use ($user) {
+                          $q->whereNull('tenant_id')->whereNull('user_id'); // New signups
+                      });
+            })
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
+            ->first();
+
+            if ($activeSubscription) {
+                Log::info('User has active subscription after payment, redirecting to dashboard', [
+                    'user_id' => $user->id,
+                    'subscription_id' => $activeSubscription->id
+                ]);
+                
+                return redirect()->route('dashboard')
+                    ->with('success', '¡Pago procesado exitosamente! Bienvenido a Tavira.')
+                    ->with('new_subscription', true);
+            }
+        }
+
+        // Fallback: show success page with verification message
         return Inertia::render('Subscription/Success', [
             'transaction' => null,
             'message' => 'Verificando estado del pago...',
+            'reference' => $request->get('reference'),
+            'transaction_id' => $request->get('id'),
         ]);
     }
 

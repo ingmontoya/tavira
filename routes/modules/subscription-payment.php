@@ -21,17 +21,6 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     // Get financial institutions for PSE
     Route::get('/financial-institutions', [SubscriptionPaymentController::class, 'getFinancialInstitutions'])->name('financial-institutions');
     
-    // Test Wompi connection (temporary for debugging)
-    Route::get('/test-wompi', [SubscriptionPaymentController::class, 'testWompiConnection'])->name('test-wompi');
-    
-    // Check subscription status (temporary for debugging)
-    Route::get('/check-subscription', [SubscriptionPaymentController::class, 'checkSubscriptionStatus'])->name('check-subscription');
-    
-    // Manual process payment (temporary for debugging)
-    Route::get('/manual-process-payment', [SubscriptionPaymentController::class, 'manualProcessPayment'])->name('manual-process-payment');
-    
-    // Test success flow with real payment data (temporary for debugging)
-    Route::get('/test-success-flow', [SubscriptionPaymentController::class, 'testSuccessFlow'])->name('test-success-flow');
 });
 
 // Wompi webhook - must be public and not have CSRF protection
