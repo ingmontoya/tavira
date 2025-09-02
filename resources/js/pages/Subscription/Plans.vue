@@ -1,13 +1,13 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
     <!-- Top Navigation for Authenticated Users -->
-    <div v-if="$page.props.auth.user" class="bg-white shadow-sm border-b">
+    <div v-if="page.props.auth?.user" class="bg-white shadow-sm border-b">
       <div class="container mx-auto px-4 py-4 flex justify-between items-center">
         <div class="flex items-center">
           <h2 class="text-lg font-semibold text-gray-900">Configuración de Suscripción</h2>
         </div>
         <div class="flex items-center space-x-4">
-          <span class="text-sm text-gray-600">{{ $page.props.auth.user.email }}</span>
+          <span class="text-sm text-gray-600">{{ page.props.auth?.user?.email }}</span>
           <form method="POST" action="/logout" class="inline">
             <input type="hidden" name="_token" :value="$page.props.csrf_token">
             <button type="submit" class="text-sm text-gray-500 hover:text-gray-700">
@@ -24,13 +24,13 @@
         <h1 class="text-4xl font-bold text-gray-900 mb-4">
           Planes de Suscripción Tavira
         </h1>
-        <div v-if="$page.props.auth.user" class="bg-blue-50 rounded-lg p-6 mb-6 max-w-3xl mx-auto">
+        <div v-if="page.props.auth?.user" class="bg-blue-50 rounded-lg p-6 mb-6 max-w-3xl mx-auto">
           <div class="flex items-center mb-4">
             <svg class="h-8 w-8 text-blue-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <h2 class="text-xl font-semibold text-blue-900">
-              ¡Bienvenido {{ $page.props.auth.user.name }}!
+              ¡Bienvenido {{ page.props.auth?.user?.name }}!
             </h2>
           </div>
           <p class="text-blue-800">
@@ -169,7 +169,7 @@
       :plan="selectedPlan"
       :billing-type="billingType"
       :price="selectedPlan ? getPrice(selectedPlan) : 0"
-      :user="$page.props.auth.user"
+      :user="page.props.auth?.user"
       @close="showModal = false"
       @submit="handleSubscription"
     />
@@ -180,6 +180,7 @@
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import SubscriptionModal from './SubscriptionModal.vue';
+import type { AppPageProps } from '../../types';
 
 interface Plan {
   id: string;
@@ -193,6 +194,8 @@ interface Plan {
 const props = defineProps<{
   plans: Plan[];
 }>();
+
+const page = usePage<AppPageProps>();
 
 const billingType = ref<'mensual' | 'anual'>('mensual');
 const showModal = ref(false);
