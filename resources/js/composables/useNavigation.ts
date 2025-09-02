@@ -43,9 +43,13 @@ export function useNavigation() {
     
     // Check if we're in the central dashboard context
     const isCentralDashboard = computed(() => {
-        const centralPaths = ['/dashboard', '/tenants', '/tenants/create'];
-        const isCentralPath = centralPaths.some(path => window.location.pathname.startsWith(path));
-        return isCentralPath && roles.value.includes('superadmin');
+        // Check if we're on a central domain (not a subdomain tenant)
+        const currentHost = window.location.hostname;
+        const centralDomains = ['127.0.0.1', 'localhost', 'tavira.com.co'];
+        const isOnCentralDomain = centralDomains.includes(currentHost);
+        
+        // Must be superadmin and on central domain
+        return isOnCentralDomain && roles.value.includes('superadmin');
     });
 
     const hasPermission = (permission: string): boolean => {
