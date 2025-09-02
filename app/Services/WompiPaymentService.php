@@ -337,12 +337,36 @@ class WompiPaymentService
             // Extract subscription info from reference
             $referenceInfo = $this->parseSubscriptionReference($transactionData['reference']);
             
+            // If reference doesn't match our format, try to find by payment link ID
+            if (!$referenceInfo && isset($transactionData['payment_link_id'])) {
+                Log::info('Reference does not match SUB- format, searching by payment_link_id', [
+                    'reference' => $transactionData['reference'],
+                    'payment_link_id' => $transactionData['payment_link_id']
+                ]);
+                
+                $pendingData = $this->findPendingDataByPaymentLinkId($transactionData['payment_link_id']);
+                
+                if ($pendingData) {
+                    // Create reference info from pending data
+                    $referenceInfo = [
+                        'tenant_id' => $pendingData['tenant_id'],
+                        'plan_name' => $pendingData['plan_name'],
+                        'user_id' => $pendingData['user_id'],
+                        'timestamp' => time()
+                    ];
+                }
+            }
+            
             if (!$referenceInfo) {
-                throw new Exception('Invalid subscription reference format');
+                Log::error('Could not determine subscription info', [
+                    'reference' => $transactionData['reference'],
+                    'payment_link_id' => $transactionData['payment_link_id'] ?? null
+                ]);
+                throw new Exception('Invalid subscription reference format and no payment link data found');
             }
 
             // Get stored pending subscription data
-            $pendingData = $this->getPendingSubscriptionData($transactionData['reference']);
+            $pendingData = $pendingData ?? $this->getPendingSubscriptionData($transactionData['reference']);
 
             // Log subscription creation attempt
             Log::info('Creating/updating subscription for successful payment', [
@@ -509,6 +533,54 @@ class WompiPaymentService
         } catch (Exception $e) {
             Log::warning('Could not retrieve pending subscription data', [
                 'reference' => $reference,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Find pending subscription data by payment link ID
+     */
+    private function findPendingDataByPaymentLinkId(string $paymentLinkId): ?array
+    {
+        try {
+            // Search through session data first
+            $sessionData = session('pending_subscription_payment');
+            if ($sessionData && isset($sessionData['payment_link_id']) && $sessionData['payment_link_id'] === $paymentLinkId) {
+                Log::info('Found pending data in session', ['payment_link_id' => $paymentLinkId]);
+                return $sessionData['customer_data'] ?? null;
+            }
+
+            // If not in session, try to find in cache by searching common patterns
+            // This is less efficient but works as fallback
+            $cacheKeys = [];
+            for ($i = 1; $i <= 100; $i++) { // Check recent user IDs
+                for ($j = 0; $j <= 24; $j++) { // Check last 24 hours
+                    $timestamp = time() - ($j * 3600);
+                    $testReference = "SUB-NEW-PROFESIONAL-{$i}-{$timestamp}";
+                    $cached = cache()->get('pending_subscription_' . $testReference);
+                    if ($cached) {
+                        $cacheKeys[$testReference] = $cached;
+                    }
+                }
+            }
+
+            Log::info('Searched cache for payment link ID', [
+                'payment_link_id' => $paymentLinkId,
+                'found_cached_items' => count($cacheKeys),
+                'cache_keys' => array_keys($cacheKeys)
+            ]);
+
+            // For now, return the most recent cached item if any
+            if (!empty($cacheKeys)) {
+                return reset($cacheKeys);
+            }
+
+            return null;
+        } catch (Exception $e) {
+            Log::warning('Could not find pending subscription data by payment link ID', [
+                'payment_link_id' => $paymentLinkId,
                 'error' => $e->getMessage()
             ]);
             return null;

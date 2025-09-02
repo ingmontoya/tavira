@@ -29,6 +29,9 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     
     // Manual process payment (temporary for debugging)
     Route::get('/manual-process-payment', [SubscriptionPaymentController::class, 'manualProcessPayment'])->name('manual-process-payment');
+    
+    // Test success flow with real payment data (temporary for debugging)
+    Route::get('/test-success-flow', [SubscriptionPaymentController::class, 'testSuccessFlow'])->name('test-success-flow');
 });
 
 // Wompi webhook - must be public and not have CSRF protection
