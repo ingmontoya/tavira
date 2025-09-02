@@ -27,5 +27,5 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
 
 // Wompi webhook - must be public and not have CSRF protection
 Route::post('/wompi/webhook', [SubscriptionPaymentController::class, 'webhook'])
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class])
     ->name('wompi.webhook');
