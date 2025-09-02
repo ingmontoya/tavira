@@ -26,6 +26,9 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     
     // Check subscription status (temporary for debugging)
     Route::get('/check-subscription', [SubscriptionPaymentController::class, 'checkSubscriptionStatus'])->name('check-subscription');
+    
+    // Manual process payment (temporary for debugging)
+    Route::get('/manual-process-payment', [SubscriptionPaymentController::class, 'manualProcessPayment'])->name('manual-process-payment');
 });
 
 // Wompi webhook - must be public and not have CSRF protection
