@@ -8,17 +8,13 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Stancl\Tenancy\Features\UserImpersonation;
-use Stancl\Tenancy\Facades\Tenancy;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 class TenantManagementController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('role:superadmin')->except(['loginToTenant', 'create', 'store', 'index', 'show', 'edit', 'update']);
-        $this->middleware('role:admin|superadmin')->only(['loginToTenant', 'create', 'store', 'index', 'show', 'edit', 'update']);
+        $this->middleware('role:superadmin')->except(['create', 'store', 'index', 'show', 'edit', 'update']);
+        $this->middleware('role:admin|superadmin')->only(['create', 'store', 'index', 'show', 'edit', 'update']);
     }
 
     private function getTenantData(Tenant $tenant): array
@@ -31,14 +27,14 @@ class TenantManagementController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         $tenants = Tenant::query()
             ->when(!$user->hasRole('superadmin'), function ($query) use ($user) {
                 // Filter tenants created by this user or where user is the admin
                 $query->where(function ($subQuery) use ($user) {
                     $subQuery->whereJsonContains('data->created_by', $user->id)
-                             ->orWhereJsonContains('data->created_by_email', $user->email)
-                             ->orWhereJsonContains('data->email', $user->email);
+                        ->orWhereJsonContains('data->created_by_email', $user->email)
+                        ->orWhereJsonContains('data->email', $user->email);
                 });
             })
             ->when($request->search, function ($query, $search) {
@@ -75,19 +71,19 @@ class TenantManagementController extends Controller
     public function show(Tenant $tenant)
     {
         $user = auth()->user();
-        
+
         // Ensure user can only access their own tenants (unless superadmin)
         if (!$user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
-            $canAccess = ($data['created_by'] ?? null) == $user->id || 
-                        ($data['created_by_email'] ?? null) == $user->email ||
-                        ($data['email'] ?? null) == $user->email;
-            
+            $canAccess = ($data['created_by'] ?? null) == $user->id ||
+                ($data['created_by_email'] ?? null) == $user->email ||
+                ($data['email'] ?? null) == $user->email;
+
             if (!$canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
             }
         }
-        
+
         $data = $this->getTenantData($tenant);
         $tenantData = [
             'id' => $tenant->id,
@@ -162,19 +158,19 @@ class TenantManagementController extends Controller
     public function edit(Tenant $tenant)
     {
         $user = auth()->user();
-        
+
         // Ensure user can only edit their own tenants (unless superadmin)
         if (!$user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
-            $canAccess = ($data['created_by'] ?? null) == $user->id || 
-                        ($data['created_by_email'] ?? null) == $user->email ||
-                        ($data['email'] ?? null) == $user->email;
-            
+            $canAccess = ($data['created_by'] ?? null) == $user->id ||
+                ($data['created_by_email'] ?? null) == $user->email ||
+                ($data['email'] ?? null) == $user->email;
+
             if (!$canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
             }
         }
-        
+
         $tenantData = [
             'id' => $tenant->id,
             'name' => $tenant->data['name'] ?? '',
@@ -197,19 +193,19 @@ class TenantManagementController extends Controller
     public function update(Request $request, Tenant $tenant)
     {
         $user = auth()->user();
-        
+
         // Ensure user can only update their own tenants (unless superadmin)
         if (!$user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
-            $canAccess = ($data['created_by'] ?? null) == $user->id || 
-                        ($data['created_by_email'] ?? null) == $user->email ||
-                        ($data['email'] ?? null) == $user->email;
-            
+            $canAccess = ($data['created_by'] ?? null) == $user->id ||
+                ($data['created_by_email'] ?? null) == $user->email ||
+                ($data['email'] ?? null) == $user->email;
+
             if (!$canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
             }
         }
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:tenants,data->email,' . $tenant->id,
@@ -248,75 +244,13 @@ class TenantManagementController extends Controller
             return response()->json(['error' => 'El tenant no tiene dominio configurado'], 409);
         }
 
-<<<<<<< Updated upstream
-        // First, ensure the user exists in the tenant database
-        $tenantUserId = $this->ensureUserExistsInTenant($tenant, auth()->id());
-
-        // Use official tenancy impersonation with the tenant user ID
-        $redirectUrl = '/dashboard';
-        $token = tenancy()->impersonate($tenant, $tenantUserId, $redirectUrl);
-
-        // Build the tenant URL with port for local environment
         $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
         if (app()->environment('local')) {
             $tenantUrl .= ':8000';
         }
-        $impersonationUrl = $tenantUrl . '/impersonate/' . $token->token;
+        $loginUrl = $tenantUrl . '/login';
 
-=======
-        // Check if user exists in tenant context
-        $currentUser = auth()->user();
-        
-        try {
-            // Initialize tenant context to check for user
-            tenancy()->initialize($tenant);
-            
-            // Try to find user in tenant database (by email)
-            $tenantUser = \App\Models\User::where('email', $currentUser->email)->first();
-            
-            if (!$tenantUser) {
-                // Create user in tenant context if not exists
-                $tenantUser = \App\Models\User::create([
-                    'name' => $currentUser->name,
-                    'email' => $currentUser->email,
-                    'email_verified_at' => now(), // Auto-verify since they're already verified in central
-                    'password' => $currentUser->password, // Copy password hash
-                ]);
-                
-                // Assign admin role if user is superadmin in central
-                if ($currentUser->hasRole('superadmin')) {
-                    $tenantUser->assignRole('admin');
-                }
-            } else {
-                // If user exists but not verified, verify them
-                if (!$tenantUser->email_verified_at) {
-                    $tenantUser->update(['email_verified_at' => now()]);
-                }
-                
-                // Ensure admin role for superadmin users
-                if ($currentUser->hasRole('superadmin') && !$tenantUser->hasRole('admin')) {
-                    $tenantUser->assignRole('admin');
-                }
-            }
-            
-            // Generate impersonation token
-            $token = tenancy()->impersonate($tenant, $tenantUser->id, '/dashboard');
-            
-        } catch (\Exception $e) {
-            \Log::error('Impersonation error: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al configurar la impersonación'], 409);
-        } finally {
-            // Always end tenancy context
-            tenancy()->end();
-        }
-
-        // Redirect to tenant's impersonation endpoint
-        $protocol = app()->environment('local') ? 'http://' : 'https://';
-        $port = app()->environment('local') ? ':8000' : '';
-        $impersonationUrl = $protocol . $domain->domain . $port . "/impersonate/{$token->token}";
-
->>>>>>> Stashed changes
-        return Inertia::location($impersonationUrl);
+        return Inertia::location($loginUrl);
     }
 
     public function suspend(Tenant $tenant)
@@ -343,162 +277,5 @@ class TenantManagementController extends Controller
         return back()->with('success', 'Tenant activado exitosamente');
     }
 
-    private function ensureUserExistsInTenant(Tenant $tenant, int $centralUserId): int
-    {
-        // Get the central user data BEFORE switching to tenant context
-        $centralUser = DB::table('users')->find($centralUserId);
-        
-        if (!$centralUser) {
-            throw new \Exception('Central user not found');
-        }
 
-        // Switch to tenant context
-        Tenancy::initialize($tenant);
-
-        try {
-            // Ensure roles exist in tenant database
-            $this->ensureSuperAdminRoleExists();
-
-            // Check if user already exists in tenant
-            $tenantUser = User::where('email', $centralUser->email)->first();
-            
-            if (!$tenantUser) {
-                // Create the user in the tenant database
-                $tenantUser = User::create([
-                    'name' => $centralUser->name . ' (Super Admin)',
-                    'email' => $centralUser->email,
-                    'password' => $centralUser->password, // Same password hash
-                    'email_verified_at' => now(),
-                ]);
-            } else {
-                // Always update existing user to ensure email is verified
-                $tenantUser->update([
-                    'email_verified_at' => now(), // Force verification regardless of current state
-                ]);
-            }
-
-            // Ensure user has superadmin role
-            if (!$tenantUser->hasRole('superadmin')) {
-                $tenantUser->assignRole('superadmin');
-            }
-
-            $tenantUserId = $tenantUser->id;
-        } finally {
-            // Always end tenancy context
-            Tenancy::end();
-        }
-
-        return $tenantUserId;
-    }
-
-    private function ensureSuperAdminRoleExists(): void
-    {
-        // Check if superadmin role exists in this tenant database
-        if (!Role::where('name', 'superadmin')->exists()) {
-            // Create superadmin role
-            $superadmin = Role::create(['name' => 'superadmin', 'guard_name' => 'web']);
-
-            // Create all permissions for full tenant management
-            $permissions = [
-                'access_dashboard',
-                'view_dashboard',
-                'manage_users',
-                'create_users',
-                'view_users',
-                'edit_users',
-                'delete_users',
-                'manage_settings',
-                'manage_apartments',
-                'view_apartments',
-                'manage_residents',
-                'view_residents',
-                'manage_finance',
-                'view_payments',
-                'view_account_statement',
-                'view_expenses',
-                'manage_expense_categories',
-                'approve_expenses',
-                'view_accounting',
-                'view_reservations',
-                'manage_reservable_assets',
-                'view_correspondence',
-                'view_announcements',
-                'create_announcements',
-                'edit_announcements',
-                'invite_visitors',
-                'manage_visitors',
-                'receive_notifications',
-                'send_pqrs',
-                'send_messages_to_admin',
-                'view_admin_email',
-                'view_council_email',
-                'manage_email_templates',
-                'view_reports',
-                'view_access_logs',
-                'edit_conjunto_config',
-                'view_conjunto_config',
-                'manage_invitations',
-                'view_maintenance_requests',
-                'view_maintenance_categories',
-                'view_maintenance_staff',
-                'review_provider_proposals',
-            ];
-
-            foreach ($permissions as $permissionName) {
-                if (!Permission::where('name', $permissionName)->exists()) {
-                    Permission::create(['name' => $permissionName, 'guard_name' => 'web']);
-                }
-            }
-
-            // Assign all permissions to superadmin
-            $superadmin->givePermissionTo($permissions);
-        }
-    }
-
-    /**
-     * Login to tenant (for admin users to access their own tenants)
-     */
-    public function loginToTenant(Tenant $tenant)
-    {
-        $user = auth()->user();
-        
-        // Verify user has access to this tenant
-        if (!$user->hasRole('superadmin')) {
-            $data = $this->getTenantData($tenant);
-            $canAccess = ($data['created_by'] ?? null) == $user->id || 
-                        ($data['created_by_email'] ?? null) == $user->email ||
-                        ($data['email'] ?? null) == $user->email;
-            
-            if (!$canAccess) {
-                return back()->with('error', 'No tienes acceso a este conjunto');
-            }
-        }
-        
-        // Verify tenant is active
-        $data = $this->getTenantData($tenant);
-        if (($data['status'] ?? 'pending') !== 'active') {
-            return back()->with('error', 'Solo puedes acceder a conjuntos activos');
-        }
-
-        $domain = $tenant->domains->first();
-        if (!$domain) {
-            return back()->with('error', 'El conjunto no tiene dominio configurado');
-        }
-
-        // Ensure the user exists in the tenant database
-        $tenantUserId = $this->ensureUserExistsInTenant($tenant, $user->id);
-
-        // Use official tenancy impersonation with the tenant user ID
-        $redirectUrl = '/dashboard';
-        $token = tenancy()->impersonate($tenant, $tenantUserId, $redirectUrl);
-
-        // Build the tenant URL with port for local environment
-        $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
-        if (app()->environment('local')) {
-            $tenantUrl .= ':8000';
-        }
-        $impersonationUrl = $tenantUrl . '/impersonate/' . $token->token;
-
-        return Inertia::location($impersonationUrl);
-    }
 }

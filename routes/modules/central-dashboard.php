@@ -19,7 +19,6 @@ Route::prefix('tenants')->name('tenant-management.')->group(function () {
     
     // Tenant actions
     Route::post('/{tenant}/impersonate', [TenantManagementController::class, 'impersonate'])->name('impersonate');
-    Route::post('/{tenant}/login', [TenantManagementController::class, 'loginToTenant'])->name('login');
     Route::post('/{tenant}/suspend', [TenantManagementController::class, 'suspend'])->name('suspend');
     Route::post('/{tenant}/activate', [TenantManagementController::class, 'activate'])->name('activate');
 });
