@@ -21,14 +21,6 @@ class RegisteredUserController extends Controller
      */
     public function createAdmin(): Response|RedirectResponse
     {
-        // Check if there are any admin users already registered
-        $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
-
-        if ($hasAdmins) {
-            return redirect()->route('login')
-                ->with('error', 'Ya existe un administrador registrado. Use el sistema de invitaciones.');
-        }
-
         return Inertia::render('auth/RegisterAdmin');
     }
 
@@ -40,17 +32,9 @@ class RegisteredUserController extends Controller
         $token = request('token');
         $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
 
-        // If no token provided
+        // If no token provided, show admin registration form
         if (! $token) {
-            // If no admins exist, redirect to admin registration
-            if (! $hasAdmins) {
-                return redirect()->route('register.admin')
-                    ->with('info', 'Registra la cuenta de administrador para comenzar.');
-            }
-
-            // If admins exist, redirect to login (no free registration)
-            return redirect()->route('login')
-                ->with('info', 'El registro está disponible solo mediante invitación. Por favor inicia sesión si ya tienes una cuenta.');
+            return Inertia::render('auth/RegisterAdmin');
         }
 
         // If token provided, validate invitation
@@ -100,25 +84,14 @@ class RegisteredUserController extends Controller
      */
     public function storeAdmin(RegisterRequest $request): RedirectResponse
     {
-        // Check if there are any admin users already registered
-        $hasAdmins = User::role(['superadmin', 'admin_conjunto', 'admin'])->exists();
-
-        if ($hasAdmins) {
-            return redirect()->route('login')
-                ->with('error', 'Ya existe un administrador registrado.');
-        }
-
         $validated = $request->validated();
 
-        // Create the central admin user (without tenant association)
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            // No tenant_id - this is a central admin account
         ]);
 
-        // Assign central admin role
         $user->assignRole('admin');
 
         event(new Registered($user));
@@ -126,7 +99,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('verification.notice')
-            ->with('success', 'Cuenta de administrador central creada exitosamente. Después de verificar tu correo podrás crear tu conjunto y escoger un plan.');
+            ->with('success', 'Cuenta de administrador creada exitosamente.');
     }
 
     /**
@@ -138,63 +111,13 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validated();
 
-        // Handle invitation-based registration
-        if (isset($validated['token'])) {
-            $invitation = Invitation::where('token', $validated['token'])
-                ->where('expires_at', '>', now())
-                ->firstOrFail();
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+        ]);
 
-            // For mass invitations, don't check if already accepted
-            if (! $invitation->is_mass_invitation && $invitation->accepted_at) {
-                return redirect()->route('access-request.create')
-                    ->with('error', 'Esta invitación ya ha sido utilizada.');
-            }
-
-            $email = $invitation->is_mass_invitation ? $validated['email'] : $invitation->email;
-            $role = $invitation->is_mass_invitation ? 'residente' : $invitation->role;
-
-            // Check if user with this email already exists
-            if (User::where('email', $email)->exists()) {
-                return back()->withErrors(['email' => 'Ya existe un usuario con este correo electrónico.']);
-            }
-
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $email,
-                'password' => Hash::make($validated['password']),
-            ]);
-
-            $user->assignRole($role);
-
-            // For mass invitations, create basic resident record with apartment association
-            if ($invitation->is_mass_invitation && isset($validated['apartment_id'])) {
-                // Create basic resident record to establish user-apartment relationship
-                \App\Models\Resident::create([
-                    'first_name' => $validated['name'], // Use name as first_name initially
-                    'last_name' => '', // Will be updated when profile is completed
-                    'email' => $email,
-                    'apartment_id' => $validated['apartment_id'],
-                    'resident_type' => 'Owner', // Default type, can be updated later
-                    'status' => 'Active',
-                    'start_date' => now(),
-                    // Other required fields will be updated when user completes profile
-                    'document_type' => 'CC', // Default, to be updated
-                    'document_number' => 'PENDING', // Placeholder, to be updated
-                ]);
-            }
-
-            // For individual invitations, mark as accepted
-            if (! $invitation->is_mass_invitation) {
-                $invitation->update([
-                    'accepted_at' => now(),
-                    'accepted_by' => $user->id,
-                ]);
-            }
-        } else {
-            // No invitation token - this should not happen due to redirect in create method
-            return redirect()->route('login')
-                ->with('error', 'Registro no autorizado. El registro está disponible solo mediante invitación.');
-        }
+        $user->assignRole('admin');
 
         event(new Registered($user));
 
