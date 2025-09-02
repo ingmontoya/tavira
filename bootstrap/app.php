@@ -8,6 +8,7 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\InputSanitizationMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
+use App\Http\Middleware\RequiresSubscription;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SharePermissions;
 use Illuminate\Foundation\Application;
@@ -39,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             SharePermissions::class,
+            RequiresSubscription::class,
             EnsureConjuntoConfigured::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

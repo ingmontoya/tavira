@@ -236,15 +236,14 @@ class TenantManagementController extends Controller
     {
         $data = $this->getTenantData($tenant);
         if (($data['status'] ?? 'pending') !== 'active') {
-            return back()->with('error', 'Solo puedes acceder a tenants activos');
+            return response()->json(['error' => 'Solo puedes acceder a tenants activos'], 409);
         }
 
         $domain = $tenant->domains->first();
         if (!$domain) {
-            return back()->with('error', 'El tenant no tiene dominio configurado');
+            return response()->json(['error' => 'El tenant no tiene dominio configurado'], 409);
         }
 
-        // Simple redirect to tenant login
         $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
         if (app()->environment('local')) {
             $tenantUrl .= ':8000';
