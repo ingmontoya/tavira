@@ -177,7 +177,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import SubscriptionModal from './SubscriptionModal.vue';
 import type { AppPageProps } from '../../types';
@@ -191,7 +191,7 @@ interface Plan {
   popular: boolean;
 }
 
-const props = defineProps<{
+defineProps<{
   plans: Plan[];
 }>();
 
