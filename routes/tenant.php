@@ -37,8 +37,6 @@ Route::middleware([
     require __DIR__ . '/auth.php';
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        // Stop impersonation route
-        Route::post('/stop-impersonation', [TenantImpersonationController::class, 'stopImpersonation'])->name('stop-impersonation');
         
         // Tenant-specific module route files
         require __DIR__ . '/modules/dashboard.php';

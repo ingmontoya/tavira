@@ -1,8 +1,9 @@
 <template>
+
     <Head title="Crear Tenant" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -33,27 +34,17 @@
                                 <div class="grid gap-4">
                                     <div class="grid gap-2">
                                         <Label for="name">Nombre del Conjunto *</Label>
-                                        <Input
-                                            id="name"
-                                            v-model="form.name"
-                                            type="text"
+                                        <Input id="name" v-model="form.name" type="text"
                                             placeholder="Ej: Conjunto Villa Hermosa"
-                                            :class="{ 'border-red-500': errors.name }"
-                                            required
-                                        />
+                                            :class="{ 'border-red-500': errors.name }" required />
                                         <p v-if="errors.name" class="text-sm text-red-600">{{ errors.name }}</p>
                                     </div>
 
                                     <div class="grid gap-2">
                                         <Label for="email">Email del Conjunto *</Label>
-                                        <Input
-                                            id="email"
-                                            v-model="form.email"
-                                            type="email"
+                                        <Input id="email" v-model="form.email" type="email"
                                             placeholder="administracion@villa-hermosa.com"
-                                            :class="{ 'border-red-500': errors.email }"
-                                            required
-                                        />
+                                            :class="{ 'border-red-500': errors.email }" required />
                                         <p v-if="errors.email" class="text-sm text-red-600">{{ errors.email }}</p>
                                         <p class="text-sm text-muted-foreground">
                                             Este email se usará para comunicaciones oficiales del conjunto
@@ -63,16 +54,11 @@
                                     <div class="grid gap-2">
                                         <Label for="subdomain">Subdominio *</Label>
                                         <div class="flex items-center">
-                                            <Input
-                                                id="subdomain"
-                                                v-model="form.subdomain"
-                                                type="text"
-                                                placeholder="villa-hermosa"
-                                                :class="{ 'border-red-500': errors.domain }"
-                                                class="rounded-r-none"
-                                                required
-                                            />
-                                            <span class="rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground">
+                                            <Input id="subdomain" v-model="form.subdomain" type="text"
+                                                placeholder="villa-hermosa" :class="{ 'border-red-500': errors.domain }"
+                                                class="rounded-r-none" required />
+                                            <span
+                                                class="rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground">
                                                 .tavira.com.co
                                             </span>
                                         </div>
@@ -84,19 +70,11 @@
                                 </div>
 
                                 <div class="flex items-center gap-4 pt-6">
-                                    <Button 
-                                        type="submit" 
-                                        :disabled="processing"
-                                        class="min-w-32 gap-2"
-                                    >
+                                    <Button type="submit" :disabled="processing" class="min-w-32 gap-2">
                                         <Icon v-if="processing" name="loader-2" class="h-4 w-4 animate-spin" />
                                         {{ processing ? 'Creando...' : 'Crear Tenant' }}
                                     </Button>
-                                    <Button 
-                                        type="button" 
-                                        variant="outline"
-                                        @click="router.visit('/tenants')"
-                                    >
+                                    <Button type="button" variant="outline" @click="router.visit('/tenants')">
                                         Cancelar
                                     </Button>
                                 </div>
@@ -202,14 +180,14 @@ const processing = ref(false)
 
 const submit = () => {
     processing.value = true
-    
+
     // Construir dominio completo
     const formData = {
         name: form.name,
         email: form.email,
         domain: form.subdomain + '.tavira.com.co'
     }
-    
+
     router.post(route('tenant-management.store'), formData, {
         onFinish: () => {
             processing.value = false
