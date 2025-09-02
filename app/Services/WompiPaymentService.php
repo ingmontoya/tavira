@@ -121,13 +121,13 @@ class WompiPaymentService
                 'has_id' => isset($responseArray['data']['id']) ?? false
             ]);
             
-            if ($responseArray && isset($responseArray['data']['id'])) {
+            if ($responseArray && isset($responseArray['data']['id']) && isset($responseArray['link'])) {
                 // Store pending subscription data for later processing
                 $this->storePendingSubscription($reference, $subscriptionData);
 
                 return [
                     'success' => true,
-                    'payment_link' => $responseArray['data']['permalink'],
+                    'payment_link' => $responseArray['link'], // Changed from data.permalink to link
                     'payment_link_id' => $responseArray['data']['id'],
                     'reference' => $reference,
                     'data' => $responseArray['data']
@@ -138,10 +138,16 @@ class WompiPaymentService
             Log::error('Invalid Wompi response structure:', [
                 'response' => $responseArray,
                 'response_type' => gettype($response),
-                'expected_fields' => ['data.id', 'data.permalink']
+                'has_data' => isset($responseArray['data']),
+                'has_data_id' => isset($responseArray['data']['id']) ?? false,
+                'has_link' => isset($responseArray['link']),
+                'expected_fields' => ['data.id', 'link']
             ]);
 
-            throw new Exception('Invalid response from Wompi payment link creation: ' . json_encode($responseArray));
+            throw new Exception('Invalid response from Wompi payment link creation. Missing required fields: ' . json_encode([
+                'has_data_id' => isset($responseArray['data']['id']) ?? false,
+                'has_link' => isset($responseArray['link'])
+            ]));
         } catch (Exception $e) {
             Log::error('Error creating Wompi subscription payment link', [
                 'subscription_data' => $subscriptionData,
