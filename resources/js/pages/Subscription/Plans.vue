@@ -191,8 +191,9 @@ interface Plan {
   popular: boolean;
 }
 
-defineProps<{
+const props = defineProps<{
   plans: Plan[];
+  csrf_token?: string;
 }>();
 
 const page = usePage<AppPageProps>();
@@ -228,7 +229,7 @@ const handleSubscription = async (formData: any) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        'X-CSRF-TOKEN': props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
       },
       body: JSON.stringify({
         plan_id: selectedPlan.value?.id,

@@ -20,6 +20,9 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     
     // Get financial institutions for PSE
     Route::get('/financial-institutions', [SubscriptionPaymentController::class, 'getFinancialInstitutions'])->name('financial-institutions');
+    
+    // Test Wompi connection (temporary for debugging)
+    Route::get('/test-wompi', [SubscriptionPaymentController::class, 'testWompiConnection'])->name('test-wompi');
 });
 
 // Wompi webhook - must be public and not have CSRF protection

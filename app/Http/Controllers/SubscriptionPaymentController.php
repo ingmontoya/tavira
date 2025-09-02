@@ -70,6 +70,7 @@ class SubscriptionPaymentController extends Controller
 
         return Inertia::render('Subscription/Plans', [
             'plans' => $plans,
+            'csrf_token' => csrf_token(),
         ]);
     }
 
@@ -161,12 +162,21 @@ class SubscriptionPaymentController extends Controller
         } catch (\Exception $e) {
             Log::error('Error creating subscription payment link', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
                 'request_data' => $request->all()
             ]);
 
+            // In production, provide more specific error information for debugging
+            $errorMessage = config('app.debug') ? $e->getMessage() : 'Error interno del servidor';
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Error interno del servidor'
+                'message' => $errorMessage,
+                'error_details' => config('app.debug') ? [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ] : null
             ], 500);
         }
     }
@@ -315,5 +325,27 @@ class SubscriptionPaymentController extends Controller
             'success' => false,
             'message' => 'Transaction not found'
         ], 404);
+    }
+
+    /**
+     * Test Wompi API connection (temporary for debugging)
+     */
+    public function testWompiConnection()
+    {
+        try {
+            $result = $this->wompiService->testConnection();
+            
+            return response()->json([
+                'success' => $result['success'],
+                'message' => $result['success'] ? 'Connection successful' : 'Connection failed',
+                'details' => $result
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Test failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
