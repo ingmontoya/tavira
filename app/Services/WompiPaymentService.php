@@ -337,7 +337,7 @@ class WompiPaymentService
             // Extract subscription info from reference
             $referenceInfo = $this->parseSubscriptionReference($transactionData['reference']);
             
-            // If reference doesn't match our format, try to find by payment link ID
+            // If reference doesn't match our format, try to find by payment link ID or extract from transaction data
             if (!$referenceInfo && isset($transactionData['payment_link_id'])) {
                 Log::info('Reference does not match SUB- format, searching by payment_link_id', [
                     'reference' => $transactionData['reference'],
@@ -354,19 +354,58 @@ class WompiPaymentService
                         'user_id' => $pendingData['user_id'],
                         'timestamp' => time()
                     ];
+                } else {
+                    // Fallback: Extract info from transaction data itself
+                    Log::info('No pending data found, extracting from transaction data', [
+                        'customer_email' => $transactionData['customer_email'] ?? null,
+                        'payment_description' => $transactionData['payment_method']['payment_description'] ?? null,
+                    ]);
+                    
+                    $referenceInfo = $this->extractSubscriptionInfoFromTransaction($transactionData);
                 }
             }
             
             if (!$referenceInfo) {
                 Log::error('Could not determine subscription info', [
                     'reference' => $transactionData['reference'],
-                    'payment_link_id' => $transactionData['payment_link_id'] ?? null
+                    'payment_link_id' => $transactionData['payment_link_id'] ?? null,
+                    'customer_email' => $transactionData['customer_email'] ?? null,
+                    'payment_description' => $transactionData['payment_method']['payment_description'] ?? null,
                 ]);
+                
+                // Don't throw exception yet - log more details for debugging
+                Log::info('Full transaction data for debugging', [
+                    'transaction_keys' => array_keys($transactionData),
+                    'has_payment_method' => isset($transactionData['payment_method']),
+                    'payment_method_keys' => isset($transactionData['payment_method']) ? array_keys($transactionData['payment_method']) : []
+                ]);
+                
                 throw new Exception('Invalid subscription reference format and no payment link data found');
             }
 
             // Get stored pending subscription data
             $pendingData = $pendingData ?? $this->getPendingSubscriptionData($transactionData['reference']);
+            
+            // If no pending data found, create basic data from transaction
+            if (!$pendingData && $referenceInfo) {
+                Log::info('No pending data found, creating from transaction and reference info');
+                
+                $user = isset($referenceInfo['user_id']) ? 
+                       \App\Models\User::find($referenceInfo['user_id']) : 
+                       \App\Models\User::where('email', $transactionData['customer_email'])->first();
+                
+                $pendingData = [
+                    'user_id' => $user?->id,
+                    'customer_name' => $transactionData['customer_data']['full_name'] ?? $user?->name ?? 'Usuario',
+                    'customer_email' => $transactionData['customer_email'],
+                    'customer_phone' => $transactionData['customer_data']['phone_number'] ?? null,
+                    'conjunto_name' => 'Conjunto ' . ($user?->name ?? 'Principal'),
+                    'conjunto_address' => null,
+                    'city' => 'Bogotá',
+                    'region' => 'Bogotá D.C.',
+                    'billing_type' => 'mensual',
+                ];
+            }
 
             // Log subscription creation attempt
             Log::info('Creating/updating subscription for successful payment', [
@@ -582,6 +621,75 @@ class WompiPaymentService
             Log::warning('Could not find pending subscription data by payment link ID', [
                 'payment_link_id' => $paymentLinkId,
                 'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Extract subscription info from transaction data when pending data is not available
+     */
+    private function extractSubscriptionInfoFromTransaction(array $transactionData): ?array
+    {
+        try {
+            $customerEmail = $transactionData['customer_email'] ?? null;
+            $paymentDescription = $transactionData['payment_method']['payment_description'] ?? '';
+            
+            Log::info('Attempting to extract subscription info from transaction', [
+                'customer_email' => $customerEmail,
+                'payment_description' => $paymentDescription,
+                'has_customer_email' => !empty($customerEmail),
+                'has_payment_description' => !empty($paymentDescription)
+            ]);
+            
+            if (!$customerEmail) {
+                Log::warning('No customer email in transaction data');
+                return null;
+            }
+
+            // Find user by email
+            $user = \App\Models\User::where('email', $customerEmail)->first();
+            if (!$user) {
+                Log::warning('User not found for email, this might be a new user or guest payment', [
+                    'email' => $customerEmail
+                ]);
+                
+                // For now, don't return null - we can still create subscription without user_id
+                // and associate later when user registers/logs in
+            }
+
+            // Extract plan name from payment description
+            // "Suscripción Tavira - PROFESIONAL" -> "PROFESIONAL"
+            $planName = 'PROFESIONAL'; // Default
+            if (preg_match('/Suscripción Tavira - (.+)$/', $paymentDescription, $matches)) {
+                $planName = trim($matches[1]);
+            }
+
+            $result = [
+                'tenant_id' => null, // New subscription
+                'plan_name' => $planName,
+                'user_id' => $user?->id,
+                'timestamp' => time(),
+                'extracted_from_transaction' => true
+            ];
+
+            Log::info('Successfully extracted subscription info from transaction', [
+                'result' => $result,
+                'user_found' => !is_null($user),
+                'user_id' => $user?->id,
+                'user_email' => $user?->email ?? $customerEmail,
+                'plan_name' => $planName,
+                'amount' => $transactionData['amount_in_cents'] / 100
+            ]);
+
+            return $result;
+
+        } catch (Exception $e) {
+            Log::error('Error extracting subscription info from transaction', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'customer_email' => $transactionData['customer_email'] ?? 'not_set',
+                'payment_description' => $transactionData['payment_method']['payment_description'] ?? 'not_set'
             ]);
             return null;
         }
