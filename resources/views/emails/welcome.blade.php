@@ -78,13 +78,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">Tavira</div>
+            <div class="logo-container">
+                <img src="{{ asset('img/tavira_logo_blanco.svg') }}" alt="Tavira Logo" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px;">
+            </div>
             <h1 class="welcome-title">¡Bienvenido a Tavira!</h1>
         </div>
 
         <div class="content">
             <p>Hola <strong>{{ $user->name }}</strong>,</p>
-            
+
             <p>¡Tu cuenta ha sido creada exitosamente! Ahora tienes acceso a la plataforma integral de administración de propiedades residenciales más completa de Colombia.</p>
 
             <div class="features">
@@ -110,7 +112,7 @@
         <div class="footer">
             <p><strong>Equipo Tavira</strong><br>
             La solución completa para la administración de conjuntos residenciales</p>
-            
+
             <p style="margin-top: 20px; font-size: 12px;">
                 Este es un correo automático, por favor no respondas a esta dirección.
             </p>
