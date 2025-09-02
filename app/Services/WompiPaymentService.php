@@ -42,9 +42,17 @@ class WompiPaymentService
         try {
             $response = Wompi::acceptance_token();
             
-            if ($response && isset($response['data']['presigned_acceptance']['acceptance_token'])) {
-                return $response['data']['presigned_acceptance']['acceptance_token'];
+            // Convert stdClass to array if necessary
+            $responseArray = json_decode(json_encode($response), true);
+            
+            if ($responseArray && isset($responseArray['data']['presigned_acceptance']['acceptance_token'])) {
+                return $responseArray['data']['presigned_acceptance']['acceptance_token'];
             }
+            
+            Log::error('Invalid acceptance token response:', [
+                'response_type' => gettype($response),
+                'response' => $responseArray
+            ]);
             
             throw new Exception('Unable to get acceptance token from Wompi');
         } catch (Exception $e) {
@@ -103,32 +111,37 @@ class WompiPaymentService
 
             $response = Wompi::link($data);
             
+            // Convert stdClass to array if necessary
+            $responseArray = json_decode(json_encode($response), true);
+            
             Log::info('Wompi API response:', [
-                'response' => $response,
-                'has_data' => isset($response['data']),
-                'has_id' => isset($response['data']['id']) ?? false
+                'response_type' => gettype($response),
+                'response' => $responseArray,
+                'has_data' => isset($responseArray['data']),
+                'has_id' => isset($responseArray['data']['id']) ?? false
             ]);
             
-            if ($response && isset($response['data']['id'])) {
+            if ($responseArray && isset($responseArray['data']['id'])) {
                 // Store pending subscription data for later processing
                 $this->storePendingSubscription($reference, $subscriptionData);
 
                 return [
                     'success' => true,
-                    'payment_link' => $response['data']['permalink'],
-                    'payment_link_id' => $response['data']['id'],
+                    'payment_link' => $responseArray['data']['permalink'],
+                    'payment_link_id' => $responseArray['data']['id'],
                     'reference' => $reference,
-                    'data' => $response['data']
+                    'data' => $responseArray['data']
                 ];
             }
 
             // Log the full response for debugging
             Log::error('Invalid Wompi response structure:', [
-                'response' => $response,
+                'response' => $responseArray,
+                'response_type' => gettype($response),
                 'expected_fields' => ['data.id', 'data.permalink']
             ]);
 
-            throw new Exception('Invalid response from Wompi payment link creation: ' . json_encode($response));
+            throw new Exception('Invalid response from Wompi payment link creation: ' . json_encode($responseArray));
         } catch (Exception $e) {
             Log::error('Error creating Wompi subscription payment link', [
                 'subscription_data' => $subscriptionData,
@@ -508,15 +521,19 @@ class WompiPaymentService
             // Try to get acceptance token - this is a simple API call to test connectivity
             $response = Wompi::acceptance_token();
             
+            // Convert stdClass to array if necessary
+            $responseArray = json_decode(json_encode($response), true);
+            
             Log::info('Wompi connection test result:', [
-                'success' => !empty($response),
-                'has_data' => isset($response['data']),
-                'response_keys' => $response ? array_keys($response) : []
+                'success' => !empty($responseArray),
+                'response_type' => gettype($response),
+                'has_data' => isset($responseArray['data']),
+                'response_keys' => $responseArray ? array_keys($responseArray) : []
             ]);
 
             return [
-                'success' => !empty($response),
-                'response' => $response
+                'success' => !empty($responseArray),
+                'response' => $responseArray
             ];
         } catch (Exception $e) {
             Log::error('Wompi connection test failed:', [
