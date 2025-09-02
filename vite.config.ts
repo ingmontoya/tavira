@@ -20,6 +20,17 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        // Configure asset generation for production
+        rollupOptions: {
+            output: {
+                // Ensure consistent asset naming
+                assetFileNames: 'assets/[name]-[hash][extname]',
+                chunkFileNames: 'assets/[name]-[hash].js',
+                entryFileNames: 'assets/[name]-[hash].js',
+            },
+        },
+    },
     server: {
         host: '0.0.0.0',
         port: 5173,
