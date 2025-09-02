@@ -29,6 +29,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'department',
         'is_active',
         'avatar',
+        'tenant_id',
+        'requires_subscription',
+        'subscription_required_at',
     ];
 
     /**
@@ -52,6 +55,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'requires_subscription' => 'boolean',
+            'subscription_required_at' => 'datetime',
         ];
     }
 
@@ -135,5 +140,63 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sendEmailVerificationNotification()
     {
         $this->notify(new \App\Notifications\CustomVerifyEmailNotification);
+    }
+
+    /**
+     * Get the tenant this user belongs to.
+     */
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Get the active subscription for this user (for central admins without tenant).
+     */
+    public function activeSubscription()
+    {
+        return $this->hasOne(TenantSubscription::class, 'user_id')
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            });
+    }
+
+    /**
+     * Get all subscriptions for this user.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(TenantSubscription::class, 'user_id');
+    }
+
+    /**
+     * Check if user has an active subscription.
+     */
+    public function hasActiveSubscription(): bool
+    {
+        return $this->activeSubscription()->exists();
+    }
+
+    /**
+     * Check if user is a central admin that needs a subscription.
+     */
+    public function needsSubscription(): bool
+    {
+        return $this->hasRole('admin') && 
+               !$this->tenant_id && 
+               !$this->hasActiveSubscription();
+    }
+
+    /**
+     * Mark user as requiring subscription.
+     */
+    public function markAsRequiringSubscription(): void
+    {
+        $this->update([
+            'requires_subscription' => true,
+            'subscription_required_at' => now(),
+        ]);
     }
 }

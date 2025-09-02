@@ -50,7 +50,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('verification.notice')
-            ->with('success', 'Cuenta de administrador creada exitosamente.');
+            ->with('success', 'Cuenta de administrador central creada exitosamente. Después de verificar tu correo deberás seleccionar un plan para poder acceder a tu plataforma.');
     }
 
     /**
