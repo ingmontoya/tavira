@@ -197,14 +197,31 @@ class SubscriptionPaymentController extends Controller
                 $transaction = $transactionResult['transaction'];
                 
                 if ($transaction['status'] === 'APPROVED') {
+                    Log::info('Processing successful payment in success page', [
+                        'transaction_id' => $transaction['id'],
+                        'reference' => $transaction['reference'],
+                        'status' => $transaction['status']
+                    ]);
+
                     // Process the successful payment
                     $paymentResult = $this->wompiService->processSuccessfulSubscriptionPayment($transaction);
                     
+                    Log::info('Payment processing result', [
+                        'success' => $paymentResult['success'],
+                        'has_subscription' => isset($paymentResult['subscription']),
+                        'subscription_id' => $paymentResult['subscription']->id ?? null,
+                    ]);
+
                     if ($paymentResult['success']) {
                         return Inertia::render('Subscription/Success', [
                             'transaction' => $transaction,
                             'subscription' => $paymentResult['subscription'],
                             'tenant' => $paymentResult['tenant'],
+                        ]);
+                    } else {
+                        Log::error('Payment processing failed', [
+                            'error' => $paymentResult['error'] ?? 'Unknown error',
+                            'transaction_id' => $transaction['id']
                         ]);
                     }
                 }
@@ -422,5 +439,66 @@ class SubscriptionPaymentController extends Controller
                 'expires_at' => $activeSubscription->expires_at,
             ] : null,
         ];
+    }
+
+    /**
+     * Manual process payment for debugging
+     */
+    public function manualProcessPayment(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            
+            if (!$user) {
+                return response()->json(['error' => 'Not authenticated'], 401);
+            }
+
+            // Create test transaction data to simulate successful payment
+            $testTransaction = [
+                'id' => 'test_transaction_' . time(),
+                'status' => 'APPROVED',
+                'reference' => 'SUB-NEW-PROFESIONAL-' . $user->id . '-' . time(),
+                'amount_in_cents' => 19900000, // 199000 COP
+                'payment_method_type' => 'CARD',
+            ];
+
+            // Create pending subscription data manually
+            $subscriptionData = [
+                'tenant_id' => null,
+                'user_id' => $user->id,
+                'plan_name' => 'PROFESIONAL',
+                'amount' => 199000,
+                'customer_name' => $user->name,
+                'customer_email' => $user->email,
+                'customer_phone' => null,
+                'conjunto_name' => 'Test Conjunto',
+                'conjunto_address' => null,
+                'billing_type' => 'mensual',
+                'city' => 'Bogotá',
+                'region' => 'Bogotá D.C.',
+            ];
+
+            // Store pending data
+            cache()->put(
+                'pending_subscription_' . $testTransaction['reference'],
+                $subscriptionData,
+                now()->addHours(24)
+            );
+
+            // Process the payment
+            $result = $this->wompiService->processSuccessfulSubscriptionPayment($testTransaction);
+
+            return response()->json([
+                'test_transaction' => $testTransaction,
+                'subscription_data' => $subscriptionData,
+                'processing_result' => $result,
+                'cache_check' => cache()->get('pending_subscription_' . $testTransaction['reference']),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
     }
 }
