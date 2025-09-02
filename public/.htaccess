@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Handle tenancy assets
+    RewriteCond %{REQUEST_URI} ^/tenancy/assets/(.*)$
+    RewriteRule ^tenancy/assets/(.*)$ /build/$1 [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
