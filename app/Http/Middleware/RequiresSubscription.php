@@ -60,8 +60,24 @@ class RequiresSubscription
             })
             ->first();
 
+            // Log subscription check for debugging
+            \Illuminate\Support\Facades\Log::info('RequiresSubscription middleware check:', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'tenant_id' => $user->tenant_id,
+                'has_admin_role' => $user->hasRole('admin'),
+                'active_subscription_found' => !is_null($activeSubscription),
+                'subscription_id' => $activeSubscription?->id,
+                'request_route' => $request->route()?->getName(),
+            ]);
+
             // If no active subscription, redirect to plan selection
             if (!$activeSubscription) {
+                \Illuminate\Support\Facades\Log::warning('User redirected to plans - no active subscription found', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                ]);
+                
                 return redirect()->route('subscription.plans')
                     ->with('info', 'Para continuar, debes seleccionar y pagar un plan de suscripción.');
             }
