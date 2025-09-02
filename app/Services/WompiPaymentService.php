@@ -13,11 +13,24 @@ class WompiPaymentService
 {
     public function __construct()
     {
+        $publicKey = config('laravel-wompi.public_key');
+        $privateKey = config('laravel-wompi.private_key');
+        $eventKey = config('laravel-wompi.private_event_key');
+
+        // Log key status for debugging (without exposing actual keys)
+        Log::info('Wompi keys configuration check:', [
+            'public_key_set' => !empty($publicKey),
+            'private_key_set' => !empty($privateKey),
+            'event_key_set' => !empty($eventKey),
+            'public_key_type' => $publicKey ? (str_contains($publicKey, 'test') ? 'test' : 'prod') : 'none',
+            'environment' => config('app.env')
+        ]);
+
         // Initialize Wompi with configuration from Laravel config
         Wompi::initialize([
-            'public_key' => config('laravel-wompi.public_key'),
-            'private_key' => config('laravel-wompi.private_key'),
-            'private_event_key' => config('laravel-wompi.private_event_key')
+            'public_key' => $publicKey,
+            'private_key' => $privateKey,
+            'private_event_key' => $eventKey
         ]);
     }
 
@@ -48,6 +61,9 @@ class WompiPaymentService
     public function createSubscriptionPaymentLink(array $subscriptionData, array $options = [])
     {
         try {
+            // Validate required data first
+            $this->validateSubscriptionData($subscriptionData);
+            
             $reference = $this->generateUniqueSubscriptionReference($subscriptionData);
             
             $data = [
@@ -79,7 +95,19 @@ class WompiPaymentService
                 ]
             ];
 
+            Log::info('Creating Wompi payment link with data:', [
+                'reference' => $reference,
+                'amount' => $data['amount_in_cents'],
+                'customer_email' => $data['customer_email']
+            ]);
+
             $response = Wompi::link($data);
+            
+            Log::info('Wompi API response:', [
+                'response' => $response,
+                'has_data' => isset($response['data']),
+                'has_id' => isset($response['data']['id']) ?? false
+            ]);
             
             if ($response && isset($response['data']['id'])) {
                 // Store pending subscription data for later processing
@@ -94,11 +122,20 @@ class WompiPaymentService
                 ];
             }
 
-            throw new Exception('Invalid response from Wompi payment link creation');
+            // Log the full response for debugging
+            Log::error('Invalid Wompi response structure:', [
+                'response' => $response,
+                'expected_fields' => ['data.id', 'data.permalink']
+            ]);
+
+            throw new Exception('Invalid response from Wompi payment link creation: ' . json_encode($response));
         } catch (Exception $e) {
             Log::error('Error creating Wompi subscription payment link', [
                 'subscription_data' => $subscriptionData,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
             
             return [
@@ -429,6 +466,68 @@ class WompiPaymentService
                 'error' => $e->getMessage()
             ]);
             return null;
+        }
+    }
+
+    /**
+     * Validate subscription data before creating payment link
+     */
+    private function validateSubscriptionData(array $data)
+    {
+        $required = ['plan_name', 'amount', 'customer_name', 'customer_email', 'conjunto_name'];
+        
+        foreach ($required as $field) {
+            if (empty($data[$field])) {
+                throw new Exception("Missing required field: {$field}");
+            }
+        }
+
+        if (!filter_var($data['customer_email'], FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("Invalid email format: {$data['customer_email']}");
+        }
+
+        if ($data['amount'] <= 0) {
+            throw new Exception("Invalid amount: {$data['amount']}");
+        }
+
+        Log::info('Subscription data validation passed', [
+            'plan_name' => $data['plan_name'],
+            'amount' => $data['amount'],
+            'customer_email' => $data['customer_email']
+        ]);
+    }
+
+    /**
+     * Test Wompi API connection
+     */
+    public function testConnection()
+    {
+        try {
+            Log::info('Testing Wompi API connection...');
+            
+            // Try to get acceptance token - this is a simple API call to test connectivity
+            $response = Wompi::acceptance_token();
+            
+            Log::info('Wompi connection test result:', [
+                'success' => !empty($response),
+                'has_data' => isset($response['data']),
+                'response_keys' => $response ? array_keys($response) : []
+            ]);
+
+            return [
+                'success' => !empty($response),
+                'response' => $response
+            ];
+        } catch (Exception $e) {
+            Log::error('Wompi connection test failed:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
         }
     }
 }
