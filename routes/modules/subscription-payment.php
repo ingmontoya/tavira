@@ -23,6 +23,9 @@ Route::prefix('subscription')->name('subscription.')->group(function () {
     
     // Test Wompi connection (temporary for debugging)
     Route::get('/test-wompi', [SubscriptionPaymentController::class, 'testWompiConnection'])->name('test-wompi');
+    
+    // Check subscription status (temporary for debugging)
+    Route::get('/check-subscription', [SubscriptionPaymentController::class, 'checkSubscriptionStatus'])->name('check-subscription');
 });
 
 // Wompi webhook - must be public and not have CSRF protection

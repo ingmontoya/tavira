@@ -344,6 +344,15 @@ class WompiPaymentService
             // Get stored pending subscription data
             $pendingData = $this->getPendingSubscriptionData($transactionData['reference']);
 
+            // Log subscription creation attempt
+            Log::info('Creating/updating subscription for successful payment', [
+                'reference' => $transactionData['reference'],
+                'user_id' => $pendingData['user_id'] ?? null,
+                'plan_name' => $referenceInfo['plan_name'],
+                'amount' => $transactionData['amount_in_cents'] / 100,
+                'transaction_id' => $transactionData['id'],
+            ]);
+
             // Find or create tenant subscription record
             $subscription = \App\Models\TenantSubscription::updateOrCreate(
                 [
@@ -363,6 +372,15 @@ class WompiPaymentService
                     'payment_data' => $pendingData ?: $transactionData,
                 ]
             );
+
+            Log::info('Subscription created/updated successfully', [
+                'subscription_id' => $subscription->id,
+                'user_id' => $subscription->user_id,
+                'tenant_id' => $subscription->tenant_id,
+                'status' => $subscription->status,
+                'plan_name' => $subscription->plan_name,
+                'expires_at' => $subscription->expires_at,
+            ]);
 
             // Activate tenant if not already active
             $tenant = null;

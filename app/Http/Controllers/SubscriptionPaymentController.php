@@ -348,4 +348,79 @@ class SubscriptionPaymentController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Check subscription status (temporary for debugging)
+     */
+    public function checkSubscriptionStatus()
+    {
+        try {
+            $user = auth()->user();
+            
+            if (!$user) {
+                return response()->json([
+                    'error' => 'User not authenticated'
+                ], 401);
+            }
+
+            $subscriptions = \App\Models\TenantSubscription::where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->orWhereNull('tenant_id'); // For new signups
+            })->get();
+
+            return response()->json([
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'tenant_id' => $user->tenant_id,
+                    'roles' => $user->getRoleNames(),
+                ],
+                'subscriptions' => $subscriptions->map(function($sub) {
+                    return [
+                        'id' => $sub->id,
+                        'user_id' => $sub->user_id,
+                        'tenant_id' => $sub->tenant_id,
+                        'plan_name' => $sub->plan_name,
+                        'status' => $sub->status,
+                        'expires_at' => $sub->expires_at,
+                        'paid_at' => $sub->paid_at,
+                        'payment_reference' => $sub->payment_reference,
+                        'is_active' => $sub->status === 'active' && ($sub->expires_at === null || $sub->expires_at > now()),
+                    ];
+                }),
+                'middleware_check' => $this->simulateMiddlewareCheck($user),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function simulateMiddlewareCheck($user)
+    {
+        $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user) {
+            $query->whereNull('tenant_id') // For new signups
+                  ->orWhere('tenant_id', $user->tenant_id);
+        })
+        ->where('status', 'active')
+        ->where(function ($query) {
+            $query->whereNull('expires_at')
+                  ->orWhere('expires_at', '>', now());
+        })
+        ->first();
+
+        return [
+            'user_has_admin_role' => $user->hasRole('admin'),
+            'user_tenant_id' => $user->tenant_id,
+            'active_subscription_found' => !is_null($activeSubscription),
+            'subscription_details' => $activeSubscription ? [
+                'id' => $activeSubscription->id,
+                'user_id' => $activeSubscription->user_id,
+                'tenant_id' => $activeSubscription->tenant_id,
+                'status' => $activeSubscription->status,
+                'expires_at' => $activeSubscription->expires_at,
+            ] : null,
+        ];
+    }
 }
