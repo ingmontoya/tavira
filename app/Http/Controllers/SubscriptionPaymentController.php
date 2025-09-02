@@ -274,15 +274,40 @@ class SubscriptionPaymentController extends Controller
             if ($event === 'transaction.updated' && isset($data['transaction'])) {
                 $transaction = $data['transaction'];
                 
-                // Only process subscription payments
-                if (str_starts_with($transaction['reference'], 'SUB-')) {
+                Log::info('Webhook transaction received', [
+                    'transaction_id' => $transaction['id'],
+                    'reference' => $transaction['reference'],
+                    'status' => $transaction['status'],
+                    'payment_link_id' => $transaction['payment_link_id'] ?? null,
+                    'redirect_url' => $transaction['redirect_url'] ?? null,
+                ]);
+                
+                // Check if this is a subscription payment by:
+                // 1. Reference starts with SUB- (our custom reference)
+                // 2. OR redirect_url contains subscription (payment link based)
+                $isSubscriptionPayment = str_starts_with($transaction['reference'], 'SUB-') || 
+                                        str_contains($transaction['redirect_url'] ?? '', 'subscription');
+                
+                if ($isSubscriptionPayment) {
                     if ($transaction['status'] === 'APPROVED') {
+                        Log::info('Processing subscription payment via webhook', [
+                            'transaction_id' => $transaction['id'],
+                            'reference' => $transaction['reference']
+                        ]);
+                        
                         $result = $this->wompiService->processSuccessfulSubscriptionPayment($transaction);
                         
                         if ($result['success']) {
                             Log::info('Subscription payment processed via webhook', [
                                 'reference' => $transaction['reference'],
-                                'transaction_id' => $transaction['id']
+                                'transaction_id' => $transaction['id'],
+                                'subscription_id' => $result['subscription']->id ?? null
+                            ]);
+                        } else {
+                            Log::error('Failed to process subscription payment via webhook', [
+                                'reference' => $transaction['reference'],
+                                'transaction_id' => $transaction['id'],
+                                'error' => $result['error'] ?? 'Unknown error'
                             ]);
                         }
                     } elseif (in_array($transaction['status'], ['DECLINED', 'ERROR'])) {
@@ -292,6 +317,11 @@ class SubscriptionPaymentController extends Controller
                             'status' => $transaction['status']
                         ]);
                     }
+                } else {
+                    Log::info('Non-subscription transaction ignored', [
+                        'reference' => $transaction['reference'],
+                        'redirect_url' => $transaction['redirect_url'] ?? null
+                    ]);
                 }
             }
 
@@ -494,6 +524,82 @@ class SubscriptionPaymentController extends Controller
                 'processing_result' => $result,
                 'cache_check' => cache()->get('pending_subscription_' . $testTransaction['reference']),
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Test the success flow with real payment parameters
+     */
+    public function testSuccessFlow(Request $request)
+    {
+        try {
+            // Get user and create a realistic scenario
+            $user = auth()->user();
+            
+            if (!$user) {
+                return response()->json(['error' => 'Not authenticated'], 401);
+            }
+
+            // First, let's check if there are any cached pending subscriptions
+            $cacheKeys = [];
+            for ($i = 1; $i <= 10; $i++) {
+                $testReference = "SUB-NEW-PROFESIONAL-{$user->id}-" . (time() - ($i * 60));
+                $cached = cache()->get('pending_subscription_' . $testReference);
+                if ($cached) {
+                    $cacheKeys[$testReference] = $cached;
+                }
+            }
+
+            // Now let's test what happens if we manually hit the success URL
+            // with typical Wompi parameters
+            $testReference = $request->get('reference') ?? 'SUB-NEW-PROFESIONAL-' . $user->id . '-' . (time() - 300);
+            $testTransactionId = $request->get('id') ?? 'test_tx_' . time();
+
+            // Create pending data if it doesn't exist
+            if (!cache()->has('pending_subscription_' . $testReference)) {
+                $subscriptionData = [
+                    'tenant_id' => null,
+                    'user_id' => $user->id,
+                    'plan_name' => 'PROFESIONAL', 
+                    'amount' => 199000,
+                    'customer_name' => $user->name,
+                    'customer_email' => $user->email,
+                    'customer_phone' => null,
+                    'conjunto_name' => 'Test Conjunto Real',
+                    'conjunto_address' => null,
+                    'billing_type' => 'mensual',
+                    'city' => 'Bogotá',
+                    'region' => 'Bogotá D.C.',
+                ];
+
+                cache()->put(
+                    'pending_subscription_' . $testReference,
+                    $subscriptionData,
+                    now()->addHours(24)
+                );
+            }
+
+            // Now simulate the success page visit
+            $successUrl = route('subscription.success', [
+                'reference' => $testReference,
+                'id' => $testTransactionId
+            ]);
+
+            return response()->json([
+                'message' => 'Test scenario created',
+                'user_id' => $user->id,
+                'test_reference' => $testReference,
+                'test_transaction_id' => $testTransactionId,
+                'cached_pending_subscriptions' => $cacheKeys,
+                'success_url_to_test' => $successUrl,
+                'instructions' => 'Visit the success_url_to_test to simulate the real Wompi redirect',
+            ]);
+
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
