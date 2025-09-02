@@ -84,7 +84,21 @@ class RequiresSubscription
 
             // If subscription exists but no tenant, create the tenant
             if ($activeSubscription && !$user->tenant_id) {
+                \Illuminate\Support\Facades\Log::info('Creating tenant for user with active subscription', [
+                    'user_id' => $user->id,
+                    'subscription_id' => $activeSubscription->id,
+                    'user_current_tenant_id' => $user->tenant_id,
+                ]);
+                
                 $this->createTenantForUser($user, $activeSubscription);
+                
+                // Reload user to get updated tenant_id
+                $user->refresh();
+                
+                \Illuminate\Support\Facades\Log::info('Tenant creation completed', [
+                    'user_id' => $user->id,
+                    'user_new_tenant_id' => $user->tenant_id,
+                ]);
             }
         }
 
@@ -101,9 +115,21 @@ class RequiresSubscription
             $paymentData = $subscription->payment_data;
             
             if (!$paymentData || !isset($paymentData['conjunto_name'])) {
-                // If no payment data, redirect to complete setup
-                return redirect()->route('subscription.complete-setup')
-                    ->with('info', 'Por favor completa la configuración de tu conjunto.');
+                // If no payment data, use default values based on user info
+                \Illuminate\Support\Facades\Log::info('No complete payment data found, using defaults for tenant creation', [
+                    'user_id' => $user->id,
+                    'subscription_id' => $subscription->id,
+                    'payment_data' => $paymentData
+                ]);
+                
+                $paymentData = [
+                    'conjunto_name' => 'Conjunto ' . $user->name,
+                    'conjunto_address' => null,
+                    'city' => 'Bogotá',
+                    'region' => 'Bogotá D.C.',
+                    'customer_name' => $user->name,
+                    'customer_email' => $user->email,
+                ];
             }
 
             // Create tenant

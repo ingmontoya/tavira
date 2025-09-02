@@ -9,16 +9,26 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #f8f9fa;
+            width: 100% !important;
+            min-width: 100%;
+        }
+        .email-wrapper {
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 20px 0;
         }
         .container {
+            max-width: 600px;
+            margin: 0 auto;
             background-color: white;
             border-radius: 10px;
-            padding: 40px;
+            padding: 40px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
         }
         .header {
             text-align: center;
@@ -73,13 +83,28 @@
             margin: 10px 0;
             color: #374151;
         }
+        @media only screen and (max-width: 600px) {
+            .container {
+                padding: 20px 15px !important;
+                border-radius: 0 !important;
+            }
+            .welcome-title {
+                font-size: 20px !important;
+            }
+            .button {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="email-wrapper">
+        <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ asset('img/tavira_logo_blanco.svg') }}" alt="Tavira Logo" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px;">
+                <img src="{{ asset('public/img/tavira_logo_blanco.svg') }}" alt="Tavira Logo" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block;">
             </div>
             <h1 class="welcome-title">¡Bienvenido a Tavira!</h1>
         </div>
@@ -117,6 +142,7 @@
                 Este es un correo automático, por favor no respondas a esta dirección.
             </p>
         </div>
+    </div>
     </div>
 </body>
 </html>

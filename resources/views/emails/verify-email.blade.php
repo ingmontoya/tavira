@@ -9,17 +9,27 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             background-color: #f8f9fa;
+            width: 100% !important;
+            min-width: 100%;
+        }
+        .email-wrapper {
+            width: 100%;
+            background-color: #f8f9fa;
+            padding: 20px 0;
         }
         .container {
+            max-width: 600px;
+            margin: 0 auto;
             background-color: white;
             border-radius: 12px;
-            padding: 40px;
+            padding: 40px 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             border: 1px solid #e5e7eb;
+            width: 100%;
+            box-sizing: border-box;
         }
         .header {
             text-align: center;
@@ -118,28 +128,38 @@
         .footer-links a:hover {
             text-decoration: underline;
         }
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
+        @media only screen and (max-width: 600px) {
+            .email-wrapper {
+                padding: 10px 0 !important;
             }
             .container {
-                padding: 20px;
+                padding: 20px 15px !important;
+                border-radius: 0 !important;
+                margin: 0 10px !important;
             }
             .title {
-                font-size: 24px;
+                font-size: 24px !important;
             }
             .verify-button {
-                padding: 14px 28px;
-                font-size: 15px;
+                padding: 14px 28px !important;
+                font-size: 15px !important;
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .verification-box {
+                margin: 20px 0 !important;
+                padding: 20px !important;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="email-wrapper">
+        <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ asset('img/tavira_logo_blanco.svg') }}" alt="Tavira Logo" class="logo-image">
+                <img src="{{ asset('public/img/tavira_logo_blanco.svg') }}" alt="Tavira Logo" class="logo-image">
             </div>
         </div>
 
@@ -186,6 +206,7 @@
                 <span style="word-break: break-all; color: #6b7280;">{{ $verificationUrl }}</span>
             </p>
         </div>
+    </div>
     </div>
 </body>
 </html>
