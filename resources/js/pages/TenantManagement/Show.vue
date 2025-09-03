@@ -19,7 +19,7 @@
                         <Icon name="arrow-left" class="h-4 w-4" />
                         Volver
                     </Button>
-                    <Button v-if="tenant.status === 'active'" @click="impersonateTenant"
+                    <Button v-if="isSuperAdmin && tenant.status === 'active'" @click="impersonateTenant"
                         class="bg-green-600 hover:bg-green-700 gap-2">
                         <Icon name="log-in" class="h-4 w-4" />
                         Ingresar al Tenant
@@ -140,8 +140,8 @@
                 </CardContent>
             </Card>
 
-            <!-- Actions -->
-            <Card class="mt-8">
+            <!-- Actions - Only visible for superadmin -->
+            <Card v-if="isSuperAdmin" class="mt-8">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <Icon name="settings" class="h-5 w-5" />
@@ -150,6 +150,26 @@
                 </CardHeader>
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <!-- Approval actions for draft tenants -->
+                        <Button v-if="tenant.status === 'draft'" @click="approveTenant"
+                            class="bg-blue-600 hover:bg-blue-700 gap-2">
+                            <Icon name="check" class="h-4 w-4" />
+                            Aprobar Tenant
+                        </Button>
+                        <Button v-if="tenant.status === 'draft'" variant="outline" @click="rejectTenant"
+                            class="text-red-600 border-red-200 hover:bg-red-50 gap-2">
+                            <Icon name="x" class="h-4 w-4" />
+                            Rechazar Tenant
+                        </Button>
+                        
+                        <!-- Activation actions -->
+                        <Button v-if="tenant.status === 'approved'" variant="outline" @click="activateTenant"
+                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
+                            <Icon name="play" class="h-4 w-4" />
+                            Activar Tenant
+                        </Button>
+                        
+                        <!-- Active tenant actions -->
                         <Button v-if="tenant.status === 'active'" @click="impersonateTenant"
                             class="bg-green-600 hover:bg-green-700 gap-2">
                             <Icon name="log-in" class="h-4 w-4" />
@@ -160,11 +180,15 @@
                             <Icon name="pause" class="h-4 w-4" />
                             Suspender Tenant
                         </Button>
-                        <Button v-if="tenant.status !== 'active'" variant="outline" @click="activateTenant"
+                        
+                        <!-- Suspended tenant actions -->
+                        <Button v-if="tenant.status === 'suspended'" variant="outline" @click="activateTenant"
                             class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
                             <Icon name="play" class="h-4 w-4" />
-                            Activar Tenant
+                            Reactivar Tenant
                         </Button>
+                        
+                        <!-- Danger zone -->
                         <Button variant="destructive" @click="deleteTenant" class="gap-2">
                             <Icon name="trash" class="h-4 w-4" />
                             Eliminar Tenant
@@ -191,7 +215,8 @@
 </template>
 
 <script setup lang="ts">
-import { router, Head } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { router, Head, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -221,6 +246,11 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Access current user data
+const page = usePage()
+const user = computed(() => page.props.auth?.user)
+const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'))
+
 // Breadcrumbs
 const breadcrumbs = [
     { title: 'Panel Central', href: '/dashboard' },
@@ -231,7 +261,10 @@ const breadcrumbs = [
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'active': return 'default'
+        case 'draft': return 'outline'
+        case 'approved': return 'secondary'
         case 'pending': return 'secondary'
+        case 'rejected': return 'destructive'
         case 'suspended': return 'destructive'
         default: return 'secondary'
     }
@@ -240,7 +273,10 @@ const getStatusVariant = (status: string) => {
 const getStatusText = (status: string) => {
     switch (status) {
         case 'active': return 'Activo'
+        case 'draft': return 'Borrador'
+        case 'approved': return 'Aprobado'
         case 'pending': return 'Pendiente'
+        case 'rejected': return 'Rechazado'
         case 'suspended': return 'Suspendido'
         default: return status
     }
@@ -258,6 +294,21 @@ const suspendTenant = () => {
 
 const activateTenant = () => {
     router.post(route('tenant-management.activate', props.tenant.id))
+}
+
+const approveTenant = () => {
+    if (confirm('¿Estás seguro de que quieres aprobar este tenant?')) {
+        router.post(route('tenant-management.approve', props.tenant.id))
+    }
+}
+
+const rejectTenant = () => {
+    const reason = prompt('Razón del rechazo (opcional):')
+    if (confirm('¿Estás seguro de que quieres rechazar este tenant?')) {
+        router.post(route('tenant-management.reject', props.tenant.id), {
+            reason: reason || null
+        })
+    }
 }
 
 const deleteTenant = () => {
