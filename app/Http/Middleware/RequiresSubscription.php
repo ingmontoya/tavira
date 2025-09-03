@@ -17,6 +17,11 @@ class RequiresSubscription
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Skip subscription checks in development environment
+        if (app()->environment('local', 'testing')) {
+            return $next($request);
+        }
+
         // Only apply to authenticated users
         if (!Auth::check()) {
             return $next($request);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\CreateTenantAdminUser;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -246,7 +247,7 @@ class TenantManagementController extends Controller
     public function impersonate(Request $request, Tenant $tenant)
     {
         $request->validate([
-            'user_id' => 'required|integer',
+            'user_id' => 'nullable|integer',
             'redirect_url' => 'string|nullable'
         ]);
 
@@ -261,9 +262,20 @@ class TenantManagementController extends Controller
         }
 
         try {
+            // Determine user ID to impersonate
+            // Priority: request user_id -> stored admin_user_id -> error
+            $userId = $request->user_id ?? $tenant->admin_user_id;
+            
+            if (!$userId) {
+                return response()->json([
+                    'error' => 'No se puede determinar qué usuario impersonar. ' .
+                              'Especifica un user_id o asegúrate de que el tenant tenga un admin_user_id válido.'
+                ], 400);
+            }
+
             // Generate impersonation token using stancl/tenancy
             $redirectUrl = $request->redirect_url ?? '/dashboard';
-            $tokenObject = tenancy()->impersonate($tenant, $request->user_id, $redirectUrl, 'web');
+            $tokenObject = tenancy()->impersonate($tenant, $userId, $redirectUrl, 'web');
             
             // Extract the token string from the object
             $token = $tokenObject->token ?? $tokenObject;
@@ -359,13 +371,24 @@ class TenantManagementController extends Controller
             \Artisan::call('tenants:migrate', ['--tenant' => $tenant->id]);
             \Artisan::call('tenants:seed', ['--tenant' => $tenant->id]);
             
+            // Create admin user if credentials are provided
+            if ($tenant->admin_name && $tenant->admin_email && $tenant->admin_password) {
+                $createUserJob = new CreateTenantAdminUser($tenant);
+                $createUserJob->handle();
+            }
+            
             $data['status'] = 'active';
             $data['activated_by'] = auth()->id();
             $data['activated_at'] = now()->toISOString();
 
             $tenant->update(['data' => $data]);
 
-            return back()->with('success', 'Tenant activado exitosamente. Base de datos creada y configurada.');
+            $message = 'Tenant activado exitosamente. Base de datos creada y configurada.';
+            if ($tenant->admin_user_id) {
+                $message .= ' Usuario administrador creado.';
+            }
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             return back()->with('error', 'Error al activar el tenant: ' . $e->getMessage());
         }

@@ -38,4 +38,16 @@ class TenantImpersonationController extends Controller
         return Inertia::location($impersonationUrl);
     }
 
+    /**
+     * Impersonate the admin user in a tenant using stored admin_user_id
+     */
+    public function impersonateAdmin(Tenant $tenant, $redirectUrl = '/dashboard')
+    {
+        if (!$tenant->admin_user_id) {
+            return redirect()->back()->with('error', 'El tenant no tiene un admin_user_id configurado');
+        }
+
+        return $this->impersonate($tenant, $tenant->admin_user_id, $redirectUrl);
+    }
+
 }

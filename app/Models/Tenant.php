@@ -18,5 +18,24 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     protected $fillable = [
         'id',
         'data',
+        'admin_name',
+        'admin_email',
+        'admin_password',
+        'admin_user_id',
     ];
+
+    protected $hidden = [
+        'admin_password',
+    ];
+
+    public static function getCustomColumns(): array
+    {
+        return [
+            'id',
+            'admin_name',
+            'admin_email',
+            'admin_password',
+            'admin_user_id',
+        ];
+    }
 }
