@@ -129,28 +129,22 @@ class TenantManagementController extends Controller
 
         $user = auth()->user();
 
-        // Create tenant with admin user information
+        // Create tenant with all data at once to avoid pipeline executing with incomplete data
         $tenantId = Str::uuid();
         $tenant = Tenant::create([
             'id' => $tenantId,
             'admin_name' => $user->name,
             'admin_email' => $user->email,
             'admin_password' => Hash::make('password123'), // Default password, user should change it
+            'data' => [
+                'name' => $request->name,
+                'email' => $request->email,
+                'status' => 'active', // Create tenants directly as active for automatic provisioning
+                'created_by' => $user->id,
+                'created_by_email' => $user->email,
+                'created_at' => now()->toISOString(),
+            ],
         ]);
-
-        // Update with full data using direct SQL (workaround for ORM caching issues)
-        $tenantData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'status' => 'active', // Create tenants directly as active for automatic provisioning
-            'created_by' => $user->id,
-            'created_by_email' => $user->email,
-            'created_at' => now()->toISOString(),
-        ];
-
-        \DB::table('tenants')
-            ->where('id', $tenantId)
-            ->update(['data' => json_encode($tenantData)]);
 
         $tenant->domains()->create([
             'domain' => $request->domain,
