@@ -40,6 +40,17 @@ class CreateTenantAdminUser implements ShouldQueue
                 'email_verified_at' => now(),
             ]);
 
+            // Assign admin role to the user (assuming roles are seeded)
+            if (class_exists(\Spatie\Permission\Models\Role::class)) {
+                try {
+                    $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+                    $user->assignRole($adminRole);
+                } catch (\Exception $e) {
+                    // Role assignment failed, but user is created
+                    logger()->warning('Failed to assign admin role to tenant user: ' . $e->getMessage());
+                }
+            }
+
             // Store the actual user ID that was created
             $adminUserId = $user->id;
         });

@@ -150,49 +150,88 @@
                 </CardHeader>
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <!-- Approval actions for draft tenants -->
-                        <Button v-if="tenant.status === 'draft'" @click="approveTenant"
-                            class="bg-blue-600 hover:bg-blue-700 gap-2">
-                            <Icon name="check" class="h-4 w-4" />
-                            Aprobar Tenant
-                        </Button>
-                        <Button v-if="tenant.status === 'draft'" variant="outline" @click="rejectTenant"
-                            class="text-red-600 border-red-200 hover:bg-red-50 gap-2">
-                            <Icon name="x" class="h-4 w-4" />
-                            Rechazar Tenant
-                        </Button>
-                        
-                        <!-- Activation actions -->
-                        <Button v-if="tenant.status === 'approved'" variant="outline" @click="activateTenant"
-                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
-                            <Icon name="play" class="h-4 w-4" />
-                            Activar Tenant
-                        </Button>
-                        
                         <!-- Active tenant actions -->
                         <Button v-if="tenant.status === 'active'" @click="impersonateTenant"
                             class="bg-green-600 hover:bg-green-700 gap-2">
                             <Icon name="log-in" class="h-4 w-4" />
                             Ingresar al Tenant
                         </Button>
-                        <Button v-if="tenant.status === 'active'" variant="outline" @click="suspendTenant"
-                            class="text-orange-600 border-orange-200 hover:bg-orange-50 gap-2">
-                            <Icon name="pause" class="h-4 w-4" />
-                            Suspender Tenant
-                        </Button>
+                        
+                        <AlertDialog v-model:open="suspendDialogOpen">
+                            <AlertDialogTrigger as-child>
+                                <Button v-if="tenant.status === 'active'" variant="outline" 
+                                    class="text-orange-600 border-orange-200 hover:bg-orange-50 gap-2">
+                                    <Icon name="pause" class="h-4 w-4" />
+                                    Suspender Tenant
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Suspender Tenant</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres suspender el tenant "{{ tenant.name }}"?<br><br>
+                                        Los usuarios del tenant no podrán acceder hasta que sea reactivado.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction @click="suspendTenant" class="bg-orange-600 hover:bg-orange-700">
+                                        Suspender Tenant
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         
                         <!-- Suspended tenant actions -->
-                        <Button v-if="tenant.status === 'suspended'" variant="outline" @click="activateTenant"
-                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
-                            <Icon name="play" class="h-4 w-4" />
-                            Reactivar Tenant
-                        </Button>
+                        <AlertDialog v-model:open="activateDialogOpen">
+                            <AlertDialogTrigger as-child>
+                                <Button v-if="tenant.status === 'suspended'" variant="outline" 
+                                    class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
+                                    <Icon name="play" class="h-4 w-4" />
+                                    Reactivar Tenant
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Reactivar Tenant</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres reactivar el tenant "{{ tenant.name }}"?<br><br>
+                                        Los usuarios podrán acceder nuevamente al tenant.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction @click="activateTenant" class="bg-green-600 hover:bg-green-700">
+                                        Reactivar Tenant
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         
                         <!-- Danger zone -->
-                        <Button variant="destructive" @click="deleteTenant" class="gap-2">
-                            <Icon name="trash" class="h-4 w-4" />
-                            Eliminar Tenant
-                        </Button>
+                        <AlertDialog v-model:open="deleteDialogOpen">
+                            <AlertDialogTrigger as-child>
+                                <Button variant="destructive" class="gap-2">
+                                    <Icon name="trash" class="h-4 w-4" />
+                                    Eliminar Tenant
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Eliminar Tenant</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres eliminar el tenant "{{ tenant.name }}"?<br><br>
+                                        <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todos los datos asociados.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction @click="deleteTenant" class="bg-red-600 hover:bg-red-700">
+                                        Eliminar Tenant
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </CardContent>
             </Card>
@@ -256,6 +295,17 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import Icon from '@/components/Icon.vue'
 import axios from 'axios'
 
@@ -299,6 +349,11 @@ const tenantUsers = ref<TenantUser[]>([])
 const loadingUsers = ref(false)
 const showUserDialog = ref(false)
 
+// Dialog states
+const deleteDialogOpen = ref(false)
+const suspendDialogOpen = ref(false)
+const activateDialogOpen = ref(false)
+
 // Breadcrumbs
 const breadcrumbs = [
     { title: 'Panel Central', href: '/dashboard' },
@@ -309,10 +364,6 @@ const breadcrumbs = [
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'active': return 'default'
-        case 'draft': return 'outline'
-        case 'approved': return 'secondary'
-        case 'pending': return 'secondary'
-        case 'rejected': return 'destructive'
         case 'suspended': return 'destructive'
         default: return 'secondary'
     }
@@ -321,10 +372,6 @@ const getStatusVariant = (status: string) => {
 const getStatusText = (status: string) => {
     switch (status) {
         case 'active': return 'Activo'
-        case 'draft': return 'Borrador'
-        case 'approved': return 'Aprobado'
-        case 'pending': return 'Pendiente'
-        case 'rejected': return 'Rechazado'
         case 'suspended': return 'Suspendido'
         default: return status
     }
@@ -341,7 +388,7 @@ const loadTenantUsers = async () => {
         showUserDialog.value = true
     } catch (error) {
         console.error('Error loading tenant users:', error)
-        alert('Error al cargar los usuarios del tenant')
+        console.error('Error al cargar los usuarios del tenant')
     } finally {
         loadingUsers.value = false
     }
@@ -360,12 +407,12 @@ const impersonateUser = async (userId: number) => {
             window.open(response.data.url, '_blank')
             showUserDialog.value = false
         } else {
-            alert('Error al generar token de impersonación')
+            console.error('Error al generar token de impersonación')
         }
     } catch (error: any) {
         console.error('Error impersonating user:', error)
         const errorMessage = error.response?.data?.error || 'Error al impersonar usuario'
-        alert(errorMessage)
+        console.error(errorMessage)
     }
 }
 
@@ -374,33 +421,17 @@ const impersonateTenant = () => {
 }
 
 const suspendTenant = () => {
-    if (confirm('¿Estás seguro de que quieres suspender este tenant?')) {
-        router.post(route('tenant-management.suspend', props.tenant.id))
-    }
+    suspendDialogOpen.value = false
+    router.post(route('tenant-management.suspend', props.tenant.id))
 }
 
 const activateTenant = () => {
+    activateDialogOpen.value = false
     router.post(route('tenant-management.activate', props.tenant.id))
 }
 
-const approveTenant = () => {
-    if (confirm('¿Estás seguro de que quieres aprobar este tenant?')) {
-        router.post(route('tenant-management.approve', props.tenant.id))
-    }
-}
-
-const rejectTenant = () => {
-    const reason = prompt('Razón del rechazo (opcional):')
-    if (confirm('¿Estás seguro de que quieres rechazar este tenant?')) {
-        router.post(route('tenant-management.reject', props.tenant.id), {
-            reason: reason || null
-        })
-    }
-}
-
 const deleteTenant = () => {
-    if (confirm('¿Estás seguro de que quieres eliminar este tenant? Esta acción no se puede deshacer.')) {
-        router.delete(route('tenant-management.destroy', props.tenant.id))
-    }
+    deleteDialogOpen.value = false
+    router.delete(route('tenant-management.destroy', props.tenant.id))
 }
 </script>

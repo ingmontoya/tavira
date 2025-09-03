@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\TenantApprovalRequest;
 
@@ -128,21 +129,23 @@ class TenantManagementController extends Controller
 
         $user = auth()->user();
 
-        // Create tenant with minimal data first
+        // Create tenant with admin user information
         $tenantId = Str::uuid();
         $tenant = Tenant::create([
             'id' => $tenantId,
+            'admin_name' => $user->name,
+            'admin_email' => $user->email,
+            'admin_password' => Hash::make('password123'), // Default password, user should change it
         ]);
 
         // Update with full data using direct SQL (workaround for ORM caching issues)
         $tenantData = [
             'name' => $request->name,
             'email' => $request->email,
-            'status' => 'draft', // Changed to draft instead of pending
-            'approval_status' => 'pending', // New field for approval workflow
+            'status' => 'active', // Create tenants directly as active for automatic provisioning
             'created_by' => $user->id,
             'created_by_email' => $user->email,
-            'approval_requested_at' => now()->toISOString(),
+            'created_at' => now()->toISOString(),
         ];
 
         \DB::table('tenants')
@@ -153,18 +156,14 @@ class TenantManagementController extends Controller
             'domain' => $request->domain,
         ]);
 
-        // Send notification to all superadmins
-        $superAdmins = User::role('superadmin')->get();
-        Notification::send($superAdmins, new TenantApprovalRequest($tenant->fresh(), $user));
-
         // For admin users, redirect to central dashboard
         if ($user->hasRole('admin')) {
             return redirect()->route('dashboard')
-                ->with('success', 'Conjunto creado exitosamente. Se ha enviado la solicitud para aprobación.');
+                ->with('success', 'Conjunto creado y configurado exitosamente.');
         }
 
         return redirect()->route('tenant-management.show', $tenant)
-            ->with('success', 'Tenant creado exitosamente. Se ha enviado la solicitud para aprobación.');
+            ->with('success', 'Tenant creado y configurado exitosamente.');
     }
 
     public function edit(Tenant $tenant)
@@ -310,60 +309,14 @@ class TenantManagementController extends Controller
         return back()->with('success', 'Tenant suspendido exitosamente');
     }
 
-    public function approve(Tenant $tenant)
-    {
-        $data = $tenant->data;
-        $currentApprovalStatus = $data['approval_status'] ?? 'unknown';
-        
-        if ($currentApprovalStatus !== 'pending') {
-            return back()->with('error', "El tenant no está en estado pendiente. Estado actual: {$currentApprovalStatus}");
-        }
-        
-        $data['approval_status'] = 'approved';
-        $data['status'] = 'approved';
-        $data['approved_at'] = now()->toISOString();
-        $data['approved_by'] = auth()->id();
-        
-        $tenant->update(['data' => $data]);
-        
-        return back()->with('success', 'Tenant aprobado exitosamente. Ya puede ser activado.');
-    }
-
-    public function reject(Tenant $tenant, Request $request)
-    {
-        $request->validate([
-            'reason' => 'nullable|string|max:500'
-        ]);
-        
-        $data = $tenant->data;
-        $currentApprovalStatus = $data['approval_status'] ?? 'unknown';
-        
-        if ($currentApprovalStatus !== 'pending') {
-            return back()->with('error', "El tenant no está en estado pendiente. Estado actual: {$currentApprovalStatus}");
-        }
-        
-        $data['approval_status'] = 'rejected';
-        $data['status'] = 'rejected';
-        $data['rejected_at'] = now()->toISOString();
-        $data['rejected_by'] = auth()->id();
-        
-        if ($request->reason) {
-            $data['rejection_reason'] = $request->reason;
-        }
-        
-        $tenant->update(['data' => $data]);
-        
-        return back()->with('success', 'Tenant rechazado exitosamente.');
-    }
 
     public function activate(Tenant $tenant)
     {
-        $data = $tenant->data;
-        $approvalStatus = $data['approval_status'] ?? null;
+        $data = $this->getTenantData($tenant);
         
-        // Only allow activation if approved
-        if ($approvalStatus !== 'approved') {
-            return back()->with('error', 'El tenant debe estar aprobado antes de poder activarlo.');
+        // Allow reactivation of suspended tenants
+        if ($data['status'] === 'active') {
+            return back()->with('info', 'El tenant ya está activo.');
         }
 
         try {
@@ -381,7 +334,10 @@ class TenantManagementController extends Controller
             $data['activated_by'] = auth()->id();
             $data['activated_at'] = now()->toISOString();
 
-            $tenant->update(['data' => $data]);
+            // Use direct SQL update to ensure data persistence
+            \DB::table('tenants')
+                ->where('id', $tenant->id)
+                ->update(['data' => json_encode($data)]);
 
             $message = 'Tenant activado exitosamente. Base de datos creada y configurada.';
             if ($tenant->admin_user_id) {
