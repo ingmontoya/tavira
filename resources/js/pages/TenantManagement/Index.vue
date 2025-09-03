@@ -45,7 +45,10 @@
                                     <SelectContent>
                                         <SelectItem value="all">Todos los estados</SelectItem>
                                         <SelectItem value="active">Activos</SelectItem>
+                                        <SelectItem value="draft">Borrador</SelectItem>
+                                        <SelectItem value="approved">Aprobados</SelectItem>
                                         <SelectItem value="pending">Pendientes</SelectItem>
+                                        <SelectItem value="rejected">Rechazados</SelectItem>
                                         <SelectItem value="suspended">Suspendidos</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -125,7 +128,8 @@
                             </TableCell>
                             <TableCell class="text-right">
                                 <div class="flex items-center justify-end gap-2" @click.stop>
-                                    <Button v-if="tenant.status === 'active'" variant="outline" size="sm"
+                                    <!-- Impersonate only for superadmin and active tenants -->
+                                    <Button v-if="isSuperAdmin && tenant.status === 'active'" variant="outline" size="sm"
                                         @click="impersonateTenant(tenant.id)" class="gap-1">
                                         <Icon name="log-in" class="h-4 w-4" />
                                         Ingresar
@@ -145,22 +149,42 @@
                                                 <Icon name="edit" class="h-4 w-4 mr-2" />
                                                 Editar
                                             </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem v-if="tenant.status === 'active'"
-                                                @click="suspendTenant(tenant.id)" class="text-orange-600">
-                                                <Icon name="pause" class="h-4 w-4 mr-2" />
-                                                Suspender
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem v-if="tenant.status !== 'active'"
-                                                @click="activateTenant(tenant.id)" class="text-green-600">
-                                                <Icon name="play" class="h-4 w-4 mr-2" />
-                                                Activar
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem @click="deleteTenant(tenant.id)" class="text-red-600">
-                                                <Icon name="trash" class="h-4 w-4 mr-2" />
-                                                Eliminar
-                                            </DropdownMenuItem>
+                                            <!-- Superadmin-only actions -->
+                                            <template v-if="isSuperAdmin">
+                                                <DropdownMenuSeparator />
+                                                <!-- Approval actions for draft tenants -->
+                                                <DropdownMenuItem v-if="tenant.status === 'draft'"
+                                                    @click="approveTenant(tenant.id)" class="text-blue-600">
+                                                    <Icon name="check" class="h-4 w-4 mr-2" />
+                                                    Aprobar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem v-if="tenant.status === 'draft'"
+                                                    @click="rejectTenant(tenant.id)" class="text-red-600">
+                                                    <Icon name="x" class="h-4 w-4 mr-2" />
+                                                    Rechazar
+                                                </DropdownMenuItem>
+                                                <!-- Activation/suspension actions -->
+                                                <DropdownMenuItem v-if="tenant.status === 'approved'"
+                                                    @click="activateTenant(tenant.id)" class="text-green-600">
+                                                    <Icon name="play" class="h-4 w-4 mr-2" />
+                                                    Activar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem v-if="tenant.status === 'active'"
+                                                    @click="suspendTenant(tenant.id)" class="text-orange-600">
+                                                    <Icon name="pause" class="h-4 w-4 mr-2" />
+                                                    Suspender
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem v-if="tenant.status === 'suspended'"
+                                                    @click="activateTenant(tenant.id)" class="text-green-600">
+                                                    <Icon name="play" class="h-4 w-4 mr-2" />
+                                                    Reactivar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem @click="deleteTenant(tenant.id)" class="text-red-600">
+                                                    <Icon name="trash" class="h-4 w-4 mr-2" />
+                                                    Eliminar
+                                                </DropdownMenuItem>
+                                            </template>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -193,7 +217,7 @@
 <script setup lang="ts">
 import { reactive, computed } from 'vue'
 import { debounce } from 'lodash'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -246,6 +270,11 @@ interface Props {
 
 const props = defineProps<Props>()
 
+// Access current user data
+const page = usePage()
+const user = computed(() => page.props.auth?.user)
+const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'))
+
 const breadcrumbs = [
     {
         title: 'Panel Central',
@@ -290,7 +319,10 @@ const clearFilters = () => {
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'active': return 'default'
+        case 'draft': return 'outline'
+        case 'approved': return 'secondary'
         case 'pending': return 'secondary'
+        case 'rejected': return 'destructive'
         case 'suspended': return 'destructive'
         default: return 'secondary'
     }
@@ -299,7 +331,10 @@ const getStatusVariant = (status: string) => {
 const getStatusText = (status: string) => {
     switch (status) {
         case 'active': return 'Activo'
+        case 'draft': return 'Borrador'
+        case 'approved': return 'Aprobado'
         case 'pending': return 'Pendiente'
+        case 'rejected': return 'Rechazado'
         case 'suspended': return 'Suspendido'
         default: return status
     }
@@ -317,6 +352,21 @@ const suspendTenant = (tenantId: string) => {
 
 const activateTenant = (tenantId: string) => {
     router.post(route('tenant-management.activate', tenantId))
+}
+
+const approveTenant = (tenantId: string) => {
+    if (confirm('¿Estás seguro de que quieres aprobar este tenant?')) {
+        router.post(route('tenant-management.approve', tenantId))
+    }
+}
+
+const rejectTenant = (tenantId: string) => {
+    const reason = prompt('Razón del rechazo (opcional):')
+    if (confirm('¿Estás seguro de que quieres rechazar este tenant?')) {
+        router.post(route('tenant-management.reject', tenantId), {
+            reason: reason || null
+        })
+    }
 }
 
 const deleteTenant = (tenantId: string) => {
