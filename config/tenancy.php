@@ -16,11 +16,16 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
-        '127.0.0.1',
-        'localhost',
-        'tavira.com.co',
-    ],
+    'central_domains' => env('APP_ENV') === 'production'
+        ? ['tavira.com.co']
+        : [
+            '127.0.0.1',
+            'localhost',
+            '127.0.0.1:8000',
+            '127.0.0.1:8001',
+            'localhost:8000',
+            'localhost:8001',
+        ],
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.

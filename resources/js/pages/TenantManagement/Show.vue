@@ -335,7 +335,8 @@ const loadTenantUsers = async () => {
     
     loadingUsers.value = true
     try {
-        const response = await axios.get(route('tenant-management.users', props.tenant.id))
+        const url = `/tenants/${props.tenant.id}/users`
+        const response = await axios.get(url)
         tenantUsers.value = response.data.users || []
         showUserDialog.value = true
     } catch (error) {
@@ -348,7 +349,8 @@ const loadTenantUsers = async () => {
 
 const impersonateUser = async (userId: number) => {
     try {
-        const response = await axios.post(route('tenant-management.impersonate', props.tenant.id), {
+        const url = `/tenants/${props.tenant.id}/impersonate`
+        const response = await axios.post(url, {
             user_id: userId,
             redirect_url: '/dashboard'
         })
