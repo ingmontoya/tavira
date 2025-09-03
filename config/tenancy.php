@@ -19,12 +19,8 @@ return [
     'central_domains' => env('APP_ENV') === 'production'
         ? ['tavira.com.co']
         : [
-            '127.0.0.1',
             'localhost',
-            '127.0.0.1:8000',
-            '127.0.0.1:8001',
-            'localhost:8000',
-            'localhost:8001',
+            '127.0.0.1',
         ],
 
     /**
