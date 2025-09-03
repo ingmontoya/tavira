@@ -211,22 +211,65 @@
                 </CardContent>
             </Card>
         </div>
+
+        <!-- User Selection Dialog -->
+        <div v-if="showUserDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showUserDialog = false">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Seleccionar Usuario para Impersonar</h3>
+                    <Button variant="ghost" @click="showUserDialog = false" class="p-1">
+                        <Icon name="x" class="h-4 w-4" />
+                    </Button>
+                </div>
+                
+                <div v-if="loadingUsers" class="text-center py-8">
+                    <p>Cargando usuarios...</p>
+                </div>
+                
+                <div v-else-if="tenantUsers.length === 0" class="text-center py-8">
+                    <p class="text-muted-foreground">No se encontraron usuarios en este tenant</p>
+                </div>
+                
+                <div v-else class="space-y-2 max-h-64 overflow-y-auto">
+                    <div v-for="user in tenantUsers" :key="user.id" 
+                         class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                         @click="impersonateUser(user.id)">
+                        <div class="flex items-center gap-3">
+                            <Icon name="user" class="h-5 w-5 text-muted-foreground" />
+                            <div>
+                                <p class="font-medium">{{ user.name }}</p>
+                                <p class="text-sm text-muted-foreground">{{ user.email }}</p>
+                            </div>
+                        </div>
+                        <Icon name="log-in" class="h-4 w-4 text-green-600" />
+                    </div>
+                </div>
+            </div>
+        </div>
     </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { router, Head, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Icon from '@/components/Icon.vue'
+import axios from 'axios'
 
 interface Domain {
     id: string
     domain: string
     is_primary: boolean
+}
+
+interface TenantUser {
+    id: number
+    name: string
+    email: string
+    created_at: string
 }
 
 interface Tenant {
@@ -250,6 +293,11 @@ const props = defineProps<Props>()
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
 const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'))
+
+// Tenant users management
+const tenantUsers = ref<TenantUser[]>([])
+const loadingUsers = ref(false)
+const showUserDialog = ref(false)
 
 // Breadcrumbs
 const breadcrumbs = [
@@ -282,8 +330,45 @@ const getStatusText = (status: string) => {
     }
 }
 
+const loadTenantUsers = async () => {
+    if (props.tenant.status !== 'active') return
+    
+    loadingUsers.value = true
+    try {
+        const response = await axios.get(route('tenant-management.users', props.tenant.id))
+        tenantUsers.value = response.data.users || []
+        showUserDialog.value = true
+    } catch (error) {
+        console.error('Error loading tenant users:', error)
+        alert('Error al cargar los usuarios del tenant')
+    } finally {
+        loadingUsers.value = false
+    }
+}
+
+const impersonateUser = async (userId: number) => {
+    try {
+        const response = await axios.post(route('tenant-management.impersonate', props.tenant.id), {
+            user_id: userId,
+            redirect_url: '/dashboard'
+        })
+        
+        if (response.data.success) {
+            // Open tenant URL with impersonation token
+            window.open(response.data.url, '_blank')
+            showUserDialog.value = false
+        } else {
+            alert('Error al generar token de impersonación')
+        }
+    } catch (error: any) {
+        console.error('Error impersonating user:', error)
+        const errorMessage = error.response?.data?.error || 'Error al impersonar usuario'
+        alert(errorMessage)
+    }
+}
+
 const impersonateTenant = () => {
-    router.post(route('tenant-management.impersonate', props.tenant.id))
+    loadTenantUsers()
 }
 
 const suspendTenant = () => {

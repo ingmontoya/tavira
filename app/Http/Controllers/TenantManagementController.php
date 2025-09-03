@@ -243,8 +243,13 @@ class TenantManagementController extends Controller
             ->with('success', 'Tenant eliminado exitosamente');
     }
 
-    public function impersonate(Tenant $tenant)
+    public function impersonate(Request $request, Tenant $tenant)
     {
+        $request->validate([
+            'user_id' => 'required|integer',
+            'redirect_url' => 'string|nullable'
+        ]);
+
         $data = $this->getTenantData($tenant);
         if (($data['status'] ?? 'pending') !== 'active') {
             return response()->json(['error' => 'Solo puedes acceder a tenants activos'], 409);
@@ -255,13 +260,30 @@ class TenantManagementController extends Controller
             return response()->json(['error' => 'El tenant no tiene dominio configurado'], 409);
         }
 
-        $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
-        if (app()->environment('local')) {
-            $tenantUrl .= ':8000';
-        }
-        $loginUrl = $tenantUrl . '/login';
+        try {
+            // Generate impersonation token using stancl/tenancy
+            $redirectUrl = $request->redirect_url ?? '/dashboard';
+            $tokenObject = tenancy()->impersonate($tenant, $request->user_id, $redirectUrl, 'web');
+            
+            // Extract the token string from the object
+            $token = $tokenObject->token ?? $tokenObject;
+            
+            // Build the impersonation URL
+            $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
+            if (app()->environment('local')) {
+                $tenantUrl .= ':8001'; // Updated to match current server port
+            }
+            
+            $impersonationUrl = $tenantUrl . '/impersonate/' . $token;
 
-        return Inertia::location($loginUrl);
+            return response()->json([
+                'success' => true,
+                'url' => $impersonationUrl,
+                'message' => 'Token de impersonación generado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al generar token de impersonación: ' . $e->getMessage()], 500);
+        }
     }
 
     public function suspend(Tenant $tenant)
@@ -346,6 +368,40 @@ class TenantManagementController extends Controller
             return back()->with('success', 'Tenant activado exitosamente. Base de datos creada y configurada.');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al activar el tenant: ' . $e->getMessage());
+        }
+    }
+
+    public function getUsers(Tenant $tenant)
+    {
+        $data = $this->getTenantData($tenant);
+        if (($data['status'] ?? 'pending') !== 'active') {
+            return response()->json(['error' => 'Solo puedes obtener usuarios de tenants activos'], 409);
+        }
+
+        try {
+            // Initialize tenancy to access tenant database
+            tenancy()->initialize($tenant);
+            
+            // Get users from tenant database
+            $users = \App\Models\User::select('id', 'name', 'email', 'created_at')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'created_at' => $user->created_at->format('d/m/Y H:i'),
+                    ];
+                });
+
+            // End tenancy
+            tenancy()->end();
+
+            return response()->json(['users' => $users]);
+        } catch (\Exception $e) {
+            // Ensure tenancy is ended even if there's an error
+            tenancy()->end();
+            return response()->json(['error' => 'Error al obtener usuarios del tenant: ' . $e->getMessage()], 500);
         }
     }
 
