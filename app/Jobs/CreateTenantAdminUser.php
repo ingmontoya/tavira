@@ -36,7 +36,7 @@ class CreateTenantAdminUser implements ShouldQueue
             $user = User::create([
                 'name' => $this->tenant->admin_name,
                 'email' => $this->tenant->admin_email,
-                'password' => Hash::make($this->tenant->admin_password),
+                'password' => $this->tenant->admin_password, // Password is already hashed in controller
                 'email_verified_at' => now(),
             ]);
 
