@@ -159,7 +159,7 @@
         <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ asset('public/img/tavira_logo_blanco.svg') }}" alt="Tavira Logo" class="logo-image">
+                <img src="{{ config('app.url') }}/img/tavira_logo_blanco.svg" alt="Tavira Logo" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block;">
             </div>
         </div>
 

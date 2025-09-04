@@ -87,23 +87,16 @@ class RequiresSubscription
                     ->with('info', 'Para continuar, debes seleccionar y pagar un plan de suscripción.');
             }
 
-            // If subscription exists but no tenant, create the tenant
+            // DISABLED: If subscription exists but no tenant, create the tenant
+            // This is now handled manually through the tenant management interface
             if ($activeSubscription && !$user->tenant_id) {
-                \Illuminate\Support\Facades\Log::info('Creating tenant for user with active subscription', [
+                \Illuminate\Support\Facades\Log::info('User has active subscription but no tenant - redirecting to tenant creation', [
                     'user_id' => $user->id,
                     'subscription_id' => $activeSubscription->id,
-                    'user_current_tenant_id' => $user->tenant_id,
                 ]);
                 
-                $this->createTenantForUser($user, $activeSubscription);
-                
-                // Reload user to get updated tenant_id
-                $user->refresh();
-                
-                \Illuminate\Support\Facades\Log::info('Tenant creation completed', [
-                    'user_id' => $user->id,
-                    'user_new_tenant_id' => $user->tenant_id,
-                ]);
+                return redirect()->route('tenant-management.create')
+                    ->with('info', 'Tienes una suscripción activa. Crea tu conjunto para comenzar.');
             }
         }
 
