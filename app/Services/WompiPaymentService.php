@@ -416,14 +416,25 @@ class WompiPaymentService
                 'transaction_id' => $transactionData['id'],
             ]);
 
+            // Ensure we have proper user_id and tenant_id values
+            $finalUserId = $pendingData['user_id'] ?? $referenceInfo['user_id'] ?? null;
+            $finalTenantId = $referenceInfo['tenant_id'] ?? $pendingData['tenant_id'] ?? null;
+            
+            // If we still don't have user_id, try to find user by email from transaction
+            if (!$finalUserId && isset($transactionData['customer_email'])) {
+                $user = \App\Models\User::where('email', $transactionData['customer_email'])->first();
+                $finalUserId = $user?->id;
+                $finalTenantId = $finalTenantId ?? $user?->tenant_id;
+            }
+
             // Find or create tenant subscription record
             $subscription = \App\Models\TenantSubscription::updateOrCreate(
                 [
                     'payment_reference' => $transactionData['reference'],
                 ],
                 [
-                    'tenant_id' => $referenceInfo['tenant_id'],
-                    'user_id' => $pendingData['user_id'] ?? null,
+                    'tenant_id' => $finalTenantId,
+                    'user_id' => $finalUserId,
                     'plan_name' => $referenceInfo['plan_name'],
                     'amount' => $transactionData['amount_in_cents'] / 100,
                     'payment_method' => 'wompi_' . strtolower($transactionData['payment_method_type']),
@@ -439,6 +450,13 @@ class WompiPaymentService
             Log::info('Subscription created/updated successfully', [
                 'subscription_id' => $subscription->id,
                 'user_id' => $subscription->user_id,
+                'tenant_id' => $subscription->tenant_id,
+                'final_user_id_used' => $finalUserId,
+                'final_tenant_id_used' => $finalTenantId,
+                'reference_info_user_id' => $referenceInfo['user_id'] ?? null,
+                'reference_info_tenant_id' => $referenceInfo['tenant_id'] ?? null,
+                'pending_data_user_id' => $pendingData['user_id'] ?? null,
+                'pending_data_tenant_id' => $pendingData['tenant_id'] ?? null,
                 'tenant_id' => $subscription->tenant_id,
                 'status' => $subscription->status,
                 'plan_name' => $subscription->plan_name,
@@ -666,7 +684,7 @@ class WompiPaymentService
             }
 
             $result = [
-                'tenant_id' => null, // New subscription
+                'tenant_id' => $user?->tenant_id, // Use user's tenant if available
                 'plan_name' => $planName,
                 'user_id' => $user?->id,
                 'timestamp' => time(),
