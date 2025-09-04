@@ -197,9 +197,26 @@ class TenantManagementController extends Controller
             // Associate user with the tenant they just created
             $user->update(['tenant_id' => $tenant->id]);
             
+            // Update tenant subscription status based on existing subscriptions
+            $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user, $tenant) {
+                $query->where('tenant_id', $tenant->id)
+                      ->orWhere('user_id', $user->id);
+            })
+            ->where('status', 'active')
+            ->first();
+            
+            if ($activeSubscription) {
+                $tenant->update([
+                    'subscription_status' => 'active',
+                    'subscription_expires_at' => $activeSubscription->expires_at,
+                    'subscription_last_checked_at' => now(),
+                ]);
+            }
+            
             \Log::info('User associated with tenant', [
                 'user_id' => $user->id,
-                'tenant_id' => $tenant->id
+                'tenant_id' => $tenant->id,
+                'subscription_status' => $tenant->subscription_status,
             ]);
         } catch (\Exception $e) {
             \Log::error('Error updating tenant data synchronously', [
