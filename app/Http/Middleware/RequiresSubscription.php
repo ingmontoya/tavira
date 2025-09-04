@@ -54,8 +54,8 @@ class RequiresSubscription
 
         // Check if user is an admin without tenant (central admin)
         if ($user->hasRole('admin') && !$user->tenant_id) {
-            // Check if user has an active subscription
-            $activeSubscription = TenantSubscription::where(function ($query) use ($user) {
+            // Check if user has an active subscription (use default/central database connection)
+            $activeSubscription = TenantSubscription::on(config('database.default'))->where(function ($query) use ($user) {
                 $query->whereNull('tenant_id') // For new signups
                       ->orWhere('tenant_id', $user->tenant_id);
             })
@@ -98,6 +98,44 @@ class RequiresSubscription
                 
                 return redirect()->route('tenant-management.create')
                     ->with('info', 'Tienes una suscripción activa. Crea tu conjunto para comenzar.');
+            }
+        }
+        
+        // Check if user has tenant_id (is in tenant context) and verify subscription
+        if ($user->hasRole('admin') && $user->tenant_id) {
+            // Check if user has an active subscription for this tenant (use default/central database connection)
+            $activeSubscription = TenantSubscription::on(config('database.default'))->where(function ($query) use ($user) {
+                $query->where('tenant_id', $user->tenant_id)
+                      ->orWhere('user_id', $user->id);
+            })
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                      ->orWhere('expires_at', '>', now());
+            })
+            ->first();
+
+            // Log subscription check for debugging
+            \Illuminate\Support\Facades\Log::info('RequiresSubscription middleware check for tenant user:', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'tenant_id' => $user->tenant_id,
+                'has_admin_role' => $user->hasRole('admin'),
+                'active_subscription_found' => !is_null($activeSubscription),
+                'subscription_id' => $activeSubscription?->id,
+                'request_route' => $request->route()?->getName(),
+            ]);
+
+            // If no active subscription, redirect to plan selection
+            if (!$activeSubscription) {
+                \Illuminate\Support\Facades\Log::warning('Tenant user redirected to plans - no active subscription found', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'tenant_id' => $user->tenant_id,
+                ]);
+                
+                return redirect()->route('subscription.plans')
+                    ->with('info', 'Para continuar usando el sistema, necesitas una suscripción activa.');
             }
         }
 
