@@ -13,6 +13,8 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $casts = [
         'data' => 'array',
+        'subscription_expires_at' => 'datetime',
+        'subscription_last_checked_at' => 'datetime',
     ];
 
     protected $fillable = [
@@ -22,6 +24,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'admin_email',
         'admin_password',
         'admin_user_id',
+        'subscription_status',
+        'subscription_expires_at',
+        'subscription_last_checked_at',
     ];
 
     protected $hidden = [

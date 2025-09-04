@@ -28,6 +28,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withSchedule(function ($schedule) {
         $schedule->command('invoices:process-late-fees')->monthlyOn(1, '09:00');
+        
+        // Sync tenant subscription status every hour
+        $schedule->command('tenants:sync-subscription-status')->hourly();
+        
+        // Also run a daily check to catch any missed updates
+        $schedule->command('tenants:sync-subscription-status')->dailyAt('06:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
