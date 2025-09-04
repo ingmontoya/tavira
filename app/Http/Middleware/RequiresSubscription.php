@@ -43,6 +43,7 @@ class RequiresSubscription
             'profile.*',
             'wompi.webhook',
             'user-profile-information.update',
+            'tenant-management.*', // Allow all tenant management routes to avoid redirect loops
         ];
 
         foreach ($allowedRoutes as $route) {
