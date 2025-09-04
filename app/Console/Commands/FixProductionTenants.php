@@ -75,6 +75,20 @@ class FixProductionTenants extends Command
                     $tenant->update(['admin_user_id' => $adminUser->id]);
                 }
                 
+                // Ensure tenant has a domain
+                if ($tenant->domains->count() === 0) {
+                    $domainName = 'tenant-' . substr($tenant->id, 0, 8) . '.tavira.com.co';
+                    
+                    if (!$isDryRun) {
+                        $tenant->domains()->create([
+                            'domain' => $domainName
+                        ]);
+                    }
+                    
+                    $this->line("   🌐 Created domain: {$domainName}");
+                    $fixed++;
+                }
+                
                 // End tenant context
                 tenancy()->end();
                 
