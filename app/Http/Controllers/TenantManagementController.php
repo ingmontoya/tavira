@@ -146,7 +146,7 @@ class TenantManagementController extends Controller
             'id' => $tenantId,
             'admin_name' => $user->name,
             'admin_email' => $user->email,
-            'admin_password' => Hash::make($tempPassword), // Secure temporary password
+            'admin_password' => $tempPassword, // Store plain password temporarily for sync creation
             'data' => [
                 'name' => $request->name,
                 'email' => $request->email,
@@ -196,6 +196,49 @@ class TenantManagementController extends Controller
             
             // Associate user with the tenant they just created
             $user->update(['tenant_id' => $tenant->id]);
+            
+            // Create tenant admin user SYNCHRONOUSLY to avoid job timing issues
+            try {
+                $tenant->run(function () use ($tenant, $tempPassword) {
+                    // Create the admin user in the tenant database
+                    $tenantUser = \App\Models\User::create([
+                        'name' => $tenant->admin_name,
+                        'email' => $tenant->admin_email,
+                        'password' => Hash::make($tempPassword), // Hash the PLAIN password here
+                        'email_verified_at' => now(),
+                    ]);
+
+                    // Assign admin role to the user
+                    if (class_exists(\Spatie\Permission\Models\Role::class)) {
+                        try {
+                            $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+                            $tenantUser->assignRole($adminRole);
+                        } catch (\Exception $e) {
+                            \Log::warning('Failed to assign admin role to tenant user', [
+                                'tenant_id' => $tenant->id,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
+                    }
+                    
+                    return $tenantUser->id;
+                });
+                
+                // Update tenant with hashed password for security
+                $tenant->update(['admin_password' => Hash::make($tempPassword)]);
+                
+                \Log::info('Tenant admin user created synchronously', [
+                    'tenant_id' => $tenant->id,
+                    'admin_email' => $tenant->admin_email,
+                    'password_used' => $tempPassword
+                ]);
+                
+            } catch (\Exception $e) {
+                \Log::error('Error creating tenant admin user synchronously', [
+                    'tenant_id' => $tenant->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
             
             // Update tenant subscription status based on existing subscriptions
             $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user, $tenant) {
