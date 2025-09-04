@@ -39,18 +39,19 @@ class TenantManagementController extends Controller
             ->when(!$user->hasRole('superadmin'), function ($query) use ($user) {
                 // Filter tenants created by this user or where user is the admin
                 $query->where(function ($subQuery) use ($user) {
-                    $subQuery->whereJsonContains('data->created_by', $user->id)
-                        ->orWhereJsonContains('data->created_by_email', $user->email)
-                        ->orWhereJsonContains('data->email', $user->email);
+                    // Use PostgreSQL JSON syntax instead of MySQL whereJsonContains
+                    $subQuery->whereRaw('data->>? = ?', ['created_by', $user->id])
+                        ->orWhereRaw('data->>? = ?', ['created_by_email', $user->email])
+                        ->orWhereRaw('data->>? = ?', ['email', $user->email]);
                 });
             })
             ->when($request->search, function ($query, $search) {
                 $query->where('id', 'like', "%{$search}%")
-                    ->orWhereJsonContains('data->name', $search)
-                    ->orWhereJsonContains('data->email', $search);
+                    ->orWhereRaw('data->>? ILIKE ?', ['name', "%{$search}%"])
+                    ->orWhereRaw('data->>? ILIKE ?', ['email', "%{$search}%"]);
             })
             ->when($request->status && $request->status !== 'all', function ($query, $status) {
-                $query->whereJsonContains('data->status', $status);
+                $query->whereRaw('data->>? = ?', ['status', $status]);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10)
@@ -169,17 +170,43 @@ class TenantManagementController extends Controller
             'tenant_id' => $tenant->id,
         ]);
 
-        // Create a queued job to update tenant data after pipeline completes
-        dispatch(new \App\Jobs\UpdateTenantDataAfterCreation($tenant->id, [
-            'name' => $request->name,
-            'email' => $request->email,
-            'status' => 'active',
-            'created_by' => $user->id,
-            'created_by_email' => $user->email,
-            'created_at' => now()->toISOString(),
-            'temp_password' => $tempPassword,
-            'requires_password_change' => true,
-        ]))->delay(3); // Delay 3 seconds to let pipeline complete
+        // Update tenant data synchronously to ensure it persists
+        try {
+            // Give a small delay for pipeline to complete
+            sleep(1);
+            
+            // Update tenant data directly
+            \DB::table('tenants')
+                ->where('id', $tenant->id)
+                ->update(['data' => json_encode([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'status' => 'active',
+                    'created_by' => $user->id,
+                    'created_by_email' => $user->email,
+                    'created_at' => now()->toISOString(),
+                    'temp_password' => $tempPassword,
+                    'requires_password_change' => true,
+                ])]);
+                
+            \Log::info('Tenant data updated synchronously', [
+                'tenant_id' => $tenant->id,
+                'created_by' => $user->id
+            ]);
+            
+            // Associate user with the tenant they just created
+            $user->update(['tenant_id' => $tenant->id]);
+            
+            \Log::info('User associated with tenant', [
+                'user_id' => $user->id,
+                'tenant_id' => $tenant->id
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating tenant data synchronously', [
+                'tenant_id' => $tenant->id,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         // For admin users, redirect to tenant details with password info
         if ($user->hasRole('admin')) {
