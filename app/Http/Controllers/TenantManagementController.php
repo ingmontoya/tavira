@@ -129,13 +129,16 @@ class TenantManagementController extends Controller
 
         $user = auth()->user();
 
+        // Generate a secure random password for the tenant admin
+        $tempPassword = $this->generateSecurePassword();
+
         // Create tenant with all data at once to avoid pipeline executing with incomplete data
         $tenantId = Str::uuid();
         $tenant = Tenant::create([
             'id' => $tenantId,
             'admin_name' => $user->name,
             'admin_email' => $user->email,
-            'admin_password' => Hash::make('password123'), // Default password, user should change it
+            'admin_password' => Hash::make($tempPassword), // Secure temporary password
             'data' => [
                 'name' => $request->name,
                 'email' => $request->email,
@@ -143,6 +146,8 @@ class TenantManagementController extends Controller
                 'created_by' => $user->id,
                 'created_by_email' => $user->email,
                 'created_at' => now()->toISOString(),
+                'temp_password' => $tempPassword, // Store temp password for display
+                'requires_password_change' => true, // Flag to force password change
             ],
         ]);
 
@@ -150,14 +155,45 @@ class TenantManagementController extends Controller
             'domain' => $request->domain,
         ]);
 
-        // For admin users, redirect to central dashboard
+        // Wait a bit for the pipeline to complete, then update data to preserve our custom fields
+        // This is necessary because some tenancy jobs overwrite the data field
+        dispatch(function () use ($tenant, $request, $user, $tempPassword) {
+            sleep(2); // Wait for pipeline to complete
+            
+            // Get current data and merge with our custom data
+            $currentData = $tenant->fresh()->data ?? [];
+            $customData = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'status' => 'active',
+                'created_by' => $user->id,
+                'created_by_email' => $user->email,
+                'created_at' => now()->toISOString(),
+                'temp_password' => $tempPassword,
+                'requires_password_change' => true,
+            ];
+            
+            // Merge and update
+            $finalData = array_merge($currentData, $customData);
+            
+            // Use direct SQL update to ensure data persistence
+            \DB::table('tenants')
+                ->where('id', $tenant->id)
+                ->update(['data' => json_encode($finalData)]);
+        })->afterResponse();
+
+        // For admin users, redirect to tenant details with password info
         if ($user->hasRole('admin')) {
-            return redirect()->route('dashboard')
-                ->with('success', 'Conjunto creado y configurado exitosamente.');
+            return redirect()->route('tenant-management.show', $tenant)
+                ->with('success', 'Conjunto creado y configurado exitosamente.')
+                ->with('temp_password', $tempPassword)
+                ->with('show_password_info', true);
         }
 
         return redirect()->route('tenant-management.show', $tenant)
-            ->with('success', 'Tenant creado y configurado exitosamente.');
+            ->with('success', 'Tenant creado y configurado exitosamente.')
+            ->with('temp_password', $tempPassword)
+            ->with('show_password_info', true);
     }
 
     public function edit(Tenant $tenant)
@@ -376,6 +412,34 @@ class TenantManagementController extends Controller
             tenancy()->end();
             return response()->json(['error' => 'Error al obtener usuarios del tenant: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Generate a secure random password that meets system requirements
+     */
+    private function generateSecurePassword(): string
+    {
+        // Password requirements: at least 8 characters, with uppercase, lowercase, number, and special character
+        $uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowercase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+        $special = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+        
+        // Ensure at least one character from each required set
+        $password = '';
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+        
+        // Fill remaining characters randomly
+        $allChars = $uppercase . $lowercase . $numbers . $special;
+        for ($i = 4; $i < 12; $i++) { // Make it 12 characters total
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+        
+        // Shuffle the password to randomize character positions
+        return str_shuffle($password);
     }
 
 

@@ -31,6 +31,49 @@
                 </div>
             </div>
 
+            <!-- Password Information Alert -->
+            <div v-if="$page.props.flash.show_password_info && $page.props.flash.temp_password" 
+                class="mb-8 rounded-lg bg-amber-50 border border-amber-200 p-6">
+                <div class="flex items-start gap-4">
+                    <Icon name="key" class="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-amber-800 mb-2">
+                            Credenciales del Administrador del Tenant
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <p class="text-amber-700">
+                                El usuario administrador ha sido creado con las siguientes credenciales:
+                            </p>
+                            <div class="bg-white rounded-md p-4 border border-amber-200">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Email:</p>
+                                        <p class="font-mono text-sm bg-gray-50 p-2 rounded">{{ tenant.email || 'N/A' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-700">Password Temporal:</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="font-mono text-sm bg-gray-50 p-2 rounded flex-1">{{ $page.props.flash.temp_password }}</p>
+                                            <Button @click="copyPassword" variant="outline" size="sm" class="gap-1">
+                                                <Icon name="copy" class="h-4 w-4" />
+                                                Copiar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <Icon name="alert-triangle" class="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <p class="text-amber-700">
+                                    <strong>Importante:</strong> El usuario será obligado a cambiar esta contraseña en su primer inicio de sesión.
+                                    Guarda estas credenciales en un lugar seguro hasta que el administrador del tenant las actualice.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 <!-- Información Básica -->
                 <Card>
@@ -433,5 +476,14 @@ const activateTenant = () => {
 const deleteTenant = () => {
     deleteDialogOpen.value = false
     router.delete(route('tenant-management.destroy', props.tenant.id))
+}
+
+const copyPassword = () => {
+    const password = page.props.flash.temp_password
+    if (password) {
+        navigator.clipboard.writeText(password).then(() => {
+            console.log('Password copied to clipboard')
+        })
+    }
 }
 </script>
