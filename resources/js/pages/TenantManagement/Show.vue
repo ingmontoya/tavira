@@ -32,7 +32,7 @@
             </div>
 
             <!-- Password Information Alert -->
-            <div v-if="$page.props.flash.show_password_info && $page.props.flash.temp_password" 
+            <div v-if="($page.props.flash.show_password_info && $page.props.flash.temp_password) || (sessionData.tenant_creation_success && sessionData.tenant_temp_password && sessionData.tenant_id === tenant.id)" 
                 class="mb-8 rounded-lg bg-amber-50 border border-amber-200 p-6">
                 <div class="flex items-start gap-4">
                     <Icon name="key" class="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -53,7 +53,7 @@
                                     <div>
                                         <p class="font-medium text-gray-700">Password Temporal:</p>
                                         <div class="flex items-center gap-2">
-                                            <p class="font-mono text-sm bg-gray-50 p-2 rounded flex-1">{{ $page.props.flash.temp_password }}</p>
+                                            <p class="font-mono text-sm bg-gray-50 p-2 rounded flex-1">{{ $page.props.flash.temp_password || sessionData.tenant_temp_password }}</p>
                                             <Button @click="copyPassword" variant="outline" size="sm" class="gap-1">
                                                 <Icon name="copy" class="h-4 w-4" />
                                                 Copiar
@@ -387,6 +387,13 @@ const page = usePage()
 const user = computed(() => page.props.auth?.user)
 const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'))
 
+// Get session data for tenant creation
+const sessionData = computed(() => ({
+    tenant_creation_success: page.props.session?.tenant_creation_success,
+    tenant_temp_password: page.props.session?.tenant_temp_password,
+    tenant_id: page.props.session?.tenant_id,
+}))
+
 // Tenant users management
 const tenantUsers = ref<TenantUser[]>([])
 const loadingUsers = ref(false)
@@ -479,7 +486,7 @@ const deleteTenant = () => {
 }
 
 const copyPassword = () => {
-    const password = page.props.flash.temp_password
+    const password = page.props.flash.temp_password || sessionData.value.tenant_temp_password
     if (password) {
         navigator.clipboard.writeText(password).then(() => {
             console.log('Password copied to clipboard')

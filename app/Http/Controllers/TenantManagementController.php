@@ -82,9 +82,16 @@ class TenantManagementController extends Controller
         // Ensure user can only access their own tenants (unless superadmin)
         if (!$user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
-            $canAccess = ($data['created_by'] ?? null) == $user->id ||
+            
+            // Check if user just created this tenant (from session)
+            $justCreated = session('tenant_id') === $tenant->id && session('tenant_creation_success');
+            
+            $canAccess = $justCreated ||
+                ($data['created_by'] ?? null) == $user->id ||
                 ($data['created_by_email'] ?? null) == $user->email ||
-                ($data['email'] ?? null) == $user->email;
+                ($data['email'] ?? null) == $user->email ||
+                // Also check tenant admin fields for immediate access after creation
+                $tenant->admin_email === $user->email;
 
             if (!$canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
@@ -155,32 +162,24 @@ class TenantManagementController extends Controller
             'domain' => $request->domain,
         ]);
 
-        // Wait a bit for the pipeline to complete, then update data to preserve our custom fields
-        // This is necessary because some tenancy jobs overwrite the data field
-        dispatch(function () use ($tenant, $request, $user, $tempPassword) {
-            sleep(2); // Wait for pipeline to complete
-            
-            // Get current data and merge with our custom data
-            $currentData = $tenant->fresh()->data ?? [];
-            $customData = [
-                'name' => $request->name,
-                'email' => $request->email,
-                'status' => 'active',
-                'created_by' => $user->id,
-                'created_by_email' => $user->email,
-                'created_at' => now()->toISOString(),
-                'temp_password' => $tempPassword,
-                'requires_password_change' => true,
-            ];
-            
-            // Merge and update
-            $finalData = array_merge($currentData, $customData);
-            
-            // Use direct SQL update to ensure data persistence
-            \DB::table('tenants')
-                ->where('id', $tenant->id)
-                ->update(['data' => json_encode($finalData)]);
-        })->afterResponse();
+        // Store the password and additional info in session for immediate display
+        session([
+            'tenant_creation_success' => true,
+            'tenant_temp_password' => $tempPassword,
+            'tenant_id' => $tenant->id,
+        ]);
+
+        // Create a queued job to update tenant data after pipeline completes
+        dispatch(new \App\Jobs\UpdateTenantDataAfterCreation($tenant->id, [
+            'name' => $request->name,
+            'email' => $request->email,
+            'status' => 'active',
+            'created_by' => $user->id,
+            'created_by_email' => $user->email,
+            'created_at' => now()->toISOString(),
+            'temp_password' => $tempPassword,
+            'requires_password_change' => true,
+        ]))->delay(3); // Delay 3 seconds to let pipeline complete
 
         // For admin users, redirect to tenant details with password info
         if ($user->hasRole('admin')) {
