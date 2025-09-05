@@ -183,29 +183,41 @@ class TenantManagementController extends Controller
         ]);
 
         // Wait for pipeline to complete and then update data field with important information
-        sleep(3); // Give pipeline time to finish
-        
-        // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
-        $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
-        $currentData = $currentDataRaw ? json_decode($currentDataRaw, true) : [];
-        
-        $updatedData = array_merge($currentData, [
-            'name' => $request->name,
-            'email' => $request->email,
-            'status' => 'active',
-            'created_by' => $user->id,
-            'created_by_email' => $user->email,
-            'created_at' => now()->toISOString(),
-            'temp_password' => $tempPassword,
-            'debug_password' => $tempPassword,
-            'requires_password_change' => true,
-            'admin_created' => true,
-        ]);
-        
-        // Use direct database update for data field to bypass Eloquent casting issues
-        DB::table('tenants')->where('id', $tenant->id)->update([
-            'data' => json_encode($updatedData)
-        ]);
+        try {
+            \Log::info('Starting data field update for tenant: ' . $tenant->id);
+            sleep(1); // Reduced sleep to prevent timeouts
+            \Log::info('Pipeline wait completed for tenant: ' . $tenant->id);
+            
+            // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
+            $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
+            $currentData = $currentDataRaw ? json_decode($currentDataRaw, true) : [];
+            
+            $updatedData = array_merge($currentData, [
+                'name' => $request->name,
+                'email' => $request->email,
+                'status' => 'active',
+                'created_by' => $user->id,
+                'created_by_email' => $user->email,
+                'created_at' => now()->toISOString(),
+                'temp_password' => $tempPassword,
+                'debug_password' => $tempPassword,
+                'requires_password_change' => true,
+                'admin_created' => true,
+            ]);
+            
+            // Use direct database update for data field to bypass Eloquent casting issues
+            \Log::info('Updating tenant data field', ['tenant_id' => $tenant->id, 'data' => $updatedData]);
+            DB::table('tenants')->where('id', $tenant->id)->update([
+                'data' => json_encode($updatedData)
+            ]);
+            \Log::info('Tenant data field updated successfully for: ' . $tenant->id);
+        } catch (\Exception $dataUpdateError) {
+            \Log::error('Failed to update tenant data field', [
+                'tenant_id' => $tenant->id,
+                'error' => $dataUpdateError->getMessage(),
+                'temp_password' => $tempPassword,
+            ]);
+        }
 
         // Create tenant admin user in tenant database after pipeline completion
         $adminUserId = null;
