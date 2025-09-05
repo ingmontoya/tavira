@@ -62,9 +62,10 @@ class TenantManagementController extends Controller
                 $data = $rawData ? json_decode($rawData, true) : [];
                 return [
                     'id' => $tenant->id,
-                    'name' => $data['name'] ?? 'Sin nombre',
-                    'email' => $data['email'] ?? null,
-                    'status' => $data['status'] ?? 'pending',
+                    // Read from the correct model fields
+                    'name' => $tenant->admin_name ?? 'Sin nombre',
+                    'email' => $tenant->admin_email ?? null,
+                    'status' => $tenant->subscription_status ?? 'pending',
                     'created_at' => $tenant->created_at->format('d/m/Y H:i'),
                     'updated_at' => $tenant->updated_at->format('d/m/Y H:i'),
                     'domains' => $tenant->domains->pluck('domain')->toArray(),
@@ -103,11 +104,14 @@ class TenantManagementController extends Controller
         $data = $this->getTenantData($tenant);
         $tenantData = [
             'id' => $tenant->id,
-            'name' => $data['name'] ?? 'Sin nombre',
-            'email' => $data['email'] ?? null,
-            'status' => $data['status'] ?? 'pending',
+            // Read from the correct model fields (not JSON data field)
+            'name' => $tenant->admin_name ?? 'Sin nombre',
+            'email' => $tenant->admin_email ?? null,
+            'status' => $tenant->subscription_status ?? 'pending',
             'created_at' => $tenant->created_at->format('d/m/Y H:i'),
             'updated_at' => $tenant->updated_at->format('d/m/Y H:i'),
+            'subscription_plan' => $tenant->subscription_plan,
+            'subscription_expires_at' => $tenant->subscription_expires_at?->format('d/m/Y H:i'),
             'domains' => $tenant->domains->map(function ($domain) {
                 return [
                     'id' => $domain->id,
@@ -115,7 +119,7 @@ class TenantManagementController extends Controller
                     'is_primary' => $domain->is_primary ?? false,
                 ];
             }),
-            'raw_data' => $data,
+            'raw_data' => $data, // Keep for debugging/access control
         ];
 
         return Inertia::render('TenantManagement/Show', [
@@ -140,31 +144,26 @@ class TenantManagementController extends Controller
 
         // Generate a secure random password for the tenant admin
         $tempPassword = $this->generateSecurePassword();
+        $subscriptionExpiresAt = now()->addMonth();
 
-        // Prepare complete tenant data with all required fields
-        $tenantData = [
+        // Create the tenant with custom attributes in data field (stancl/tenancy way)
+        $tenantId = Str::uuid();
+        $tenant = Tenant::create([
+            'id' => $tenantId,
+            // Custom attributes automatically go to data field
             'name' => $request->name,
             'email' => $request->email,
             'status' => 'active',
             'created_by' => $user->id,
             'created_by_email' => $user->email,
-            'created_at' => now()->toISOString(),
             'temp_password' => $tempPassword,
             'requires_password_change' => true,
-        ];
-
-        // Calculate subscription expiration (1 month from now)
-        $subscriptionExpiresAt = now()->addMonth();
-
-        // Create tenant with ALL required fields
-        $tenantId = Str::uuid();
-        $tenant = Tenant::create([
-            'id' => $tenantId,
-            'data' => $tenantData,
+            'admin_created' => true,
+            // Fields that go to actual columns
             'admin_name' => $request->name,
             'admin_email' => $request->email,
             'admin_password' => Hash::make($tempPassword),
-            'subscription_status' => 'active', // Set as active immediately
+            'subscription_status' => 'active',
             'subscription_plan' => 'monthly',
             'subscription_expires_at' => $subscriptionExpiresAt,
             'subscription_renewed_at' => now(),
@@ -183,29 +182,12 @@ class TenantManagementController extends Controller
             'subscription_required_at' => now(),
         ]);
 
-        // Wait for pipeline to complete completely, then fix data persistence
-        sleep(2);
-
-        // Force update ALL tenant data using Eloquent to ensure persistence after pipeline
-        DB::transaction(function () use ($tenant, $tenantData, $request, $tempPassword, $subscriptionExpiresAt) {
-            // Refresh the tenant model and update using Eloquent
-            $tenant->refresh();
-            $tenant->update(array_merge($tenantData, [
-                'debug_password' => $tempPassword,
-                'admin_created' => true,
-                'admin_name' => $request->name,
-                'admin_email' => $request->email,
-                'subscription_status' => 'active',
-                'subscription_plan' => 'monthly',
-                'subscription_expires_at' => $subscriptionExpiresAt,
-                'subscription_renewed_at' => now(),
-                'subscription_last_checked_at' => now(),
-            ]));
-        });
-
-        // Create tenant admin user in tenant database
+        // Create tenant admin user in tenant database after pipeline completion
         $adminUserId = null;
         try {
+            // Wait for pipeline to complete (database creation, migration, seeding)
+            sleep(3); // Give pipeline time to finish
+            
             $tenant->run(function () use (&$adminUserId, $request, $tempPassword) {
                 // Create the admin user in the tenant database
                 $tenantUser = \App\Models\User::create([
@@ -225,11 +207,9 @@ class TenantManagementController extends Controller
                 $adminUserId = $tenantUser->id;
             });
 
-            // Final update with admin user ID
+            // Update tenant with admin user ID
             if ($adminUserId) {
-                DB::table('tenants')
-                    ->where('id', $tenant->id)
-                    ->update(['admin_user_id' => $adminUserId]);
+                $tenant->update(['admin_user_id' => $adminUserId]);
             }
 
             // Send credentials email
@@ -243,12 +223,12 @@ class TenantManagementController extends Controller
             }
 
         } catch (\Exception $e) {
-            // Tenant creation error - but don't fail completely
+            // Admin user creation failed but continue - tenant is still created
         }
 
         // Redirect to tenant details with success message
         return redirect()->route('tenant-management.show', $tenant)
-            ->with('success', 'Conjunto creado exitosamente. Se han enviado las credenciales de acceso a tu correo electrónico.')
+            ->with('success', 'Conjunto creado exitosamente. Las credenciales de acceso se enviarán por correo electrónico una vez completada la configuración.')
             ->with('email_sent', true)
             ->with('temp_password', $tempPassword); // Show password temporarily for debugging
     }
@@ -271,9 +251,10 @@ class TenantManagementController extends Controller
 
         $tenantData = [
             'id' => $tenant->id,
-            'name' => $tenant->data['name'] ?? '',
-            'email' => $tenant->data['email'] ?? '',
-            'status' => $tenant->data['status'] ?? 'pending',
+            // Read from the correct model fields
+            'name' => $tenant->admin_name ?? '',
+            'email' => $tenant->admin_email ?? '',
+            'status' => $tenant->subscription_status ?? 'pending',
             'domains' => $tenant->domains->map(function ($domain) {
                 return [
                     'id' => $domain->id,
@@ -310,12 +291,20 @@ class TenantManagementController extends Controller
             'status' => 'required|in:pending,active,suspended',
         ]);
 
-        $data = $tenant->data;
+        // Update both model fields and data field for compatibility
+        $tenant->update([
+            'admin_name' => $request->name,
+            'admin_email' => $request->email,
+            'subscription_status' => $request->status,
+        ]);
+
+        // Also update data field for backward compatibility and access control
+        $data = $tenant->data ?? [];
         $data['name'] = $request->name;
         $data['email'] = $request->email;
         $data['status'] = $request->status;
         $data['updated_by'] = auth()->id();
-
+        
         $tenant->update(['data' => $data]);
 
         return redirect()->route('tenant-management.show', $tenant)
