@@ -16,11 +16,12 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
-        '127.0.0.1',
-        'localhost',
-        'tavira.com.co',
-    ],
+    'central_domains' => env('APP_ENV') === 'production'
+        ? ['tavira.com.co']
+        : [
+            'localhost',
+            '127.0.0.1',
+        ],
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
@@ -194,7 +195,7 @@ return [
      * Parameters used by the tenants:seed command.
      */
     'seeder_parameters' => [
-        '--class' => 'DatabaseSeeder', // root seeder class
-        // '--force' => true, // This needs to be true to seed tenant databases in production
+        '--class' => 'TenantDatabaseSeeder', // tenant-specific seeder class
+        '--force' => true, // This needs to be true to seed tenant databases in production
     ],
 ];

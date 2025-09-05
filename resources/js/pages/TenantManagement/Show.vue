@@ -31,6 +31,90 @@
                 </div>
             </div>
 
+            <!-- Email Sent Confirmation Alert -->
+            <div v-if="$page.props.flash.email_sent" 
+                class="mb-8 rounded-lg bg-green-50 border border-green-200 p-6">
+                <div class="flex items-start gap-4">
+                    <Icon name="mail" class="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-green-800 mb-2">
+                            ✅ Tenant Creado Exitosamente
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <p class="text-green-700">
+                                Se han enviado las credenciales de acceso por correo electrónico.
+                            </p>
+                            <!-- Temporary password display for debugging -->
+                            <div v-if="$page.props.flash.temp_password" class="bg-amber-50 rounded-md p-4 border border-amber-200">
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <Icon name="key" class="h-4 w-4 text-amber-600" />
+                                        <span class="font-medium text-amber-800">Credenciales temporales:</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-600">Email:</p>
+                                            <p class="font-mono text-sm bg-white p-2 rounded border">{{ tenant.email || 'N/A' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-600">Password:</p>
+                                            <p class="font-mono text-sm bg-white p-2 rounded border">{{ $page.props.flash.temp_password }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-2">
+                                        <Icon name="alert-triangle" class="h-4 w-4 text-amber-600" />
+                                        <span class="text-xs text-amber-700">Cambia esta contraseña en tu primer inicio de sesión</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy Password Information Alert (for backward compatibility) -->
+            <div v-else-if="($page.props.flash.show_password_info && $page.props.flash.temp_password) || (sessionData.tenant_creation_success && sessionData.tenant_temp_password && sessionData.tenant_id === tenant.id)" 
+                class="mb-8 rounded-lg bg-amber-50 border border-amber-200 p-6">
+                <div class="flex items-start gap-4">
+                    <Icon name="key" class="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-amber-800 mb-2">
+                            Credenciales del Administrador del Tenant
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <p class="text-amber-700">
+                                El usuario administrador ha sido creado con las siguientes credenciales:
+                            </p>
+                            <div class="bg-white rounded-md p-4 border border-amber-200">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Email:</p>
+                                        <p class="font-mono text-sm bg-gray-50 p-2 rounded">{{ tenant.email || 'N/A' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-gray-700">Password Temporal:</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="font-mono text-sm bg-gray-50 p-2 rounded flex-1">{{ $page.props.flash.temp_password || sessionData.tenant_temp_password }}</p>
+                                            <Button @click="copyPassword" variant="outline" size="sm" class="gap-1">
+                                                <Icon name="copy" class="h-4 w-4" />
+                                                Copiar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <Icon name="alert-triangle" class="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <p class="text-amber-700">
+                                    <strong>Importante:</strong> El usuario será obligado a cambiar esta contraseña en su primer inicio de sesión.
+                                    Guarda estas credenciales en un lugar seguro hasta que el administrador del tenant las actualice.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
                 <!-- Información Básica -->
                 <Card>
@@ -150,49 +234,88 @@
                 </CardHeader>
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <!-- Approval actions for draft tenants -->
-                        <Button v-if="tenant.status === 'draft'" @click="approveTenant"
-                            class="bg-blue-600 hover:bg-blue-700 gap-2">
-                            <Icon name="check" class="h-4 w-4" />
-                            Aprobar Tenant
-                        </Button>
-                        <Button v-if="tenant.status === 'draft'" variant="outline" @click="rejectTenant"
-                            class="text-red-600 border-red-200 hover:bg-red-50 gap-2">
-                            <Icon name="x" class="h-4 w-4" />
-                            Rechazar Tenant
-                        </Button>
-                        
-                        <!-- Activation actions -->
-                        <Button v-if="tenant.status === 'approved'" variant="outline" @click="activateTenant"
-                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
-                            <Icon name="play" class="h-4 w-4" />
-                            Activar Tenant
-                        </Button>
-                        
                         <!-- Active tenant actions -->
                         <Button v-if="tenant.status === 'active'" @click="impersonateTenant"
                             class="bg-green-600 hover:bg-green-700 gap-2">
                             <Icon name="log-in" class="h-4 w-4" />
                             Ingresar al Tenant
                         </Button>
-                        <Button v-if="tenant.status === 'active'" variant="outline" @click="suspendTenant"
-                            class="text-orange-600 border-orange-200 hover:bg-orange-50 gap-2">
-                            <Icon name="pause" class="h-4 w-4" />
-                            Suspender Tenant
-                        </Button>
+                        
+                        <AlertDialog v-model:open="suspendDialogOpen">
+                            <AlertDialogTrigger as-child>
+                                <Button v-if="tenant.status === 'active'" variant="outline" 
+                                    class="text-orange-600 border-orange-200 hover:bg-orange-50 gap-2">
+                                    <Icon name="pause" class="h-4 w-4" />
+                                    Suspender Tenant
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Suspender Tenant</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres suspender el tenant "{{ tenant.name }}"?<br><br>
+                                        Los usuarios del tenant no podrán acceder hasta que sea reactivado.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction @click="suspendTenant" class="bg-orange-600 hover:bg-orange-700">
+                                        Suspender Tenant
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         
                         <!-- Suspended tenant actions -->
-                        <Button v-if="tenant.status === 'suspended'" variant="outline" @click="activateTenant"
-                            class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
-                            <Icon name="play" class="h-4 w-4" />
-                            Reactivar Tenant
-                        </Button>
+                        <AlertDialog v-model:open="activateDialogOpen">
+                            <AlertDialogTrigger as-child>
+                                <Button v-if="tenant.status === 'suspended'" variant="outline" 
+                                    class="text-green-600 border-green-200 hover:bg-green-50 gap-2">
+                                    <Icon name="play" class="h-4 w-4" />
+                                    Reactivar Tenant
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Reactivar Tenant</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres reactivar el tenant "{{ tenant.name }}"?<br><br>
+                                        Los usuarios podrán acceder nuevamente al tenant.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction @click="activateTenant" class="bg-green-600 hover:bg-green-700">
+                                        Reactivar Tenant
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         
                         <!-- Danger zone -->
-                        <Button variant="destructive" @click="deleteTenant" class="gap-2">
-                            <Icon name="trash" class="h-4 w-4" />
-                            Eliminar Tenant
-                        </Button>
+                        <AlertDialog v-model:open="deleteDialogOpen">
+                            <AlertDialogTrigger as-child>
+                                <Button variant="destructive" class="gap-2">
+                                    <Icon name="trash" class="h-4 w-4" />
+                                    Eliminar Tenant
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Eliminar Tenant</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        ¿Estás seguro de que quieres eliminar el tenant "{{ tenant.name }}"?<br><br>
+                                        <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todos los datos asociados.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction @click="deleteTenant" class="bg-red-600 hover:bg-red-700">
+                                        Eliminar Tenant
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </CardContent>
             </Card>
@@ -211,22 +334,76 @@
                 </CardContent>
             </Card>
         </div>
+
+        <!-- User Selection Dialog -->
+        <div v-if="showUserDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showUserDialog = false">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4" @click.stop>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold">Seleccionar Usuario para Impersonar</h3>
+                    <Button variant="ghost" @click="showUserDialog = false" class="p-1">
+                        <Icon name="x" class="h-4 w-4" />
+                    </Button>
+                </div>
+                
+                <div v-if="loadingUsers" class="text-center py-8">
+                    <p>Cargando usuarios...</p>
+                </div>
+                
+                <div v-else-if="tenantUsers.length === 0" class="text-center py-8">
+                    <p class="text-muted-foreground">No se encontraron usuarios en este tenant</p>
+                </div>
+                
+                <div v-else class="space-y-2 max-h-64 overflow-y-auto">
+                    <div v-for="user in tenantUsers" :key="user.id" 
+                         class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                         @click="impersonateUser(user.id)">
+                        <div class="flex items-center gap-3">
+                            <Icon name="user" class="h-5 w-5 text-muted-foreground" />
+                            <div>
+                                <p class="font-medium">{{ user.name }}</p>
+                                <p class="text-sm text-muted-foreground">{{ user.email }}</p>
+                            </div>
+                        </div>
+                        <Icon name="log-in" class="h-4 w-4 text-green-600" />
+                    </div>
+                </div>
+            </div>
+        </div>
     </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { router, Head, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import Icon from '@/components/Icon.vue'
+import axios from 'axios'
 
 interface Domain {
     id: string
     domain: string
     is_primary: boolean
+}
+
+interface TenantUser {
+    id: number
+    name: string
+    email: string
+    created_at: string
 }
 
 interface Tenant {
@@ -251,6 +428,23 @@ const page = usePage()
 const user = computed(() => page.props.auth?.user)
 const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'))
 
+// Get session data for tenant creation
+const sessionData = computed(() => ({
+    tenant_creation_success: page.props.session?.tenant_creation_success,
+    tenant_temp_password: page.props.session?.tenant_temp_password,
+    tenant_id: page.props.session?.tenant_id,
+}))
+
+// Tenant users management
+const tenantUsers = ref<TenantUser[]>([])
+const loadingUsers = ref(false)
+const showUserDialog = ref(false)
+
+// Dialog states
+const deleteDialogOpen = ref(false)
+const suspendDialogOpen = ref(false)
+const activateDialogOpen = ref(false)
+
 // Breadcrumbs
 const breadcrumbs = [
     { title: 'Panel Central', href: '/dashboard' },
@@ -261,10 +455,6 @@ const breadcrumbs = [
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'active': return 'default'
-        case 'draft': return 'outline'
-        case 'approved': return 'secondary'
-        case 'pending': return 'secondary'
-        case 'rejected': return 'destructive'
         case 'suspended': return 'destructive'
         default: return 'secondary'
     }
@@ -273,47 +463,75 @@ const getStatusVariant = (status: string) => {
 const getStatusText = (status: string) => {
     switch (status) {
         case 'active': return 'Activo'
-        case 'draft': return 'Borrador'
-        case 'approved': return 'Aprobado'
-        case 'pending': return 'Pendiente'
-        case 'rejected': return 'Rechazado'
         case 'suspended': return 'Suspendido'
         default: return status
     }
 }
 
+const loadTenantUsers = async () => {
+    if (props.tenant.status !== 'active') return
+    
+    loadingUsers.value = true
+    try {
+        const url = `/tenants/${props.tenant.id}/users`
+        const response = await axios.get(url)
+        tenantUsers.value = response.data.users || []
+        showUserDialog.value = true
+    } catch (error) {
+        console.error('Error loading tenant users:', error)
+        console.error('Error al cargar los usuarios del tenant')
+    } finally {
+        loadingUsers.value = false
+    }
+}
+
+const impersonateUser = async (userId: number) => {
+    try {
+        const url = `/tenants/${props.tenant.id}/impersonate`
+        const response = await axios.post(url, {
+            user_id: userId,
+            redirect_url: '/dashboard'
+        })
+        
+        if (response.data.success) {
+            // Open tenant URL with impersonation token
+            window.open(response.data.url, '_blank')
+            showUserDialog.value = false
+        } else {
+            console.error('Error al generar token de impersonación')
+        }
+    } catch (error: any) {
+        console.error('Error impersonating user:', error)
+        const errorMessage = error.response?.data?.error || 'Error al impersonar usuario'
+        console.error(errorMessage)
+    }
+}
+
 const impersonateTenant = () => {
-    router.post(route('tenant-management.impersonate', props.tenant.id))
+    loadTenantUsers()
 }
 
 const suspendTenant = () => {
-    if (confirm('¿Estás seguro de que quieres suspender este tenant?')) {
-        router.post(route('tenant-management.suspend', props.tenant.id))
-    }
+    suspendDialogOpen.value = false
+    router.post(route('tenant-management.suspend', props.tenant.id))
 }
 
 const activateTenant = () => {
+    activateDialogOpen.value = false
     router.post(route('tenant-management.activate', props.tenant.id))
 }
 
-const approveTenant = () => {
-    if (confirm('¿Estás seguro de que quieres aprobar este tenant?')) {
-        router.post(route('tenant-management.approve', props.tenant.id))
-    }
-}
-
-const rejectTenant = () => {
-    const reason = prompt('Razón del rechazo (opcional):')
-    if (confirm('¿Estás seguro de que quieres rechazar este tenant?')) {
-        router.post(route('tenant-management.reject', props.tenant.id), {
-            reason: reason || null
-        })
-    }
-}
-
 const deleteTenant = () => {
-    if (confirm('¿Estás seguro de que quieres eliminar este tenant? Esta acción no se puede deshacer.')) {
-        router.delete(route('tenant-management.destroy', props.tenant.id))
+    deleteDialogOpen.value = false
+    router.delete(route('tenant-management.destroy', props.tenant.id))
+}
+
+const copyPassword = () => {
+    const password = page.props.flash.temp_password || sessionData.value.tenant_temp_password
+    if (password) {
+        navigator.clipboard.writeText(password).then(() => {
+            console.log('Password copied to clipboard')
+        })
     }
 }
 </script>
