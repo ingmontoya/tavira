@@ -218,7 +218,7 @@ class TenantManagementController extends Controller
                     'email' => $request->email,
                     'password' => Hash::make($tempPassword),
                     'email_verified_at' => now(),
-                    'requires_subscription' => false, // Tenant users don't need subscription
+                    // Note: tenant users don't have requires_subscription field
                 ]);
 
                 // Assign admin role
