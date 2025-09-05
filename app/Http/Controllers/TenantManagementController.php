@@ -140,25 +140,35 @@ class TenantManagementController extends Controller
         // Generate a secure random password for the tenant admin
         $tempPassword = $this->generateSecurePassword();
 
-        // Create tenant with all data at once to avoid pipeline executing with incomplete data
+        // Prepare tenant data
+        $tenantData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'status' => 'active', // Create tenants directly as active for automatic provisioning
+            'created_by' => $user->id,
+            'created_by_email' => $user->email,
+            'created_at' => now()->toISOString(),
+            'temp_password' => $tempPassword, // Store temp password for display
+            'requires_password_change' => true, // Flag to force password change
+        ];
+
+        // Create tenant with complete data from the start
         $tenantId = Str::uuid();
         $tenant = Tenant::create([
             'id' => $tenantId,
             'admin_name' => $user->name,
             'admin_email' => $user->email,
             'admin_password' => $tempPassword, // Store plain password temporarily for sync creation
-            'data' => [
-                'name' => $request->name,
-                'email' => $request->email,
-                'status' => 'active', // Create tenants directly as active for automatic provisioning
-                'created_by' => $user->id,
-                'created_by_email' => $user->email,
-                'created_at' => now()->toISOString(),
-                'temp_password' => $tempPassword, // Store temp password for display
-                'requires_password_change' => true, // Flag to force password change
-            ],
+            'data' => $tenantData,
         ]);
 
+        \Log::info('Tenant created with initial data', [
+            'tenant_id' => $tenant->id,
+            'data_keys' => array_keys($tenantData),
+            'temp_password' => $tempPassword
+        ]);
+
+        // Create domain
         $tenant->domains()->create([
             'domain' => $request->domain,
         ]);
@@ -170,41 +180,30 @@ class TenantManagementController extends Controller
             'tenant_id' => $tenant->id,
         ]);
 
-        // Update tenant data synchronously to ensure it persists
         try {
-            // Give a small delay for pipeline to complete
-            sleep(1);
-            
-            // Update tenant data directly
-            \DB::table('tenants')
-                ->where('id', $tenant->id)
-                ->update(['data' => json_encode([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'status' => 'active',
-                    'created_by' => $user->id,
-                    'created_by_email' => $user->email,
-                    'created_at' => now()->toISOString(),
-                    'temp_password' => $tempPassword,
-                    'requires_password_change' => true,
-                ])]);
-                
-            \Log::info('Tenant data updated synchronously', [
-                'tenant_id' => $tenant->id,
-                'created_by' => $user->id
-            ]);
-            
             // Associate user with the tenant they just created
             $user->update(['tenant_id' => $tenant->id]);
             
-            // Create tenant admin user SYNCHRONOUSLY to avoid job timing issues
-            try {
+            // Create tenant admin user synchronously AFTER pipeline completes
+            // Use a callback to ensure we wait for database operations
+            \DB::transaction(function () use ($tenant, $tempPassword, $tenantData) {
+                // Ensure data persists after pipeline
+                \DB::table('tenants')
+                    ->where('id', $tenant->id)
+                    ->update(['data' => json_encode($tenantData)]);
+                
+                \Log::info('Tenant data persisted after pipeline', [
+                    'tenant_id' => $tenant->id,
+                    'data' => $tenantData
+                ]);
+
+                // Create tenant admin user in tenant database
                 $tenant->run(function () use ($tenant, $tempPassword) {
                     // Create the admin user in the tenant database
                     $tenantUser = \App\Models\User::create([
                         'name' => $tenant->admin_name,
                         'email' => $tenant->admin_email,
-                        'password' => Hash::make($tempPassword), // Hash the PLAIN password here
+                        'password' => Hash::make($tempPassword), // Hash the password here
                         'email_verified_at' => now(),
                     ]);
 
@@ -221,24 +220,18 @@ class TenantManagementController extends Controller
                         }
                     }
                     
+                    \Log::info('Tenant admin user created successfully', [
+                        'tenant_id' => $tenant->id,
+                        'user_id' => $tenantUser->id,
+                        'email' => $tenantUser->email
+                    ]);
+                    
                     return $tenantUser->id;
                 });
                 
                 // Update tenant with hashed password for security
                 $tenant->update(['admin_password' => Hash::make($tempPassword)]);
-                
-                \Log::info('Tenant admin user created synchronously', [
-                    'tenant_id' => $tenant->id,
-                    'admin_email' => $tenant->admin_email,
-                    'password_used' => $tempPassword
-                ]);
-                
-            } catch (\Exception $e) {
-                \Log::error('Error creating tenant admin user synchronously', [
-                    'tenant_id' => $tenant->id,
-                    'error' => $e->getMessage()
-                ]);
-            }
+            });
             
             // Update tenant subscription status based on existing subscriptions
             $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user, $tenant) {
@@ -256,15 +249,17 @@ class TenantManagementController extends Controller
                 ]);
             }
             
-            \Log::info('User associated with tenant', [
+            \Log::info('Tenant creation process completed successfully', [
                 'user_id' => $user->id,
                 'tenant_id' => $tenant->id,
                 'subscription_status' => $tenant->subscription_status,
+                'temp_password' => $tempPassword
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error updating tenant data synchronously', [
+            \Log::error('Error in tenant creation process', [
                 'tenant_id' => $tenant->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
 
