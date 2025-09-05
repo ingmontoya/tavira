@@ -3,13 +3,13 @@
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold text-[#1D3557]">
-                    {{ $t('benefits.sectionTitle') }}
+                    Resultados que
                     <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
-                        {{ $t('benefits.sectionTitleHighlight') }}
+                        Impactan
                     </span>
                 </h2>
                 <p class="mx-auto max-w-3xl text-lg md:text-xl text-gray-700">
-                    {{ $t('benefits.sectionDescription') }}
+                    Más de 500 conjuntos en Colombia ya confían en Tavira. Con aplicaciones móviles nativas para iOS y Android, estos son los resultados reales que obtienen nuestros clientes.
                 </p>
             </div>
 
@@ -37,28 +37,28 @@ const { t } = useI18n();
 
 const benefits = computed(() => [
     {
-        title: t('benefits.timeSaving.title'),
-        description: t('benefits.timeSaving.description'),
+        title: 'Tiempo Ahorrado',
+        description: 'Reducción en tiempo dedicado a tareas administrativas rutinarias',
         icon: '⏰',
-        percentage: t('benefits.timeSaving.percentage'),
+        percentage: '70%',
     },
     {
-        title: t('benefits.costReduction.title'),
-        description: t('benefits.costReduction.description'),
+        title: 'Reducción de Costos',
+        description: 'Menos gastos en papelería, correo físico y procesos manuales',
         icon: '💸',
-        percentage: t('benefits.costReduction.percentage'),
+        percentage: '45%',
     },
     {
-        title: t('benefits.satisfaction.title'),
-        description: t('benefits.satisfaction.description'),
+        title: 'Satisfacción Residentes',
+        description: 'Mayor satisfacción gracias a comunicación clara y procesos eficientes',
         icon: '😊',
-        percentage: t('benefits.satisfaction.percentage'),
+        percentage: '85%',
     },
     {
-        title: t('benefits.transparency.title'),
-        description: t('benefits.transparency.description'),
+        title: 'Transparencia',
+        description: 'Total visibilidad de finanzas, gastos y decisiones del conjunto',
         icon: '🔍',
-        percentage: t('benefits.transparency.percentage'),
+        percentage: '95%',
     },
 ]);
 </script>

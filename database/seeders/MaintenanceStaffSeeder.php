@@ -24,7 +24,7 @@ class MaintenanceStaffSeeder extends Seeder
         $staff = [
             [
                 'name' => 'Carlos Martínez',
-                'phone' => '+57 300 123 4567',
+                'phone' => '+ +44 7447 313219',
                 'email' => 'carlos.martinez@email.com',
                 'specialties' => ['Plomería', 'Electricidad'],
                 'hourly_rate' => 25000.00,

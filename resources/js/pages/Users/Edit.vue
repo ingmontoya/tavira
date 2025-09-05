@@ -76,6 +76,7 @@ const roleLabels: Record<string, string> = {
 </script>
 
 <template>
+
     <Head :title="`Editar Usuario - ${user.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -97,14 +98,9 @@ const roleLabels: Record<string, string> = {
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="name">Nombre Completo <span class="text-red-500">*</span></Label>
-                                    <Input
-                                        id="name"
-                                        v-model="form.name"
-                                        type="text"
-                                        required
+                                    <Input id="name" v-model="form.name" type="text" required
                                         placeholder="Ej: Juan Carlos Pérez"
-                                        :class="{ 'border-red-500': form.errors.name }"
-                                    />
+                                        :class="{ 'border-red-500': form.errors.name }" />
                                     <div v-if="form.errors.name" class="text-sm text-red-500">
                                         {{ form.errors.name }}
                                     </div>
@@ -112,14 +108,9 @@ const roleLabels: Record<string, string> = {
 
                                 <div class="space-y-2">
                                     <Label for="email">Email <span class="text-red-500">*</span></Label>
-                                    <Input
-                                        id="email"
-                                        v-model="form.email"
-                                        type="email"
-                                        required
+                                    <Input id="email" v-model="form.email" type="email" required
                                         placeholder="ejemplo@correo.com"
-                                        :class="{ 'border-red-500': form.errors.email }"
-                                    />
+                                        :class="{ 'border-red-500': form.errors.email }" />
                                     <div v-if="form.errors.email" class="text-sm text-red-500">
                                         {{ form.errors.email }}
                                     </div>
@@ -129,13 +120,9 @@ const roleLabels: Record<string, string> = {
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="phone">Teléfono</Label>
-                                    <Input
-                                        id="phone"
-                                        v-model="form.phone"
-                                        type="tel"
-                                        placeholder="Ej: +57 300 123 4567"
-                                        :class="{ 'border-red-500': form.errors.phone }"
-                                    />
+                                    <Input id="phone" v-model="form.phone" type="tel"
+                                        placeholder="Ej: + +44 7447 313219"
+                                        :class="{ 'border-red-500': form.errors.phone }" />
                                     <div v-if="form.errors.phone" class="text-sm text-red-500">
                                         {{ form.errors.phone }}
                                     </div>
@@ -143,13 +130,9 @@ const roleLabels: Record<string, string> = {
 
                                 <div class="space-y-2">
                                     <Label for="position">Cargo</Label>
-                                    <Input
-                                        id="position"
-                                        v-model="form.position"
-                                        type="text"
+                                    <Input id="position" v-model="form.position" type="text"
                                         placeholder="Ej: Contador, Administrador, Asistente"
-                                        :class="{ 'border-red-500': form.errors.position }"
-                                    />
+                                        :class="{ 'border-red-500': form.errors.position }" />
                                     <div v-if="form.errors.position" class="text-sm text-red-500">
                                         {{ form.errors.position }}
                                     </div>
@@ -158,13 +141,9 @@ const roleLabels: Record<string, string> = {
 
                             <div class="space-y-2">
                                 <Label for="department">Departamento</Label>
-                                <Input
-                                    id="department"
-                                    v-model="form.department"
-                                    type="text"
+                                <Input id="department" v-model="form.department" type="text"
                                     placeholder="Ej: Contabilidad, Administración, Servicios Generales"
-                                    :class="{ 'border-red-500': form.errors.department }"
-                                />
+                                    :class="{ 'border-red-500': form.errors.department }" />
                                 <div v-if="form.errors.department" class="text-sm text-red-500">
                                     {{ form.errors.department }}
                                 </div>
@@ -174,18 +153,15 @@ const roleLabels: Record<string, string> = {
                         <!-- Cambiar Contraseña (Opcional) -->
                         <div class="space-y-4">
                             <h3 class="text-lg font-medium">Cambiar Contraseña (Opcional)</h3>
-                            <p class="text-sm text-muted-foreground">Deja estos campos vacíos si no deseas cambiar la contraseña</p>
+                            <p class="text-sm text-muted-foreground">Deja estos campos vacíos si no deseas cambiar la
+                                contraseña</p>
 
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label for="password">Nueva Contraseña</Label>
-                                    <Input
-                                        id="password"
-                                        v-model="form.password"
-                                        type="password"
+                                    <Input id="password" v-model="form.password" type="password"
                                         placeholder="Mínimo 8 caracteres"
-                                        :class="{ 'border-red-500': form.errors.password }"
-                                    />
+                                        :class="{ 'border-red-500': form.errors.password }" />
                                     <div v-if="form.errors.password" class="text-sm text-red-500">
                                         {{ form.errors.password }}
                                     </div>
@@ -193,13 +169,9 @@ const roleLabels: Record<string, string> = {
 
                                 <div class="space-y-2">
                                     <Label for="password_confirmation">Confirmar Nueva Contraseña</Label>
-                                    <Input
-                                        id="password_confirmation"
-                                        v-model="form.password_confirmation"
-                                        type="password"
-                                        placeholder="Repite la nueva contraseña"
-                                        :class="{ 'border-red-500': form.errors.password_confirmation }"
-                                    />
+                                    <Input id="password_confirmation" v-model="form.password_confirmation"
+                                        type="password" placeholder="Repite la nueva contraseña"
+                                        :class="{ 'border-red-500': form.errors.password_confirmation }" />
                                     <div v-if="form.errors.password_confirmation" class="text-sm text-red-500">
                                         {{ form.errors.password_confirmation }}
                                     </div>
@@ -232,8 +204,10 @@ const roleLabels: Record<string, string> = {
                                 <div class="space-y-2">
                                     <Label>Estado del Usuario</Label>
                                     <div class="flex items-center space-x-2">
-                                        <Checkbox id="is_active" v-model="form.is_active" :class="{ 'border-red-500': form.errors.is_active }" />
-                                        <Label for="is_active" class="text-sm font-normal"> Usuario activo (puede acceder al sistema) </Label>
+                                        <Checkbox id="is_active" v-model="form.is_active"
+                                            :class="{ 'border-red-500': form.errors.is_active }" />
+                                        <Label for="is_active" class="text-sm font-normal"> Usuario activo (puede
+                                            acceder al sistema) </Label>
                                     </div>
                                     <div v-if="form.errors.is_active" class="text-sm text-red-500">
                                         {{ form.errors.is_active }}

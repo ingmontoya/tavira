@@ -3,13 +3,13 @@
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-                    {{ $t('testimonials.sectionTitle') }}
+                    Lo que dicen nuestros
                     <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
-                        {{ $t('testimonials.sectionTitleHighlight') }}
+                        Clientes
                     </span>
                 </h2>
                 <p class="mx-auto max-w-3xl text-lg md:text-xl text-white/85">
-                    {{ $t('testimonials.sectionDescription') }}
+                    Administradores, concejales y residentes de toda Colombia confían en Tavira para transformar sus conjuntos.
                 </p>
             </div>
 
@@ -45,19 +45,54 @@ const { t } = useI18n();
 
 const testimonials = computed(() => [
     {
-        name: t('testimonials.maria.name'),
-        role: t('testimonials.maria.role'),
-        content: t('testimonials.maria.content'),
+        name: 'María González',
+        role: 'Administradora - Conjunto Torres del Norte',
+        content: 'Tavira transformó completamente nuestra administración. La facturación que antes me tomaba 3 días ahora la hago en 2 horas. Los residentes están felices con la transparencia.',
     },
     {
-        name: t('testimonials.carlos.name'),
-        role: t('testimonials.carlos.role'),
-        content: t('testimonials.carlos.content'),
+        name: 'Carlos Rodríguez',
+        role: 'Presidente del Consejo - Ciudadela Los Cedros',
+        content: 'La seguridad de datos es impresionante. Nuestra propia base de datos y todos los reportes financieros al día. El sistema contable cumple perfectamente con la normatividad colombiana.',
     },
     {
-        name: t('testimonials.ana.name'),
-        role: t('testimonials.ana.role'),
-        content: t('testimonials.ana.content'),
+        name: 'Ana Patricia Muñoz',
+        role: 'Tesorera - Conjunto Villa Verde',
+        content: 'Los reportes financieros son increíbles. Balance general, estado de resultados, todo automatizado. La conciliación bancaria que antes era un dolor de cabeza ahora es pan comido.',
+    },
+    {
+        name: 'Jorge Luis Vargas',
+        role: 'Administrador - Torres de Andalucía',
+        content: 'La comunicación con los residentes mejoró un 100%. Los comunicados llegan instantáneamente y puedo hacer seguimiento de qué tan efectiva es la comunicación.',
+    },
+    {
+        name: 'Sandra Liliana Castro',
+        role: 'Residente - Conjunto Santa Helena',
+        content: 'Como residente, ahora tengo total claridad sobre las finanzas del conjunto. Puedo ver mi estado de cuenta, hacer pagos en línea y estar al día con todo.',
+    },
+    {
+        name: 'Ricardo Peña',
+        role: 'Gerente Inmobiliario - Grupo Construir',
+        content: 'Implementamos Tavira en 12 conjuntos que administramos. El flujo de aprobación Proveedor-Concejo-Administración transformó nuestro control de gastos. Eficiencia operativa del 100%.',
+    },
+    {
+        name: 'Alejandra Vega',
+        role: 'Ex-Administradora / Actual Residente - Conjunto Los Pinos',
+        content: 'Lo mejor es que cuando terminé como administradora, toda la información siguió en el conjunto. Los correos institucionales y el historial permanecen para siempre. Continuidad total.',
+    },
+    {
+        name: 'Fernando Morales',
+        role: 'Residente - Ciudadela del Norte',
+        content: 'El marketplace interno cambió nuestra comunidad. Encontré un plomero excelente (5 estrellas), clases de inglés para mi hija, y hasta vendo mis tortas. Confianza entre vecinos 100% real.',
+    },
+    {
+        name: 'Luis Hernández',
+        role: 'Portero - Conjunto Villa Campestre',
+        content: 'La app de portería es increíble. Los citófonos están integrados, escaneo los QR de las visitas automáticamente, y registro los paquetes con fotos. Todo desde el celular, súper fácil.',
+    },
+    {
+        name: 'Patricia Ruiz',
+        role: 'Residente - Torres de Andalucía',
+        content: 'Descargué la app y ahora todo es más fácil. Pago desde el celular, envío códigos QR a mis visitas, compro en el marketplace del conjunto. Mi mamá de 70 años también la usa sin problemas.',
     },
 ]);
 </script>

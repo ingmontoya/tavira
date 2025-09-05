@@ -13,19 +13,19 @@
                         class="inline-flex items-center space-x-2 rounded-full border border-[#06D6A0]/30 bg-white/15 px-4 py-2 text-[#06D6A0] backdrop-blur-sm"
                     >
                         <span class="h-2 w-2 animate-pulse rounded-full bg-[#06D6A0]"></span>
-                        <span class="text-sm font-medium">{{ $t('hero.badge') }}</span>
+                        <span class="text-sm font-medium">🔒 Seguridad Bancaria - Base de Datos Exclusiva</span>
                     </div>
 
                     <h1 class="text-4xl md:text-5xl lg:text-7xl leading-tight font-bold text-white font-brand">
-                        {{ $t('hero.title') }}
+                        Transforma la
                         <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
-                            {{ $t('hero.titleHighlight') }}
+                            Administración
                         </span>
-                        <br />{{ $t('hero.titleEnd') }}
+                        <br />de tu Conjunto
                     </h1>
 
                     <p class="max-w-lg text-lg md:text-xl leading-relaxed text-white/85">
-                        {{ $t('hero.description') }}
+                        Plataforma integral para conjuntos residenciales en Colombia. Gestión financiera, comunicación, mantenimiento y más. Con seguridad bancaria y base de datos exclusiva para tu conjunto.
                     </p>
                 </div>
 
@@ -36,8 +36,8 @@
                         class="group flex-shrink-0 transform rounded-xl bg-[#FF6B6B] px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#ff5555] hover:shadow-[#FF6B6B]/40"
                     >
                         <span class="flex items-center justify-center space-x-2">
-                            <span class="sm:hidden">{{ $t('hero.ctaPrimary') }}</span>
-                            <span class="hidden sm:inline">{{ $t('hero.ctaPrimaryFull') }}</span>
+                            <span class="sm:hidden">Prueba Gratis</span>
+                            <span class="hidden sm:inline">Comienza tu Prueba Gratuita</span>
                             <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                             </svg>
@@ -47,8 +47,8 @@
                     <button
                         class="flex-shrink-0 rounded-xl border-2 border-[#06D6A0]/50 px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#06D6A0]/20 hover:border-[#06D6A0]/70"
                     >
-                        <span class="sm:hidden">{{ $t('hero.ctaSecondary') }}</span>
-                        <span class="hidden sm:inline">{{ $t('hero.ctaSecondaryFull') }}</span>
+                        <span class="sm:hidden">Ver Demo</span>
+                        <span class="hidden sm:inline">Ver Demostración</span>
                     </button>
                 </div>
 
