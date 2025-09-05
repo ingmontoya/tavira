@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
     <title>Bienvenido a Tavira</title>
     <style>
         body {
@@ -104,7 +107,7 @@
         <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ config('app.url') }}/img/tavira_logo_blanco.svg" alt="Tavira Logo" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block;">
+                <img src="{{ asset('img/tavira_logo_blanco.svg') }}" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
             </div>
             <h1 class="welcome-title">¡Bienvenido a Tavira!</h1>
         </div>
