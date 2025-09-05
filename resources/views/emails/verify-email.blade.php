@@ -162,7 +162,7 @@
         <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ $message->embed(public_path('img/tavira_logo_blanco.svg')) }}" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
+                <img src="{{ asset('img/tavira_logo_blanco.png') }}" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 100px; width: auto; margin: 0 auto; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
             </div>
         </div>
 
