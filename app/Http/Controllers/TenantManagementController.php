@@ -141,126 +141,94 @@ class TenantManagementController extends Controller
         // Generate a secure random password for the tenant admin
         $tempPassword = $this->generateSecurePassword();
 
-        // Prepare tenant data
+        // Prepare complete tenant data with all required fields
         $tenantData = [
             'name' => $request->name,
             'email' => $request->email,
-            'status' => 'active', // Create tenants directly as active for automatic provisioning
+            'status' => 'active',
             'created_by' => $user->id,
             'created_by_email' => $user->email,
             'created_at' => now()->toISOString(),
-            'temp_password' => $tempPassword, // Store temp password for display
-            'requires_password_change' => true, // Flag to force password change
+            'temp_password' => $tempPassword,
+            'requires_password_change' => true,
         ];
 
-        // Create tenant with complete data from the start
+        // Calculate subscription expiration (1 month from now)
+        $subscriptionExpiresAt = now()->addMonth();
+
+        // Create tenant with ALL required fields
         $tenantId = Str::uuid();
         $tenant = Tenant::create([
             'id' => $tenantId,
-            'admin_name' => $request->name, // Use form data, not user name
-            'admin_email' => $request->email, // Use form data, not user email
-            'admin_password' => $tempPassword, // Store plain password temporarily for sync creation
             'data' => $tenantData,
+            'admin_name' => $request->name,
+            'admin_email' => $request->email,
+            'admin_password' => Hash::make($tempPassword),
+            'subscription_status' => 'active', // Set as active immediately
+            'subscription_plan' => 'monthly',
+            'subscription_expires_at' => $subscriptionExpiresAt,
+            'subscription_renewed_at' => now(),
+            'subscription_last_checked_at' => now(),
         ]);
-
 
         // Create domain
         $tenant->domains()->create([
             'domain' => $request->domain,
         ]);
 
-        // Store the password and additional info in session for immediate display
-        session([
-            'tenant_creation_success' => true,
-            'tenant_temp_password' => $tempPassword,
+        // Update user to require subscription and associate with tenant
+        $user->update([
             'tenant_id' => $tenant->id,
+            'requires_subscription' => true,
+            'subscription_required_at' => now(),
         ]);
 
+        // Create tenant admin user in tenant database
+        $adminUserId = null;
         try {
-            // Associate user with the tenant they just created
-            $user->update(['tenant_id' => $tenant->id]);
-            
-            // Wait a moment for pipeline to complete then ensure data integrity
-            sleep(1);
-            
-            // Re-persist all tenant data to ensure it wasn't overwritten by pipeline
-            \DB::table('tenants')
-                ->where('id', $tenant->id)
-                ->update([
-                    'admin_name' => $request->name,
-                    'admin_email' => $request->email,
-                    'data' => json_encode($tenantData)
-                ]);
-            
-            // Create tenant admin user in tenant database
-            $tenant->run(function () use ($tenant, $tempPassword, $request) {
-                // Create the admin user in the tenant database using form data
+            $tenant->run(function () use (&$adminUserId, $request, $tempPassword) {
+                // Create the admin user in the tenant database
                 $tenantUser = \App\Models\User::create([
-                    'name' => $request->name, // Use form name
-                    'email' => $request->email, // Use form email
-                    'password' => Hash::make($tempPassword), // Hash the password here
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($tempPassword),
                     'email_verified_at' => now(),
+                    'requires_subscription' => false, // Tenant users don't need subscription
                 ]);
 
-                // Assign admin role to the user
+                // Assign admin role
                 if (class_exists(\Spatie\Permission\Models\Role::class)) {
-                    try {
-                        $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
-                        $tenantUser->assignRole($adminRole);
-                    } catch (\Exception $e) {
-                        // Role assignment failed, but user is created
-                    }
+                    $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+                    $tenantUser->assignRole($adminRole);
                 }
                 
-                return $tenantUser->id;
+                $adminUserId = $tenantUser->id;
             });
-            
-            // Update tenant with hashed password for security
-            $tenant->update(['admin_password' => Hash::make($tempPassword)]);
-            
-            // Update tenant subscription status based on existing subscriptions
-            $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user, $tenant) {
-                $query->where('tenant_id', $tenant->id)
-                      ->orWhere('user_id', $user->id);
-            })
-            ->where('status', 'active')
-            ->first();
-            
-            if ($activeSubscription) {
-                $tenant->update([
-                    'subscription_status' => 'active',
-                    'subscription_expires_at' => $activeSubscription->expires_at,
-                    'subscription_last_checked_at' => now(),
-                ]);
-            }
-            
 
-            // Send credentials email to the admin user
+            // Update tenant with admin user ID
+            if ($adminUserId) {
+                $tenant->update(['admin_user_id' => $adminUserId]);
+            }
+
+            // Send credentials email
             try {
                 $tenantDomain = $tenant->domains->first()->domain ?? null;
-                
                 if ($tenantDomain) {
                     $user->notify(new TenantCredentialsCreated($tenant, $tempPassword, $tenantDomain));
-                    
                 }
             } catch (\Exception $emailError) {
-                // Don't fail the whole process if email fails
+                // Email failed but continue
             }
-            
+
         } catch (\Exception $e) {
-            // Error in tenant creation process - handle gracefully
+            // Tenant creation error - but don't fail completely
         }
 
-        // For admin users, redirect to tenant details with success message
-        if ($user->hasRole('admin')) {
-            return redirect()->route('tenant-management.show', $tenant)
-                ->with('success', 'Conjunto creado exitosamente. Se han enviado las credenciales de acceso a tu correo electrónico.')
-                ->with('email_sent', true);
-        }
-
+        // Redirect to tenant details with success message
         return redirect()->route('tenant-management.show', $tenant)
-            ->with('success', 'Tenant creado exitosamente. Se han enviado las credenciales de acceso por correo electrónico.')
-            ->with('email_sent', true);
+            ->with('success', 'Conjunto creado exitosamente. Se han enviado las credenciales de acceso a tu correo electrónico.')
+            ->with('email_sent', true)
+            ->with('temp_password', $tempPassword); // Show password temporarily for debugging
     }
 
     public function edit(Tenant $tenant)
