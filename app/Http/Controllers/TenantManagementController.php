@@ -183,6 +183,29 @@ class TenantManagementController extends Controller
             'subscription_required_at' => now(),
         ]);
 
+        // Wait for pipeline to complete completely, then fix data persistence
+        sleep(2);
+
+        // Force update ALL tenant data to ensure persistence after pipeline
+        DB::transaction(function () use ($tenant, $tenantData, $request, $tempPassword, $subscriptionExpiresAt) {
+            // Update all tenant fields at once to prevent race conditions
+            DB::table('tenants')
+                ->where('id', $tenant->id)
+                ->update([
+                    'data' => json_encode(array_merge($tenantData, [
+                        'debug_password' => $tempPassword, // Add password to data for visibility
+                        'admin_created' => true,
+                    ])),
+                    'admin_name' => $request->name,
+                    'admin_email' => $request->email,
+                    'subscription_status' => 'active',
+                    'subscription_plan' => 'monthly',
+                    'subscription_expires_at' => $subscriptionExpiresAt,
+                    'subscription_renewed_at' => now(),
+                    'subscription_last_checked_at' => now(),
+                ]);
+        });
+
         // Create tenant admin user in tenant database
         $adminUserId = null;
         try {
@@ -205,9 +228,11 @@ class TenantManagementController extends Controller
                 $adminUserId = $tenantUser->id;
             });
 
-            // Update tenant with admin user ID
+            // Final update with admin user ID
             if ($adminUserId) {
-                $tenant->update(['admin_user_id' => $adminUserId]);
+                DB::table('tenants')
+                    ->where('id', $tenant->id)
+                    ->update(['admin_user_id' => $adminUserId]);
             }
 
             // Send credentials email
