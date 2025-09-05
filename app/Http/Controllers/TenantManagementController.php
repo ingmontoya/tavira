@@ -183,39 +183,74 @@ class TenantManagementController extends Controller
         ]);
 
         // Wait for pipeline to complete and then update data field with important information
-        try {
-            \Log::info('Starting data field update for tenant: ' . $tenant->id);
-            sleep(1); // Reduced sleep to prevent timeouts
-            \Log::info('Pipeline wait completed for tenant: ' . $tenant->id);
+        // This is critical for tenant access control - retry up to 3 times if it fails
+        $maxRetries = 3;
+        $retryCount = 0;
+        $dataUpdated = false;
 
-            // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
-            $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
-            $currentData = $currentDataRaw ? json_decode($currentDataRaw, true) : [];
+        while ($retryCount < $maxRetries && !$dataUpdated) {
+            try {
+                \Log::info('Starting data field update for tenant (attempt ' . ($retryCount + 1) . '): ' . $tenant->id);
+                sleep(1); // Wait for pipeline
+                \Log::info('Pipeline wait completed for tenant: ' . $tenant->id);
 
-            $updatedData = array_merge($currentData, [
-                'name' => $request->name,
-                'email' => $request->email,
-                'status' => 'active',
-                'created_by' => $user->id,
-                'created_by_email' => $user->email,
-                'created_at' => now()->toISOString(),
-                'temp_password' => $tempPassword,
-                'debug_password' => $tempPassword,
-                'requires_password_change' => true,
-                'admin_created' => true,
-            ]);
+                // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
+                $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
+                $currentData = $currentDataRaw ? json_decode($currentDataRaw, true) : [];
 
-            // Use direct database update for data field to bypass Eloquent casting issues
-            \Log::info('Updating tenant data field', ['tenant_id' => $tenant->id, 'data' => $updatedData]);
-            DB::table('tenants')->where('id', $tenant->id)->update([
-                'data' => json_encode($updatedData)
-            ]);
-            \Log::info('Tenant data field updated successfully for: ' . $tenant->id);
-        } catch (\Exception $dataUpdateError) {
-            \Log::error('Failed to update tenant data field', [
+                $updatedData = array_merge($currentData, [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'status' => 'active',
+                    'created_by' => $user->id,
+                    'created_by_email' => $user->email,
+                    'created_at' => now()->toISOString(),
+                    'temp_password' => $tempPassword,
+                    'debug_password' => $tempPassword,
+                    'requires_password_change' => true,
+                    'admin_created' => true,
+                ]);
+
+                // Use direct database update for data field to bypass Eloquent casting issues
+                \Log::info('Updating tenant data field', ['tenant_id' => $tenant->id, 'data' => $updatedData]);
+                DB::table('tenants')->where('id', $tenant->id)->update([
+                    'data' => json_encode($updatedData)
+                ]);
+
+                // Verify the update worked by checking if created_by exists
+                $verifyDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
+                $verifyData = $verifyDataRaw ? json_decode($verifyDataRaw, true) : [];
+                
+                if (isset($verifyData['created_by']) && isset($verifyData['created_by_email'])) {
+                    $dataUpdated = true;
+                    \Log::info('Tenant data field updated and verified successfully for: ' . $tenant->id);
+                } else {
+                    throw new \Exception('Data verification failed - created_by fields not found after update');
+                }
+
+            } catch (\Exception $dataUpdateError) {
+                $retryCount++;
+                \Log::error('Failed to update tenant data field (attempt ' . $retryCount . ')', [
+                    'tenant_id' => $tenant->id,
+                    'error' => $dataUpdateError->getMessage(),
+                    'temp_password' => $tempPassword,
+                    'will_retry' => $retryCount < $maxRetries,
+                ]);
+                
+                if ($retryCount < $maxRetries) {
+                    sleep(2); // Wait longer between retries
+                }
+            }
+        }
+
+        // If all retries failed, log a critical error
+        if (!$dataUpdated) {
+            \Log::critical('CRITICAL: Failed to update tenant data field after all retries', [
                 'tenant_id' => $tenant->id,
-                'error' => $dataUpdateError->getMessage(),
+                'user_id' => $user->id,
+                'user_email' => $user->email,
                 'temp_password' => $tempPassword,
+                'action_required' => 'Manual intervention needed - tenant may not be accessible to creator',
             ]);
         }
 
