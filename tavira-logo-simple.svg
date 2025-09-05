@@ -1,0 +1,15 @@
+<svg viewBox="0 0 293 184" xmlns="http://www.w3.org/2000/svg">
+<style>
+.st0{fill:#48A29A;}
+.st1{fill:#D5877C;}
+</style>
+<!-- Texto "Gestión simple," -->
+<text x="60.74" y="144" class="st0" font-family="Arial, sans-serif" font-size="12" font-weight="normal">Gestión simple,</text>
+<!-- Texto "comunidad fuerte" -->
+<text x="142.58" y="144" class="st1" font-family="Arial, sans-serif" font-size="12" font-weight="normal">comunidad fuerte</text>
+<!-- Elementos gráficos simplificados -->
+<rect x="40" y="40" width="40" height="40" rx="8" fill="#48A29A" opacity="0.8"/>
+<rect x="90" y="40" width="40" height="40" rx="8" fill="#D5877C" opacity="0.8"/>
+<rect x="140" y="40" width="40" height="40" rx="8" fill="#48A29A" opacity="0.6"/>
+<rect x="190" y="40" width="40" height="40" rx="8" fill="#D5877C" opacity="0.6"/>
+</svg>

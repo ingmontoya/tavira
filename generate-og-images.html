@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Imágenes OpenGraph - Tavira</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        .font-brand { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto space-y-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Generador de Imágenes OpenGraph - Tavira</h1>
+        
+        <!-- OpenGraph Principal -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Imagen Principal OpenGraph (1200x630)</h2>
+            <div id="og-main" class="w-full h-[315px] bg-gradient-to-br from-[#1D3557] to-[#457B9D] relative overflow-hidden rounded-lg">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
+                </div>
+                
+                <!-- Content -->
+                <div class="relative z-10 flex items-center justify-between h-full p-12">
+                    <div class="flex-1">
+                        <div class="mb-6">
+                            <h1 class="text-5xl font-bold text-white font-brand mb-2">Tavira</h1>
+                            <p class="text-white/80 text-sm">PropTech Colombia</p>
+                        </div>
+                        <p class="text-2xl text-white/90 font-medium mb-4 leading-tight">
+                            Transformamos la administración<br>
+                            de conjuntos residenciales con<br>
+                            tecnología de punta
+                        </p>
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-[#ff6b6b] px-4 py-2 rounded-lg">
+                                <span class="text-white font-medium text-sm">Colombia</span>
+                            </div>
+                            <div class="bg-white/20 px-4 py-2 rounded-lg">
+                                <span class="text-white font-medium text-sm">B2B SaaS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="downloadImage('og-main', 'tavira-og-main.png', 1200, 630)" 
+                    class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Descargar Imagen Principal (1200x630)
+            </button>
+        </div>
+
+        <!-- Twitter Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Twitter Card (1200x600)</h2>
+            <div id="twitter-card" class="w-full h-[300px] bg-gradient-to-br from-[#1D3557] to-[#457B9D] relative overflow-hidden rounded-lg">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="grid-twitter" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="white" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid-twitter)" />
+                    </svg>
+                </div>
+                
+                <!-- Content -->
+                <div class="relative z-10 flex items-center h-full p-8">
+                    <div class="flex-1">
+                        <div class="mb-4">
+                            <h1 class="text-4xl font-bold text-white font-brand mb-1">Tavira</h1>
+                            <p class="text-white/80 text-xs">PropTech Colombia</p>
+                        </div>
+                        <p class="text-lg text-white/90 font-medium mb-3">
+                            Transformamos la administración de conjuntos residenciales con tecnología de punta
+                        </p>
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-[#ff6b6b] px-3 py-1 rounded-lg">
+                                <span class="text-white font-medium text-xs">Colombia</span>
+                            </div>
+                            <div class="bg-white/20 px-3 py-1 rounded-lg">
+                                <span class="text-white font-medium text-xs">B2B SaaS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="downloadImage('twitter-card', 'tavira-twitter-card.png', 1200, 600)" 
+                    class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Descargar Twitter Card (1200x600)
+            </button>
+        </div>
+
+        <!-- LinkedIn -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">LinkedIn (1200x627)</h2>
+            <div id="linkedin-card" class="w-full h-[314px] bg-gradient-to-br from-[#1D3557] to-[#457B9D] relative overflow-hidden rounded-lg">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="grid-linkedin" width="50" height="50" patternUnits="userSpaceOnUse">
+                                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="white" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid-linkedin)" />
+                    </svg>
+                </div>
+                
+                <!-- Content -->
+                <div class="relative z-10 flex items-center justify-between h-full p-10">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-6">
+                            <div>
+                                <h1 class="text-4xl font-bold text-white font-brand">Tavira</h1>
+                                <p class="text-white/80 text-sm">PropTech Colombia</p>
+                            </div>
+                        </div>
+                        <p class="text-xl text-white/90 font-medium mb-4 leading-tight">
+                            Transformamos la administración<br>
+                            de conjuntos residenciales con<br>
+                            tecnología de punta
+                        </p>
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-[#ff6b6b] px-4 py-2 rounded-lg">
+                                <span class="text-white font-medium text-sm">Colombia</span>
+                            </div>
+                            <div class="bg-white/20 px-4 py-2 rounded-lg">
+                                <span class="text-white font-medium text-sm">B2B SaaS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="downloadImage('linkedin-card', 'tavira-linkedin.png', 1200, 627)" 
+                    class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Descargar LinkedIn (1200x627)
+            </button>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">WhatsApp (400x400)</h2>
+            <div id="whatsapp-card" class="w-[400px] h-[400px] bg-gradient-to-br from-[#1D3557] to-[#457B9D] relative overflow-hidden rounded-lg mx-auto">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <pattern id="grid-whatsapp" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" stroke-width="1"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid-whatsapp)" />
+                    </svg>
+                </div>
+                
+                <!-- Content -->
+                <div class="relative z-10 flex flex-col items-center justify-center h-full p-8 text-center">
+                    <h1 class="text-3xl font-bold text-white font-brand mb-2">Tavira</h1>
+                    <p class="text-white/80 text-xs mb-4">PropTech Colombia</p>
+                    <p class="text-white/90 font-medium mb-6 text-center leading-tight">
+                        Transformamos la administración<br>
+                        de conjuntos residenciales con<br>
+                        tecnología de punta
+                    </p>
+                    <div class="space-y-2">
+                        <div class="bg-[#ff6b6b] px-3 py-1 rounded-lg">
+                            <span class="text-white font-medium text-sm">Colombia</span>
+                        </div>
+                        <div class="bg-white/20 px-3 py-1 rounded-lg">
+                            <span class="text-white font-medium text-sm">B2B SaaS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="downloadImage('whatsapp-card', 'tavira-whatsapp.png', 400, 400)" 
+                    class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Descargar WhatsApp (400x400)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function downloadImage(elementId, filename, width, height) {
+            const element = document.getElementById(elementId);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Convert the element to canvas using html2canvas-like approach
+            html2canvas(element, {
+                canvas: canvas,
+                width: width,
+                height: height,
+                scale: 1,
+                useCORS: true,
+                allowTaint: true
+            }).then(function(canvas) {
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@
         <meta property="og:type" content="website" />
         <meta property="og:title" :content="metaTitle" />
         <meta property="og:description" :content="metaDescription" />
-        <meta property="og:image" content="/images/og-image.jpg" />
+        <meta property="og:image" content="/images/og-image.svg" />
         <meta property="og:url" :content="currentUrl" />
         <meta property="og:site_name" content="Tavira" />
         <meta property="og:locale" :content="ogLocale" />
@@ -23,7 +23,7 @@
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" :content="metaTitle" />
         <meta name="twitter:description" :content="metaDescription" />
-        <meta name="twitter:image" content="/images/twitter-card.jpg" />
+        <meta name="twitter:image" content="/images/twitter-card.svg" />
 
         <!-- Canonical URL -->
         <link rel="canonical" :href="currentUrl" />
