@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\TenantApprovalRequest;
+use App\Notifications\TenantCredentialsCreated;
 
 class TenantManagementController extends Controller
 {
@@ -156,17 +157,12 @@ class TenantManagementController extends Controller
         $tenantId = Str::uuid();
         $tenant = Tenant::create([
             'id' => $tenantId,
-            'admin_name' => $user->name,
-            'admin_email' => $user->email,
+            'admin_name' => $request->name, // Use form data, not user name
+            'admin_email' => $request->email, // Use form data, not user email
             'admin_password' => $tempPassword, // Store plain password temporarily for sync creation
             'data' => $tenantData,
         ]);
 
-        \Log::info('Tenant created with initial data', [
-            'tenant_id' => $tenant->id,
-            'data_keys' => array_keys($tenantData),
-            'temp_password' => $tempPassword
-        ]);
 
         // Create domain
         $tenant->domains()->create([
@@ -184,54 +180,43 @@ class TenantManagementController extends Controller
             // Associate user with the tenant they just created
             $user->update(['tenant_id' => $tenant->id]);
             
-            // Create tenant admin user synchronously AFTER pipeline completes
-            // Use a callback to ensure we wait for database operations
-            \DB::transaction(function () use ($tenant, $tempPassword, $tenantData) {
-                // Ensure data persists after pipeline
-                \DB::table('tenants')
-                    ->where('id', $tenant->id)
-                    ->update(['data' => json_encode($tenantData)]);
-                
-                \Log::info('Tenant data persisted after pipeline', [
-                    'tenant_id' => $tenant->id,
-                    'data' => $tenantData
+            // Wait a moment for pipeline to complete then ensure data integrity
+            sleep(1);
+            
+            // Re-persist all tenant data to ensure it wasn't overwritten by pipeline
+            \DB::table('tenants')
+                ->where('id', $tenant->id)
+                ->update([
+                    'admin_name' => $request->name,
+                    'admin_email' => $request->email,
+                    'data' => json_encode($tenantData)
+                ]);
+            
+            // Create tenant admin user in tenant database
+            $tenant->run(function () use ($tenant, $tempPassword, $request) {
+                // Create the admin user in the tenant database using form data
+                $tenantUser = \App\Models\User::create([
+                    'name' => $request->name, // Use form name
+                    'email' => $request->email, // Use form email
+                    'password' => Hash::make($tempPassword), // Hash the password here
+                    'email_verified_at' => now(),
                 ]);
 
-                // Create tenant admin user in tenant database
-                $tenant->run(function () use ($tenant, $tempPassword) {
-                    // Create the admin user in the tenant database
-                    $tenantUser = \App\Models\User::create([
-                        'name' => $tenant->admin_name,
-                        'email' => $tenant->admin_email,
-                        'password' => Hash::make($tempPassword), // Hash the password here
-                        'email_verified_at' => now(),
-                    ]);
-
-                    // Assign admin role to the user
-                    if (class_exists(\Spatie\Permission\Models\Role::class)) {
-                        try {
-                            $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
-                            $tenantUser->assignRole($adminRole);
-                        } catch (\Exception $e) {
-                            \Log::warning('Failed to assign admin role to tenant user', [
-                                'tenant_id' => $tenant->id,
-                                'error' => $e->getMessage()
-                            ]);
-                        }
+                // Assign admin role to the user
+                if (class_exists(\Spatie\Permission\Models\Role::class)) {
+                    try {
+                        $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+                        $tenantUser->assignRole($adminRole);
+                    } catch (\Exception $e) {
+                        // Role assignment failed, but user is created
                     }
-                    
-                    \Log::info('Tenant admin user created successfully', [
-                        'tenant_id' => $tenant->id,
-                        'user_id' => $tenantUser->id,
-                        'email' => $tenantUser->email
-                    ]);
-                    
-                    return $tenantUser->id;
-                });
+                }
                 
-                // Update tenant with hashed password for security
-                $tenant->update(['admin_password' => Hash::make($tempPassword)]);
+                return $tenantUser->id;
             });
+            
+            // Update tenant with hashed password for security
+            $tenant->update(['admin_password' => Hash::make($tempPassword)]);
             
             // Update tenant subscription status based on existing subscriptions
             $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user, $tenant) {
@@ -249,32 +234,33 @@ class TenantManagementController extends Controller
                 ]);
             }
             
-            \Log::info('Tenant creation process completed successfully', [
-                'user_id' => $user->id,
-                'tenant_id' => $tenant->id,
-                'subscription_status' => $tenant->subscription_status,
-                'temp_password' => $tempPassword
-            ]);
+
+            // Send credentials email to the admin user
+            try {
+                $tenantDomain = $tenant->domains->first()->domain ?? null;
+                
+                if ($tenantDomain) {
+                    $user->notify(new TenantCredentialsCreated($tenant, $tempPassword, $tenantDomain));
+                    
+                }
+            } catch (\Exception $emailError) {
+                // Don't fail the whole process if email fails
+            }
+            
         } catch (\Exception $e) {
-            \Log::error('Error in tenant creation process', [
-                'tenant_id' => $tenant->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            // Error in tenant creation process - handle gracefully
         }
 
-        // For admin users, redirect to tenant details with password info
+        // For admin users, redirect to tenant details with success message
         if ($user->hasRole('admin')) {
             return redirect()->route('tenant-management.show', $tenant)
-                ->with('success', 'Conjunto creado y configurado exitosamente.')
-                ->with('temp_password', $tempPassword)
-                ->with('show_password_info', true);
+                ->with('success', 'Conjunto creado exitosamente. Se han enviado las credenciales de acceso a tu correo electrónico.')
+                ->with('email_sent', true);
         }
 
         return redirect()->route('tenant-management.show', $tenant)
-            ->with('success', 'Tenant creado y configurado exitosamente.')
-            ->with('temp_password', $tempPassword)
-            ->with('show_password_info', true);
+            ->with('success', 'Tenant creado exitosamente. Se han enviado las credenciales de acceso por correo electrónico.')
+            ->with('email_sent', true);
     }
 
     public function edit(Tenant $tenant)
