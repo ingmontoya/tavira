@@ -186,24 +186,21 @@ class TenantManagementController extends Controller
         // Wait for pipeline to complete completely, then fix data persistence
         sleep(2);
 
-        // Force update ALL tenant data to ensure persistence after pipeline
+        // Force update ALL tenant data using Eloquent to ensure persistence after pipeline
         DB::transaction(function () use ($tenant, $tenantData, $request, $tempPassword, $subscriptionExpiresAt) {
-            // Update all tenant fields at once to prevent race conditions
-            DB::table('tenants')
-                ->where('id', $tenant->id)
-                ->update([
-                    'data' => json_encode(array_merge($tenantData, [
-                        'debug_password' => $tempPassword, // Add password to data for visibility
-                        'admin_created' => true,
-                    ])),
-                    'admin_name' => $request->name,
-                    'admin_email' => $request->email,
-                    'subscription_status' => 'active',
-                    'subscription_plan' => 'monthly',
-                    'subscription_expires_at' => $subscriptionExpiresAt,
-                    'subscription_renewed_at' => now(),
-                    'subscription_last_checked_at' => now(),
-                ]);
+            // Refresh the tenant model and update using Eloquent
+            $tenant->refresh();
+            $tenant->update(array_merge($tenantData, [
+                'debug_password' => $tempPassword,
+                'admin_created' => true,
+                'admin_name' => $request->name,
+                'admin_email' => $request->email,
+                'subscription_status' => 'active',
+                'subscription_plan' => 'monthly',
+                'subscription_expires_at' => $subscriptionExpiresAt,
+                'subscription_renewed_at' => now(),
+                'subscription_last_checked_at' => now(),
+            ]));
         });
 
         // Create tenant admin user in tenant database
