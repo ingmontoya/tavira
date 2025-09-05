@@ -27,7 +27,7 @@ class TenantManagementController extends Controller
 
     private function getTenantData(Tenant $tenant): array
     {
-        // Get raw data directly from database to handle casting issues
+        // Get raw data directly from database to handle casting issues with stancl/tenancy
         $rawData = DB::table('tenants')->where('id', $tenant->id)->value('data');
         return $rawData ? json_decode($rawData, true) : [];
     }
@@ -182,11 +182,34 @@ class TenantManagementController extends Controller
             'subscription_required_at' => now(),
         ]);
 
+        // Wait for pipeline to complete and then update data field with important information
+        sleep(3); // Give pipeline time to finish
+        
+        // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
+        $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
+        $currentData = $currentDataRaw ? json_decode($currentDataRaw, true) : [];
+        
+        $updatedData = array_merge($currentData, [
+            'name' => $request->name,
+            'email' => $request->email,
+            'status' => 'active',
+            'created_by' => $user->id,
+            'created_by_email' => $user->email,
+            'created_at' => now()->toISOString(),
+            'temp_password' => $tempPassword,
+            'debug_password' => $tempPassword,
+            'requires_password_change' => true,
+            'admin_created' => true,
+        ]);
+        
+        // Use direct database update for data field to bypass Eloquent casting issues
+        DB::table('tenants')->where('id', $tenant->id)->update([
+            'data' => json_encode($updatedData)
+        ]);
+
         // Create tenant admin user in tenant database after pipeline completion
         $adminUserId = null;
         try {
-            // Wait for pipeline to complete (database creation, migration, seeding)
-            sleep(3); // Give pipeline time to finish
             
             $tenant->run(function () use (&$adminUserId, $request, $tempPassword) {
                 // Create the admin user in the tenant database
