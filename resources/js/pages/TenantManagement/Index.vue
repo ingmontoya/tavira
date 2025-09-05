@@ -45,10 +45,6 @@
                                     <SelectContent>
                                         <SelectItem value="all">Todos los estados</SelectItem>
                                         <SelectItem value="active">Activos</SelectItem>
-                                        <SelectItem value="draft">Borrador</SelectItem>
-                                        <SelectItem value="approved">Aprobados</SelectItem>
-                                        <SelectItem value="pending">Pendientes</SelectItem>
-                                        <SelectItem value="rejected">Rechazados</SelectItem>
                                         <SelectItem value="suspended">Suspendidos</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -152,23 +148,7 @@
                                             <!-- Superadmin-only actions -->
                                             <template v-if="isSuperAdmin">
                                                 <DropdownMenuSeparator />
-                                                <!-- Approval actions for draft tenants -->
-                                                <DropdownMenuItem v-if="tenant.status === 'draft'"
-                                                    @click="approveTenant(tenant.id)" class="text-blue-600">
-                                                    <Icon name="check" class="h-4 w-4 mr-2" />
-                                                    Aprobar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem v-if="tenant.status === 'draft'"
-                                                    @click="rejectTenant(tenant.id)" class="text-red-600">
-                                                    <Icon name="x" class="h-4 w-4 mr-2" />
-                                                    Rechazar
-                                                </DropdownMenuItem>
-                                                <!-- Activation/suspension actions -->
-                                                <DropdownMenuItem v-if="tenant.status === 'approved'"
-                                                    @click="activateTenant(tenant.id)" class="text-green-600">
-                                                    <Icon name="play" class="h-4 w-4 mr-2" />
-                                                    Activar
-                                                </DropdownMenuItem>
+                                                <!-- Suspension actions -->
                                                 <DropdownMenuItem v-if="tenant.status === 'active'"
                                                     @click="suspendTenant(tenant.id)" class="text-orange-600">
                                                     <Icon name="pause" class="h-4 w-4 mr-2" />
@@ -319,10 +299,6 @@ const clearFilters = () => {
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'active': return 'default'
-        case 'draft': return 'outline'
-        case 'approved': return 'secondary'
-        case 'pending': return 'secondary'
-        case 'rejected': return 'destructive'
         case 'suspended': return 'destructive'
         default: return 'secondary'
     }
@@ -331,10 +307,6 @@ const getStatusVariant = (status: string) => {
 const getStatusText = (status: string) => {
     switch (status) {
         case 'active': return 'Activo'
-        case 'draft': return 'Borrador'
-        case 'approved': return 'Aprobado'
-        case 'pending': return 'Pendiente'
-        case 'rejected': return 'Rechazado'
         case 'suspended': return 'Suspendido'
         default: return status
     }

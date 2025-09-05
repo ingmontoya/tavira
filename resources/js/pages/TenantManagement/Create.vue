@@ -126,11 +126,15 @@
                     <div class="space-y-3 text-sm">
                         <div class="flex items-start gap-2">
                             <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <p>El tenant se creará en estado "Pendiente" y deberá ser activado manualmente</p>
+                            <p>El tenant se creará automáticamente en estado "Activo" y estará listo para usar</p>
                         </div>
                         <div class="flex items-start gap-2">
                             <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <p>Se creará automáticamente una base de datos independiente para el tenant</p>
+                            <p>Se creará automáticamente una base de datos independiente con configuración inicial</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <p>Tu usuario actual será replicado como administrador del nuevo tenant</p>
                         </div>
                         <div class="flex items-start gap-2">
                             <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -138,7 +142,7 @@
                         </div>
                         <div class="flex items-start gap-2">
                             <Icon name="alert-circle" class="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
-                            <p>Una vez creado, el tenant necesitará configuración inicial antes de poder ser usado</p>
+                            <p>La contraseña por defecto será "password123" - cámbiala después del primer acceso</p>
                         </div>
                     </div>
                 </CardContent>
