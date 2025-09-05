@@ -18,9 +18,9 @@ class TenantManagementController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('role:superadmin')->except(['create', 'store', 'index', 'show', 'edit', 'update']);
+        $this->middleware(middleware: 'role:superadmin')->except(['create', 'store', 'index', 'show', 'edit', 'update']);
         $this->middleware('role:admin|superadmin')->only(['create', 'store', 'index', 'show', 'edit', 'update']);
-        
+
         // Restrict tenant management actions to superadmin only
         $this->middleware('role:superadmin')->only(['destroy', 'activate', 'suspend', 'impersonate']);
     }
@@ -85,10 +85,10 @@ class TenantManagementController extends Controller
         // Ensure user can only access their own tenants (unless superadmin)
         if (!$user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
-            
+
             // Check if user just created this tenant (from session)
             $justCreated = session('tenant_id') === $tenant->id && session('tenant_creation_success');
-            
+
             $canAccess = $justCreated ||
                 ($data['created_by'] ?? null) == $user->id ||
                 ($data['created_by_email'] ?? null) == $user->email ||
@@ -187,11 +187,11 @@ class TenantManagementController extends Controller
             \Log::info('Starting data field update for tenant: ' . $tenant->id);
             sleep(1); // Reduced sleep to prevent timeouts
             \Log::info('Pipeline wait completed for tenant: ' . $tenant->id);
-            
+
             // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
             $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
             $currentData = $currentDataRaw ? json_decode($currentDataRaw, true) : [];
-            
+
             $updatedData = array_merge($currentData, [
                 'name' => $request->name,
                 'email' => $request->email,
@@ -204,7 +204,7 @@ class TenantManagementController extends Controller
                 'requires_password_change' => true,
                 'admin_created' => true,
             ]);
-            
+
             // Use direct database update for data field to bypass Eloquent casting issues
             \Log::info('Updating tenant data field', ['tenant_id' => $tenant->id, 'data' => $updatedData]);
             DB::table('tenants')->where('id', $tenant->id)->update([
@@ -222,7 +222,7 @@ class TenantManagementController extends Controller
         // Create tenant admin user in tenant database after pipeline completion
         $adminUserId = null;
         try {
-            
+
             $tenant->run(function () use (&$adminUserId, $request, $tempPassword) {
                 // Create the admin user in the tenant database
                 $tenantUser = \App\Models\User::create([
@@ -235,10 +235,10 @@ class TenantManagementController extends Controller
 
                 // Assign admin role
                 if (class_exists(\Spatie\Permission\Models\Role::class)) {
-                    $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+                    $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'superadmin']);
                     $tenantUser->assignRole($adminRole);
                 }
-                
+
                 $adminUserId = $tenantUser->id;
             });
 
@@ -256,7 +256,6 @@ class TenantManagementController extends Controller
             } catch (\Exception $emailError) {
                 // Email failed but continue
             }
-
         } catch (\Exception $e) {
             // Admin user creation failed but continue - tenant is still created
         }
@@ -339,7 +338,7 @@ class TenantManagementController extends Controller
         $data['email'] = $request->email;
         $data['status'] = $request->status;
         $data['updated_by'] = auth()->id();
-        
+
         $tenant->update(['data' => $data]);
 
         return redirect()->route('tenant-management.show', $tenant)
@@ -375,27 +374,27 @@ class TenantManagementController extends Controller
             // Determine user ID to impersonate
             // Priority: request user_id -> stored admin_user_id -> error
             $userId = $request->user_id ?? $tenant->admin_user_id;
-            
+
             if (!$userId) {
                 return response()->json([
                     'error' => 'No se puede determinar qué usuario impersonar. ' .
-                              'Especifica un user_id o asegúrate de que el tenant tenga un admin_user_id válido.'
+                        'Especifica un user_id o asegúrate de que el tenant tenga un admin_user_id válido.'
                 ], 400);
             }
 
             // Generate impersonation token using stancl/tenancy
             $redirectUrl = $request->redirect_url ?? '/dashboard';
             $tokenObject = tenancy()->impersonate($tenant, $userId, $redirectUrl, 'web');
-            
+
             // Extract the token string from the object
             $token = $tokenObject->token ?? $tokenObject;
-            
+
             // Build the impersonation URL
             $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
             if (app()->environment('local')) {
                 $tenantUrl .= ':8001'; // Updated to match current server port
             }
-            
+
             $impersonationUrl = $tenantUrl . '/impersonate/' . $token;
 
             return response()->json([
@@ -424,7 +423,7 @@ class TenantManagementController extends Controller
     public function activate(Tenant $tenant)
     {
         $data = $this->getTenantData($tenant);
-        
+
         // Allow reactivation of suspended tenants
         if ($data['status'] === 'active') {
             return back()->with('info', 'El tenant ya está activo.');
@@ -434,13 +433,13 @@ class TenantManagementController extends Controller
             // Run migrations and seed for tenant
             \Artisan::call('tenants:migrate', ['--tenant' => $tenant->id]);
             \Artisan::call('tenants:seed', ['--tenant' => $tenant->id]);
-            
+
             // Create admin user if credentials are provided
             if ($tenant->admin_name && $tenant->admin_email && $tenant->admin_password) {
                 $createUserJob = new CreateTenantAdminUser($tenant);
                 $createUserJob->handle();
             }
-            
+
             $data['status'] = 'active';
             $data['activated_by'] = auth()->id();
             $data['activated_at'] = now()->toISOString();
@@ -471,7 +470,7 @@ class TenantManagementController extends Controller
         try {
             // Initialize tenancy to access tenant database
             tenancy()->initialize($tenant);
-            
+
             // Get users from tenant database
             $users = \App\Models\User::select('id', 'name', 'email', 'created_at')
                 ->get()
@@ -505,23 +504,21 @@ class TenantManagementController extends Controller
         $lowercase = 'abcdefghijklmnopqrstuvwxyz';
         $numbers = '0123456789';
         $special = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-        
+
         // Ensure at least one character from each required set
         $password = '';
         $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
         $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
         $password .= $numbers[random_int(0, strlen($numbers) - 1)];
         $password .= $special[random_int(0, strlen($special) - 1)];
-        
+
         // Fill remaining characters randomly
         $allChars = $uppercase . $lowercase . $numbers . $special;
         for ($i = 4; $i < 12; $i++) { // Make it 12 characters total
             $password .= $allChars[random_int(0, strlen($allChars) - 1)];
         }
-        
+
         // Shuffle the password to randomize character positions
         return str_shuffle($password);
     }
-
-
 }

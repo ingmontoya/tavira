@@ -162,7 +162,12 @@
         <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ \App\Services\EmailImageService::getEmailImageUrl('img/tavira_logo_blanco.svg') }}" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
+                <?php
+                    // Use the public path instead of asset() to ensure images are accessible outside the app.
+                    $imageUrl = public_path('img/tavira_logo_blanco.svg');
+                    $message->embed($imageUrl, 'Tavira - Plataforma de Administración');
+                ?>
+                <img src="{{ $message->embed($imageUrl) }}" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 60px; width: auto; margin-bottom: 10px; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
             </div>
         </div>
 
@@ -201,7 +206,7 @@
 
             <div class="footer-links">
                 <a href="https://tavira.com.co">Sitio web</a>
-                <a href="mailto:soporte@tavira.com.co">Soporte</a>
+                <a href="mailto:hola@tavira.com.co">Soporte</a>
             </div>
 
             <p style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
