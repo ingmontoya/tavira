@@ -34,6 +34,29 @@ class RequiresSubscription
             return $next($request);
         }
 
+        // Determine context
+        $isInTenantContext = tenancy()->initialized;
+        $isCentralDomain = in_array($request->getHost(), config('tenancy.central_domains', []));
+        
+        // In tenant context, only check subscription status, don't redirect to tenant creation
+        if ($isInTenantContext) {
+            return $this->handleTenantContext($request, $next, $user);
+        }
+        
+        // In central context, handle tenant creation and central operations
+        if ($isCentralDomain) {
+            return $this->handleCentralContext($request, $next, $user);
+        }
+
+        // Default: allow request to continue
+        return $next($request);
+    }
+
+    /**
+     * Handle subscription checks in tenant context
+     */
+    private function handleTenantContext(Request $request, Closure $next, $user): Response
+    {
         // Skip for certain routes that should always be accessible
         $allowedRoutes = [
             'subscription.*',
@@ -41,9 +64,6 @@ class RequiresSubscription
             'verification.*',
             'password.*',
             'profile.*',
-            'wompi.webhook',
-            'user-profile-information.update',
-            'tenant-management.*', // Allow all tenant management routes to avoid redirect loops
         ];
 
         foreach ($allowedRoutes as $route) {
@@ -52,18 +72,11 @@ class RequiresSubscription
             }
         }
 
-        // Check subscription status based on user role and context
+        // In tenant context, we should have a tenant and check its subscription
         if ($user->hasRole('admin')) {
-            // If user has no tenant_id, redirect to create tenant
-            if (!$user->tenant_id) {
-                return redirect()->route('tenant-management.create')
-                    ->with('info', 'Crea tu conjunto para comenzar.');
-            }
-
-            // If in tenant context, check the tenant's subscription status
-            if (tenancy()->tenant) {
-                $tenant = tenancy()->tenant;
-                
+            $tenant = tenancy()->tenant;
+            
+            if ($tenant) {
                 // Check if tenant subscription is active
                 if (!in_array($tenant->subscription_status, ['active'])) {
                     \Illuminate\Support\Facades\Log::warning('User redirected to plans - tenant subscription not active', [
@@ -87,6 +100,41 @@ class RequiresSubscription
                     return redirect()->route('subscription.plans')
                         ->with('warning', 'Tu suscripción ha expirado. Renueva para continuar.');
                 }
+            }
+        }
+
+        return $next($request);
+    }
+
+    /**
+     * Handle subscription checks in central context
+     */
+    private function handleCentralContext(Request $request, Closure $next, $user): Response
+    {
+        // Skip for certain routes that should always be accessible
+        $allowedRoutes = [
+            'subscription.*',
+            'logout',
+            'verification.*',
+            'password.*',
+            'profile.*',
+            'wompi.webhook',
+            'user-profile-information.update',
+            'tenant-management.*', // Allow all tenant management routes to avoid redirect loops
+        ];
+
+        foreach ($allowedRoutes as $route) {
+            if ($request->routeIs($route)) {
+                return $next($request);
+            }
+        }
+
+        // Check subscription status for central operations
+        if ($user->hasRole('admin')) {
+            // If user has no tenant_id, redirect to create tenant
+            if (!$user->tenant_id) {
+                return redirect()->route('tenant-management.create')
+                    ->with('info', 'Crea tu conjunto para comenzar.');
             }
         }
 
