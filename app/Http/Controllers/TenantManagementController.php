@@ -58,9 +58,10 @@ class TenantManagementController extends Controller
                 $data = $rawData ? json_decode($rawData, true) : [];
                 return [
                     'id' => $tenant->id,
-                    'name' => $data['name'] ?? 'Sin nombre',
-                    'email' => $data['email'] ?? null,
-                    'status' => $data['status'] ?? 'pending',
+                    // Use data field as fallback for missing column values
+                    'name' => $tenant->admin_name ?? $data['name'] ?? 'Sin nombre',
+                    'email' => $tenant->admin_email ?? $data['email'] ?? null,
+                    'status' => $tenant->subscription_status ?? $data['subscription_status'] ?? 'pending',
                     'created_at' => $tenant->created_at->format('d/m/Y H:i'),
                     'updated_at' => $tenant->updated_at->format('d/m/Y H:i'),
                     'domains' => $tenant->domains->pluck('domain')->toArray(),
@@ -155,12 +156,6 @@ class TenantManagementController extends Controller
         // Send notification to all superadmins
         $superAdmins = User::role('superadmin')->get();
         Notification::send($superAdmins, new TenantApprovalRequest($tenant->fresh(), $user));
-
-        // For admin users, redirect to central dashboard
-        if ($user->hasRole('admin')) {
-            return redirect()->route('dashboard')
-                ->with('success', 'Conjunto creado exitosamente. Se ha enviado la solicitud para aprobación.');
-        }
 
         return redirect()->route('tenant-management.show', $tenant)
             ->with('success', 'Tenant creado exitosamente. Se ha enviado la solicitud para aprobación.');
