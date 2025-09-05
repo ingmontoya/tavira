@@ -23,6 +23,7 @@ Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
+    \Stancl\Tenancy\Middleware\ScopeSessions::class,
 ])->group(function () {
     Route::get('/', function () {
         return redirect()->route('dashboard');
