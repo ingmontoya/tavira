@@ -13,10 +13,39 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $casts = [
         'data' => 'array',
+        'pending_updates' => 'array',
+        'subscription_expires_at' => 'datetime',
+        'subscription_renewed_at' => 'datetime',
+        'subscription_last_checked_at' => 'datetime',
     ];
 
     protected $fillable = [
         'id',
         'data',
+        'pending_updates',
+        'admin_name',
+        'admin_email',
+        'admin_password',
+        'admin_user_id',
+        'subscription_status',
+        'subscription_plan',
+        'subscription_expires_at',
+        'subscription_renewed_at',
+        'subscription_last_checked_at',
     ];
+
+    protected $hidden = [
+        'admin_password',
+    ];
+
+    public static function getCustomColumns(): array
+    {
+        return [
+            'id',
+            'admin_name',
+            'admin_email',
+            'admin_password',
+            'admin_user_id',
+        ];
+    }
 }
