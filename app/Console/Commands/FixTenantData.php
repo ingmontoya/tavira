@@ -41,19 +41,17 @@ class FixTenantData extends Command
             'fixed_at' => now()->toISOString(),
         ];
 
-        // Update tenant data directly
-        DB::table('tenants')
-            ->where('id', $tenantId)
-            ->update([
-                'data' => json_encode($tenantData),
-                'admin_name' => $name,
-                'admin_email' => $email,
-                'subscription_status' => 'active',
-                'subscription_plan' => 'monthly',
-                'subscription_expires_at' => now()->addMonth(),
-                'subscription_renewed_at' => now(),
-                'subscription_last_checked_at' => now(),
-            ]);
+        // Update tenant using Eloquent model to handle JSON casting properly
+        $tenant->update([
+            'data' => $tenantData, // Let Eloquent handle JSON encoding
+            'admin_name' => $name,
+            'admin_email' => $email,
+            'subscription_status' => 'active',
+            'subscription_plan' => 'monthly',
+            'subscription_expires_at' => now()->addMonth(),
+            'subscription_renewed_at' => now(),
+            'subscription_last_checked_at' => now(),
+        ]);
 
         $this->info("Tenant {$tenantId} updated successfully");
         $this->info("Name: {$name}");
