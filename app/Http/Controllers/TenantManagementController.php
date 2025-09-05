@@ -40,8 +40,10 @@ class TenantManagementController extends Controller
             ->when(!$user->hasRole('superadmin'), function ($query) use ($user) {
                 // Filter tenants created by this user or where user is the admin
                 $query->where(function ($subQuery) use ($user) {
-                    // Use PostgreSQL JSON syntax instead of MySQL whereJsonContains
-                    $subQuery->whereRaw('data->>? = ?', ['created_by', $user->id])
+                    // Check direct model fields first
+                    $subQuery->where('admin_email', $user->email)
+                        // Also check JSON data field for backward compatibility
+                        ->orWhereRaw('data->>? = ?', ['created_by', $user->id])
                         ->orWhereRaw('data->>? = ?', ['created_by_email', $user->email])
                         ->orWhereRaw('data->>? = ?', ['email', $user->email]);
                 });
@@ -317,7 +319,9 @@ class TenantManagementController extends Controller
             $data = $this->getTenantData($tenant);
             $canAccess = ($data['created_by'] ?? null) == $user->id ||
                 ($data['created_by_email'] ?? null) == $user->email ||
-                ($data['email'] ?? null) == $user->email;
+                ($data['email'] ?? null) == $user->email ||
+                // Also check tenant admin fields for immediate access after creation
+                $tenant->admin_email === $user->email;
 
             if (!$canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
@@ -353,7 +357,9 @@ class TenantManagementController extends Controller
             $data = $this->getTenantData($tenant);
             $canAccess = ($data['created_by'] ?? null) == $user->id ||
                 ($data['created_by_email'] ?? null) == $user->email ||
-                ($data['email'] ?? null) == $user->email;
+                ($data['email'] ?? null) == $user->email ||
+                // Also check tenant admin fields for immediate access after creation
+                $tenant->admin_email === $user->email;
 
             if (!$canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
