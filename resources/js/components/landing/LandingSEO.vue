@@ -55,20 +55,20 @@ const currentLocale = computed(() => locale.value);
 
 const metaTitle = computed(() =>
     currentLocale.value === 'es'
-        ? 'Tavira - Gestión simple, comunidades fuertes'
-        : 'Tavira - Simple management, strong communities',
+        ? 'Tavira - Software Líder para Administración de Conjuntos Residenciales en Colombia | Apps Móviles + Seguridad Bancaria'
+        : 'Tavira - Leading Software for Residential Complex Management in Colombia | Mobile Apps + Banking Security',
 );
 
 const metaDescription = computed(() =>
     currentLocale.value === 'es'
-        ? 'Tavira: la nueva forma de administrar propiedad horizontal. Eficiencia y claridad para tu conjunto residencial en Colombia. Prueba gratis 30 días.'
-        : 'Tavira: the new way to manage horizontal property. Efficiency and clarity for your residential complex in Colombia. Free 30-day trial.',
+        ? 'Software líder para administración de conjuntos residenciales en Colombia. Apps móviles iOS/Android, portería digital, citófonos, pases QR, facturación DIAN, contabilidad, marketplace comunitario. Base de datos exclusiva. Prueba gratis 30 días.'
+        : 'Leading software for residential complex management in Colombia. iOS/Android mobile apps, digital concierge, intercoms, QR passes, DIAN invoicing, accounting, community marketplace. Exclusive database. Free 30-day trial.',
 );
 
 const metaKeywords = computed(() =>
     currentLocale.value === 'es'
-        ? 'Tavira, gestión simple conjuntos residenciales, administración propiedad horizontal, software administración eficiente, pagos conjuntos, gestión residentes Colombia, proptech, comunidades fuertes'
-        : 'Tavira, simple residential complex management, property management software, efficient apartment administration, HOA management, residents management Colombia, proptech, strong communities',
+        ? 'software administración conjuntos residenciales Colombia, aplicación móvil portería, citófonos digitales, pases QR temporal, gestión paquetes, facturación electrónica DIAN, contabilidad conjuntos, marketplace comunitario, sistema PQR digital, control acceso vehicular, comunicados residentes, mantenimiento predictivo, presupuestos condominios, conciliación bancaria, base datos exclusiva, seguridad bancaria, proptech Colombia, administración inmobiliaria, propiedad horizontal, condominios, torres residenciales, unidades cerradas, conjunto cerrado'
+        : 'residential complex management software Colombia, mobile concierge app, digital intercoms, temporary QR passes, package management, DIAN electronic invoicing, condominium accounting, community marketplace, digital PQR system, vehicle access control, resident communications, predictive maintenance, condo budgets, bank reconciliation, exclusive database, banking security, proptech Colombia, real estate management, horizontal property, condominiums, residential towers, gated communities',
 );
 
 const currentUrl = computed(() => {
@@ -109,7 +109,20 @@ const structuredData = computed(() => {
         author: {
             '@type': 'Organization',
             name: 'Tavira',
-            url: 'https://tavira.com',
+            url: 'https://tavira.com.co',
+            logo: 'https://tavira.com.co/images/tavira-logo.png',
+            address: {
+                '@type': 'PostalAddress',
+                addressCountry: 'CO',
+                addressLocality: 'Bogotá',
+                addressRegion: 'Cundinamarca'
+            },
+            contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '+57-300-123-4567',
+                contactType: 'Soporte Técnico',
+                availableLanguage: ['Spanish', 'English']
+            }
         },
         screenshot: 'https://tavira.com/images/dashboard-screenshot.jpg',
         softwareVersion: '2.0',

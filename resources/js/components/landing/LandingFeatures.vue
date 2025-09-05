@@ -3,18 +3,18 @@
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-4xl font-bold text-gray-900 lg:text-5xl">
-                    {{ $t('features.sectionTitle') }}
+                    Todo lo que necesitas para una
                     <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent">
-                        {{ $t('features.sectionTitleHighlight') }}
+                        administración
                     </span>
-                    {{ $t('features.sectionTitleEnd') }}
+                    exitosa
                 </h2>
                 <p class="mx-auto max-w-3xl text-xl text-gray-600">
-                    {{ $t('features.sectionDescription') }}
+                    Sistema integral diseñado especificamente para conjuntos residenciales en Colombia. Desde finanzas hasta comunicación, todo en una plataforma segura.
                 </p>
             </div>
 
-            <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 <div
                     v-for="(feature, index) in features"
                     :key="index"
@@ -40,23 +40,43 @@ const { t } = useI18n();
 const features = computed(() => [
     {
         icon: '🏢',
-        title: t('features.management.title'),
-        description: t('features.management.description'),
+        title: 'Gestión Integral',
+        description: 'Administra residentes, apartamentos, personal y proveedores desde un solo lugar. Sistema flexible que se adapta a tu conjunto.',
     },
     {
         icon: '💰',
-        title: t('features.finance.title'),
-        description: t('features.finance.description'),
+        title: 'Finanzas Completas',
+        description: 'Contabilidad doble partida, facturación automatizada (opcional DIAN), presupuestos, reportes financieros y cumplimiento normativo.',
     },
     {
-        icon: '📱',
-        title: t('features.mobile.title'),
-        description: t('features.mobile.description'),
+        icon: '📢',
+        title: 'Comunicación Institucional',
+        description: 'Sistema de correos institucional para preservar la memoria del conjunto. Templates personalizables y comunicación efectiva.',
     },
     {
         icon: '🔐',
-        title: t('features.security.title'),
-        description: t('features.security.description'),
+        title: 'Máxima Seguridad',
+        description: 'Base de datos exclusiva por conjunto, encriptación bancaria, backups automatizados y cumplimiento normativo colombiano.',
+    },
+    {
+        icon: '✅',
+        title: 'Flujo de Aprobaciones',
+        description: 'Workflow completo: Proveedores → Concejo → Administración. Control total de gastos y decisiones con trazabilidad.',
+    },
+    {
+        icon: '🛍️',
+        title: 'Comercio Comunitario',
+        description: 'Plataforma de confianza entre vecinos. Compra-venta entre residentes con sistema de calificaciones y experiencias.',
+    },
+    {
+        icon: '📱',
+        title: 'Apps Móviles Nativas',
+        description: 'App para residentes (iOS/Android) y app para portería con citófonos, gestión de paquetes y pases temporales QR.',
+    },
+    {
+        icon: '📊',
+        title: 'Reportes Inteligentes',
+        description: 'Dashboard ejecutivo, reportes financieros, análisis de morosidad, indicadores de gestión y métricas clave.',
     },
 ]);
 </script>

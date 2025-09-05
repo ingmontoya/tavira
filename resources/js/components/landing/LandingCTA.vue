@@ -3,13 +3,14 @@
         <div class="mx-auto max-w-4xl text-center">
             <div class="rounded-3xl border border-white/20 bg-gradient-to-r from-white/10 to-white/5 p-8 md:p-12 backdrop-blur-lg">
                 <h2 class="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold text-white">
-                    {{ $t('cta.title') }}
+                    ¿Listo para
                     <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
-                        {{ $t('cta.titleHighlight') }}
+                        Transformar
                     </span>
+                    tu Conjunto?
                 </h2>
                 <p class="mx-auto mb-8 max-w-2xl text-lg md:text-xl text-white/85">
-                    {{ $t('cta.description') }}
+                    Únete a más de 500 conjuntos en Colombia que ya confían en Tavira. Comienza hoy mismo con nuestra prueba gratuita de 30 días.
                 </p>
 
                 <div class="flex flex-col justify-center gap-4 sm:flex-row">
@@ -18,14 +19,14 @@
                         :href="route('register')"
                         class="flex-shrink-0 transform rounded-xl bg-gradient-to-r from-[#FF6B6B] to-[#FF6B6B] px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-[#ff5555] hover:to-[#ff5555] hover:shadow-[#FF6B6B]/25"
                     >
-                        <span class="sm:hidden">{{ $t('cta.primary') }}</span>
-                        <span class="hidden sm:inline">{{ $t('cta.primaryFull') }}</span>
+                        <span class="sm:hidden">Prueba Gratis</span>
+                        <span class="hidden sm:inline">Comenzar Prueba Gratuita de 30 Días</span>
                     </Link>
                     <button
                         class="flex-shrink-0 rounded-xl border-2 border-white/30 px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white transition-all duration-200 hover:bg-white/15 hover:border-white/50"
                     >
-                        <span class="sm:hidden">{{ $t('cta.secondary') }}</span>
-                        <span class="hidden sm:inline">{{ $t('cta.secondaryFull') }}</span>
+                        <span class="sm:hidden">Ver Demo</span>
+                        <span class="hidden sm:inline">Solicitar Demostración Personalizada</span>
                     </button>
                 </div>
 
@@ -53,5 +54,5 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const benefits = computed(() => [t('cta.benefits.freeTrial'), t('cta.benefits.noCard'), t('cta.benefits.support'), t('cta.benefits.implementation')]);
+const benefits = computed(() => ['Prueba gratuita 30 días', 'Sin tarjeta de crédito', 'Soporte incluido', 'Implementación gratuita']);
 </script>

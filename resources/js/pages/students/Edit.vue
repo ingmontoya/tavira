@@ -104,11 +104,10 @@ const submit = () => {
 <template>
     <AppLayout :breadcrumbs="breadcrumbItems">
         <div class="flex h-full w-full max-w-4xl flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+
             <Head title="Editar estudiante" />
-            <HeadingSmall
-                title="Editar estudiante"
-                :description="`Modifica la información de ${props.student.first_name} ${props.student.last_name}`"
-            />
+            <HeadingSmall title="Editar estudiante"
+                :description="`Modifica la información de ${props.student.first_name} ${props.student.last_name}`" />
 
             <form @submit.prevent="submit" class="space-y-6">
                 <!-- Información Personal -->
@@ -175,25 +174,21 @@ const submit = () => {
                     <CardContent class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div class="grid gap-2">
                             <Label for="personal_email">Email Personal</Label>
-                            <Input id="personal_email" type="email" v-model="form.personal_email" placeholder="ejemplo@correo.com" required />
+                            <Input id="personal_email" type="email" v-model="form.personal_email"
+                                placeholder="ejemplo@correo.com" required />
                             <InputError :message="form.errors.personal_email" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="institutional_email">Email Institucional</Label>
-                            <Input
-                                id="institutional_email"
-                                type="email"
-                                v-model="form.institutional_email"
-                                placeholder="ejemplo@universidad.edu"
-                                required
-                            />
+                            <Input id="institutional_email" type="email" v-model="form.institutional_email"
+                                placeholder="ejemplo@universidad.edu" required />
                             <InputError :message="form.errors.institutional_email" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="phone">Teléfono</Label>
-                            <Input id="phone" v-model="form.phone" placeholder="Ej: +57 300 123 4567" required />
+                            <Input id="phone" v-model="form.phone" placeholder="Ej: + +44 7447 313219" required />
                             <InputError :message="form.errors.phone" />
                         </div>
 
@@ -238,7 +233,8 @@ const submit = () => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Programas</SelectLabel>
-                                        <SelectItem v-for="program in programs" :key="program.id" :value="program.id.toString()">
+                                        <SelectItem v-for="program in programs" :key="program.id"
+                                            :value="program.id.toString()">
                                             {{ program.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -256,7 +252,8 @@ const submit = () => {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Semestres</SelectLabel>
-                                        <SelectItem v-for="semester in semesters" :key="semester.id" :value="semester.id.toString()">
+                                        <SelectItem v-for="semester in semesters" :key="semester.id"
+                                            :value="semester.id.toString()">
                                             {{ semester.name }}
                                         </SelectItem>
                                     </SelectGroup>
@@ -292,19 +289,22 @@ const submit = () => {
 
                         <div class="grid gap-2">
                             <Label for="credits_completed">Créditos Completados</Label>
-                            <Input id="credits_completed" type="number" v-model="form.credits_completed" placeholder="0" min="0" />
+                            <Input id="credits_completed" type="number" v-model="form.credits_completed" placeholder="0"
+                                min="0" />
                             <InputError :message="form.errors.credits_completed" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="total_credits">Total de Créditos</Label>
-                            <Input id="total_credits" type="number" v-model="form.total_credits" placeholder="0" min="0" />
+                            <Input id="total_credits" type="number" v-model="form.total_credits" placeholder="0"
+                                min="0" />
                             <InputError :message="form.errors.total_credits" />
                         </div>
 
                         <div class="grid gap-2">
                             <Label for="progress_rate">Tasa de Progreso (%)</Label>
-                            <Input id="progress_rate" type="number" v-model="form.progress_rate" placeholder="0" min="0" max="100" step="0.1" />
+                            <Input id="progress_rate" type="number" v-model="form.progress_rate" placeholder="0" min="0"
+                                max="100" step="0.1" />
                             <InputError :message="form.errors.progress_rate" />
                         </div>
                     </CardContent>
@@ -316,13 +316,10 @@ const submit = () => {
 
                     <Button type="button" variant="outline" @click="router.visit('/students')"> Cancelar </Button>
 
-                    <Transition
-                        enter-active-class="transition ease-in-out"
-                        enter-from-class="opacity-0"
-                        leave-active-class="transition ease-in-out"
-                        leave-to-class="opacity-0"
-                    >
-                        <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Actualizado exitosamente.</p>
+                    <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0"
+                        leave-active-class="transition ease-in-out" leave-to-class="opacity-0">
+                        <p v-show="form.recentlySuccessful" class="text-sm text-neutral-600">Actualizado exitosamente.
+                        </p>
                     </Transition>
                 </div>
             </form>

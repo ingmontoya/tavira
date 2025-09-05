@@ -3,14 +3,14 @@
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold text-[#1D3557]">
-                    {{ $t('detailedFeatures.sectionTitle') }}
+                    Funcionalidades
                     <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent">
-                        {{ $t('detailedFeatures.sectionTitleHighlight') }}
+                        Detalladas
                     </span>
-                    {{ $t('detailedFeatures.sectionTitleEnd') }}
+                    para cada Usuario
                 </h2>
                 <p class="mx-auto max-w-3xl text-lg md:text-xl text-gray-700">
-                    {{ $t('detailedFeatures.sectionDescription') }}
+                    Desde aplicaciones móviles nativas hasta gestión avanzada, cada usuario tiene herramientas específicas para sus necesidades.
                 </p>
             </div>
 
@@ -49,40 +49,82 @@ const { t } = useI18n();
 
 const features = computed(() => [
     {
-        icon: '👥',
-        title: t('detailedFeatures.residents.title'),
-        description: t('detailedFeatures.residents.description'),
-        features: Array.isArray(t('detailedFeatures.residents.features')) ? (t('detailedFeatures.residents.features') as string[]) : [],
+        icon: '📱',
+        title: 'App para Residentes',
+        description: 'Aplicación nativa iOS y Android con todas las funcionalidades que necesita cada residente.',
+        features: [
+            'Estado de cuenta en tiempo real',
+            'Pagos en línea seguros',
+            'Enviar pases QR a visitas',
+            'Marketplace comunitario',
+            'Reservar espacios comunes',
+            'Recibir comunicados instantáneos'
+        ],
     },
     {
-        icon: '🏠',
-        title: t('detailedFeatures.apartments.title'),
-        description: t('detailedFeatures.apartments.description'),
-        features: Array.isArray(t('detailedFeatures.apartments.features')) ? (t('detailedFeatures.apartments.features') as string[]) : [],
+        icon: '🏢',
+        title: 'App para Portería',
+        description: 'Herramienta profesional para el control total de acceso y gestión de seguridad.',
+        features: [
+            'Citófonos integrados al celular',
+            'Escaneo automático de QR',
+            'Gestión de paquetes con fotos',
+            'Registro de visitas y proveedores',
+            'Control de acceso vehicular',
+            'Historial completo de accesos'
+        ],
     },
     {
         icon: '💳',
-        title: t('detailedFeatures.payments.title'),
-        description: t('detailedFeatures.payments.description'),
-        features: Array.isArray(t('detailedFeatures.payments.features')) ? (t('detailedFeatures.payments.features') as string[]) : [],
+        title: 'Sistema Financiero',
+        description: 'Contabilidad profesional que cumple con toda la normatividad colombiana.',
+        features: [
+            'Contabilidad doble partida',
+            'Facturación DIAN (opcional)',
+            'Conciliación bancaria automática',
+            'Reportes ejecutivos completos',
+            'Control de morosidad',
+            'Presupuestos anuales'
+        ],
     },
     {
-        icon: '📊',
-        title: t('detailedFeatures.reports.title'),
-        description: t('detailedFeatures.reports.description'),
-        features: Array.isArray(t('detailedFeatures.reports.features')) ? (t('detailedFeatures.reports.features') as string[]) : [],
+        icon: '✅',
+        title: 'Flujo de Aprobaciones',
+        description: 'Control total de procesos desde proveedores hasta ejecución con trazabilidad completa.',
+        features: [
+            'Workflow Proveedor → Concejo → Admin',
+            'Trazabilidad 100% de decisiones',
+            'Notificaciones automáticas',
+            'Control presupuestal integrado',
+            'Historial permanente',
+            'Aprobaciones por niveles'
+        ],
     },
     {
-        icon: '📢',
-        title: t('detailedFeatures.communication.title'),
-        description: t('detailedFeatures.communication.description'),
-        features: Array.isArray(t('detailedFeatures.communication.features')) ? (t('detailedFeatures.communication.features') as string[]) : [],
+        icon: '📧',
+        title: 'Correos Institucionales',
+        description: 'Sistema de emails que pertenece al conjunto, garantizando continuidad institucional.',
+        features: [
+            'Direcciones @tuconjunto.com',
+            'Memoria institucional permanente',
+            'Independiente de administraciones',
+            'Templates oficiales',
+            'Historial completo conservado',
+            'Comunicación profesional'
+        ],
     },
     {
-        icon: '🛡️',
-        title: t('detailedFeatures.access.title'),
-        description: t('detailedFeatures.access.description'),
-        features: Array.isArray(t('detailedFeatures.access.features')) ? (t('detailedFeatures.access.features') as string[]) : [],
+        icon: '🛍️',
+        title: 'Marketplace Comunitario',
+        description: 'Plataforma de confianza entre vecinos con sistema de calificaciones y experiencias.',
+        features: [
+            'Compra-venta entre residentes',
+            'Sistema de calificaciones reales',
+            'Servicios profesionales',
+            'Solo residentes verificados',
+            'Categorías variadas',
+            'Ambiente de confianza mutua'
+        ],
     },
 ]);
 </script>

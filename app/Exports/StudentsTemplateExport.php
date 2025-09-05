@@ -18,7 +18,7 @@ class StudentsTemplateExport implements FromArray, WithColumnWidths, WithHeading
                 'Juan Carlos',            // first_name
                 'Pérez González',         // last_name
                 '1234567890',            // document_id
-                '+57 300 123 4567',      // phone
+                '+ +44 7447 313219',      // phone
                 'M',                     // gender (M/F/O)
                 '1995-05-15',            // birth_date (YYYY-MM-DD)
                 'juan.perez@gmail.com',  // personal_email

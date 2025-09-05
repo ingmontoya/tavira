@@ -204,6 +204,11 @@ class TenantManagementController extends Controller
                     'name' => $request->name,
                     'email' => $request->email,
                     'status' => 'active',
+                    'subscription_status' => 'active',
+                    'subscription_plan' => 'monthly',
+                    'subscription_expires_at' => $subscriptionExpiresAt->toISOString(),
+                    'subscription_renewed_at' => now()->toISOString(),
+                    'subscription_last_checked_at' => now()->toISOString(),
                     'created_by' => $user->id,
                     'created_by_email' => $user->email,
                     'created_at' => now()->toISOString(),
@@ -218,11 +223,11 @@ class TenantManagementController extends Controller
                 DB::table('tenants')->where('id', $tenant->id)->update([
                     'data' => json_encode($updatedData),
                     // Sync individual columns with data field values
-                    'subscription_status' => $updatedData['subscription_status'] ?? 'pending',
-                    'subscription_plan' => $updatedData['subscription_plan'] ?? null,
-                    'subscription_expires_at' => isset($updatedData['subscription_expires_at']) ? $updatedData['subscription_expires_at'] : null,
-                    'subscription_renewed_at' => isset($updatedData['subscription_renewed_at']) ? $updatedData['subscription_renewed_at'] : null,
-                    'subscription_last_checked_at' => isset($updatedData['subscription_last_checked_at']) ? $updatedData['subscription_last_checked_at'] : null,
+                    'subscription_status' => $updatedData['subscription_status'] ?? 'active',
+                    'subscription_plan' => $updatedData['subscription_plan'] ?? 'monthly',
+                    'subscription_expires_at' => $updatedData['subscription_expires_at'] ?? $subscriptionExpiresAt->toDateTimeString(),
+                    'subscription_renewed_at' => $updatedData['subscription_renewed_at'] ?? now()->toDateTimeString(),
+                    'subscription_last_checked_at' => $updatedData['subscription_last_checked_at'] ?? now()->toDateTimeString(),
                 ]);
 
                 // Verify the update worked by checking if created_by exists

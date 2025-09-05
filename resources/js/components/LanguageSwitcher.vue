@@ -22,7 +22,7 @@ import { useI18n } from 'vue-i18n';
 const { locale } = useI18n();
 
 const languages = [
-    { code: 'es', name: 'ES', flag: '🇪🇸' },
+    { code: 'es', name: 'ES', flag: '🇨🇴' },
     { code: 'en', name: 'EN', flag: '🇺🇸' },
 ];
 
