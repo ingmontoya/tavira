@@ -31,8 +31,48 @@
                 </div>
             </div>
 
-            <!-- Password Information Alert -->
-            <div v-if="($page.props.flash.show_password_info && $page.props.flash.temp_password) || (sessionData.tenant_creation_success && sessionData.tenant_temp_password && sessionData.tenant_id === tenant.id)" 
+            <!-- Email Sent Confirmation Alert -->
+            <div v-if="$page.props.flash.email_sent" 
+                class="mb-8 rounded-lg bg-green-50 border border-green-200 p-6">
+                <div class="flex items-start gap-4">
+                    <Icon name="mail" class="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-green-800 mb-2">
+                            ✅ Credenciales Enviadas por Correo
+                        </h3>
+                        <div class="space-y-3 text-sm">
+                            <p class="text-green-700">
+                                Se han enviado las credenciales de acceso al correo electrónico del administrador. El mensaje incluye:
+                            </p>
+                            <div class="bg-white rounded-md p-4 border border-green-200">
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <Icon name="check" class="h-4 w-4 text-green-600" />
+                                        <span class="text-gray-700">URL de acceso al tenant</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <Icon name="check" class="h-4 w-4 text-green-600" />
+                                        <span class="text-gray-700">Credenciales de administrador</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <Icon name="check" class="h-4 w-4 text-green-600" />
+                                        <span class="text-gray-700">Instrucciones de configuración inicial</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 mt-3">
+                                <Icon name="info" class="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                                <p class="text-green-700 text-xs">
+                                    Si no recibes el correo en unos minutos, revisa tu carpeta de spam o contacta con soporte.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy Password Information Alert (for backward compatibility) -->
+            <div v-else-if="($page.props.flash.show_password_info && $page.props.flash.temp_password) || (sessionData.tenant_creation_success && sessionData.tenant_temp_password && sessionData.tenant_id === tenant.id)" 
                 class="mb-8 rounded-lg bg-amber-50 border border-amber-200 p-6">
                 <div class="flex items-start gap-4">
                     <Icon name="key" class="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />

@@ -38,9 +38,9 @@ class RequiresSubscription
         $isInTenantContext = tenancy()->initialized;
         $isCentralDomain = in_array($request->getHost(), config('tenancy.central_domains', []));
         
-        // In tenant context, only check subscription status, don't redirect to tenant creation
+        // In tenant context, skip subscription checks entirely - tenants operate independently
         if ($isInTenantContext) {
-            return $this->handleTenantContext($request, $next, $user);
+            return $next($request);
         }
         
         // In central context, handle tenant creation and central operations
@@ -52,59 +52,6 @@ class RequiresSubscription
         return $next($request);
     }
 
-    /**
-     * Handle subscription checks in tenant context
-     */
-    private function handleTenantContext(Request $request, Closure $next, $user): Response
-    {
-        // Skip for certain routes that should always be accessible
-        $allowedRoutes = [
-            'subscription.*',
-            'logout',
-            'verification.*',
-            'password.*',
-            'profile.*',
-        ];
-
-        foreach ($allowedRoutes as $route) {
-            if ($request->routeIs($route)) {
-                return $next($request);
-            }
-        }
-
-        // In tenant context, we should have a tenant and check its subscription
-        if ($user->hasRole('admin')) {
-            $tenant = tenancy()->tenant;
-            
-            if ($tenant) {
-                // Check if tenant subscription is active
-                if (!in_array($tenant->subscription_status, ['active'])) {
-                    \Illuminate\Support\Facades\Log::warning('User redirected to plans - tenant subscription not active', [
-                        'user_id' => $user->id,
-                        'tenant_id' => $tenant->id,
-                        'subscription_status' => $tenant->subscription_status,
-                    ]);
-                    
-                    return redirect()->route('subscription.plans')
-                        ->with('warning', 'Tu suscripción no está activa. Renueva para continuar.');
-                }
-
-                // Check if subscription is expired
-                if ($tenant->subscription_expires_at && $tenant->subscription_expires_at->isPast()) {
-                    \Illuminate\Support\Facades\Log::warning('User redirected to plans - tenant subscription expired', [
-                        'user_id' => $user->id,
-                        'tenant_id' => $tenant->id,
-                        'expires_at' => $tenant->subscription_expires_at,
-                    ]);
-                    
-                    return redirect()->route('subscription.plans')
-                        ->with('warning', 'Tu suscripción ha expirado. Renueva para continuar.');
-                }
-            }
-        }
-
-        return $next($request);
-    }
 
     /**
      * Handle subscription checks in central context
