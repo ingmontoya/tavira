@@ -263,7 +263,7 @@ class TenantManagementController extends Controller
                 $tenantUser = \App\Models\User::create([
                     'name' => $request->name,
                     'email' => $request->email,
-                    'password' => Hash::make($tempPassword),
+                    'password' => $tempPassword, // Let Laravel hash it automatically via 'hashed' cast
                     'email_verified_at' => now(),
                     // Note: tenant users don't have requires_subscription field
                 ]);
