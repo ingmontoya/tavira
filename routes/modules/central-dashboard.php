@@ -18,9 +18,8 @@ Route::prefix('tenants')->name('tenant-management.')->group(function () {
     Route::delete('/{tenant}', [TenantManagementController::class, 'destroy'])->name('destroy');
     
     // Tenant actions
+    Route::get('/{tenant}/users', [TenantManagementController::class, 'getUsers'])->name('users');
     Route::post('/{tenant}/impersonate', [TenantManagementController::class, 'impersonate'])->name('impersonate');
     Route::post('/{tenant}/suspend', [TenantManagementController::class, 'suspend'])->name('suspend');
     Route::post('/{tenant}/activate', [TenantManagementController::class, 'activate'])->name('activate');
-    Route::post('/{tenant}/approve', [TenantManagementController::class, 'approve'])->name('approve');
-    Route::post('/{tenant}/reject', [TenantManagementController::class, 'reject'])->name('reject');
 });
