@@ -18,7 +18,6 @@ return new class extends Migration
             $table->boolean('enabled')->default(false);
             $table->timestamps();
 
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
             $table->unique(['tenant_id', 'feature']);
             $table->index(['tenant_id', 'feature']);
         });
