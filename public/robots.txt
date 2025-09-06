@@ -1,2 +1,60 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Permitir páginas principales
+Allow: /features
+Allow: /security
+Allow: /login
+Allow: /register
+
+# Bloquear rutas administrativas y privadas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /app/
+Disallow: /tenant/
+Disallow: /settings/
+
+# Bloquear archivos sensibles
+Disallow: /storage/
+Disallow: /vendor/
+Disallow: /.env
+Disallow: /config/
+Disallow: /database/
+Disallow: /tests/
+
+# Bloquear archivos de desarrollo
+Disallow: /generate-og-images.html
+Disallow: /tavira-logo-simple.svg
+
+# Permitir recursos públicos
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: /img/
+Allow: /fonts/
+
+# Sitemap
+Sitemap: https://tavira.com.co/sitemap.xml
+
+# Crawl-delay para ser respetuosos
+Crawl-delay: 1
+
+# Configuraciones específicas para motores de búsqueda principales
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: facebookexternalhit
+Allow: /
+Allow: /images/
+Allow: /img/
+
+User-agent: Twitterbot
+Allow: /
+Allow: /images/
+Allow: /img/
