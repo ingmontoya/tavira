@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
@@ -37,6 +38,11 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     protected $hidden = [
         'admin_password',
     ];
+
+    public function features(): HasMany
+    {
+        return $this->hasMany(TenantFeature::class);
+    }
 
     public static function getCustomColumns(): array
     {

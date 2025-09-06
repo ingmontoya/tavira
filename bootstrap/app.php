@@ -9,6 +9,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\InputSanitizationMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
 use App\Http\Middleware\RedirectIfSubscribed;
+use App\Http\Middleware\RequiresFeature;
 use App\Http\Middleware\RequiresSubscription;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SharePermissions;
@@ -64,6 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'company' => EnsureUserIsCompany::class,
             'multiple.conjuntos' => EnsureCanCreateMultipleConjuntos::class,
             'redirect.if.subscribed' => RedirectIfSubscribed::class,
+            'requires.feature' => RequiresFeature::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,

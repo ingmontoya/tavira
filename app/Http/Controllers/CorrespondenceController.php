@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Laravel\Pennant\Feature;
 
 class CorrespondenceController extends Controller
 {
@@ -25,6 +26,15 @@ class CorrespondenceController extends Controller
      */
     public function index(Request $request)
     {
+        // Check if correspondence feature is enabled for this tenant
+        if (!Feature::active('correspondence', function_exists('tenant') ? tenant('id') : 'default')) {
+            return Inertia::render('FeatureDisabled', [
+                'feature' => 'correspondence',
+                'message' => 'El módulo de correspondencia no está disponible en su plan actual.',
+                'upgrade_url' => route('subscription.upgrade'),
+            ]);
+        }
+
         $query = Correspondence::with(['apartment', 'receivedBy', 'deliveredBy', 'attachments']);
 
         $user = Auth::user();

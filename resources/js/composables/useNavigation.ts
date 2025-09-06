@@ -1,5 +1,6 @@
 import type { NavItem } from '@/types';
 import { usePage } from '@inertiajs/vue3';
+import { useFeatures } from '@/composables/useFeatures';
 import {
     BarChart3,
     Bell,
@@ -36,6 +37,7 @@ import { computed } from 'vue';
 
 export function useNavigation() {
     const page = usePage();
+    const { isFeatureEnabled } = useFeatures();
     const user = computed(() => page.props.auth?.user);
     const permissions = computed(() => page.props.auth?.permissions || []);
     const roles = computed(() => page.props.auth?.roles || []);
@@ -127,38 +129,39 @@ export function useNavigation() {
                 {
                     title: 'Mantenimiento',
                     icon: Wrench,
-                    visible:
+                    visible: isFeatureEnabled('maintenance_requests') && (
                         hasPermission('view_maintenance_requests') ||
                         hasPermission('view_maintenance_categories') ||
-                        hasPermission('view_maintenance_staff'),
+                        hasPermission('view_maintenance_staff')
+                    ),
                     items: [
                         {
                             title: 'Solicitudes',
                             href: '/maintenance-requests',
                             icon: Wrench,
                             tourId: 'nav-maintenance-requests',
-                            visible: hasPermission('view_maintenance_requests'),
+                            visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
                         },
                         {
                             title: 'Categorías',
                             href: '/maintenance-categories',
                             icon: Settings,
                             tourId: 'nav-maintenance-categories',
-                            visible: hasPermission('view_maintenance_categories'),
+                            visible: hasPermission('view_maintenance_categories') && isFeatureEnabled('maintenance_requests'),
                         },
                         {
                             title: 'Personal',
                             href: '/maintenance-staff',
                             icon: UserCog,
                             tourId: 'nav-maintenance-staff',
-                            visible: hasPermission('view_maintenance_staff'),
+                            visible: hasPermission('view_maintenance_staff') && isFeatureEnabled('maintenance_requests'),
                         },
                         {
                             title: 'Cronograma',
                             href: '/maintenance-requests-calendar',
                             icon: Clock,
                             tourId: 'nav-maintenance-calendar',
-                            visible: hasPermission('view_maintenance_requests'),
+                            visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
                         },
                     ],
                 },
@@ -167,7 +170,7 @@ export function useNavigation() {
         {
             title: 'Finanzas',
             icon: Wallet,
-            visible: hasPermission('view_account_statement') || hasPermission('view_payments'),
+            visible: isFeatureEnabled('accounting') && (hasPermission('view_account_statement') || hasPermission('view_payments')),
             items: [
                 {
                     title: 'Estado de Cuenta',
@@ -214,7 +217,7 @@ export function useNavigation() {
                             href: '/payment-agreements',
                             icon: FileText,
                             tourId: 'nav-payment-agreements',
-                            visible: hasPermission('view_payments'),
+                            visible: hasPermission('view_payments') && isFeatureEnabled('payment_agreements'),
                         },
                         {
                             title: 'Conciliación Jelpit',
@@ -286,7 +289,7 @@ export function useNavigation() {
         {
             title: 'Contabilidad',
             icon: Calculator,
-            visible: hasPermission('view_accounting') || hasPermission('view_payments'),
+            visible: isFeatureEnabled('accounting') && (hasPermission('view_accounting') || hasPermission('view_payments')),
             items: [
                 {
                     title: 'Plan de Cuentas',
@@ -328,7 +331,7 @@ export function useNavigation() {
         {
             title: 'Reservas',
             icon: CalendarDays,
-            visible: hasPermission('view_reservations') || hasPermission('manage_reservable_assets'),
+            visible: isFeatureEnabled('reservations') && (hasPermission('view_reservations') || hasPermission('manage_reservable_assets')),
             items: [
                 {
                     title: 'Mis Reservas',
@@ -374,7 +377,7 @@ export function useNavigation() {
                     href: '/correspondence',
                     icon: Mail,
                     tourId: 'nav-correspondence',
-                    visible: hasPermission('view_correspondence'),
+                    visible: hasPermission('view_correspondence') && isFeatureEnabled('correspondence'),
                 },
                 {
                     title: 'Correo Electrónico',
@@ -409,33 +412,33 @@ export function useNavigation() {
                     href: '/resident/announcements',
                     icon: MessageSquare,
                     tourId: 'nav-announcements-resident',
-                    visible: !hasPermission('create_announcements') && !hasPermission('edit_announcements'),
+                    visible: isFeatureEnabled('announcements') && !hasPermission('create_announcements') && !hasPermission('edit_announcements'),
                 },
                 {
                     title: 'Gestionar Anuncios',
                     href: '/announcements',
                     icon: MessageSquare,
                     tourId: 'nav-announcements-admin',
-                    visible: hasPermission('create_announcements') || hasPermission('edit_announcements'),
+                    visible: isFeatureEnabled('announcements') && (hasPermission('create_announcements') || hasPermission('edit_announcements')),
                 },
                 {
                     title: 'Visitantes',
                     icon: UserCheck,
-                    visible: hasPermission('invite_visitors') || hasPermission('manage_visitors'),
+                    visible: isFeatureEnabled('visitor_management') && (hasPermission('invite_visitors') || hasPermission('manage_visitors')),
                     items: [
                         {
                             title: 'Invitar Visitantes',
                             href: '/visits',
                             icon: UserCheck,
                             tourId: 'nav-visitor-invitations',
-                            visible: hasPermission('invite_visitors'),
+                            visible: hasPermission('invite_visitors') && isFeatureEnabled('visitor_management'),
                         },
                         {
                             title: 'Visitas',
                             href: '/visits',
                             icon: UserCheck,
                             tourId: 'nav-visits',
-                            visible: hasPermission('manage_visitors'),
+                            visible: hasPermission('manage_visitors') && isFeatureEnabled('visitor_management'),
                         },
                     ],
                 },
@@ -451,7 +454,7 @@ export function useNavigation() {
                     href: '/pqrs',
                     icon: FileQuestion,
                     tourId: 'nav-pqrs',
-                    visible: hasPermission('send_pqrs'),
+                    visible: hasPermission('send_pqrs') && isFeatureEnabled('support_tickets'),
                 },
                 {
                     title: 'Mensajería',
@@ -465,21 +468,21 @@ export function useNavigation() {
         {
             title: 'Documentos',
             icon: FileText,
-            visible: hasPermission('view_announcements'),
+            visible: isFeatureEnabled('documents') && hasPermission('view_announcements'),
             items: [
                 {
                     title: 'Documentos',
                     href: '/documents',
                     icon: FileText,
                     tourId: 'nav-documents',
-                    visible: hasPermission('view_announcements'),
+                    visible: hasPermission('view_announcements') && isFeatureEnabled('documents'),
                 },
                 {
                     title: 'Actas',
                     href: '/minutes',
                     icon: FileText,
                     tourId: 'nav-minutes',
-                    visible: hasPermission('view_announcements'),
+                    visible: hasPermission('view_announcements') && isFeatureEnabled('documents'),
                 },
             ],
         },
@@ -560,6 +563,12 @@ export function useNavigation() {
                     visible: true,
                 },
             ],
+        },
+        {
+            title: 'Gestión de Features',
+            href: '/tenant-features',
+            icon: Settings,
+            visible: true,
         },
     ]);
 

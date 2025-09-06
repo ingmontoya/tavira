@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FeaturesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\InvoiceController;
@@ -24,6 +25,15 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group.
 |
 */
+
+// Internal API routes for inter-app communication (central <-> tenant)
+Route::prefix('internal')->middleware(['throttle:300,1'])->group(function () {
+    // Feature flags API for tenant apps
+    Route::get('/features/{tenant}', [FeaturesController::class, 'index'])
+        ->name('api.internal.features.index');
+    Route::get('/features/{tenant}/{feature}', [FeaturesController::class, 'show'])
+        ->name('api.internal.features.show');
+});
 
 // Authentication routes for mobile app
 Route::prefix('')->group(function () {
