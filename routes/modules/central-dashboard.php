@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CentralDashboardController;
 use App\Http\Controllers\TenantManagementController;
+use App\Http\Controllers\TenantFeatureController;
 use Illuminate\Support\Facades\Route;
 
 // Central Dashboard for tenant management
@@ -22,4 +23,12 @@ Route::prefix('tenants')->name('tenant-management.')->group(function () {
     Route::post('/{tenant}/impersonate', [TenantManagementController::class, 'impersonate'])->name('impersonate');
     Route::post('/{tenant}/suspend', [TenantManagementController::class, 'suspend'])->name('suspend');
     Route::post('/{tenant}/activate', [TenantManagementController::class, 'activate'])->name('activate');
+});
+
+// Feature Management Routes (superadmin only)
+Route::prefix('tenant-features')->name('tenant-features.')->group(function () {
+    Route::get('/', [TenantFeatureController::class, 'index'])->name('index');
+    Route::put('/{tenant}/{feature}', [TenantFeatureController::class, 'updateFeature'])->name('update-feature');
+    Route::put('/{tenant}/bulk', [TenantFeatureController::class, 'bulkUpdateFeatures'])->name('bulk-update');
+    Route::post('/{tenant}/template', [TenantFeatureController::class, 'applyTemplate'])->name('apply-template');
 });
