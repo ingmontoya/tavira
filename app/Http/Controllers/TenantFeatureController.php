@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\FeaturesController;
 use App\Models\Tenant;
 use App\Models\TenantFeature;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TenantFeatureController extends Controller
