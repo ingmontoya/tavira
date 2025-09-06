@@ -315,16 +315,41 @@ function getEnabledFeaturesCount(tenant: Tenant): number {
 function toggleFeature(tenantId: string, feature: string, enabled: boolean) {
   console.log('toggleFeature called:', { tenantId, feature, enabled })
   
+  // Optimistic update - update local state first
+  const tenant = props.tenants.data.find(t => t.id === tenantId)
+  if (tenant) {
+    const existingFeature = tenant.features.find(f => f.feature === feature)
+    if (existingFeature) {
+      existingFeature.enabled = enabled
+    } else {
+      tenant.features.push({
+        id: Date.now(), // temporary ID
+        tenant_id: tenantId,
+        feature: feature,
+        enabled: enabled
+      })
+    }
+  }
+  
   router.put(route('tenant-features.update-feature', { tenant: tenantId, feature }), {
     enabled
   }, {
-    preserveState: false,  // Cambiado a false para refrescar los datos
+    preserveState: true,  // Changed to true since we're updating optimistically
     preserveScroll: true,
     onSuccess: () => {
       console.log('Feature toggled successfully')
+      // Optionally refresh data from server to ensure consistency
+      // router.reload({ only: ['tenants'] })
     },
     onError: (errors) => {
       console.error('Error toggling feature:', errors)
+      // Revert optimistic update on error
+      if (tenant) {
+        const featureToRevert = tenant.features.find(f => f.feature === feature)
+        if (featureToRevert) {
+          featureToRevert.enabled = !enabled
+        }
+      }
     }
   })
 }
