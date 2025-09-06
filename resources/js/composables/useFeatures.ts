@@ -120,15 +120,49 @@ export function useFeatures() {
    */
   const getFeatureLabel = (feature: string): string => {
     const labels: Record<string, string> = {
+      // Comunicación y Notificaciones
       correspondence: 'Correspondencia',
-      maintenance_requests: 'Solicitudes de Mantenimiento',
-      visitor_management: 'Gestión de Visitantes',
-      accounting: 'Contabilidad',
-      reservations: 'Reservas',
       announcements: 'Anuncios',
-      documents: 'Documentos',
-      support_tickets: 'Tickets de Soporte',
-      payment_agreements: 'Acuerdos de Pago'
+      support_tickets: 'Tickets de Soporte / PQRS',
+      notifications: 'Notificaciones Push',
+      institutional_email: 'Correo Institucional',
+      messaging: 'Mensajería Interna',
+      
+      // Administración Básica
+      basic_administration: 'Administración Básica',
+      resident_management: 'Gestión de Residentes',
+      apartment_management: 'Gestión de Apartamentos',
+      
+      // Mantenimiento
+      maintenance_requests: 'Solicitudes de Mantenimiento',
+      
+      // Gestión de Visitantes y Seguridad
+      visitor_management: 'Gestión de Visitantes',
+      security_scanner: 'Escáner de Seguridad QR',
+      access_control: 'Control de Acceso',
+      
+      // Finanzas y Contabilidad
+      accounting: 'Contabilidad Completa',
+      payment_agreements: 'Acuerdos de Pago',
+      expense_approvals: 'Aprobaciones de Gastos',
+      financial_reports: 'Reportes Financieros',
+      provider_management: 'Gestión de Proveedores',
+      
+      // Reservas y Espacios Comunes
+      reservations: 'Reservas de Espacios',
+      
+      // Documentos y Actas
+      documents: 'Gestión de Documentos',
+      meeting_minutes: 'Actas de Reuniones',
+      
+      // Reportes y Análisis
+      advanced_reports: 'Reportes Avanzados',
+      analytics_dashboard: 'Dashboard de Análisis',
+      
+      // Configuración Avanzada
+      system_settings: 'Configuración del Sistema',
+      audit_logs: 'Auditoría y Logs',
+      bulk_operations: 'Operaciones Masivas'
     }
     return labels[feature] || feature
   }
