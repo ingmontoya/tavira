@@ -125,32 +125,182 @@ class TenantFeatureController extends Controller
     protected function getAvailableFeatures(): array
     {
         return [
+            // Comunicación y Notificaciones
             'correspondence',
-            'maintenance_requests',
-            'visitor_management',
-            'accounting',
-            'reservations',
             'announcements',
-            'documents',
             'support_tickets',
+            'notifications',
+            'institutional_email',
+            'messaging',
+            
+            // Administración Básica
+            'basic_administration',
+            'resident_management',
+            'apartment_management',
+            
+            // Mantenimiento
+            'maintenance_requests',
+            
+            // Gestión de Visitantes y Seguridad
+            'visitor_management',
+            'security_scanner',
+            'access_control',
+            
+            // Finanzas y Contabilidad
+            'accounting',
             'payment_agreements',
+            'expense_approvals',
+            'financial_reports',
+            'provider_management',
+            
+            // Reservas y Espacios Comunes
+            'reservations',
+            
+            // Documentos y Actas
+            'documents',
+            'meeting_minutes',
+            
+            // Reportes y Análisis
+            'advanced_reports',
+            'analytics_dashboard',
+            
+            // Configuración Avanzada
+            'system_settings',
+            'audit_logs',
+            'bulk_operations',
         ];
     }
 
     protected function getFeatureTemplates(): array
     {
         return [
+            'starter' => [
+                'name' => 'Plan Inicial',
+                'description' => 'Funcionalidades básicas para conjuntos pequeños',
+                'price_monthly' => 89000,
+                'max_units' => 50,
+                'features' => [
+                    'basic_administration',
+                    'resident_management', 
+                    'apartment_management',
+                    'correspondence',
+                    'announcements',
+                    'support_tickets',
+                    'notifications',
+                ],
+            ],
             'basic' => [
                 'name' => 'Plan Básico',
-                'features' => ['correspondence', 'announcements', 'support_tickets'],
+                'description' => 'Gestión integral para conjuntos medianos',
+                'price_monthly' => 149000,
+                'max_units' => 150,
+                'features' => [
+                    'basic_administration',
+                    'resident_management',
+                    'apartment_management',
+                    'correspondence',
+                    'announcements',
+                    'support_tickets',
+                    'notifications',
+                    'maintenance_requests',
+                    'documents',
+                    'institutional_email',
+                    'messaging',
+                ],
             ],
             'standard' => [
                 'name' => 'Plan Estándar',
-                'features' => ['correspondence', 'maintenance_requests', 'announcements', 'support_tickets', 'documents'],
+                'description' => 'Control completo con finanzas básicas',
+                'price_monthly' => 229000,
+                'max_units' => 300,
+                'features' => [
+                    'basic_administration',
+                    'resident_management',
+                    'apartment_management',
+                    'correspondence',
+                    'announcements',
+                    'support_tickets',
+                    'notifications',
+                    'maintenance_requests',
+                    'documents',
+                    'institutional_email',
+                    'messaging',
+                    'visitor_management',
+                    'accounting',
+                    'reservations',
+                    'security_scanner',
+                ],
             ],
-            'premium' => [
-                'name' => 'Plan Premium',
-                'features' => ['correspondence', 'maintenance_requests', 'visitor_management', 'accounting', 'reservations', 'announcements', 'documents', 'support_tickets', 'payment_agreements'],
+            'professional' => [
+                'name' => 'Plan Profesional',
+                'description' => 'Gestión avanzada con reportes y análisis',
+                'price_monthly' => 349000,
+                'max_units' => 500,
+                'features' => [
+                    'basic_administration',
+                    'resident_management',
+                    'apartment_management',
+                    'correspondence',
+                    'announcements',
+                    'support_tickets',
+                    'notifications',
+                    'maintenance_requests',
+                    'documents',
+                    'meeting_minutes',
+                    'institutional_email',
+                    'messaging',
+                    'visitor_management',
+                    'security_scanner',
+                    'access_control',
+                    'accounting',
+                    'payment_agreements',
+                    'expense_approvals',
+                    'provider_management',
+                    'reservations',
+                    'advanced_reports',
+                    'financial_reports',
+                ],
+            ],
+            'enterprise' => [
+                'name' => 'Plan Empresarial',
+                'description' => 'Solución completa para grandes conjuntos',
+                'price_monthly' => 549000,
+                'max_units' => 1000,
+                'features' => [
+                    'basic_administration',
+                    'resident_management',
+                    'apartment_management',
+                    'correspondence',
+                    'announcements',
+                    'support_tickets',
+                    'notifications',
+                    'maintenance_requests',
+                    'documents',
+                    'meeting_minutes',
+                    'institutional_email',
+                    'messaging',
+                    'visitor_management',
+                    'security_scanner',
+                    'access_control',
+                    'accounting',
+                    'payment_agreements',
+                    'expense_approvals',
+                    'financial_reports',
+                    'provider_management',
+                    'reservations',
+                    'advanced_reports',
+                    'analytics_dashboard',
+                    'system_settings',
+                    'audit_logs',
+                    'bulk_operations',
+                ],
+            ],
+            'custom' => [
+                'name' => 'Plan Personalizado',
+                'description' => 'Solución a medida con funcionalidades específicas',
+                'price_monthly' => null,
+                'max_units' => null,
+                'features' => [], // Se configuran manualmente
             ],
         ];
     }

@@ -231,7 +231,7 @@ export function useNavigation() {
                 {
                     title: 'Proveedores',
                     icon: UserCog,
-                    visible: hasPermission('view_payments') || hasPermission('review_provider_proposals'),
+                    visible: isFeatureEnabled('provider_management') && (hasPermission('view_payments') || hasPermission('review_provider_proposals')),
                     items: [
                         {
                             title: 'Proveedores',
@@ -252,7 +252,7 @@ export function useNavigation() {
                 {
                     title: 'Gastos',
                     icon: TrendingDown,
-                    visible: hasPermission('view_expenses') || hasPermission('manage_expense_categories') || hasPermission('approve_expenses'),
+                    visible: isFeatureEnabled('expense_approvals') && (hasPermission('view_expenses') || hasPermission('manage_expense_categories') || hasPermission('approve_expenses')),
                     items: [
                         {
                             title: 'Egresos',
@@ -324,7 +324,7 @@ export function useNavigation() {
                     href: '/accounting/reports',
                     icon: TrendingUp,
                     tourId: 'nav-accounting-reports',
-                    visible: hasPermission('view_accounting'),
+                    visible: isFeatureEnabled('financial_reports') && hasPermission('view_accounting'),
                 },
             ],
         },
@@ -382,7 +382,7 @@ export function useNavigation() {
                 {
                     title: 'Correo Electrónico',
                     icon: Mail,
-                    visible: hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates'),
+                    visible: isFeatureEnabled('institutional_email') && (hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates')),
                     items: [
                         {
                             title: 'Correo Administración',
@@ -447,7 +447,7 @@ export function useNavigation() {
                     href: '/notifications',
                     icon: Bell,
                     tourId: 'nav-notifications',
-                    visible: hasPermission('receive_notifications'),
+                    visible: isFeatureEnabled('notifications') && hasPermission('receive_notifications'),
                 },
                 {
                     title: 'PQRS',
@@ -461,7 +461,7 @@ export function useNavigation() {
                     href: '/messages',
                     icon: MessageSquare,
                     tourId: 'nav-messages',
-                    visible: hasPermission('send_messages_to_admin'),
+                    visible: isFeatureEnabled('messaging') && hasPermission('send_messages_to_admin'),
                 },
             ],
         },
@@ -482,28 +482,28 @@ export function useNavigation() {
                     href: '/minutes',
                     icon: FileText,
                     tourId: 'nav-minutes',
-                    visible: hasPermission('view_announcements') && isFeatureEnabled('documents'),
+                    visible: hasPermission('view_announcements') && isFeatureEnabled('meeting_minutes'),
                 },
             ],
         },
         {
             title: 'Seguridad',
             icon: Shield,
-            visible: hasPermission('manage_visitors') || hasPermission('view_access_logs'),
+            visible: (isFeatureEnabled('security_scanner') || isFeatureEnabled('access_control')) && (hasPermission('manage_visitors') || hasPermission('view_access_logs')),
             items: [
                 {
                     title: 'Escáner de Visitas',
                     href: '/security/visits/scanner',
                     icon: QrCode,
                     tourId: 'nav-visit-scanner',
-                    visible: hasPermission('manage_visitors'),
+                    visible: isFeatureEnabled('security_scanner') && hasPermission('manage_visitors'),
                 },
                 {
                     title: 'Entradas Recientes',
                     href: '/security/visits/recent-entries',
                     icon: Clock,
                     tourId: 'nav-recent-entries',
-                    visible: hasPermission('manage_visitors'),
+                    visible: isFeatureEnabled('access_control') && hasPermission('manage_visitors'),
                 },
             ],
         },
@@ -517,21 +517,21 @@ export function useNavigation() {
                     href: '/reports',
                     icon: BarChart3,
                     tourId: 'nav-reports',
-                    visible: hasPermission('view_reports'),
+                    visible: isFeatureEnabled('advanced_reports') && hasPermission('view_reports'),
                 },
                 {
                     title: 'Seguridad',
                     href: '/settings/security',
                     icon: Shield,
                     tourId: 'nav-security',
-                    visible: hasPermission('view_access_logs'),
+                    visible: isFeatureEnabled('audit_logs') && hasPermission('view_access_logs'),
                 },
                 {
                     title: 'Configuración',
                     href: '/settings',
                     icon: Settings,
                     tourId: 'nav-settings',
-                    visible: hasPermission('edit_conjunto_config'),
+                    visible: isFeatureEnabled('system_settings') && hasPermission('edit_conjunto_config'),
                 },
             ],
         },
