@@ -174,6 +174,9 @@ class TenantFeatureController extends Controller
             'documents',
             'meeting_minutes',
             
+            // Asambleas Digitales y Votaciones
+            'voting',
+            
             // Reportes y Análisis
             'advanced_reports',
             'analytics_dashboard',
@@ -273,6 +276,7 @@ class TenantFeatureController extends Controller
                     'reservations',
                     'advanced_reports',
                     'financial_reports',
+                    'voting',
                 ],
             ],
             'enterprise' => [
@@ -307,6 +311,7 @@ class TenantFeatureController extends Controller
                     'system_settings',
                     'audit_logs',
                     'bulk_operations',
+                    'voting',
                 ],
             ],
             'custom' => [
