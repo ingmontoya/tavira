@@ -9,10 +9,12 @@ use App\Listeners\GenerateAccountingEntryFromInvoice;
 use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
+use App\Services\FeatureFlags\CentralApiDriver;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Pennant\Feature;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +44,11 @@ class AppServiceProvider extends ServiceProvider
             'resident' => \App\Models\Resident::class,
             'supplier' => \App\Models\Supplier::class,
         ]);
+
+        // Registrar driver personalizado de Pennant
+        Feature::extend('central_api', function ($app, $config) {
+            return new CentralApiDriver();
+        });
 
         Event::listen(Verified::class, SendWelcomeEmail::class);
 

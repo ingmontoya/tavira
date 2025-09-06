@@ -30,3 +30,7 @@ yarn-error.log
 /playwright/.cache/
 
 mobile-app
+
+**/caddy
+frankenphp
+frankenphp-worker.php
