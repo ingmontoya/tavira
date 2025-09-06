@@ -34,7 +34,21 @@ class TenantFeatureController extends Controller
             });
         }
 
-        $tenants = $tenantsQuery->with('features')->paginate(15);
+        $tenants = $tenantsQuery->paginate(15);
+        
+        // Load features for each tenant from their individual databases
+        $tenants->getCollection()->transform(function ($tenant) {
+            try {
+                $tenant->run(function () use ($tenant) {
+                    $tenant->features = TenantFeature::where('tenant_id', $tenant->id)->get();
+                });
+            } catch (\Exception $e) {
+                // If tenant database doesn't exist or has issues, provide empty features
+                \Log::warning("Error loading tenant features for {$tenant->id}: {$e->getMessage()}");
+                $tenant->features = collect([]);
+            }
+            return $tenant;
+        });
 
         $availableFeatures = $this->getAvailableFeatures();
 

@@ -20,8 +20,16 @@ class EnsureConjuntoConfigured
             return $next($request);
         }
 
-        // Check if we're in a tenant context by checking if tenant() function exists and returns a value
-        $isTenantContext = function_exists('tenant') && tenant() !== null;
+        // Check if we're in a tenant context by safely checking if tenant() function exists and returns a value
+        $isTenantContext = false;
+        if (function_exists('tenant')) {
+            try {
+                $isTenantContext = tenant() !== null;
+            } catch (\Exception $e) {
+                // If tenant() throws an exception (like database not configured), we're not in tenant context
+                $isTenantContext = false;
+            }
+        }
         
         // If we're NOT in a tenant context (i.e., we're in central domain), skip this middleware
         if (!$isTenantContext) {
@@ -55,6 +63,8 @@ class EnsureConjuntoConfigured
             'settings.*',
             'dashboard', // Allow dashboard access
             'verification.*', // Allow email verification routes
+            'tenant-management.*', // Allow tenant management routes (central dashboard)
+            'tenant-features.*', // Allow tenant features routes (central dashboard)
         ];
 
         foreach ($allowedRoutes as $pattern) {
