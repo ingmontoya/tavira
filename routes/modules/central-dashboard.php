@@ -25,10 +25,20 @@ Route::prefix('tenants')->name('tenant-management.')->group(function () {
     Route::post('/{tenant}/activate', [TenantManagementController::class, 'activate'])->name('activate');
 });
 
-// Feature Management Routes (superadmin only)
-Route::prefix('tenant-features')->name('tenant-features.')->group(function () {
-    Route::get('/', [TenantFeatureController::class, 'index'])->name('index');
-    Route::put('/{tenant}/{feature}', [TenantFeatureController::class, 'updateFeature'])->name('update-feature');
-    Route::put('/{tenant}/bulk', [TenantFeatureController::class, 'bulkUpdateFeatures'])->name('bulk-update');
-    Route::post('/{tenant}/template', [TenantFeatureController::class, 'applyTemplate'])->name('apply-template');
-});
+// Feature Management Routes (superadmin only) - Exclude all tenant-conflicting middleware
+Route::prefix('tenant-features')->name('tenant-features.')
+    ->withoutMiddleware([
+        \App\Http\Middleware\ShareTenantFeatures::class,
+        \App\Http\Middleware\EnsureConjuntoConfigured::class,
+        \App\Http\Middleware\RequiresSubscription::class,
+        \App\Http\Middleware\SharePermissions::class,
+        \App\Http\Middleware\HandleAppearance::class,
+        \App\Http\Middleware\InputSanitizationMiddleware::class,
+        \App\Http\Middleware\AuditLogMiddleware::class,
+    ])
+    ->group(function () {
+        Route::get('/', [TenantFeatureController::class, 'index'])->name('index');
+        Route::put('/{tenant}/{feature}', [TenantFeatureController::class, 'updateFeature'])->name('update-feature');
+        Route::put('/{tenant}/bulk', [TenantFeatureController::class, 'bulkUpdateFeatures'])->name('bulk-update');
+        Route::post('/{tenant}/template', [TenantFeatureController::class, 'applyTemplate'])->name('apply-template');
+    });
