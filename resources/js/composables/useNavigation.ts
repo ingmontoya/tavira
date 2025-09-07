@@ -30,6 +30,7 @@ import {
     UserCheck,
     UserCog,
     Users,
+    Vote,
     Wallet,
     Wrench,
 } from 'lucide-vue-next';
@@ -164,6 +165,20 @@ export function useNavigation() {
                             visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
                         },
                     ],
+                },
+            ],
+        },
+        {
+            title: 'Asambleas',
+            icon: Vote,
+            visible: hasPermission('view_assemblies'),
+            items: [
+                {
+                    title: 'Asambleas',
+                    href: '/assemblies',
+                    icon: Vote,
+                    tourId: 'nav-assemblies',
+                    visible: hasPermission('view_assemblies'),
                 },
             ],
         },
