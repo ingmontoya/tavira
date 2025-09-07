@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import AttendanceRegistration from '@/components/assemblies/AttendanceRegistration.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { 
@@ -68,6 +69,20 @@ interface Assembly {
         id: number;
         name: string;
     };
+    residents?: any[];
+    attendance_stats?: {
+        total_apartments: number;
+        registered_apartments: number;
+        present_apartments: number;
+        absent_apartments: number;
+        delegated_apartments: number;
+        online_residents: number;
+        total_residents: number;
+        quorum_percentage: number;
+        required_quorum_percentage: number;
+        has_quorum: boolean;
+    };
+    can_manage_attendance?: boolean;
 }
 
 const props = defineProps<{
@@ -137,6 +152,18 @@ const deleteAssembly = () => {
     if (confirm('¿Estás seguro de que deseas eliminar esta asamblea? Esta acción no se puede deshacer.')) {
         router.delete(route('assemblies.destroy', props.assembly.id));
     }
+};
+
+// Handle attendance updates
+const handleAttendanceUpdated = (newStats: any) => {
+    // Update local assembly data with new stats
+    if (props.assembly.attendance_stats) {
+        Object.assign(props.assembly.attendance_stats, newStats);
+    }
+    // Also update quorum_status to keep it in sync
+    props.assembly.quorum_status.participating_apartments = newStats.present_apartments;
+    props.assembly.quorum_status.quorum_percentage = newStats.quorum_percentage;
+    props.assembly.quorum_status.has_quorum = newStats.has_quorum;
 };
 
 // Breadcrumbs
@@ -233,8 +260,19 @@ const breadcrumbs = [
                         </CardContent>
                     </Card>
 
-                    <!-- Quorum Status -->
-                    <Card>
+                    <!-- Attendance Registration -->
+                    <AttendanceRegistration
+                        v-if="assembly.residents && assembly.attendance_stats"
+                        :assembly-id="assembly.id"
+                        :residents="assembly.residents"
+                        :stats="assembly.attendance_stats"
+                        :can-manage-attendance="assembly.can_manage_attendance || false"
+                        :is-active="assembly.status === 'in_progress'"
+                        @attendance-updated="handleAttendanceUpdated"
+                    />
+
+                    <!-- Fallback Quorum Status (when attendance data not available) -->
+                    <Card v-else>
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <Users class="h-5 w-5" />
@@ -275,6 +313,15 @@ const breadcrumbs = [
                                     <span>Mínimo requerido: {{ assembly.required_quorum_percentage }}%</span>
                                     <span>{{ assembly.quorum_status.has_quorum ? 'Válida' : 'Falta quórum' }}</span>
                                 </div>
+                            </div>
+                            
+                            <!-- Notification about enhanced attendance feature -->
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <p class="text-sm text-blue-800">
+                                    💡 <strong>Funcionalidad de Asistencia Mejorada:</strong> Para usar el registro automático de asistencia 
+                                    y detección de usuarios conectados, asegúrate de que el backend esté configurado para proporcionar 
+                                    datos de residentes y estadísticas de asistencia.
+                                </p>
                             </div>
                         </CardContent>
                     </Card>
