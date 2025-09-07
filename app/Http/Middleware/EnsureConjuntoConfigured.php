@@ -20,25 +20,15 @@ class EnsureConjuntoConfigured
             return $next($request);
         }
 
-        // Check if we're in a tenant context by safely checking if tenant() function exists and returns a value
-        $isTenantContext = false;
-        if (function_exists('tenant')) {
-            try {
-                $isTenantContext = tenant() !== null;
-            } catch (\Exception $e) {
-                // If tenant() throws an exception (like database not configured), we're not in tenant context
-                $isTenantContext = false;
-            }
-        }
-        
-        // If we're NOT in a tenant context (i.e., we're in central domain), skip this middleware
-        if (!$isTenantContext) {
-            // Share default values for central domain
+        // Since multitenancy was removed, we always check for conjunto configuration
+        // For central/superadmin users, bypass conjunto requirement
+        $user = auth()->user();
+        if ($user && $user->hasRole('superadmin')) {
             Inertia::share([
                 'conjuntoConfigured' => [
-                    'exists' => false,
-                    'isActive' => false,
-                    'name' => null,
+                    'exists' => true, // Superadmin always has access
+                    'isActive' => true,
+                    'name' => 'Central Administration',
                 ],
             ]);
             return $next($request);
