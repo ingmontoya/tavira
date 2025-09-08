@@ -22,7 +22,7 @@ class TenantFeatureSeeder extends Seeder
 
         $basicFeatures = ['correspondence', 'announcements', 'support_tickets'];
         $standardFeatures = ['correspondence', 'maintenance_requests', 'announcements', 'support_tickets', 'documents'];
-        $premiumFeatures = ['correspondence', 'maintenance_requests', 'visitor_management', 'accounting', 'reservations', 'announcements', 'documents', 'support_tickets', 'payment_agreements'];
+        $premiumFeatures = ['correspondence', 'maintenance_requests', 'visitor_management', 'accounting', 'reservations', 'announcements', 'documents', 'support_tickets', 'payment_agreements', 'voting'];
 
         $plans = [
             'basic' => $basicFeatures,
@@ -43,7 +43,7 @@ class TenantFeatureSeeder extends Seeder
             }
             
             // Disable features not in the plan
-            $allFeatures = ['correspondence', 'maintenance_requests', 'visitor_management', 'accounting', 'reservations', 'announcements', 'documents', 'support_tickets', 'payment_agreements'];
+            $allFeatures = ['correspondence', 'maintenance_requests', 'visitor_management', 'accounting', 'reservations', 'announcements', 'documents', 'support_tickets', 'payment_agreements', 'voting'];
             
             foreach ($allFeatures as $feature) {
                 if (!in_array($feature, $features)) {

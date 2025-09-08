@@ -238,6 +238,18 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
             ->name('destroy');
     });
 
+    // === ASSEMBLIES ===
+    Route::prefix('assemblies')->name('api.assemblies.')->group(function () {
+        Route::get('/{assembly}/attendance/status', [\App\Http\Controllers\AssemblyController::class, 'getAttendanceStatus'])
+            ->name('attendance.status');
+        Route::post('/{assembly}/attendance/self-register', [\App\Http\Controllers\AssemblyController::class, 'selfRegisterAttendance'])
+            ->name('attendance.self-register');
+        Route::get('/{assembly}/participants', [\App\Http\Controllers\AssemblyController::class, 'getParticipants'])
+            ->name('participants');
+        Route::get('/{assembly}/votes/{vote}/results', [\App\Http\Controllers\VoteController::class, 'getResults'])
+            ->name('votes.results');
+    });
+
     // === LEGACY DASHBOARD (for backward compatibility) ===
     Route::get('/dashboard', function (Request $request) {
         return response()->json([

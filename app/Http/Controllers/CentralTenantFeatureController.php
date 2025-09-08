@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class CentralTenantFeatureController extends Controller
@@ -307,6 +308,9 @@ class CentralTenantFeatureController extends Controller
             'documents',
             'meeting_minutes',
             
+            // Asambleas Digitales y Votaciones
+            'voting',
+            
             // Reportes y Análisis
             'advanced_reports',
             'analytics_dashboard',
@@ -406,6 +410,7 @@ class CentralTenantFeatureController extends Controller
                     'reservations',
                     'advanced_reports',
                     'financial_reports',
+                    'voting',
                 ],
             ],
             'enterprise' => [
@@ -440,6 +445,7 @@ class CentralTenantFeatureController extends Controller
                     'system_settings',
                     'audit_logs',
                     'bulk_operations',
+                    'voting',
                 ],
             ],
             'custom' => [

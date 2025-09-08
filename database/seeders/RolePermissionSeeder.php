@@ -121,6 +121,20 @@ class RolePermissionSeeder extends Seeder
             'delete_reservations',
             'manage_reservable_assets',
             'approve_reservations',
+
+            // Assembly Management
+            'view_assemblies',
+            'create_assemblies',
+            'edit_assemblies',
+            'delete_assemblies',
+            'start_assemblies',
+            'close_assemblies',
+            'manage_assembly_attendance',
+            'view_assembly_votes',
+            'create_assembly_votes',
+            'edit_assembly_votes',
+            'delete_assembly_votes',
+            'participate_in_assemblies',
         ];
 
         foreach ($permissions as $permission) {
@@ -154,6 +168,8 @@ class RolePermissionSeeder extends Seeder
             'view_admin_email', 'create_admin_email', 'edit_admin_email', 'delete_admin_email', 'manage_email_templates', // Admin solo puede ver su email
             'view_access_logs', 'manage_visitors', 'view_security_reports',
             'view_reservations', 'create_reservations', 'edit_reservations', 'delete_reservations', 'manage_reservable_assets', 'approve_reservations',
+            'view_assemblies', 'create_assemblies', 'edit_assemblies', 'delete_assemblies', 'start_assemblies', 'close_assemblies', 'manage_assembly_attendance',
+            'view_assembly_votes', 'create_assembly_votes', 'edit_assembly_votes', 'delete_assembly_votes', 'participate_in_assemblies',
         ]);
 
         $consejo->givePermissionTo([
@@ -171,6 +187,8 @@ class RolePermissionSeeder extends Seeder
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
             'review_provider_proposals',
             'view_reservations', 'create_reservations', 'edit_reservations', 'approve_reservations',
+            'view_assemblies', 'create_assemblies', 'edit_assemblies', 'start_assemblies', 'close_assemblies',
+            'view_assembly_votes', 'create_assembly_votes', 'participate_in_assemblies',
         ]);
 
         $propietario->givePermissionTo([
@@ -179,6 +197,7 @@ class RolePermissionSeeder extends Seeder
             'view_correspondence',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
             'view_reservations', 'create_reservations', 'edit_reservations',
+            'view_assemblies', 'participate_in_assemblies', 'view_assembly_votes',
         ]);
 
         $residente->givePermissionTo([
@@ -187,6 +206,7 @@ class RolePermissionSeeder extends Seeder
             'view_correspondence',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
             'view_reservations', 'create_reservations', 'edit_reservations',
+            'view_assemblies', 'participate_in_assemblies', 'view_assembly_votes',
         ]);
 
         $porteria->givePermissionTo([

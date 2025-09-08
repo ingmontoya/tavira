@@ -43,6 +43,7 @@ const form = useForm({
 const massForm = useForm({
     mass_invitation_title: '',
     mass_invitation_description: '',
+    role: '',
     expires_at: '',
 });
 
@@ -133,6 +134,24 @@ const breadcrumbs = [
                                 <p v-if="massForm.errors.mass_invitation_description" class="text-sm text-red-600">
                                     {{ massForm.errors.mass_invitation_description }}
                                 </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="mass_role">Rol para Invitados *</Label>
+                                <Select v-model="massForm.role" required>
+                                    <SelectTrigger :class="{ 'border-red-500': massForm.errors.role }">
+                                        <SelectValue placeholder="Selecciona el rol por defecto" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem v-for="(label, value) in roles" :key="value" :value="value">
+                                            {{ label }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="massForm.errors.role" class="text-sm text-red-600">
+                                    {{ massForm.errors.role }}
+                                </p>
+                                <p class="text-sm text-muted-foreground">Todos los usuarios que se registren con esta invitación tendrán este rol</p>
                             </div>
 
                             <div class="space-y-2">

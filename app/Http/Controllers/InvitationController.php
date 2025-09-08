@@ -75,6 +75,7 @@ class InvitationController extends Controller
         $validated = $request->validate([
             'mass_invitation_title' => ['required', 'string', 'max:100'],
             'mass_invitation_description' => ['nullable', 'string', 'max:1000'],
+            'role' => ['required', 'in:admin_conjunto,consejo,propietario,residente,porteria'],
             'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
@@ -88,8 +89,8 @@ class InvitationController extends Controller
         }
 
         $invitation = Invitation::create([
-            'email' => 'mass-invitation@conjunto.local', // Placeholder email
-            'role' => 'mass_invitation', // Special role for mass invitations
+            'email' => 'mass-invitation@tavira.com.co', // Placeholder email
+            'role' => $validated['role'], // Use the selected role
             'apartment_id' => null,
             'invited_by' => auth()->id(),
             'message' => null,
