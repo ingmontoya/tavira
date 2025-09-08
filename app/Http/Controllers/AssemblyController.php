@@ -128,12 +128,17 @@ class AssemblyController extends Controller
         $canManageAttendance = false;
 
         if ($assembly->status === 'in_progress') {
-            // Get all residents with their apartment information
+            // Get all residents with their attendance status
+            $attendances = $assembly->attendances()->with(['user.resident.apartment.apartmentType'])->get();
+            $attendanceMap = $attendances->keyBy('user_id');
+
             $residents = \App\Models\User::whereHas('resident.apartment')
                 ->with(['resident.apartment.apartmentType'])
                 ->get()
-                ->map(function ($user) {
+                ->map(function ($user) use ($attendanceMap) {
                     $apartment = $user->resident->apartment;
+                    $attendance = $attendanceMap->get($user->id);
+                    
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
@@ -143,20 +148,20 @@ class AssemblyController extends Controller
                             'number' => $apartment->number,
                             'type' => $apartment->apartmentType->name ?? 'N/A',
                         ],
-                        'is_online' => false, // Default for now, can be enhanced with real-time data
+                        'is_online' => $attendance && ($attendance->metadata['is_online'] ?? false),
                         'last_seen' => $user->last_seen_at,
-                        'attendance_status' => 'not_registered', // Default status
-                        'registered_at' => null,
-                        'delegate_to' => null,
+                        'attendance_status' => $attendance ? $attendance->status : 'not_registered',
+                        'registered_at' => $attendance ? $attendance->registered_at : null,
+                        'delegate_to' => null, // TODO: Implement delegate functionality
                     ];
                 });
 
-            // Calculate attendance stats
+            // Calculate real attendance stats
             $totalApartments = \App\Models\Apartment::count();
-            $registeredApartments = 0; // Will be updated with real attendance data
-            $presentApartments = 0;
-            $absentApartments = 0;
-            $delegatedApartments = 0;
+            $registeredApartments = $attendances->count();
+            $presentApartments = $attendances->where('status', 'present')->count();
+            $absentApartments = $attendances->where('status', 'absent')->count();
+            $delegatedApartments = $attendances->where('status', 'delegated')->count();
             $onlineResidents = $residents->where('is_online', true)->count();
             $quorumPercentage = $totalApartments > 0 ? ($presentApartments / $totalApartments) * 100 : 0;
 
@@ -293,13 +298,26 @@ class AssemblyController extends Controller
      */
     public function getAttendanceStatus(Assembly $assembly)
     {
+        // Allow residents and admins to view attendance status
+        if (!Auth::user()->can('participate_in_assemblies') && !Auth::user()->can('manage_assembly_attendance')) {
+            return response()->json([
+                'error' => true,
+                'message' => 'No tienes permisos para ver el estado de asistencia.'
+            ], 403);
+        }
+
         try {
-            // Get all residents with their apartment information
+            // Get all residents with their apartment information and attendance status
+            $attendances = $assembly->attendances()->with(['user.resident.apartment.apartmentType'])->get();
+            $attendanceMap = $attendances->keyBy('user_id');
+
             $residents = \App\Models\User::whereHas('resident.apartment')
                 ->with(['resident.apartment.apartmentType'])
                 ->get()
-                ->map(function ($user) {
+                ->map(function ($user) use ($attendanceMap) {
                     $apartment = $user->resident->apartment;
+                    $attendance = $attendanceMap->get($user->id);
+                    
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
@@ -309,20 +327,20 @@ class AssemblyController extends Controller
                             'number' => $apartment->number,
                             'type' => $apartment->apartmentType->name ?? 'N/A',
                         ],
-                        'is_online' => false,
+                        'is_online' => $attendance && ($attendance->metadata['is_online'] ?? false),
                         'last_seen' => $user->last_seen_at,
-                        'attendance_status' => 'not_registered',
-                        'registered_at' => null,
-                        'delegate_to' => null,
+                        'attendance_status' => $attendance ? $attendance->status : 'not_registered',
+                        'registered_at' => $attendance ? $attendance->registered_at : null,
+                        'delegate_to' => null, // TODO: Implement delegate functionality
                     ];
                 });
 
-            // Calculate attendance stats
+            // Calculate attendance stats from actual data
             $totalApartments = \App\Models\Apartment::count();
-            $registeredApartments = 0;
-            $presentApartments = 0;
-            $absentApartments = 0;
-            $delegatedApartments = 0;
+            $registeredApartments = $attendances->count();
+            $presentApartments = $attendances->where('status', 'present')->count();
+            $absentApartments = $attendances->where('status', 'absent')->count();
+            $delegatedApartments = $attendances->where('status', 'delegated')->count();
             $onlineResidents = $residents->where('is_online', true)->count();
             $quorumPercentage = $totalApartments > 0 ? ($presentApartments / $totalApartments) * 100 : 0;
 
@@ -357,14 +375,59 @@ class AssemblyController extends Controller
      */
     public function selfRegisterAttendance(Assembly $assembly)
     {
+        // Only residents can self-register attendance
+        if (!Auth::user()->can('participate_in_assemblies')) {
+            return response()->json([
+                'error' => true,
+                'message' => 'No tienes permisos para registrar asistencia.'
+            ], 403);
+        }
+
+        // Ensure the assembly is in progress
+        if ($assembly->status !== 'in_progress') {
+            return response()->json([
+                'error' => true,
+                'message' => 'Solo puedes registrar asistencia durante una asamblea activa.'
+            ], 400);
+        }
+
         try {
-            // For now, just return success
-            // This would typically update a database table with attendance records
+            $user = Auth::user();
+            
+            // Check if user has a resident profile with apartment
+            if (!$user->resident || !$user->resident->apartment) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'No tienes un apartamento asignado para registrar asistencia.'
+                ], 400);
+            }
+
+            $apartment = $user->resident->apartment;
+
+            // Create or update attendance record
+            $attendance = \App\Models\AssemblyAttendance::updateOrCreate(
+                [
+                    'assembly_id' => $assembly->id,
+                    'user_id' => $user->id,
+                ],
+                [
+                    'apartment_id' => $apartment->id,
+                    'status' => 'present',
+                    'registered_at' => now(),
+                    'registered_by' => $user->id,
+                    'metadata' => [
+                        'is_online' => true,
+                        'self_registered' => true,
+                        'user_agent' => request()->header('User-Agent'),
+                    ]
+                ]
+            );
             
             return response()->json([
                 'success' => true,
                 'message' => 'Attendance registered successfully',
-                'status' => 'present'
+                'status' => 'present',
+                'registered_at' => $attendance->registered_at
             ]);
 
         } catch (\Exception $e) {

@@ -61,6 +61,11 @@ class Assembly extends Model
         return $this->hasMany(VoteDelegate::class);
     }
 
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(AssemblyAttendance::class);
+    }
+
     public function getDurationMinutesAttribute(): ?int
     {
         if ($this->started_at && $this->ended_at) {

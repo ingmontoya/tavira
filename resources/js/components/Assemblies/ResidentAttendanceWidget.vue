@@ -92,8 +92,11 @@ const registerAttendance = async () => {
     try {
         const response = await fetch(`/api/assemblies/${props.assembly.id}/attendance/self-register`, {
             method: 'POST',
+            credentials: 'same-origin', // Include cookies for Sanctum auth
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
         });

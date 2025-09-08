@@ -96,7 +96,15 @@ const onlineCount = computed(() => onlineResidents.value.filter(r => r.is_online
 const refreshAttendance = async () => {
     isRefreshing.value = true;
     try {
-        const response = await fetch(`/api/assemblies/${props.assemblyId}/attendance/status`);
+        const response = await fetch(`/api/assemblies/${props.assemblyId}/attendance/status`, {
+            method: 'GET',
+            credentials: 'same-origin', // Include cookies for Sanctum auth
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
         
         if (!response.ok) {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -156,8 +164,11 @@ const registerSelfAttendance = async () => {
     try {
         const response = await fetch(`/api/assemblies/${props.assemblyId}/attendance/self-register`, {
             method: 'POST',
+            credentials: 'same-origin', // Include cookies for Sanctum auth
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
         });
