@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/composables/useToast';
 import { router } from '@inertiajs/vue3';
 import { 
     Check, 
@@ -47,6 +48,9 @@ const emit = defineEmits<{
 
 const isSubmitting = ref(false);
 
+// Toast notifications
+const { success, error: showError } = useToast();
+
 const canRegisterAttendance = computed(() => {
     return props.assembly.status === 'in_progress' && 
            props.attendanceStatus.can_register &&
@@ -86,10 +90,38 @@ const statusConfig = computed(() => {
 const registerAttendance = async () => {
     isSubmitting.value = true;
     try {
-        await router.post(`/assemblies/${props.assembly.id}/attendance/self-register`);
+        const response = await fetch(`/api/assemblies/${props.assembly.id}/attendance/self-register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.message || 'Error desconocido al registrar asistencia');
+        }
+        
+        success(
+            "Su asistencia ha sido confirmada exitosamente.",
+            "¡Asistencia registrada!"
+        );
+        
         emit('attendanceRegistered', 'present');
+        
     } catch (error) {
         console.error('Error registering attendance:', error);
+        
+        showError(
+            error instanceof Error ? error.message : "No se pudo registrar su asistencia. Por favor, inténtelo nuevamente o contacte al administrador.",
+            "Error al registrar asistencia"
+        );
     } finally {
         isSubmitting.value = false;
     }

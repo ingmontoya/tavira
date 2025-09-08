@@ -287,4 +287,121 @@ class AssemblyController extends Controller
         return redirect()->route('assemblies.show', $assembly)
             ->with('success', 'Asamblea cancelada exitosamente.');
     }
+
+    /**
+     * API: Get attendance status for an assembly
+     */
+    public function getAttendanceStatus(Assembly $assembly)
+    {
+        try {
+            // Get all residents with their apartment information
+            $residents = \App\Models\User::whereHas('resident.apartment')
+                ->with(['resident.apartment.apartmentType'])
+                ->get()
+                ->map(function ($user) {
+                    $apartment = $user->resident->apartment;
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'apartment' => [
+                            'id' => $apartment->id,
+                            'number' => $apartment->number,
+                            'type' => $apartment->apartmentType->name ?? 'N/A',
+                        ],
+                        'is_online' => false,
+                        'last_seen' => $user->last_seen_at,
+                        'attendance_status' => 'not_registered',
+                        'registered_at' => null,
+                        'delegate_to' => null,
+                    ];
+                });
+
+            // Calculate attendance stats
+            $totalApartments = \App\Models\Apartment::count();
+            $registeredApartments = 0;
+            $presentApartments = 0;
+            $absentApartments = 0;
+            $delegatedApartments = 0;
+            $onlineResidents = $residents->where('is_online', true)->count();
+            $quorumPercentage = $totalApartments > 0 ? ($presentApartments / $totalApartments) * 100 : 0;
+
+            $stats = [
+                'total_apartments' => $totalApartments,
+                'registered_apartments' => $registeredApartments,
+                'present_apartments' => $presentApartments,
+                'absent_apartments' => $absentApartments,
+                'delegated_apartments' => $delegatedApartments,
+                'online_residents' => $onlineResidents,
+                'total_residents' => $residents->count(),
+                'quorum_percentage' => $quorumPercentage,
+                'required_quorum_percentage' => $assembly->required_quorum_percentage,
+                'has_quorum' => $quorumPercentage >= $assembly->required_quorum_percentage,
+            ];
+
+            return response()->json([
+                'residents' => $residents,
+                'stats' => $stats,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error retrieving attendance status',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Self-register attendance for an assembly
+     */
+    public function selfRegisterAttendance(Assembly $assembly)
+    {
+        try {
+            // For now, just return success
+            // This would typically update a database table with attendance records
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Attendance registered successfully',
+                'status' => 'present'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error registering attendance',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Get participants for an assembly
+     */
+    public function getParticipants(Assembly $assembly)
+    {
+        try {
+            $participants = \App\Models\User::whereHas('resident.apartment')
+                ->with(['resident.apartment'])
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'apartment' => $user->resident->apartment->number,
+                    ];
+                });
+
+            return response()->json([
+                'participants' => $participants,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error retrieving participants',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

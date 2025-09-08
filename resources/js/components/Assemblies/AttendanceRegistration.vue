@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/composables/useToast';
 import { router } from '@inertiajs/vue3';
 import { 
     Check, 
@@ -71,6 +72,9 @@ const isRefreshing = ref(false);
 const autoRefresh = ref(true);
 let refreshInterval: NodeJS.Timeout | null = null;
 
+// Toast notifications
+const { success, error: showError } = useToast();
+
 // Computed values
 const sortedResidents = computed(() => {
     return [...onlineResidents.value].sort((a, b) => {
@@ -93,11 +97,27 @@ const refreshAttendance = async () => {
     isRefreshing.value = true;
     try {
         const response = await fetch(`/api/assemblies/${props.assemblyId}/attendance/status`);
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.message || 'Error desconocido al obtener el estado de asistencia');
+        }
+        
         onlineResidents.value = data.residents;
         emit('attendanceUpdated', data.stats);
+        
     } catch (error) {
         console.error('Error refreshing attendance:', error);
+        
+        showError(
+            error instanceof Error ? error.message : "No se pudo obtener el estado actual de asistencia. Por favor, inténtelo nuevamente.",
+            "Error al actualizar asistencia"
+        );
     } finally {
         isRefreshing.value = false;
     }
@@ -108,19 +128,64 @@ const markAttendance = async (residentId: number, status: 'present' | 'absent') 
         await router.post(`/assemblies/${props.assemblyId}/attendance`, {
             resident_id: residentId,
             status: status,
+        }, {
+            onError: (errors) => {
+                showError(
+                    "No se pudo registrar la asistencia. Por favor, inténtelo nuevamente.",
+                    "Error al marcar asistencia"
+                );
+            },
+            onSuccess: () => {
+                success(
+                    `El residente ha sido marcado como ${status === 'present' ? 'presente' : 'ausente'}.`,
+                    "Asistencia registrada"
+                );
+            }
         });
         await refreshAttendance();
     } catch (error) {
         console.error('Error marking attendance:', error);
+        showError(
+            "Ocurrió un error inesperado. Por favor, inténtelo nuevamente.",
+            "Error al marcar asistencia"
+        );
     }
 };
 
 const registerSelfAttendance = async () => {
     try {
-        await router.post(`/assemblies/${props.assemblyId}/attendance/self-register`);
+        const response = await fetch(`/api/assemblies/${props.assemblyId}/attendance/self-register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.message || 'Error desconocido al registrar asistencia');
+        }
+        
+        success(
+            "Su asistencia ha sido registrada exitosamente.",
+            "Asistencia registrada"
+        );
+        
         await refreshAttendance();
+        
     } catch (error) {
         console.error('Error registering self attendance:', error);
+        
+        showError(
+            error instanceof Error ? error.message : "No se pudo registrar su asistencia. Por favor, inténtelo nuevamente.",
+            "Error al registrar asistencia"
+        );
     }
 };
 
