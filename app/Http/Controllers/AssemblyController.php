@@ -294,6 +294,22 @@ class AssemblyController extends Controller
     }
 
     /**
+     * API: Get assembly status
+     */
+    public function status(Assembly $assembly)
+    {
+        return response()->json([
+            'id' => $assembly->id,
+            'title' => $assembly->title,
+            'status' => $assembly->status,
+            'scheduled_at' => $assembly->scheduled_at,
+            'started_at' => $assembly->started_at,
+            'closed_at' => $assembly->closed_at,
+            'required_quorum_percentage' => $assembly->required_quorum_percentage,
+        ]);
+    }
+
+    /**
      * API: Get attendance status for an assembly
      */
     public function getAttendanceStatus(Assembly $assembly)
@@ -371,24 +387,20 @@ class AssemblyController extends Controller
     }
 
     /**
-     * API: Self-register attendance for an assembly
+     * Self-register attendance for an assembly
      */
     public function selfRegisterAttendance(Assembly $assembly)
     {
         // Only residents can self-register attendance
         if (!Auth::user()->can('participate_in_assemblies')) {
-            return response()->json([
-                'error' => true,
-                'message' => 'No tienes permisos para registrar asistencia.'
-            ], 403);
+            return redirect()->route('assemblies.show', $assembly)
+                ->with('error', 'No tienes permisos para registrar asistencia.');
         }
 
         // Ensure the assembly is in progress
         if ($assembly->status !== 'in_progress') {
-            return response()->json([
-                'error' => true,
-                'message' => 'Solo puedes registrar asistencia durante una asamblea activa.'
-            ], 400);
+            return redirect()->route('assemblies.show', $assembly)
+                ->with('error', 'Solo puedes registrar asistencia durante una asamblea activa.');
         }
 
         try {
@@ -396,10 +408,8 @@ class AssemblyController extends Controller
             
             // Check if user has a resident profile with apartment
             if (!$user->resident || !$user->resident->apartment) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'No tienes un apartamento asignado para registrar asistencia.'
-                ], 400);
+                return redirect()->route('assemblies.show', $assembly)
+                    ->with('error', 'No tienes un apartamento asignado para registrar asistencia.');
             }
 
             $apartment = $user->resident->apartment;
@@ -423,18 +433,12 @@ class AssemblyController extends Controller
                 ]
             );
             
-            return response()->json([
-                'success' => true,
-                'message' => 'Attendance registered successfully',
-                'status' => 'present',
-                'registered_at' => $attendance->registered_at
-            ]);
+            return redirect()->route('assemblies.show', $assembly)
+                ->with('success', 'Asistencia registrada exitosamente.');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Error registering attendance',
-                'message' => $e->getMessage(),
-            ], 500);
+            return redirect()->route('assemblies.show', $assembly)
+                ->with('error', 'Error al registrar asistencia: ' . $e->getMessage());
         }
     }
 
