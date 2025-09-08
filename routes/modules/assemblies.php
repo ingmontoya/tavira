@@ -19,6 +19,8 @@ Route::middleware([RequiresFeature::class . ':voting'])->group(function () {
         ->name('assemblies.close');
     Route::post('assemblies/{assembly}/cancel', [AssemblyController::class, 'cancel'])
         ->name('assemblies.cancel');
+    Route::post('assemblies/{assembly}/attendance', [AssemblyController::class, 'selfRegisterAttendance'])
+        ->name('assemblies.attendance');
     
     // Nested vote routes within assemblies
     Route::resource('assemblies.votes', VoteController::class);
