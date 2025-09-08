@@ -128,3 +128,12 @@ Route::post('expenses/{expense}/reject', [ExpenseController::class, 'reject'])->
 Route::post('expenses/{expense}/mark-as-paid', [ExpenseController::class, 'markAsPaid'])->name('expenses.mark-as-paid')->middleware('can:edit_expenses');
 Route::post('expenses/{expense}/cancel', [ExpenseController::class, 'cancel'])->name('expenses.cancel')->middleware('can:edit_expenses');
 Route::post('expenses/{expense}/duplicate', [ExpenseController::class, 'duplicate'])->name('expenses.duplicate')->middleware('can:create_expenses');
+
+// Account Statement - Resident view of their financial account
+Route::get('account-statement', [\App\Http\Controllers\AccountStatementController::class, 'index'])
+    ->name('account-statement.index')
+    ->middleware('can:view_account_statement');
+
+Route::get('account-statement/invoice/{invoice}', [\App\Http\Controllers\AccountStatementController::class, 'showInvoice'])
+    ->name('account-statement.invoice')
+    ->middleware('can:view_account_statement');
