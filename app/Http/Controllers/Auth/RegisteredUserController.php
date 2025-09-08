@@ -29,28 +29,30 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request): Response|RedirectResponse
     {
-        // Check if there's an invitation token
+        // Require invitation token for all registrations
         $token = $request->get('token');
-        $invitation = null;
         
-        if ($token) {
-            $invitation = Invitation::where('token', $token)
-                ->where('expires_at', '>', now())
-                ->first();
-                
-            if (!$invitation) {
-                return redirect()->route('login')
-                    ->with('error', 'El enlace de invitación es inválido o ha expirado.');
-            }
+        if (!$token) {
+            return redirect()->route('login')
+                ->with('error', 'El registro solo es posible mediante invitación. Contacta al administrador para obtener acceso.');
+        }
+        
+        $invitation = Invitation::where('token', $token)
+            ->where('expires_at', '>', now())
+            ->first();
             
-            if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
-                return redirect()->route('login')
-                    ->with('error', 'Esta invitación ya fue utilizada.');
-            }
+        if (!$invitation) {
+            return redirect()->route('login')
+                ->with('error', 'El enlace de invitación es inválido o ha expirado.');
+        }
+        
+        if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
+            return redirect()->route('login')
+                ->with('error', 'Esta invitación ya fue utilizada.');
         }
         
         $apartments = [];
-        if ($invitation && $invitation->is_mass_invitation) {
+        if ($invitation->is_mass_invitation) {
             $apartments = \App\Models\Apartment::with('apartmentType')
                 ->orderBy('tower')
                 ->orderBy('floor')
@@ -105,31 +107,31 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validated();
         
-        // Check for invitation token
+        // Require invitation token for all registrations
         $token = $request->get('token');
-        $invitation = null;
-        $role = 'admin_conjunto'; // Default role
         
-        if ($token) {
-            $invitation = Invitation::where('token', $token)
-                ->where('expires_at', '>', now())
-                ->first();
-                
-            if (!$invitation) {
-                return back()->with('error', 'El enlace de invitación es inválido o ha expirado.');
-            }
-            
-            if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
-                return back()->with('error', 'Esta invitación ya fue utilizada.');
-            }
-            
-            // Check if email matches for individual invitations
-            if (!$invitation->is_mass_invitation && $invitation->email !== $validated['email']) {
-                return back()->with('error', 'El email no coincide con la invitación.');
-            }
-            
-            $role = $invitation->role;
+        if (!$token) {
+            return back()->with('error', 'El registro solo es posible mediante invitación. Token requerido.');
         }
+        
+        $invitation = Invitation::where('token', $token)
+            ->where('expires_at', '>', now())
+            ->first();
+            
+        if (!$invitation) {
+            return back()->with('error', 'El enlace de invitación es inválido o ha expirado.');
+        }
+        
+        if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
+            return back()->with('error', 'Esta invitación ya fue utilizada.');
+        }
+        
+        // Check if email matches for individual invitations
+        if (!$invitation->is_mass_invitation && $invitation->email !== $validated['email']) {
+            return back()->with('error', 'El email no coincide con la invitación.');
+        }
+        
+        $role = $invitation->role;
 
         $user = User::create([
             'name' => $validated['name'],
@@ -140,7 +142,7 @@ class RegisteredUserController extends Controller
         $user->assignRole($role);
         
         // Handle apartment assignment for mass invitations
-        if ($invitation && $invitation->is_mass_invitation && $request->has('apartment_id')) {
+        if ($invitation->is_mass_invitation && $request->has('apartment_id')) {
             $apartmentId = $request->get('apartment_id');
             if ($apartmentId) {
                 // Split the full name into first and last names
@@ -162,8 +164,8 @@ class RegisteredUserController extends Controller
             }
         }
         
-        // Mark invitation as accepted if it exists
-        if ($invitation && !$invitation->is_mass_invitation) {
+        // Mark invitation as accepted if it's not a mass invitation
+        if (!$invitation->is_mass_invitation) {
             $invitation->update([
                 'accepted_at' => now(),
                 'accepted_by' => $user->id,
