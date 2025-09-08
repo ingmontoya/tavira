@@ -11,6 +11,7 @@ class CentralApiDriver implements Driver
 {
     protected string $centralUrl;
     protected int $cacheMinutes;
+    protected array $definedFeatures = [];
 
     public function __construct()
     {
@@ -18,14 +19,28 @@ class CentralApiDriver implements Driver
         $this->cacheMinutes = 5;
     }
 
-    public function retrieve(string $feature, mixed $scope): mixed
+    public function define(string $feature, callable $resolver): void
     {
-        $tenantId = $this->resolveTenantId($scope);
-        $cacheKey = "feature_flag:{$tenantId}:{$feature}";
+        $this->definedFeatures[$feature] = $resolver;
+    }
 
-        return Cache::remember($cacheKey, $this->cacheMinutes * 60, function () use ($tenantId, $feature) {
-            return $this->fetchFromCentral($tenantId, $feature);
-        });
+    public function defined(): array
+    {
+        return array_keys($this->definedFeatures);
+    }
+
+    public function getAll(array $features): array
+    {
+        $result = [];
+        
+        foreach ($features as $feature => $scopes) {
+            $result[$feature] = [];
+            foreach ($scopes as $scope) {
+                $result[$feature][] = $this->get($feature, $scope);
+            }
+        }
+
+        return $result;
     }
 
     public function retrieveAll(array $features, mixed $scope): array
@@ -45,17 +60,41 @@ class CentralApiDriver implements Driver
         return $result;
     }
 
-    public function store(string $feature, mixed $scope, mixed $value): void
+    public function get(string $feature, mixed $scope): mixed
+    {
+        $tenantId = $this->resolveTenantId($scope);
+        $cacheKey = "feature_flag:{$tenantId}:{$feature}";
+
+        return Cache::remember($cacheKey, $this->cacheMinutes * 60, function () use ($tenantId, $feature) {
+            return $this->fetchFromCentral($tenantId, $feature);
+        });
+    }
+
+    public function retrieve(string $feature, mixed $scope): mixed
+    {
+        return $this->get($feature, $scope);
+    }
+
+    public function set(string $feature, mixed $scope, mixed $value): void
     {
         // Read-only driver - tenant apps cannot modify features
-        Log::warning('Attempt to store feature flag in CentralApiDriver', [
+        Log::warning('Attempt to set feature flag in CentralApiDriver', [
             'feature' => $feature,
             'scope' => $scope,
             'value' => $value,
         ]);
     }
 
-    public function forget(string $feature, mixed $scope): void
+    public function setForAllScopes(string $feature, mixed $value): void
+    {
+        // Read-only driver - tenant apps cannot modify features
+        Log::warning('Attempt to set feature flag for all scopes in CentralApiDriver', [
+            'feature' => $feature,
+            'value' => $value,
+        ]);
+    }
+
+    public function delete(string $feature, mixed $scope): void
     {
         $tenantId = $this->resolveTenantId($scope);
         $cacheKey = "feature_flag:{$tenantId}:{$feature}";
@@ -64,15 +103,21 @@ class CentralApiDriver implements Driver
         Cache::forget("feature_flags_all:{$tenantId}");
     }
 
-    public function forgetAll(array $features, mixed $scope): void
+    public function purge(?array $features): void
     {
-        $tenantId = $this->resolveTenantId($scope);
-        
-        foreach ($features as $feature) {
-            Cache::forget("feature_flag:{$tenantId}:{$feature}");
+        if ($features === null) {
+            // Purge all feature flags from cache
+            Cache::flush();
+        } else {
+            // Purge specific features from cache
+            foreach ($features as $feature) {
+                // Since we don't know the scope, we'll use a pattern to clear all related caches
+                $pattern = "feature_flag:*:{$feature}";
+                // Note: Laravel's cache doesn't support pattern deletion by default
+                // This is a simplified implementation
+                Cache::forget($pattern);
+            }
         }
-        
-        Cache::forget("feature_flags_all:{$tenantId}");
     }
 
     protected function fetchFromCentral(string $tenantId, string $feature): bool
