@@ -162,7 +162,7 @@
         <div class="container">
         <div class="header">
             <div class="logo-container">
-                <img src="{{ asset('img/tavira_logo_blanco.png') }}" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 100px; width: auto; margin: 0 auto; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
+                <img src="https://tavira.com.co/img/tavira_logo_blanco.png" alt="Tavira - Plataforma de Administración" class="logo-image" style="max-height: 100px; width: auto; margin: 0 auto; display: block; border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic;" border="0">
             </div>
         </div>
 
