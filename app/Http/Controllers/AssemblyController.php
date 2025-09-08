@@ -122,8 +122,66 @@ class AssemblyController extends Controller
             ->with('delegatorApartment')
             ->get();
 
+        // Get attendance data if assembly is active
+        $residents = null;
+        $attendanceStats = null;
+        $canManageAttendance = false;
+
+        if ($assembly->status === 'in_progress') {
+            // Get all residents with their apartment information
+            $residents = \App\Models\User::whereHas('resident.apartment')
+                ->with(['resident.apartment.apartmentType'])
+                ->get()
+                ->map(function ($user) {
+                    $apartment = $user->resident->apartment;
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'apartment' => [
+                            'id' => $apartment->id,
+                            'number' => $apartment->number,
+                            'type' => $apartment->apartmentType->name ?? 'N/A',
+                        ],
+                        'is_online' => false, // Default for now, can be enhanced with real-time data
+                        'last_seen' => $user->last_seen_at,
+                        'attendance_status' => 'not_registered', // Default status
+                        'registered_at' => null,
+                        'delegate_to' => null,
+                    ];
+                });
+
+            // Calculate attendance stats
+            $totalApartments = \App\Models\Apartment::count();
+            $registeredApartments = 0; // Will be updated with real attendance data
+            $presentApartments = 0;
+            $absentApartments = 0;
+            $delegatedApartments = 0;
+            $onlineResidents = $residents->where('is_online', true)->count();
+            $quorumPercentage = $totalApartments > 0 ? ($presentApartments / $totalApartments) * 100 : 0;
+
+            $attendanceStats = [
+                'total_apartments' => $totalApartments,
+                'registered_apartments' => $registeredApartments,
+                'present_apartments' => $presentApartments,
+                'absent_apartments' => $absentApartments,
+                'delegated_apartments' => $delegatedApartments,
+                'online_residents' => $onlineResidents,
+                'total_residents' => $residents->count(),
+                'quorum_percentage' => $quorumPercentage,
+                'required_quorum_percentage' => $assembly->required_quorum_percentage,
+                'has_quorum' => $quorumPercentage >= $assembly->required_quorum_percentage,
+            ];
+
+            $canManageAttendance = Auth::user()->can('manage_assembly_attendance');
+        }
+
         return Inertia::render('Assemblies/Show', [
-            'assembly' => $assembly,
+            'assembly' => array_merge($assembly->toArray(), [
+                'residents' => $residents,
+                'attendance_stats' => $attendanceStats,
+                'can_manage_attendance' => $canManageAttendance,
+            ]),
             'userApartments' => $userApartments,
             'userDelegates' => $userDelegates,
             'canManage' => Auth::user()->can('manage assemblies'),
