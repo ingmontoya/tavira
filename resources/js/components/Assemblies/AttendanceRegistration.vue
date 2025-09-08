@@ -162,40 +162,25 @@ const markAttendance = async (residentId: number, status: 'present' | 'absent') 
 
 const registerSelfAttendance = async () => {
     try {
-        const response = await fetch(`/api/assemblies/${props.assemblyId}/attendance/self-register`, {
-            method: 'POST',
-            credentials: 'same-origin', // Include cookies for Sanctum auth
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        await router.post(`/assemblies/${props.assemblyId}/attendance`, {}, {
+            onError: (errors) => {
+                showError(
+                    "No se pudo registrar la asistencia. Por favor, inténtelo nuevamente.",
+                    "Error al registrar asistencia"
+                );
             },
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.message || 'Error desconocido al registrar asistencia');
-        }
-        
-        success(
-            "Su asistencia ha sido registrada exitosamente.",
-            "Asistencia registrada"
-        );
-        
-        await refreshAttendance();
-        
+            onSuccess: () => {
+                showSuccess(
+                    "Tu asistencia ha sido registrada exitosamente.",
+                    "Asistencia Registrada"
+                );
+                refreshAttendanceData();
+            }
     } catch (error) {
-        console.error('Error registering self attendance:', error);
-        
+        console.error('Error registering self-attendance:', error);
         showError(
-            error instanceof Error ? error.message : "No se pudo registrar su asistencia. Por favor, inténtelo nuevamente.",
-            "Error al registrar asistencia"
+            "No se pudo registrar tu asistencia. Por favor, inténtelo nuevamente.",
+            "Error al Registrar Asistencia"
         );
     }
 };
@@ -397,7 +382,13 @@ onUnmounted(() => {
                             <TableRow 
                                 v-for="resident in sortedResidents" 
                                 :key="resident.id"
-                                :class="resident.is_online ? 'bg-green-50' : ''"
+                                :class="{
+                                    'bg-green-50': resident.attendance_status === 'present',
+                                    'bg-red-50': resident.attendance_status === 'absent',
+                                    'bg-blue-50': resident.attendance_status === 'delegated',
+                                    'bg-yellow-50': resident.attendance_status === 'not_registered' && resident.is_online,
+                                    'bg-gray-50': resident.attendance_status === 'not_registered' && !resident.is_online
+                                }"
                             >
                                 <TableCell>
                                     <div class="flex items-center gap-2">

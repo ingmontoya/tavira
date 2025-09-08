@@ -50,8 +50,8 @@ Route::middleware([RequiresFeature::class . ':voting'])->group(function () {
             ->name('votes.results');
         Route::get('{assembly}/participants', [AssemblyController::class, 'getParticipants'])
             ->name('participants');
-        Route::get('{assembly}/attendance-status', [AssemblyController::class, 'getAttendanceStatus'])
-            ->name('attendance-status');
+        Route::get('{assembly}/attendance/status', [AssemblyController::class, 'getAttendanceStatus'])
+            ->name('attendance.status');
     });
 
 });

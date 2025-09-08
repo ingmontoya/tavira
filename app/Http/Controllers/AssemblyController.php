@@ -387,33 +387,60 @@ class AssemblyController extends Controller
     }
 
     /**
-     * Self-register attendance for an assembly
+     * Register attendance for an assembly (both self-registration and admin management)
      */
-    public function selfRegisterAttendance(Assembly $assembly)
+    public function selfRegisterAttendance(Request $request, Assembly $assembly)
     {
-        // Only residents can self-register attendance
-        if (!Auth::user()->can('participate_in_assemblies')) {
-            return redirect()->route('assemblies.show', $assembly)
-                ->with('error', 'No tienes permisos para registrar asistencia.');
+        // Check if this is admin-managed attendance
+        $isAdminManagement = $request->has('resident_id');
+        
+        if ($isAdminManagement) {
+            // Admin managing attendance for another user
+            if (!Auth::user()->can('manage_assembly_attendance')) {
+                return redirect()->route('assemblies.show', $assembly)
+                    ->with('error', 'No tienes permisos para gestionar asistencia.');
+            }
+            
+            $validated = $request->validate([
+                'resident_id' => 'required|integer|exists:users,id',
+                'status' => 'required|in:present,absent,delegated',
+            ]);
+            
+            $targetUser = \App\Models\User::findOrFail($validated['resident_id']);
+            
+            if (!$targetUser->resident || !$targetUser->resident->apartment) {
+                return redirect()->route('assemblies.show', $assembly)
+                    ->with('error', 'El usuario seleccionado no tiene un apartamento asignado.');
+            }
+            
+            $apartment = $targetUser->resident->apartment;
+            $attendanceStatus = $validated['status'];
+            $user = $targetUser;
+        } else {
+            // Self-registration
+            if (!Auth::user()->can('participate_in_assemblies')) {
+                return redirect()->route('assemblies.show', $assembly)
+                    ->with('error', 'No tienes permisos para registrar asistencia.');
+            }
+            
+            $user = Auth::user();
+            
+            if (!$user->resident || !$user->resident->apartment) {
+                return redirect()->route('assemblies.show', $assembly)
+                    ->with('error', 'No tienes un apartamento asignado para registrar asistencia.');
+            }
+            
+            $apartment = $user->resident->apartment;
+            $attendanceStatus = 'present';
         }
 
         // Ensure the assembly is in progress
         if ($assembly->status !== 'in_progress') {
             return redirect()->route('assemblies.show', $assembly)
-                ->with('error', 'Solo puedes registrar asistencia durante una asamblea activa.');
+                ->with('error', 'Solo se puede registrar asistencia durante una asamblea activa.');
         }
 
         try {
-            $user = Auth::user();
-            
-            // Check if user has a resident profile with apartment
-            if (!$user->resident || !$user->resident->apartment) {
-                return redirect()->route('assemblies.show', $assembly)
-                    ->with('error', 'No tienes un apartamento asignado para registrar asistencia.');
-            }
-
-            $apartment = $user->resident->apartment;
-
             // Create or update attendance record
             $attendance = \App\Models\AssemblyAttendance::updateOrCreate(
                 [
@@ -422,19 +449,24 @@ class AssemblyController extends Controller
                 ],
                 [
                     'apartment_id' => $apartment->id,
-                    'status' => 'present',
+                    'status' => $attendanceStatus,
                     'registered_at' => now(),
-                    'registered_by' => $user->id,
+                    'registered_by' => Auth::id(),
                     'metadata' => [
-                        'is_online' => true,
-                        'self_registered' => true,
+                        'is_online' => $attendanceStatus === 'present',
+                        'self_registered' => !$isAdminManagement,
+                        'admin_managed' => $isAdminManagement,
                         'user_agent' => request()->header('User-Agent'),
                     ]
                 ]
             );
             
+            $message = $isAdminManagement ? 
+                "Asistencia actualizada para {$user->name}." : 
+                'Asistencia registrada exitosamente.';
+            
             return redirect()->route('assemblies.show', $assembly)
-                ->with('success', 'Asistencia registrada exitosamente.');
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->route('assemblies.show', $assembly)
