@@ -55,7 +55,16 @@ class RegisteredUserController extends Controller
                 ->orderBy('tower')
                 ->orderBy('floor')
                 ->orderBy('number')
-                ->get();
+                ->get()
+                ->map(function ($apartment) {
+                    return [
+                        'id' => $apartment->id,
+                        'number' => $apartment->number,
+                        'tower' => $apartment->tower,
+                        'floor' => $apartment->floor,
+                        'apartment_type' => $apartment->apartmentType?->name ?? 'Sin tipo'
+                    ];
+                });
         }
 
         return Inertia::render('auth/Register', [
@@ -134,12 +143,21 @@ class RegisteredUserController extends Controller
         if ($invitation && $invitation->is_mass_invitation && $request->has('apartment_id')) {
             $apartmentId = $request->get('apartment_id');
             if ($apartmentId) {
-                // Create a resident record
+                // Split the full name into first and last names
+                $nameParts = explode(' ', $validated['name'], 2);
+                $firstName = $nameParts[0];
+                $lastName = $nameParts[1] ?? '';
+                
+                // Create a resident record with required fields
                 \App\Models\Resident::create([
                     'apartment_id' => $apartmentId,
-                    'name' => $validated['name'],
+                    'document_type' => 'CC', // Default to Cédula de Ciudadanía
+                    'document_number' => 'PENDIENTE_' . time(), // Temporary unique value
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
                     'email' => $validated['email'],
-                    'relationship' => in_array($role, ['propietario', 'residente']) ? $role : 'residente',
+                    'resident_type' => in_array($role, ['propietario']) ? 'Owner' : 'Tenant',
+                    'start_date' => now()->toDateString(),
                 ]);
             }
         }

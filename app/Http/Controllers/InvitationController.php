@@ -89,7 +89,7 @@ class InvitationController extends Controller
         }
 
         $invitation = Invitation::create([
-            'email' => 'mass-invitation@conjunto.local', // Placeholder email
+            'email' => 'mass-invitation@tavira.com.co', // Placeholder email
             'role' => $validated['role'], // Use the selected role
             'apartment_id' => null,
             'invited_by' => auth()->id(),
