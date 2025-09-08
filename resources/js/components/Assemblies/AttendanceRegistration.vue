@@ -176,6 +176,7 @@ const registerSelfAttendance = async () => {
                 );
                 refreshAttendanceData();
             }
+        });
     } catch (error) {
         console.error('Error registering self-attendance:', error);
         showError(
