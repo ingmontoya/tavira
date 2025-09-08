@@ -86,7 +86,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $user->assignRole('admin_conjunto');
+        $user->assignRole('admin');
 
         event(new Registered($user));
 
