@@ -93,8 +93,7 @@ const submit = () => {
                     >
                 </div>
                 <div>
-                    ¿No tienes una cuenta?
-                    <TextLink :href="route('register')" :tabindex="5">Registrarse</TextLink>
+                    ¿No tienes una cuenta? Contacta al administrador para obtener una invitación.
                 </div>
             </div>
         </form>

@@ -150,17 +150,30 @@ class RegisteredUserController extends Controller
                 $firstName = $nameParts[0];
                 $lastName = $nameParts[1] ?? '';
                 
-                // Create a resident record with required fields
-                \App\Models\Resident::create([
-                    'apartment_id' => $apartmentId,
-                    'document_type' => 'CC', // Default to Cédula de Ciudadanía
-                    'document_number' => 'PENDIENTE_' . time(), // Temporary unique value
-                    'first_name' => $firstName,
-                    'last_name' => $lastName,
-                    'email' => $validated['email'],
-                    'resident_type' => in_array($role, ['propietario']) ? 'Owner' : 'Tenant',
-                    'start_date' => now()->toDateString(),
-                ]);
+                // Check if resident already exists with this email
+                $existingResident = \App\Models\Resident::where('email', $validated['email'])->first();
+                
+                if (!$existingResident) {
+                    // Create a resident record with required fields
+                    \App\Models\Resident::create([
+                        'apartment_id' => $apartmentId,
+                        'document_type' => 'CC', // Default to Cédula de Ciudadanía
+                        'document_number' => 'PENDIENTE_' . time(), // Temporary unique value
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                        'email' => $validated['email'],
+                        'resident_type' => in_array($role, ['propietario']) ? 'Owner' : 'Tenant',
+                        'start_date' => now()->toDateString(),
+                    ]);
+                } else {
+                    // Update existing resident's apartment if it has changed
+                    if ($existingResident->apartment_id != $apartmentId) {
+                        $existingResident->update([
+                            'apartment_id' => $apartmentId,
+                            'resident_type' => in_array($role, ['propietario']) ? 'Owner' : 'Tenant',
+                        ]);
+                    }
+                }
             }
         }
         
