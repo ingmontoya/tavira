@@ -29,7 +29,18 @@ class RegisteredUserController extends Controller
      */
     public function create(Request $request): Response|RedirectResponse
     {
-        // Require invitation token for all registrations
+        $centralDomains = config('tenancy.central_domains', []);
+        $isCentralDomain = in_array($request->getHost(), $centralDomains);
+        
+        // Allow free registration on central domains
+        if ($isCentralDomain) {
+            return Inertia::render('auth/Register', [
+                'invitation' => null,
+                'apartments' => [],
+            ]);
+        }
+        
+        // Require invitation token for tenant registrations
         $token = $request->get('token');
         
         if (!$token) {
@@ -106,8 +117,27 @@ class RegisteredUserController extends Controller
     public function store(RegisterRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $centralDomains = config('tenancy.central_domains', []);
+        $isCentralDomain = in_array($request->getHost(), $centralDomains);
         
-        // Require invitation token for all registrations
+        // Allow free registration on central domains
+        if ($isCentralDomain) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            $user->assignRole('admin'); // Default role for central app users
+
+            event(new Registered($user));
+            Auth::login($user);
+
+            return redirect()->route('verification.notice')
+                ->with('success', 'Cuenta creada exitosamente. Verifica tu correo electrónico para continuar.');
+        }
+        
+        // Require invitation token for tenant registrations
         $token = $request->get('token');
         
         if (!$token) {

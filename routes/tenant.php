@@ -34,8 +34,8 @@ Route::middleware([
         return \Stancl\Tenancy\Features\UserImpersonation::makeResponse($token);
     });
 
-    // Authentication routes for tenants
-    require __DIR__ . '/auth.php';
+    // Authentication routes for tenants (registration disabled)
+    require __DIR__ . '/tenant-auth.php';
 
     Route::middleware(['auth', 'verified'])->group(function () {
         
