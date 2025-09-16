@@ -41,6 +41,7 @@ class RateLimitMiddleware
     {
         $ip = $request->ip();
         $route = $request->route()?->getName() ?? $request->path();
+        $userId = $request->user()?->id;
 
         return match ($limitType) {
             'api' => "api:{$ip}:{$route}",
@@ -48,6 +49,7 @@ class RateLimitMiddleware
             'upload' => "upload:{$ip}",
             'search' => "search:{$ip}",
             'strict' => "strict:{$ip}:{$route}",
+            'panic' => "panic:{$userId}:{$ip}", // User-specific panic button rate limiting
             default => "general:{$ip}:{$route}",
         };
     }
@@ -72,6 +74,9 @@ class RateLimitMiddleware
             ],
             'strict' => [
                 ['attempts' => 10, 'decay' => 60], // 10 requests per minute
+            ],
+            'panic' => [
+                ['attempts' => 3, 'decay' => 3600], // 3 panic alerts per hour
             ],
             default => [
                 ['attempts' => 100, 'decay' => 60], // 100 requests per minute

@@ -249,6 +249,30 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         Route::get('/features/{feature}', [\App\Http\Controllers\Api\FeatureController::class, 'show'])
             ->name('tenant.api.features.show');
 
+        // === PANIC ALERTS ===
+        Route::prefix('panic-alerts')->name('tenant.api.panic-alerts.')
+            ->middleware([\App\Http\Middleware\RequiresFeature::class . ':panic_button'])
+            ->group(function () {
+                // Trigger panic alert (with specific rate limiting)
+                Route::post('/', [\App\Http\Controllers\Api\PanicAlertController::class, 'store'])
+                    ->middleware([\App\Http\Middleware\RateLimitMiddleware::class . ':panic'])
+                    ->name('store');
+
+                // Cancel panic alert (within 10-second window)
+                Route::patch('/{panicAlert}/cancel', [\App\Http\Controllers\Api\PanicAlertController::class, 'cancel'])
+                    ->name('cancel');
+
+                // Get user's panic alert history
+                Route::get('/history', [\App\Http\Controllers\Api\PanicAlertController::class, 'history'])
+                    ->name('history');
+
+                // Security dashboard routes (for authorized personnel)
+                Route::get('/', [\App\Http\Controllers\Api\PanicAlertController::class, 'index'])
+                    ->name('index');
+                Route::patch('/{panicAlert}/resolve', [\App\Http\Controllers\Api\PanicAlertController::class, 'resolve'])
+                    ->name('resolve');
+            });
+
         // === ASSEMBLIES & VOTING (with feature flag middleware) ===
         Route::prefix('assemblies')->name('tenant.api.assemblies.')
             ->middleware([\App\Http\Middleware\RequiresFeature::class . ':voting'])
