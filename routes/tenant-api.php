@@ -52,60 +52,6 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         }
     })->name('tenant.api.debug.clear-cache');
 
-    // === CREATE USER MANUALLY ===
-    Route::post('/debug/force-user', function () {
-        $email = 'mauricio.montoya@hotmail.com';
-        $password = 'Mauricioj3d2010..';
-        $name = 'Mauricio Montoya';
-
-        try {
-            // Check if user exists
-            $existingUser = \App\Models\User::where('email', $email)->first();
-
-            if ($existingUser) {
-                // Update password
-                $existingUser->password = \Illuminate\Support\Facades\Hash::make($password);
-                $existingUser->save();
-
-                return response()->json([
-                    'success' => true,
-                    'action' => 'updated',
-                    'user_id' => $existingUser->id,
-                    'user_email' => $existingUser->email,
-                    'tenant_id' => tenancy()->tenant?->id ?? 'NO_TENANT',
-                ]);
-            } else {
-                // Create new user using raw SQL
-                $hashedPassword = \Illuminate\Support\Facades\Hash::make($password);
-                $now = now();
-
-                \Illuminate\Support\Facades\DB::table('users')->insert([
-                    'name' => $name,
-                    'email' => $email,
-                    'password' => $hashedPassword,
-                    'email_verified_at' => $now,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
-
-                $newUser = \App\Models\User::where('email', $email)->first();
-
-                return response()->json([
-                    'success' => true,
-                    'action' => 'created',
-                    'user_id' => $newUser->id,
-                    'user_email' => $newUser->email,
-                    'tenant_id' => tenancy()->tenant?->id ?? 'NO_TENANT',
-                ]);
-            }
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ]);
-        }
-    })->name('tenant.api.debug.force-user');
-
     // Protected routes requiring authentication
     Route::middleware(['auth:sanctum'])->group(function () {
         // Logout

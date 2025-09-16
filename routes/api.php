@@ -240,16 +240,41 @@ foreach (config('tenancy.central_domains') as $domain) {
                     ->name('destroy');
             });
 
-            // === ASSEMBLIES ===
-            Route::prefix('assemblies')->name('api.assemblies.')->group(function () {
-                Route::get('/{assembly}/attendance/status', [\App\Http\Controllers\AssemblyController::class, 'getAttendanceStatus'])
-                    ->name('attendance.status');
-                Route::post('/{assembly}/attendance/self-register', [\App\Http\Controllers\AssemblyController::class, 'selfRegisterAttendance'])
-                    ->name('attendance.self-register');
-                Route::get('/{assembly}/participants', [\App\Http\Controllers\AssemblyController::class, 'getParticipants'])
-                    ->name('participants');
-                Route::get('/{assembly}/votes/{vote}/results', [\App\Http\Controllers\VoteController::class, 'getResults'])
-                    ->name('votes.results');
+            // === ASSEMBLIES & VOTING (with feature flag middleware) ===
+            Route::prefix('assemblies')->name('api.assemblies.')
+                ->middleware([\App\Http\Middleware\RequiresFeature::class . ':voting'])
+                ->group(function () {
+                    // Assembly listing for residents
+                    Route::get('/', [\App\Http\Controllers\AssemblyController::class, 'apiIndex'])
+                        ->name('index');
+                    Route::get('/{assembly}', [\App\Http\Controllers\AssemblyController::class, 'apiShow'])
+                        ->name('show');
+
+                    // Assembly attendance
+                    Route::get('/{assembly}/attendance/status', [\App\Http\Controllers\AssemblyController::class, 'getAttendanceStatus'])
+                        ->name('attendance.status');
+                    Route::post('/{assembly}/attendance/self-register', [\App\Http\Controllers\AssemblyController::class, 'selfRegisterAttendance'])
+                        ->name('attendance.self-register');
+                    Route::get('/{assembly}/participants', [\App\Http\Controllers\AssemblyController::class, 'getParticipants'])
+                        ->name('participants');
+
+                    // Voting
+                    Route::get('/{assembly}/votes', [\App\Http\Controllers\VoteController::class, 'apiIndex'])
+                        ->name('votes.index');
+                    Route::get('/{assembly}/votes/{vote}', [\App\Http\Controllers\VoteController::class, 'apiShow'])
+                        ->name('votes.show');
+                    Route::post('/{assembly}/votes/{vote}/cast', [\App\Http\Controllers\VoteController::class, 'apiCast'])
+                        ->name('votes.cast');
+                    Route::get('/{assembly}/votes/{vote}/results', [\App\Http\Controllers\VoteController::class, 'getResults'])
+                        ->name('votes.results');
+
+                    // Vote delegation
+                    Route::get('/{assembly}/delegates', [\App\Http\Controllers\VoteDelegateController::class, 'apiIndex'])
+                        ->name('delegates.index');
+                    Route::post('/{assembly}/delegates', [\App\Http\Controllers\VoteDelegateController::class, 'apiStore'])
+                        ->name('delegates.store');
+                    Route::delete('/{assembly}/delegates/{delegate}', [\App\Http\Controllers\VoteDelegateController::class, 'apiDestroy'])
+                        ->name('delegates.destroy');
             });
 
             // === LEGACY DASHBOARD (for backward compatibility) ===

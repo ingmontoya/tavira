@@ -303,4 +303,181 @@ class VoteController extends Controller
 
         return false;
     }
+
+    /**
+     * API: List votes for an assembly
+     */
+    public function apiIndex(Request $request, Assembly $assembly)
+    {
+        try {
+            $query = $assembly->votes()
+                ->with(['options', 'apartmentVotes']);
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $votes = $query->orderBy('created_at')
+                ->paginate($request->get('per_page', 10));
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'votes' => $votes->items(),
+                    'pagination' => [
+                        'current_page' => $votes->currentPage(),
+                        'per_page' => $votes->perPage(),
+                        'total' => $votes->total(),
+                        'last_page' => $votes->lastPage(),
+                    ],
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving votes',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Show specific vote
+     */
+    public function apiShow(Assembly $assembly, Vote $vote)
+    {
+        try {
+            $vote->load(['options', 'apartmentVotes.apartment']);
+
+            $user = Auth::user();
+            $userVote = null;
+
+            if ($user->resident && $user->resident->apartment) {
+                $userVote = $vote->apartmentVotes()
+                    ->where('apartment_id', $user->resident->apartment_id)
+                    ->first();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'vote' => $vote,
+                    'user_vote' => $userVote,
+                    'can_vote' => $vote->status === 'active' && !$userVote,
+                    'participation_stats' => $vote->participation_stats,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving vote',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Cast a vote
+     */
+    public function apiCast(Request $request, Assembly $assembly, Vote $vote)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user->resident || !$user->resident->apartment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User must have an assigned apartment to vote',
+                ], 403);
+            }
+
+            $apartment = $user->resident->apartment;
+
+            // Validate vote input
+            $rules = [
+                'on_behalf_of' => 'nullable|integer|exists:users,id',
+            ];
+
+            if ($vote->type === 'yes_no') {
+                $rules['choice'] = 'required|in:yes,no,abstain';
+            } elseif ($vote->type === 'multiple_choice') {
+                $rules['vote_option_id'] = 'required|integer|exists:vote_options,id';
+            } elseif ($vote->type === 'quantitative') {
+                $rules['quantitative_value'] = 'required|numeric|min:0';
+            }
+
+            $validated = $request->validate($rules);
+            $onBehalfOf = $validated['on_behalf_of'] ?? null;
+
+            // Check voting permissions
+            if (!$this->canUserVoteForApartment($user->id, $apartment->id, $assembly->id, $onBehalfOf)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permisos para votar por este apartamento',
+                ], 403);
+            }
+
+            // Check if vote is active
+            if ($vote->status !== 'active') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Esta votación no está activa',
+                ], 403);
+            }
+
+            // Check if apartment has already voted
+            $existingVote = ApartmentVote::where('vote_id', $vote->id)
+                ->where('apartment_id', $apartment->id)
+                ->first();
+
+            if ($existingVote) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este apartamento ya ha votado',
+                ], 403);
+            }
+
+            DB::transaction(function () use ($validated, $vote, $apartment, $onBehalfOf) {
+                $voteData = [
+                    'vote_id' => $vote->id,
+                    'apartment_id' => $apartment->id,
+                    'weight' => 1.0000,
+                    'cast_by_user_id' => Auth::id(),
+                    'on_behalf_of_user_id' => $onBehalfOf,
+                    'cast_at' => now(),
+                ];
+
+                if ($vote->type === 'yes_no') {
+                    $voteData['choice'] = $validated['choice'];
+                } elseif ($vote->type === 'multiple_choice') {
+                    $voteData['vote_option_id'] = $validated['vote_option_id'];
+                } elseif ($vote->type === 'quantitative') {
+                    $voteData['quantitative_value'] = $validated['quantitative_value'];
+                }
+
+                $apartmentVote = ApartmentVote::create($voteData);
+                $apartmentVote->encryptVoteData($validated);
+                $apartmentVote->save();
+
+                VoteCast::dispatch($apartmentVote, Auth::user());
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Voto registrado exitosamente',
+                'data' => [
+                    'participation_stats' => $vote->fresh()->participation_stats,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar voto',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

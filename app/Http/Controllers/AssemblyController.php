@@ -503,4 +503,112 @@ class AssemblyController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * API: List assemblies for mobile app
+     */
+    public function apiIndex(Request $request)
+    {
+        try {
+            $conjuntoConfig = ConjuntoConfig::first();
+
+            if (!$conjuntoConfig) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conjunto configuration not found',
+                ], 404);
+            }
+
+            $query = Assembly::with(['creator', 'votes'])
+                ->forConjunto($conjuntoConfig->id);
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
+
+            $assemblies = $query->orderByDesc('scheduled_at')
+                ->paginate($request->get('per_page', 15));
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'assemblies' => $assemblies->items(),
+                    'pagination' => [
+                        'current_page' => $assemblies->currentPage(),
+                        'per_page' => $assemblies->perPage(),
+                        'total' => $assemblies->total(),
+                        'last_page' => $assemblies->lastPage(),
+                    ],
+                    'stats' => [
+                        'total' => Assembly::forConjunto($conjuntoConfig->id)->count(),
+                        'scheduled' => Assembly::forConjunto($conjuntoConfig->id)->byStatus('scheduled')->count(),
+                        'in_progress' => Assembly::forConjunto($conjuntoConfig->id)->byStatus('in_progress')->count(),
+                        'closed' => Assembly::forConjunto($conjuntoConfig->id)->byStatus('closed')->count(),
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving assemblies',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Show specific assembly for mobile app
+     */
+    public function apiShow(Assembly $assembly)
+    {
+        try {
+            $assembly->load(['creator', 'votes.creator', 'delegates.delegate', 'attendances.user']);
+
+            // Check if current user can view this assembly
+            $user = Auth::user();
+            if (!$user->resident || !$user->resident->apartment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User must have an assigned apartment',
+                ], 403);
+            }
+
+            // Get user's attendance status
+            $attendance = $assembly->attendances()
+                ->where('user_id', $user->id)
+                ->first();
+
+            // Check if user has voting rights (through delegation or direct)
+            $canVote = true; // Default for apartment owners
+            $delegatedBy = null;
+
+            if ($delegate = $assembly->delegates()->where('delegate_id', $user->id)->first()) {
+                $delegatedBy = $delegate->delegator;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'assembly' => $assembly,
+                    'user_attendance' => $attendance,
+                    'can_vote' => $canVote,
+                    'delegated_by' => $delegatedBy,
+                    'votes_count' => $assembly->votes()->count(),
+                    'active_votes_count' => $assembly->votes()->where('status', 'active')->count(),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving assembly',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
