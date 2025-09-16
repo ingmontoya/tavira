@@ -33,46 +33,49 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         ->name('tenant.api.login');
 
     // === DEBUG ENDPOINT (temporary, no auth required) ===
-    Route::get('/debug/user-check', function (Request $request) {
-        $email = $request->get('email');
-        $password = $request->get('password');
-        $fix = $request->get('fix');
+    Route::get('/debug/auth-test', function (Request $request) {
+        $email = 'mauricio.montoya@hotmail.com';
+        $password = 'Mauricioj3d2010..';
 
-        if ($email) {
-            $user = \App\Models\User::where('email', $email)->first();
+        // Test direct DB query
+        $user = \App\Models\User::where('email', $email)->first();
 
-            $result = [
-                'email_searched' => $email,
-                'user_exists' => !!$user,
-                'user_id' => $user?->id,
-                'user_name' => $user?->name,
-                'user_email' => $user?->email,
-                'total_users' => \App\Models\User::count(),
-            ];
+        $result = [
+            'tenant_id' => tenancy()->tenant?->id ?? 'NO_TENANT',
+            'db_connection' => \Illuminate\Support\Facades\DB::connection()->getName(),
+            'user_exists' => !!$user,
+            'user_data' => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'password_hash' => substr($user->password, 0, 20) . '...',
+            ] : null,
+        ];
 
-            if ($user && $password) {
-                $passwordMatches = \Illuminate\Support\Facades\Hash::check($password, $user->password);
-                $result['password_matches'] = $passwordMatches;
-                $result['current_hash'] = $user->password;
+        // Test password if user exists
+        if ($user) {
+            $result['password_check'] = \Illuminate\Support\Facades\Hash::check($password, $user->password);
 
-                if ($fix === 'true' && !$passwordMatches) {
-                    $newHash = \Illuminate\Support\Facades\Hash::make($password);
-                    $user->password = $newHash;
-                    $user->save();
-                    $result['password_updated'] = true;
-                    $result['new_hash'] = $newHash;
+            // Test Auth::attempt
+            try {
+                $attemptResult = \Illuminate\Support\Facades\Auth::attempt([
+                    'email' => $email,
+                    'password' => $password
+                ]);
+                $result['auth_attempt'] = $attemptResult;
+
+                if ($attemptResult) {
+                    $authUser = \Illuminate\Support\Facades\Auth::user();
+                    $result['auth_user_id'] = $authUser->id;
+                    \Illuminate\Support\Facades\Auth::logout();
                 }
+            } catch (\Exception $e) {
+                $result['auth_attempt_error'] = $e->getMessage();
             }
-
-            return response()->json($result);
         }
 
-        $allUsers = \App\Models\User::all(['id', 'name', 'email'])->toArray();
-        return response()->json([
-            'total_users' => \App\Models\User::count(),
-            'all_users' => $allUsers,
-        ]);
-    })->name('tenant.api.debug.user-check');
+        return response()->json($result);
+    })->name('tenant.api.debug.auth-test');
 
     // Protected routes requiring authentication
     Route::middleware(['auth:sanctum'])->group(function () {
