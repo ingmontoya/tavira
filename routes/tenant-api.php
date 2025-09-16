@@ -32,50 +32,40 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         ->middleware(['guest', 'throttle:6,1'])
         ->name('tenant.api.login');
 
-    // === DEBUG ENDPOINT (temporary, no auth required) ===
-    Route::get('/debug/auth-test', function (Request $request) {
-        $email = 'mauricio.montoya@hotmail.com';
-        $password = 'Mauricioj3d2010..';
+    // === CACHE CLEAR ENDPOINT ===
+    Route::get('/debug/clear-cache', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('config:clear');
+            \Illuminate\Support\Facades\Artisan::call('route:clear');
+            \Illuminate\Support\Facades\Artisan::call('cache:clear');
 
-        // Test direct DB query
+            return response()->json([
+                'success' => true,
+                'message' => 'Cache cleared successfully',
+                'timestamp' => now()->toISOString()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    })->name('tenant.api.debug.clear-cache');
+
+    // === SIMPLE USER CHECK ===
+    Route::get('/debug/simple-check', function () {
+        $email = 'mauricio.montoya@hotmail.com';
         $user = \App\Models\User::where('email', $email)->first();
 
-        $result = [
+        return response()->json([
             'tenant_id' => tenancy()->tenant?->id ?? 'NO_TENANT',
-            'db_connection' => \Illuminate\Support\Facades\DB::connection()->getName(),
             'user_exists' => !!$user,
-            'user_data' => $user ? [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'password_hash' => substr($user->password, 0, 20) . '...',
-            ] : null,
-        ];
-
-        // Test password if user exists
-        if ($user) {
-            $result['password_check'] = \Illuminate\Support\Facades\Hash::check($password, $user->password);
-
-            // Test Auth::attempt
-            try {
-                $attemptResult = \Illuminate\Support\Facades\Auth::attempt([
-                    'email' => $email,
-                    'password' => $password
-                ]);
-                $result['auth_attempt'] = $attemptResult;
-
-                if ($attemptResult) {
-                    $authUser = \Illuminate\Support\Facades\Auth::user();
-                    $result['auth_user_id'] = $authUser->id;
-                    \Illuminate\Support\Facades\Auth::logout();
-                }
-            } catch (\Exception $e) {
-                $result['auth_attempt_error'] = $e->getMessage();
-            }
-        }
-
-        return response()->json($result);
-    })->name('tenant.api.debug.auth-test');
+            'user_email' => $user?->email,
+            'user_id' => $user?->id,
+            'total_users' => \App\Models\User::count(),
+            'timestamp' => now()->toISOString()
+        ]);
+    })->name('tenant.api.debug.simple-check');
 
     // Protected routes requiring authentication
     Route::middleware(['auth:sanctum'])->group(function () {
