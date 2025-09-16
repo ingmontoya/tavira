@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('panic_alerts', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('user_id')->nullable();
-            $table->uuid('apartment_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('apartment_id')->nullable();
             $table->decimal('lat', 10, 7)->nullable();
             $table->decimal('lng', 10, 7)->nullable();
             $table->enum('status', ['triggered', 'confirmed', 'resolved', 'cancelled'])->default('triggered');
