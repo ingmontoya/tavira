@@ -60,3 +60,6 @@ Route::middleware([
     // Settings routes for tenants
     require __DIR__ . '/settings.php';
 });
+
+// API routes for tenant mobile applications
+require __DIR__ . '/tenant-api.php';
