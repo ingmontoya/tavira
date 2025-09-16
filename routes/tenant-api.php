@@ -32,6 +32,24 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         ->middleware(['guest', 'throttle:6,1'])
         ->name('tenant.api.login');
 
+    // === DEBUG ENDPOINT (temporary, no auth required) ===
+    Route::get('/debug/user-check', function (Request $request) {
+        $email = $request->get('email');
+        if (!$email) {
+            return response()->json(['error' => 'Email parameter required'], 400);
+        }
+
+        $user = \App\Models\User::where('email', $email)->first();
+        return response()->json([
+            'email_searched' => $email,
+            'user_exists' => !!$user,
+            'user_id' => $user?->id,
+            'user_name' => $user?->name,
+            'user_email' => $user?->email,
+            'total_users' => \App\Models\User::count(),
+        ]);
+    })->name('tenant.api.debug.user-check');
+
     // Protected routes requiring authentication
     Route::middleware(['auth:sanctum'])->group(function () {
         // Logout
