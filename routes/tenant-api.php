@@ -65,7 +65,6 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
                     'name' => $name,
                     'password' => \Illuminate\Support\Facades\Hash::make($password),
                     'email_verified_at' => now(),
-                    'is_active' => true,
                 ]
             );
 
