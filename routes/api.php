@@ -120,6 +120,12 @@ foreach (config('tenancy.central_domains') as $domain) {
 
             // === COMMUNICATIONS ===
             Route::prefix('communications')->name('api.communications.')->group(function () {
+                // Communication stats and activity
+                Route::get('/stats', [\App\Http\Controllers\Api\CommunicationController::class, 'stats'])
+                    ->name('stats');
+                Route::get('/recent-activity', [\App\Http\Controllers\Api\CommunicationController::class, 'recentActivity'])
+                    ->name('recent-activity');
+
                 // Announcements
                 Route::get('/announcements', [ResidentAnnouncementController::class, 'apiIndex'])
                     ->name('announcements.index');
@@ -276,6 +282,12 @@ foreach (config('tenancy.central_domains') as $domain) {
                     Route::delete('/{assembly}/delegates/{delegate}', [\App\Http\Controllers\VoteDelegateController::class, 'apiDestroy'])
                         ->name('delegates.destroy');
             });
+
+            // === FEATURES ===
+            Route::get('/features', [\App\Http\Controllers\Api\FeatureController::class, 'index'])
+                ->name('features.index');
+            Route::get('/features/{feature}', [\App\Http\Controllers\Api\FeatureController::class, 'show'])
+                ->name('features.show');
 
             // === LEGACY DASHBOARD (for backward compatibility) ===
             Route::get('/dashboard', function (Request $request) {
