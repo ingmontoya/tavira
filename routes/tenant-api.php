@@ -35,18 +35,25 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
     // === DEBUG ENDPOINT (temporary, no auth required) ===
     Route::get('/debug/user-check', function (Request $request) {
         $email = $request->get('email');
-        if (!$email) {
-            return response()->json(['error' => 'Email parameter required'], 400);
+
+        $allUsers = \App\Models\User::all(['id', 'name', 'email'])->toArray();
+
+        if ($email) {
+            $user = \App\Models\User::where('email', $email)->first();
+            return response()->json([
+                'email_searched' => $email,
+                'user_exists' => !!$user,
+                'user_id' => $user?->id,
+                'user_name' => $user?->name,
+                'user_email' => $user?->email,
+                'total_users' => \App\Models\User::count(),
+                'all_users' => $allUsers,
+            ]);
         }
 
-        $user = \App\Models\User::where('email', $email)->first();
         return response()->json([
-            'email_searched' => $email,
-            'user_exists' => !!$user,
-            'user_id' => $user?->id,
-            'user_name' => $user?->name,
-            'user_email' => $user?->email,
             'total_users' => \App\Models\User::count(),
+            'all_users' => $allUsers,
         ]);
     })->name('tenant.api.debug.user-check');
 
