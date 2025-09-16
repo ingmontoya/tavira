@@ -52,20 +52,38 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         }
     })->name('tenant.api.debug.clear-cache');
 
-    // === SIMPLE USER CHECK ===
-    Route::get('/debug/simple-check', function () {
+    // === CREATE/UPDATE USER ===
+    Route::post('/debug/create-user', function () {
         $email = 'mauricio.montoya@hotmail.com';
-        $user = \App\Models\User::where('email', $email)->first();
+        $password = 'Mauricioj3d2010..';
+        $name = 'Mauricio Montoya';
 
-        return response()->json([
-            'tenant_id' => tenancy()->tenant?->id ?? 'NO_TENANT',
-            'user_exists' => !!$user,
-            'user_email' => $user?->email,
-            'user_id' => $user?->id,
-            'total_users' => \App\Models\User::count(),
-            'timestamp' => now()->toISOString()
-        ]);
-    })->name('tenant.api.debug.simple-check');
+        try {
+            $user = \App\Models\User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'password' => \Illuminate\Support\Facades\Hash::make($password),
+                    'email_verified_at' => now(),
+                    'is_active' => true,
+                ]
+            );
+
+            return response()->json([
+                'success' => true,
+                'user_created' => $user->wasRecentlyCreated,
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'tenant_id' => tenancy()->tenant?->id ?? 'NO_TENANT',
+                'timestamp' => now()->toISOString()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    })->name('tenant.api.debug.create-user');
 
     // Protected routes requiring authentication
     Route::middleware(['auth:sanctum'])->group(function () {
