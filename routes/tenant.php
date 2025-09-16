@@ -38,7 +38,7 @@ Route::middleware([
     require __DIR__ . '/tenant-auth.php';
 
     Route::middleware(['auth', 'verified'])->group(function () {
-        
+
         // Tenant-specific module route files
         require __DIR__ . '/modules/dashboard.php';
         require __DIR__ . '/modules/reports.php';
@@ -61,5 +61,11 @@ Route::middleware([
     require __DIR__ . '/settings.php';
 });
 
-// API routes for tenant mobile applications
-require __DIR__ . '/tenant-api.php';
+Route::middleware([
+    'api',
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+])->group(function () {
+    // API routes for tenant mobile applications
+    require __DIR__ . '/tenant-api.php';
+});
