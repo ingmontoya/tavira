@@ -35,22 +35,39 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
     // === DEBUG ENDPOINT (temporary, no auth required) ===
     Route::get('/debug/user-check', function (Request $request) {
         $email = $request->get('email');
-
-        $allUsers = \App\Models\User::all(['id', 'name', 'email'])->toArray();
+        $password = $request->get('password');
+        $fix = $request->get('fix');
 
         if ($email) {
             $user = \App\Models\User::where('email', $email)->first();
-            return response()->json([
+
+            $result = [
                 'email_searched' => $email,
                 'user_exists' => !!$user,
                 'user_id' => $user?->id,
                 'user_name' => $user?->name,
                 'user_email' => $user?->email,
                 'total_users' => \App\Models\User::count(),
-                'all_users' => $allUsers,
-            ]);
+            ];
+
+            if ($user && $password) {
+                $passwordMatches = \Illuminate\Support\Facades\Hash::check($password, $user->password);
+                $result['password_matches'] = $passwordMatches;
+                $result['current_hash'] = $user->password;
+
+                if ($fix === 'true' && !$passwordMatches) {
+                    $newHash = \Illuminate\Support\Facades\Hash::make($password);
+                    $user->password = $newHash;
+                    $user->save();
+                    $result['password_updated'] = true;
+                    $result['new_hash'] = $newHash;
+                }
+            }
+
+            return response()->json($result);
         }
 
+        $allUsers = \App\Models\User::all(['id', 'name', 'email'])->toArray();
         return response()->json([
             'total_users' => \App\Models\User::count(),
             'all_users' => $allUsers,
