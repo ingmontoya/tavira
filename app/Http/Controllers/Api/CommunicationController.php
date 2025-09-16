@@ -29,24 +29,21 @@ class CommunicationController extends Controller
             }
 
             // Get unread announcements count
-            $unreadAnnouncements = Announcement::forConjunto($conjuntoConfig->id)
-                ->published()
+            $unreadAnnouncements = Announcement::published()
                 ->whereDoesntHave('confirmations', function ($query) use ($user) {
                     $query->where('user_id', $user->id);
                 })
                 ->count();
 
             // Get unread correspondence count
-            $unreadCorrespondence = Correspondence::forConjunto($conjuntoConfig->id)
-                ->where('status', 'pending')
-                ->whereHas('resident', function ($query) use ($user) {
+            $unreadCorrespondence = Correspondence::where('status', 'pending')
+                ->whereHas('apartment.residents', function ($query) use ($user) {
                     $query->where('user_id', $user->id);
                 })
                 ->count();
 
             // Get active assemblies count
-            $activeAssemblies = Assembly::forConjunto($conjuntoConfig->id)
-                ->where('status', 'in_progress')
+            $activeAssemblies = Assembly::where('status', 'in_progress')
                 ->count();
 
             return response()->json([
@@ -87,8 +84,7 @@ class CommunicationController extends Controller
             $activities = collect();
 
             // Get recent announcements
-            $recentAnnouncements = Announcement::forConjunto($conjuntoConfig->id)
-                ->published()
+            $recentAnnouncements = Announcement::published()
                 ->latest('published_at')
                 ->limit(5)
                 ->get()
@@ -104,8 +100,7 @@ class CommunicationController extends Controller
                 });
 
             // Get recent correspondence
-            $recentCorrespondence = Correspondence::forConjunto($conjuntoConfig->id)
-                ->whereHas('resident', function ($query) use ($user) {
+            $recentCorrespondence = Correspondence::whereHas('apartment.residents', function ($query) use ($user) {
                     $query->where('user_id', $user->id);
                 })
                 ->latest('created_at')
@@ -115,16 +110,15 @@ class CommunicationController extends Controller
                     return [
                         'id' => $correspondence->id,
                         'type' => 'correspondence',
-                        'title' => $correspondence->subject,
-                        'description' => \Str::limit($correspondence->content, 100),
+                        'title' => $correspondence->sender_name . ' - ' . $correspondence->type,
+                        'description' => \Str::limit($correspondence->description, 100),
                         'created_at' => $correspondence->created_at,
                         'status' => $correspondence->status,
                     ];
                 });
 
             // Get recent assemblies
-            $recentAssemblies = Assembly::forConjunto($conjuntoConfig->id)
-                ->latest('created_at')
+            $recentAssemblies = Assembly::latest('created_at')
                 ->limit(3)
                 ->get()
                 ->map(function ($assembly) {
@@ -132,7 +126,7 @@ class CommunicationController extends Controller
                         'id' => $assembly->id,
                         'type' => 'assembly',
                         'title' => $assembly->title,
-                        'description' => \Str::limit($assembly->description, 100),
+                        'description' => \Str::limit($assembly->description ?? '', 100),
                         'created_at' => $assembly->created_at,
                         'status' => $assembly->status,
                         'scheduled_at' => $assembly->scheduled_at,
