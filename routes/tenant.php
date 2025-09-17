@@ -55,6 +55,7 @@ Route::middleware([
         require __DIR__ . '/modules/notifications.php';
         require __DIR__ . '/modules/support.php';
         require __DIR__ . '/modules/assemblies.php';
+        require __DIR__ . '/modules/security.php';
     });
 
     // Settings routes for tenants

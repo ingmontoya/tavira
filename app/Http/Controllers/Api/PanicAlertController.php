@@ -92,8 +92,8 @@ class PanicAlertController extends Controller
      */
     public function resolve(PanicAlert $panicAlert)
     {
-        // Check if user has permission (admin, security, or admin_conjunto roles)
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo'])) {
+        // Check if user has permission (admin, security, porteria, or admin_conjunto roles)
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos para resolver alertas',
@@ -126,7 +126,7 @@ class PanicAlertController extends Controller
     public function index()
     {
         // Check if user has permission to view alerts
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo'])) {
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos para ver las alertas',
@@ -155,6 +155,78 @@ class PanicAlertController extends Controller
         return response()->json([
             'success' => true,
             'alerts' => $transformedAlerts,
+        ]);
+    }
+
+    /**
+     * Get active alerts for global banner.
+     */
+    public function active()
+    {
+        // Check if user has permission to view alerts
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
+            return response()->json([
+                'success' => true,
+                'alerts' => [], // Return empty array instead of error for better UX
+            ]);
+        }
+
+        $alerts = PanicAlert::with(['user', 'apartment'])
+            ->active()
+            ->orderBy('created_at', 'desc')
+            ->limit(10) // Limit to 10 most recent
+            ->get();
+
+        $transformedAlerts = $alerts->map(function ($alert) {
+            return [
+                'id' => $alert->id,
+                'type' => 'panic',
+                'message' => 'Alerta de pánico activada',
+                'user_name' => $alert->user_display_name,
+                'apartment' => $alert->apartment_display_name,
+                'location' => $alert->location_string,
+                'status' => $alert->status,
+                'severity' => 'critical', // Panic alerts are always critical
+                'created_at' => $alert->created_at->toISOString(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'alerts' => $transformedAlerts,
+        ]);
+    }
+
+    /**
+     * Acknowledge a panic alert.
+     */
+    public function acknowledge(PanicAlert $panicAlert)
+    {
+        // Check if user has permission
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para reconocer alertas',
+            ], 403);
+        }
+
+        if ($panicAlert->status !== 'triggered') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta alerta no puede ser reconocida',
+            ], 400);
+        }
+
+        $panicAlert->update(['status' => 'confirmed']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Alerta reconocida',
+            'alert' => [
+                'id' => $panicAlert->id,
+                'status' => $panicAlert->status,
+                'updated_at' => $panicAlert->updated_at->toISOString(),
+            ],
         ]);
     }
 

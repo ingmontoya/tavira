@@ -249,6 +249,12 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         Route::get('/features/{feature}', [\App\Http\Controllers\Api\FeatureController::class, 'show'])
             ->name('tenant.api.features.show');
 
+        // === SECURITY ALERTS (for global banner) ===
+        Route::prefix('security')->name('tenant.api.security.')->group(function () {
+            Route::get('/alerts/active', [\App\Http\Controllers\Api\PanicAlertController::class, 'active'])
+                ->name('alerts.active');
+        });
+
         // === PANIC ALERTS ===
         Route::prefix('panic-alerts')->name('tenant.api.panic-alerts.')
             ->middleware([\App\Http\Middleware\RequiresFeature::class . ':panic_button'])
@@ -269,6 +275,10 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
                 // Security dashboard routes (for authorized personnel)
                 Route::get('/', [\App\Http\Controllers\Api\PanicAlertController::class, 'index'])
                     ->name('index');
+                Route::get('/active', [\App\Http\Controllers\Api\PanicAlertController::class, 'active'])
+                    ->name('active');
+                Route::patch('/{panicAlert}/acknowledge', [\App\Http\Controllers\Api\PanicAlertController::class, 'acknowledge'])
+                    ->name('acknowledge');
                 Route::patch('/{panicAlert}/resolve', [\App\Http\Controllers\Api\PanicAlertController::class, 'resolve'])
                     ->name('resolve');
             });

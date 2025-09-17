@@ -103,6 +103,13 @@ class RolePermissionSeeder extends Seeder
             'view_access_logs',
             'manage_visitors',
             'view_security_reports',
+            'view_security_alerts',
+            'manage_security_alerts',
+            'respond_to_panic_alerts',
+            'resolve_security_incidents',
+            'view_panic_alerts',
+            'acknowledge_panic_alerts',
+            'resolve_panic_alerts',
 
             // New modules for residents/propietarios
             'view_account_statement',
@@ -166,7 +173,7 @@ class RolePermissionSeeder extends Seeder
             'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',
             'view_correspondence', 'create_correspondence', 'edit_correspondence', 'delete_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
             'view_admin_email', 'create_admin_email', 'edit_admin_email', 'delete_admin_email', 'manage_email_templates', // Admin solo puede ver su email
-            'view_access_logs', 'manage_visitors', 'view_security_reports',
+            'view_access_logs', 'manage_visitors', 'view_security_reports', 'view_security_alerts', 'manage_security_alerts', 'respond_to_panic_alerts', 'resolve_security_incidents', 'view_panic_alerts', 'acknowledge_panic_alerts', 'resolve_panic_alerts',
             'view_reservations', 'create_reservations', 'edit_reservations', 'delete_reservations', 'manage_reservable_assets', 'approve_reservations',
             'view_assemblies', 'create_assemblies', 'edit_assemblies', 'delete_assemblies', 'start_assemblies', 'close_assemblies', 'manage_assembly_attendance',
             'view_assembly_votes', 'create_assembly_votes', 'edit_assembly_votes', 'delete_assembly_votes', 'participate_in_assemblies',
@@ -183,7 +190,7 @@ class RolePermissionSeeder extends Seeder
             'view_announcements', 'create_announcements',
             'view_correspondence', // Mantienen correspondencia física
             'view_council_email', 'create_council_email', 'edit_council_email', 'delete_council_email', 'manage_email_templates', // Concejo solo puede ver su email
-            'view_access_logs',
+            'view_access_logs', 'view_security_alerts', 'view_panic_alerts', 'acknowledge_panic_alerts',
             'invite_visitors', 'receive_notifications', 'send_pqrs', 'send_messages_to_admin',
             'review_provider_proposals',
             'view_reservations', 'create_reservations', 'edit_reservations', 'approve_reservations',
@@ -210,9 +217,13 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         $porteria->givePermissionTo([
+            'view_dashboard',
             'view_access_logs',
             'manage_visitors',
             'view_correspondence', 'create_correspondence', 'edit_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
+            'view_security_alerts', 'manage_security_alerts', 'respond_to_panic_alerts', 'resolve_security_incidents',
+            'view_panic_alerts', 'acknowledge_panic_alerts', 'resolve_panic_alerts',
+            'view_security_reports',
         ]);
     }
 }
