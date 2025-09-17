@@ -709,7 +709,7 @@ const initCharts = async () => {
 // Panic alerts functions
 const loadPanicAlerts = async () => {
     try {
-        const response = await fetch('/api/panic-alerts', {
+        const response = await fetch('/api/dashboard/panic-alerts', {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
@@ -735,7 +735,7 @@ const loadPanicAlerts = async () => {
 
 const resolveAlert = async (alertId) => {
     try {
-        const response = await fetch(`/api/panic-alerts/${alertId}/resolve`, {
+        const response = await fetch(`/api/dashboard/panic-alerts/${alertId}/resolve`, {
             method: 'PATCH',
             credentials: 'include',
             headers: {

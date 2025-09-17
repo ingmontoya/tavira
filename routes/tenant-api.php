@@ -52,8 +52,8 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         }
     })->name('tenant.api.debug.clear-cache');
 
-    // Protected routes requiring authentication (supports both Sanctum and web session)
-    Route::middleware(['auth:sanctum,web'])->group(function () {
+    // Protected routes requiring authentication
+    Route::middleware(['auth:sanctum'])->group(function () {
         // Logout
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
             ->name('tenant.api.logout');
