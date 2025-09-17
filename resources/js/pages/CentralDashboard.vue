@@ -40,6 +40,55 @@
                 </Card>
             </div>
 
+            <!-- Emergency Panic Alerts Section -->
+            <div v-if="activePanicAlerts.length > 0" class="mb-6">
+                <Card class="border-red-500 bg-red-50 shadow-lg">
+                    <CardHeader class="bg-red-600 text-white rounded-t-lg">
+                        <CardTitle class="flex items-center gap-2">
+                            <Icon name="alert-triangle" class="h-6 w-6 animate-pulse" />
+                            🚨 ALERTAS DE PÁNICO ACTIVAS ({{ activePanicAlerts.length }})
+                        </CardTitle>
+                        <CardDescription class="text-red-100">
+                            EMERGENCIAS QUE REQUIEREN ATENCIÓN INMEDIATA
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="p-0">
+                        <div v-for="alert in activePanicAlerts" :key="alert.id"
+                             class="border-b border-red-200 p-4 bg-white">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <Icon name="alert-triangle" class="h-6 w-6 text-red-600 animate-pulse" />
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-red-900">
+                                            {{ alert.user?.name || 'Usuario desconocido' }}
+                                        </h4>
+                                        <p class="text-sm text-red-700">
+                                            {{ alert.apartment?.address || 'Apartamento no especificado' }}
+                                        </p>
+                                        <p class="text-xs text-red-600">
+                                            Activada: {{ alert.time_ago }} | ID: {{ alert.alert_id }}
+                                        </p>
+                                        <p v-if="alert.location?.lat" class="text-xs text-red-600">
+                                            📍 Lat: {{ alert.location.lat }}, Lng: {{ alert.location.lng }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <Badge variant="destructive" class="animate-pulse">
+                                        {{ alert.status?.toUpperCase() }}
+                                    </Badge>
+                                    <Button size="sm" variant="outline" @click="resolveAlert(alert.alert_id)">
+                                        Marcar como Atendida
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <!-- Stats Cards (only show if there are tenants) -->
             <div v-if="stats.totalTenants > 0" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
@@ -187,6 +236,28 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Icon from '@/components/Icon.vue'
 import { Head, router } from '@inertiajs/vue3'
+import { ref, onMounted, onUnmounted } from 'vue'
+
+interface PanicAlert {
+    id: string
+    alert_id: string
+    user?: {
+        id: number
+        name: string
+    }
+    apartment?: {
+        id: number
+        address: string
+    }
+    location?: {
+        lat: number
+        lng: number
+        string: string
+    }
+    status: string
+    timestamp: string
+    time_ago: string
+}
 
 interface Props {
     stats: {
@@ -205,6 +276,9 @@ interface Props {
 
 defineProps<Props>()
 
+// Panic alerts state
+const activePanicAlerts = ref<PanicAlert[]>([])
+
 const breadcrumbs = [
     {
         title: 'Panel Central',
@@ -215,4 +289,80 @@ const breadcrumbs = [
 const loginToTenant = (tenantId: string) => {
     router.post(`/tenants/${tenantId}/impersonate`)
 }
+
+// Handle panic alert resolution
+const resolveAlert = (alertId: string) => {
+    console.log('Resolving panic alert:', alertId)
+
+    // Remove from active alerts
+    activePanicAlerts.value = activePanicAlerts.value.filter(alert => alert.alert_id !== alertId)
+
+    // Show success notification
+    alert(`Alerta ${alertId} marcada como atendida`)
+}
+
+// Listen for panic alerts
+const setupPanicAlertListener = () => {
+    const checkForNewAlerts = () => {
+        try {
+            const alertsKey = 'panic_alerts_demo'
+            const storedAlerts = JSON.parse(localStorage.getItem(alertsKey) || '[]')
+
+            // Convert stored alerts to the format we need
+            const newAlerts = storedAlerts.map((alert: any) => ({
+                id: alert.alertId,
+                alert_id: alert.alertId,
+                user: {
+                    id: 1,
+                    name: 'Usuario Demo'
+                },
+                apartment: {
+                    id: 1,
+                    address: 'Apartamento Demo'
+                },
+                location: alert.location,
+                status: alert.status || 'triggered',
+                timestamp: alert.timestamp,
+                time_ago: new Date(alert.timestamp).toLocaleString()
+            }))
+
+            // Only add new alerts that aren't already in our active list
+            newAlerts.forEach((newAlert: PanicAlert) => {
+                const exists = activePanicAlerts.value.some(existing => existing.alert_id === newAlert.alert_id)
+                if (!exists) {
+                    activePanicAlerts.value.push(newAlert)
+
+                    // Show browser notification
+                    if (Notification.permission === 'granted') {
+                        new Notification('🚨 ALERTA DE PÁNICO', {
+                            body: `Emergencia activada por ${newAlert.user?.name}`,
+                            icon: '/favicon.ico',
+                            tag: 'panic-alert',
+                            requireInteraction: true
+                        })
+                    }
+                }
+            })
+
+        } catch (error) {
+            console.error('Error checking for panic alerts:', error)
+        }
+    }
+
+    // Check every 2 seconds for new alerts
+    const interval = setInterval(checkForNewAlerts, 2000)
+    return () => clearInterval(interval)
+}
+
+// Setup on mount
+onMounted(() => {
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission()
+    }
+
+    // Setup panic alert listener
+    const cleanup = setupPanicAlertListener()
+    onUnmounted(cleanup)
+})
 </script>
