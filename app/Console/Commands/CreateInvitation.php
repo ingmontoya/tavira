@@ -29,7 +29,7 @@ class CreateInvitation extends Command
     {
         $email = $this->argument('email');
         $role = $this->option('role');
-        $expiresHours = $this->option('expires');
+        $expiresHours = (int) $this->option('expires');
         
         // Validate role
         $validRoles = ['admin', 'admin_conjunto', 'residente', 'portero', 'consejo'];
