@@ -184,28 +184,6 @@ class PanicAlertController extends Controller
         ]);
     }
 
-    /**
-     * Resolve a panic alert (mark as attended).
-     */
-    public function resolve(PanicAlert $panicAlert)
-    {
-        // Check if user has permission to resolve alerts
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo'])) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No tienes permisos para resolver alertas',
-            ], 403);
-        }
-
-        $panicAlert->update([
-            'status' => 'resolved',
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Alerta marcada como atendida',
-        ]);
-    }
 
     /**
      * Get active panic alerts for admin dashboard (cross-tenant).
