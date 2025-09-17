@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useToast } from '@/composables/useToast';
+import { globalToast } from '@/composables/useToast';
 import ToastNotification from './ToastNotification.vue';
 
-const { toasts, removeToast } = useToast();
+const { toasts, removeToast } = globalToast;
 
 const handleToastClose = (id: string) => {
     removeToast(id);
