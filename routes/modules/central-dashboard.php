@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 // Central Dashboard for tenant management
 Route::get('dashboard', [CentralDashboardController::class, 'index'])->name('dashboard');
 
+// API endpoint for panic alerts (for admin dashboard)
+Route::get('api/panic-alerts/active', [\App\Http\Controllers\Api\PanicAlertController::class, 'getActiveAlertsForAdmin'])->name('api.panic-alerts.active');
+
 // Tenant Management Routes (superadmin only)
 Route::prefix('tenants')->name('tenant-management.')->group(function () {
     Route::get('/', [TenantManagementController::class, 'index'])->name('index');

@@ -183,4 +183,117 @@ class PanicAlertController extends Controller
             'alerts' => $alerts,
         ]);
     }
+
+    /**
+     * Resolve a panic alert (mark as attended).
+     */
+    public function resolve(PanicAlert $panicAlert)
+    {
+        // Check if user has permission to resolve alerts
+        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para resolver alertas',
+            ], 403);
+        }
+
+        $panicAlert->update([
+            'status' => 'resolved',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Alerta marcada como atendida',
+        ]);
+    }
+
+    /**
+     * Get active panic alerts for admin dashboard (cross-tenant).
+     */
+    public function getActiveAlertsForAdmin()
+    {
+        // This endpoint works from the central domain, so we need to check all tenants
+        $tenants = \App\Models\Tenant::all();
+        $activeAlerts = [];
+
+        foreach ($tenants as $tenant) {
+            try {
+                $tenantDbName = 'tenant' . $tenant->id;
+
+                // Check if database exists
+                $dbExists = \DB::select("SELECT datname FROM pg_database WHERE datname = ?", [$tenantDbName]);
+                if (empty($dbExists)) {
+                    continue;
+                }
+
+                // Configure tenant connection dynamically
+                config([
+                    "database.connections.temp_alerts" => [
+                        'driver' => 'pgsql',
+                        'host' => env('DB_HOST', '127.0.0.1'),
+                        'port' => env('DB_PORT', '5433'),
+                        'database' => $tenantDbName,
+                        'username' => env('DB_USERNAME', 'mauricio'),
+                        'password' => env('DB_PASSWORD', ''),
+                        'charset' => 'utf8',
+                        'prefix' => '',
+                        'prefix_indexes' => true,
+                        'schema' => 'public',
+                        'sslmode' => 'prefer',
+                    ]
+                ]);
+
+                // Get active panic alerts from this tenant
+                $alerts = \DB::connection('temp_alerts')
+                    ->table('panic_alerts')
+                    ->join('users', 'panic_alerts.user_id', '=', 'users.id')
+                    ->leftJoin('apartments', 'panic_alerts.apartment_id', '=', 'apartments.id')
+                    ->where('panic_alerts.status', 'triggered')
+                    ->select([
+                        'panic_alerts.id',
+                        'panic_alerts.lat',
+                        'panic_alerts.lng',
+                        'panic_alerts.status',
+                        'panic_alerts.created_at',
+                        'users.name as user_name',
+                        'apartments.number as apartment_number'
+                    ])
+                    ->get();
+
+                foreach ($alerts as $alert) {
+                    $activeAlerts[] = [
+                        'id' => $alert->id,
+                        'alert_id' => $alert->id,
+                        'tenant_id' => $tenant->id,
+                        'tenant_name' => $tenant->id, // You might have a name field
+                        'user' => [
+                            'name' => $alert->user_name,
+                        ],
+                        'apartment' => [
+                            'address' => $alert->apartment_number ? "Apartamento {$alert->apartment_number}" : 'No especificado',
+                        ],
+                        'location' => [
+                            'lat' => $alert->lat,
+                            'lng' => $alert->lng,
+                        ],
+                        'status' => $alert->status,
+                        'timestamp' => $alert->created_at,
+                        'time_ago' => \Carbon\Carbon::parse($alert->created_at)->diffForHumans(),
+                    ];
+                }
+
+                // Clean up connection
+                \DB::purge('temp_alerts');
+
+            } catch (\Exception $e) {
+                \Log::warning("Error loading panic alerts for tenant {$tenant->id}: {$e->getMessage()}");
+                continue;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $activeAlerts,
+        ]);
+    }
 }

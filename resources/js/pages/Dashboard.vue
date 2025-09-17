@@ -3,6 +3,55 @@
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4" data-tour="dashboard">
+            <!-- Emergency Panic Alerts Section -->
+            <div v-if="activePanicAlerts.length > 0" class="mb-6">
+                <Card class="border-red-500 bg-red-50 shadow-lg animate-pulse">
+                    <CardHeader class="bg-red-600 text-white rounded-t-lg">
+                        <CardTitle class="flex items-center gap-2">
+                            <Icon name="alert-triangle" class="h-6 w-6" />
+                            🚨 ALERTAS DE PÁNICO ACTIVAS ({{ activePanicAlerts.length }})
+                        </CardTitle>
+                        <CardDescription class="text-red-100">
+                            EMERGENCIAS QUE REQUIEREN ATENCIÓN INMEDIATA
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent class="p-0">
+                        <div v-for="alert in activePanicAlerts" :key="alert.id"
+                             class="border-b border-red-200 p-4 bg-white">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <Icon name="alert-triangle" class="h-6 w-6 text-red-600 animate-pulse" />
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-red-900">
+                                            {{ alert.user_display_name || 'Usuario desconocido' }}
+                                        </h4>
+                                        <p class="text-sm text-red-700">
+                                            {{ alert.apartment_display_name || 'Apartamento no especificado' }}
+                                        </p>
+                                        <p class="text-xs text-red-600">
+                                            Activada: {{ alert.created_at_human }} | ID: {{ alert.id }}
+                                        </p>
+                                        <p v-if="alert.lat" class="text-xs text-red-600">
+                                            📍 Lat: {{ alert.lat }}, Lng: {{ alert.lng }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <Badge variant="destructive" class="animate-pulse">
+                                        {{ alert.status?.toUpperCase() }}
+                                    </Badge>
+                                    <Button size="sm" variant="outline" @click="resolveAlert(alert.id)">
+                                        Marcar como Atendida
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <!-- Setup Banner -->
             <ConjuntoSetupBanner />
 
@@ -379,7 +428,9 @@
 <script setup lang="ts">
 import ConjuntoSetupBanner from '@/components/ConjuntoSetupBanner.vue';
 import Icon from '@/components/Icon.vue';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import VirtualTour from '@/components/VirtualTour.vue';
 import { useFlow1Tour } from '@/composables/useFlow1Tour';
 import { useTourState } from '@/composables/useTourState';
@@ -418,6 +469,9 @@ const towerChart = ref(null);
 const statusChart = ref(null);
 const trendChart = ref(null);
 const selectedMonth = ref(props.selectedMonth);
+
+// Panic alerts functionality
+const activePanicAlerts = ref([]);
 
 // Virtual Tour functionality
 const virtualTourRef = ref(null);
@@ -652,8 +706,68 @@ const initCharts = async () => {
     }
 };
 
+// Panic alerts functions
+const loadPanicAlerts = async () => {
+    try {
+        const response = await fetch('/api/panic-alerts', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.alerts) {
+                // Only show triggered alerts
+                activePanicAlerts.value = data.alerts.data.filter(alert => alert.status === 'triggered');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading panic alerts:', error);
+    }
+};
+
+const resolveAlert = async (alertId) => {
+    try {
+        const response = await fetch(`/api/panic-alerts/${alertId}/resolve`, {
+            method: 'PATCH',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+
+        if (response.ok) {
+            // Remove from active alerts
+            activePanicAlerts.value = activePanicAlerts.value.filter(alert => alert.id !== alertId);
+
+            // Show success message
+            alert(`Alerta ${alertId} marcada como atendida`);
+        } else {
+            alert('Error al marcar la alerta como atendida');
+        }
+    } catch (error) {
+        console.error('Error resolving panic alert:', error);
+        alert('Error al marcar la alerta como atendida');
+    }
+};
+
 onMounted(() => {
     initCharts();
     checkSavedTour();
+
+    // Load panic alerts initially
+    loadPanicAlerts();
+
+    // Check for new panic alerts every 5 seconds
+    setInterval(loadPanicAlerts, 5000);
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
 });
 </script>
