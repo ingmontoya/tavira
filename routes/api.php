@@ -41,8 +41,14 @@ foreach (config('tenancy.central_domains') as $domain) {
 
             // Get authenticated user
             Route::get('/user', function (Request $request) {
+                $user = $request->user()->load(['resident.apartment.apartmentType', 'roles']);
+
+                // Add the first role name as 'role' field for mobile compatibility
+                $userData = $user->toArray();
+                $userData['role'] = $user->roles->first()?->name ?? 'residente';
+
                 return response()->json([
-                    'user' => $request->user(),
+                    'user' => $userData,
                 ]);
             })->middleware(['auth:sanctum'])->name('api.user');
         });

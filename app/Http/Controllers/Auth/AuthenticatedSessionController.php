@@ -38,9 +38,14 @@ class AuthenticatedSessionController extends Controller
             $user = Auth::user();
             $token = $user->createToken('mobile-app')->plainTextToken;
 
+            // Load user with roles for mobile compatibility
+            $userWithRoles = $user->load(['resident.apartment', 'roles']);
+            $userData = $userWithRoles->toArray();
+            $userData['role'] = $userWithRoles->roles->first()?->name ?? 'residente';
+
             return response()->json([
                 'token' => $token,
-                'user' => $user->load('resident.apartment'),
+                'user' => $userData,
                 'message' => 'Login successful',
             ]);
         }
