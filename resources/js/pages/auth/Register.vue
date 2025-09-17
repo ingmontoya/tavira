@@ -37,7 +37,7 @@ const props = defineProps<Props>();
 
 const form = useForm({
     name: '',
-    email: props.invitation?.is_mass_invitation ? '' : props.invitation ? '' : '',
+    email: props.invitation?.is_mass_invitation ? '' : props.invitation?.email || '',
     password: '',
     password_confirmation: '',
     token: props.invitation?.token || '',
@@ -134,6 +134,9 @@ const getSubmitTabIndex = () => {
             </Card>
 
             <form @submit.prevent="submit" class="space-y-6">
+                <!-- Hidden email field for individual invitations -->
+                <input v-if="invitation && !invitation.is_mass_invitation" type="hidden" name="email" :value="invitation.email" />
+
                 <div class="grid gap-4">
                     <div class="grid gap-2">
                         <Label for="name">Nombre completo</Label>
