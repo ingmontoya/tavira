@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ConjuntoConfig;
+use App\Models\TenantFeature;
 use Illuminate\Http\Request;
 
 class FeatureController extends Controller
@@ -95,16 +96,42 @@ class FeatureController extends Controller
                         'description' => 'Dark theme support',
                         'version' => '1.0.0',
                     ]
+                ],
+                'panic_button' => [
+                    'enabled' => true,
+                    'metadata' => [
+                        'description' => 'Emergency panic button for security alerts',
+                        'version' => '1.0.0',
+                    ]
                 ]
             ];
 
-            // You can add conjunto-specific feature toggles here
+            // Override with actual tenant feature settings from database
+            if (function_exists('tenant') && tenant()) {
+                $tenantFeatures = TenantFeature::where('tenant_id', tenant('id'))->get();
+
+                foreach ($tenantFeatures as $tenantFeature) {
+                    if (isset($features[$tenantFeature->feature])) {
+                        $features[$tenantFeature->feature]['enabled'] = $tenantFeature->enabled;
+                    }
+                }
+            }
+
+            // You can add conjunto-specific feature toggles here as fallback
             // For example, if you have a features configuration in conjunto_config
             if (isset($conjuntoConfig->features_config)) {
                 $customFeatures = $conjuntoConfig->features_config;
                 foreach ($customFeatures as $feature => $config) {
                     if (isset($features[$feature])) {
-                        $features[$feature]['enabled'] = $config['enabled'] ?? $features[$feature]['enabled'];
+                        // Only override if not already set by tenant features
+                        $tenantFeatureExists = function_exists('tenant') && tenant() &&
+                            TenantFeature::where('tenant_id', tenant('id'))
+                                        ->where('feature', $feature)
+                                        ->exists();
+
+                        if (!$tenantFeatureExists) {
+                            $features[$feature]['enabled'] = $config['enabled'] ?? $features[$feature]['enabled'];
+                        }
                     }
                 }
             }
@@ -241,20 +268,46 @@ class FeatureController extends Controller
                     'description' => 'Dark theme support',
                     'version' => '1.0.0',
                 ]
+            ],
+            'panic_button' => [
+                'enabled' => true,
+                'metadata' => [
+                    'description' => 'Emergency panic button for security alerts',
+                    'version' => '1.0.0',
+                ]
             ]
         ];
 
-        // Apply custom configuration if available
+        // Override with actual tenant feature settings from database
+        if (function_exists('tenant') && tenant()) {
+            $tenantFeatures = TenantFeature::where('tenant_id', tenant('id'))->get();
+
+            foreach ($tenantFeatures as $tenantFeature) {
+                if (isset($features[$tenantFeature->feature])) {
+                    $features[$tenantFeature->feature]['enabled'] = $tenantFeature->enabled;
+                }
+            }
+        }
+
+        // Apply custom configuration if available (as fallback)
         if (isset($conjuntoConfig->features_config)) {
             $customFeatures = $conjuntoConfig->features_config;
             foreach ($customFeatures as $feature => $config) {
                 if (isset($features[$feature])) {
-                    $features[$feature]['enabled'] = $config['enabled'] ?? $features[$feature]['enabled'];
-                    if (isset($config['metadata'])) {
-                        $features[$feature]['metadata'] = array_merge(
-                            $features[$feature]['metadata'],
-                            $config['metadata']
-                        );
+                    // Only override if not already set by tenant features
+                    $tenantFeatureExists = function_exists('tenant') && tenant() &&
+                        TenantFeature::where('tenant_id', tenant('id'))
+                                    ->where('feature', $feature)
+                                    ->exists();
+
+                    if (!$tenantFeatureExists) {
+                        $features[$feature]['enabled'] = $config['enabled'] ?? $features[$feature]['enabled'];
+                        if (isset($config['metadata'])) {
+                            $features[$feature]['metadata'] = array_merge(
+                                $features[$feature]['metadata'],
+                                $config['metadata']
+                            );
+                        }
                     }
                 }
             }

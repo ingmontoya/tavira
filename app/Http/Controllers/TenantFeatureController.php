@@ -159,6 +159,7 @@ class TenantFeatureController extends Controller
             'visitor_management',
             'security_scanner',
             'access_control',
+            'panic_button',
             
             // Finanzas y Contabilidad
             'accounting',
@@ -246,6 +247,7 @@ class TenantFeatureController extends Controller
                     'accounting',
                     'reservations',
                     'security_scanner',
+                    'panic_button',
                 ],
             ],
             'professional' => [
@@ -269,6 +271,7 @@ class TenantFeatureController extends Controller
                     'visitor_management',
                     'security_scanner',
                     'access_control',
+                    'panic_button',
                     'accounting',
                     'payment_agreements',
                     'expense_approvals',
@@ -300,6 +303,7 @@ class TenantFeatureController extends Controller
                     'visitor_management',
                     'security_scanner',
                     'access_control',
+                    'panic_button',
                     'accounting',
                     'payment_agreements',
                     'expense_approvals',

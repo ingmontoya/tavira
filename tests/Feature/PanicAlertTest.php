@@ -25,8 +25,8 @@ class PanicAlertTest extends TestCase
         // Enable panic button feature for tenant
         TenantFeature::create([
             'tenant_id' => tenant('id'),
-            'feature_name' => 'panic_button',
-            'is_enabled' => true,
+            'feature' => 'panic_button',
+            'enabled' => true,
         ]);
     }
 
@@ -272,8 +272,8 @@ class PanicAlertTest extends TestCase
     {
         // Disable panic button feature
         TenantFeature::where('tenant_id', tenant('id'))
-            ->where('feature_name', 'panic_button')
-            ->update(['is_enabled' => false]);
+            ->where('feature', 'panic_button')
+            ->update(['enabled' => false]);
 
         $user = User::factory()->create();
 
