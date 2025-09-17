@@ -710,18 +710,23 @@ const initCharts = async () => {
 const loadPanicAlerts = async () => {
     try {
         const response = await fetch('/api/panic-alerts', {
+            credentials: 'include',
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
         });
 
         if (response.ok) {
             const data = await response.json();
+            console.log('Panic alerts response:', data);
             if (data.success && data.alerts) {
                 // Only show triggered alerts
-                activePanicAlerts.value = data.alerts.data.filter(alert => alert.status === 'triggered');
+                activePanicAlerts.value = data.alerts.filter(alert => alert.status === 'triggered');
             }
+        } else {
+            console.warn('Failed to load panic alerts:', response.status, response.statusText);
         }
     } catch (error) {
         console.error('Error loading panic alerts:', error);
@@ -732,6 +737,7 @@ const resolveAlert = async (alertId) => {
     try {
         const response = await fetch(`/api/panic-alerts/${alertId}/resolve`, {
             method: 'PATCH',
+            credentials: 'include',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
