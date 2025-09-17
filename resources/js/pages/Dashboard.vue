@@ -25,16 +25,16 @@
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-red-900">
-                                            {{ alert.user_display_name || 'Usuario desconocido' }}
+                                            {{ alert.user_name || 'Usuario desconocido' }}
                                         </h4>
                                         <p class="text-sm text-red-700">
-                                            {{ alert.apartment_display_name || 'Apartamento no especificado' }}
+                                            {{ alert.apartment || 'Apartamento no especificado' }}
                                         </p>
                                         <p class="text-xs text-red-600">
-                                            Activada: {{ alert.created_at_human }} | ID: {{ alert.id }}
+                                            Activada: {{ alert.time_elapsed }} | ID: {{ alert.id }}
                                         </p>
-                                        <p v-if="alert.lat" class="text-xs text-red-600">
-                                            📍 Lat: {{ alert.lat }}, Lng: {{ alert.lng }}
+                                        <p v-if="alert.location" class="text-xs text-red-600">
+                                            📍 {{ alert.location }}
                                         </p>
                                     </div>
                                 </div>

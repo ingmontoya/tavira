@@ -62,16 +62,16 @@
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-red-900">
-                                            {{ alert.user?.name || 'Usuario desconocido' }}
+                                            {{ alert.user_name || 'Usuario desconocido' }}
                                         </h4>
                                         <p class="text-sm text-red-700">
-                                            {{ alert.apartment?.address || 'Apartamento no especificado' }}
+                                            {{ alert.apartment || 'Apartamento no especificado' }}
                                         </p>
                                         <p class="text-xs text-red-600">
-                                            Activada: {{ alert.time_ago }} | ID: {{ alert.alert_id }}
+                                            Activada: {{ alert.time_elapsed }} | ID: {{ alert.id }}
                                         </p>
-                                        <p v-if="alert.location?.lat" class="text-xs text-red-600">
-                                            📍 Lat: {{ alert.location.lat }}, Lng: {{ alert.location.lng }}
+                                        <p v-if="alert.location" class="text-xs text-red-600">
+                                            📍 {{ alert.location }}
                                         </p>
                                     </div>
                                 </div>
@@ -79,7 +79,7 @@
                                     <Badge variant="destructive" class="animate-pulse">
                                         {{ alert.status?.toUpperCase() }}
                                     </Badge>
-                                    <Button size="sm" variant="outline" @click="resolveAlert(alert.alert_id)">
+                                    <Button size="sm" variant="outline" @click="resolveAlert(alert.id)">
                                         Marcar como Atendida
                                     </Button>
                                 </div>
@@ -295,10 +295,11 @@ const resolveAlert = (alertId: string) => {
     console.log('Resolving panic alert:', alertId)
 
     // Remove from active alerts
-    activePanicAlerts.value = activePanicAlerts.value.filter(alert => alert.alert_id !== alertId)
+    activePanicAlerts.value = activePanicAlerts.value.filter(alert => alert.id !== alertId)
 
-    // Show success notification
-    alert(`Alerta ${alertId} marcada como atendida`)
+    // Show success notification with toast
+    // TODO: Import and use toast from shadcn/vue
+    console.log(`Alerta ${alertId} marcada como atendida`)
 }
 
 // Listen for panic alerts
