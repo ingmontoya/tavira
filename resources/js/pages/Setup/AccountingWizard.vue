@@ -39,7 +39,7 @@ const steps = [
         title: 'Plan de Cuentas Contable',
         description: 'Inicialice el plan de cuentas contable colombiano',
         icon: FileText,
-        route: '/chart-of-accounts',
+        route: '/accounting/chart-of-accounts',
         completed: props.setup_status.has_chart_of_accounts,
         count: props.setup_status.chart_accounts_count,
         action: 'Configurar Plan de Cuentas',
@@ -89,6 +89,7 @@ const quickSetup = () => {
 </script>
 
 <template>
+
     <Head title="Configuración Contable" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -172,13 +173,9 @@ const quickSetup = () => {
                             <div v-if="step.completed && step.count > 0" class="text-sm text-gray-600">
                                 ✅ {{ step.count }} elementos configurados
                             </div>
-                            <Button
-                                asChild
-                                :variant="step.completed ? 'outline' : 'default'"
-                                class="w-full"
-                            >
+                            <Button asChild :variant="step.completed ? 'outline' : 'default'" class="w-full">
                                 <Link :href="step.route">
-                                    {{ step.completed ? 'Revisar Configuración' : step.action }}
+                                {{ step.completed ? 'Revisar Configuración' : step.action }}
                                 </Link>
                             </Button>
                         </div>
@@ -196,18 +193,19 @@ const quickSetup = () => {
                 </CardHeader>
                 <CardContent class="text-center space-y-4">
                     <p class="text-blue-800">
-                        Ahora puede crear facturas que generarán automáticamente las transacciones contables correspondientes.
+                        Ahora puede crear facturas que generarán automáticamente las transacciones contables
+                        correspondientes.
                     </p>
                     <div class="flex gap-3 justify-center">
                         <Button asChild variant="default">
                             <Link href="/invoices/create">
-                                <FileText class="mr-2 h-4 w-4" />
-                                Crear Primera Factura
+                            <FileText class="mr-2 h-4 w-4" />
+                            Crear Primera Factura
                             </Link>
                         </Button>
                         <Button asChild variant="outline">
                             <Link href="/invoices">
-                                Ver Facturas
+                            Ver Facturas
                             </Link>
                         </Button>
                     </div>
