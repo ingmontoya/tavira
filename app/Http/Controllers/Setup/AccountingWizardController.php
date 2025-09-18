@@ -10,7 +10,6 @@ use App\Models\PaymentConceptAccountMapping;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\PaymentConceptAccountMappingSeeder;
 use Database\Seeders\PaymentConceptSeeder;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -69,13 +68,13 @@ class AccountingWizardController extends Controller
                     $results[] = 'Todos los elementos ya estaban configurados';
                 }
 
-                session()->flash('success', 'Configuración rápida completada: ' . implode(', ', $results));
+                session()->flash('success', 'Configuración rápida completada: '.implode(', ', $results));
             });
 
             return redirect()->route('setup.accounting-wizard.index');
         } catch (\Exception $e) {
             return back()->withErrors([
-                'quick_setup' => 'Error durante la configuración rápida: ' . $e->getMessage(),
+                'quick_setup' => 'Error durante la configuración rápida: '.$e->getMessage(),
             ]);
         }
     }

@@ -114,3 +114,23 @@ export function useToast() {
         info,
     };
 }
+
+// Global instance for convenience
+export const globalToast = {
+    success: (message: string, options?: Partial<Omit<Toast, 'id' | 'type'>>) => {
+        const instance = useToast();
+        return instance.success(message, options);
+    },
+    error: (message: string, options?: Partial<Omit<Toast, 'id' | 'type'>>) => {
+        const instance = useToast();
+        return instance.error(message, options);
+    },
+    warning: (message: string, options?: Partial<Omit<Toast, 'id' | 'type'>>) => {
+        const instance = useToast();
+        return instance.warning(message, options);
+    },
+    info: (message: string, options?: Partial<Omit<Toast, 'id' | 'type'>>) => {
+        const instance = useToast();
+        return instance.info(message, options);
+    },
+};

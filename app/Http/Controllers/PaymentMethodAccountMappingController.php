@@ -54,7 +54,7 @@ class PaymentMethodAccountMappingController extends Controller
         }
 
         // Check system readiness
-        $hasChartOfAccounts = ChartOfAccounts::exists();
+        $hasChartOfAccounts = ChartOfAccounts::where('conjunto_config_id', $conjunto->id)->exists();
         $hasMappings = PaymentMethodAccountMapping::where('conjunto_config_id', $conjunto->id)->exists();
         $mappingsCount = PaymentMethodAccountMapping::where('conjunto_config_id', $conjunto->id)->count();
 
@@ -72,11 +72,12 @@ class PaymentMethodAccountMappingController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         // Get cash accounts (assets under "DISPONIBLE" - codes starting with 1105 for cash and 1110 for banks)
-        $cashAccounts = ChartOfAccounts::where('is_active', true)
+        $cashAccounts = ChartOfAccounts::where('conjunto_config_id', $conjunto->id)
+            ->where('is_active', true)
             ->where('account_type', 'asset')
             ->where(function ($query) {
                 $query->where('code', 'like', '1105%')  // Cash accounts
-                      ->orWhere('code', 'like', '1110%'); // Bank accounts
+                    ->orWhere('code', 'like', '1110%'); // Bank accounts
             })
             ->orderBy('code')
             ->get();
@@ -131,11 +132,12 @@ class PaymentMethodAccountMappingController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         // Get cash accounts (assets under "DISPONIBLE" - codes starting with 1105 for cash and 1110 for banks)
-        $cashAccounts = ChartOfAccounts::where('is_active', true)
+        $cashAccounts = ChartOfAccounts::where('conjunto_config_id', $conjunto->id)
+            ->where('is_active', true)
             ->where('account_type', 'asset')
             ->where(function ($query) {
                 $query->where('code', 'like', '1105%')  // Cash accounts
-                      ->orWhere('code', 'like', '1110%'); // Bank accounts
+                    ->orWhere('code', 'like', '1110%'); // Bank accounts
             })
             ->orderBy('code')
             ->get();
@@ -193,14 +195,14 @@ class PaymentMethodAccountMappingController extends Controller
         try {
             $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-            if (!$conjunto) {
+            if (! $conjunto) {
                 return back()->withErrors([
                     'create_defaults' => 'No se encontró configuración activa del conjunto.',
                 ]);
             }
 
             // Check if chart of accounts exists
-            if (!ChartOfAccounts::exists()) {
+            if (! ChartOfAccounts::where('conjunto_config_id', $conjunto->id)->exists()) {
                 return back()->withErrors([
                     'create_defaults' => 'Debe crear el plan de cuentas antes de configurar mapeos de métodos de pago.',
                 ]);
@@ -226,11 +228,14 @@ class PaymentMethodAccountMappingController extends Controller
 
                 if ($existingMapping) {
                     $skippedCount++;
+
                     continue;
                 }
 
                 // Find the account
-                $account = ChartOfAccounts::where('code', $accountCode)->first();
+                $account = ChartOfAccounts::where('conjunto_config_id', $conjunto->id)
+                    ->where('code', $accountCode)
+                    ->first();
 
                 if ($account) {
                     PaymentMethodAccountMapping::create([
@@ -248,11 +253,11 @@ class PaymentMethodAccountMappingController extends Controller
                 $message .= ", {$skippedCount} ya existían";
             }
 
-            return back()->with('success', $message . '.');
+            return back()->with('success', "{$message}.");
 
         } catch (\Exception $e) {
             return back()->withErrors([
-                'create_defaults' => 'Error al crear mapeos por defecto: ' . $e->getMessage(),
+                'create_defaults' => 'Error al crear mapeos por defecto: '.$e->getMessage(),
             ]);
         }
     }
