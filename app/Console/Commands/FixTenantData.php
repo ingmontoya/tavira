@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Tenant;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 
 class FixTenantData extends Command
 {
     protected $signature = 'tenants:fix-data {tenant_id} {name} {email}';
+
     protected $description = 'Fix tenant data for a specific tenant';
 
     public function handle()
@@ -18,9 +18,10 @@ class FixTenantData extends Command
         $email = $this->argument('email');
 
         $tenant = Tenant::find($tenantId);
-        
-        if (!$tenant) {
+
+        if (! $tenant) {
             $this->error("Tenant {$tenantId} not found");
+
             return 1;
         }
 
@@ -67,18 +68,18 @@ class FixTenantData extends Command
         $lowercase = 'abcdefghijklmnopqrstuvwxyz';
         $numbers = '0123456789';
         $special = '!@#$%^&*()-_=+[]{}|;:,.<>?';
-        
+
         $password = '';
         $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
         $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
         $password .= $numbers[random_int(0, strlen($numbers) - 1)];
         $password .= $special[random_int(0, strlen($special) - 1)];
-        
-        $allChars = $uppercase . $lowercase . $numbers . $special;
+
+        $allChars = $uppercase.$lowercase.$numbers.$special;
         for ($i = 4; $i < 12; $i++) {
             $password .= $allChars[random_int(0, strlen($allChars) - 1)];
         }
-        
+
         return str_shuffle($password);
     }
 }

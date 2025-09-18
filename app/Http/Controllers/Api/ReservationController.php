@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreReservationRequest;
-use App\Models\Reservation;
 use App\Models\ReservableAsset;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
 
 class ReservationController extends Controller
@@ -68,21 +68,21 @@ class ReservationController extends Controller
 
         // Set initial status based on asset approval requirements
         $data['status'] = $asset->requires_approval ? 'pending' : 'approved';
-        
-        if (!$asset->requires_approval) {
+
+        if (! $asset->requires_approval) {
             $data['approved_at'] = now();
             $data['approved_by'] = auth()->id();
         }
 
         // Set apartment from user's resident record if not provided
-        if (!isset($data['apartment_id']) && auth()->user()->resident) {
+        if (! isset($data['apartment_id']) && auth()->user()->resident) {
             $data['apartment_id'] = auth()->user()->resident->apartment_id;
         }
 
         $reservation = Reservation::create($data);
         $reservation->load(['reservableAsset', 'apartment']);
 
-        $message = $asset->requires_approval 
+        $message = $asset->requires_approval
             ? 'Reservation created successfully. Pending approval.'
             : 'Reservation created and approved successfully.';
 
@@ -127,7 +127,7 @@ class ReservationController extends Controller
             ], 403);
         }
 
-        if (!$reservation->canBeCancelled()) {
+        if (! $reservation->canBeCancelled()) {
             return response()->json([
                 'success' => false,
                 'message' => 'This reservation cannot be modified',
@@ -171,7 +171,7 @@ class ReservationController extends Controller
             ], 403);
         }
 
-        if (!$reservation->canBeCancelled()) {
+        if (! $reservation->canBeCancelled()) {
             return response()->json([
                 'success' => false,
                 'message' => 'This reservation cannot be cancelled',
@@ -272,8 +272,8 @@ class ReservationController extends Controller
                     'name' => $reservation->reservableAsset->name,
                     'description' => $reservation->reservableAsset->description,
                     'type' => $reservation->reservableAsset->type,
-                    'image_url' => $reservation->reservableAsset->image_path ? 
-                        asset('storage/' . $reservation->reservableAsset->image_path) : null,
+                    'image_url' => $reservation->reservableAsset->image_path ?
+                        asset('storage/'.$reservation->reservableAsset->image_path) : null,
                 ],
                 'admin_notes' => $reservation->admin_notes,
                 'approved_at' => $reservation->approved_at?->toISOString(),

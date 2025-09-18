@@ -28,7 +28,7 @@ class CloseExpiredVotes implements ShouldQueue
         foreach ($expiredVotes as $vote) {
             try {
                 $vote->close();
-                
+
                 Log::info('Vote closed automatically', [
                     'vote_id' => $vote->id,
                     'assembly_id' => $vote->assembly_id,
@@ -40,9 +40,9 @@ class CloseExpiredVotes implements ShouldQueue
                 if ($this->shouldCloseAssembly($vote)) {
                     $assembly = $vote->assembly;
                     $assembly->close();
-                    
+
                     AssemblyClosed::dispatch($assembly);
-                    
+
                     Log::info('Assembly closed automatically after all votes completed', [
                         'assembly_id' => $assembly->id,
                         'title' => $assembly->title,
@@ -61,7 +61,7 @@ class CloseExpiredVotes implements ShouldQueue
     private function shouldCloseAssembly(Vote $vote): bool
     {
         $assembly = $vote->assembly;
-        
+
         // Don't auto-close if assembly is not in progress
         if ($assembly->status !== 'in_progress') {
             return false;
@@ -69,7 +69,7 @@ class CloseExpiredVotes implements ShouldQueue
 
         // Check if all votes in the assembly are closed
         $openVotes = $assembly->votes()->where('status', 'active')->count();
-        
+
         return $openVotes === 0;
     }
 }

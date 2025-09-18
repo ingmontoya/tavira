@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\TenantSubscription;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +22,7 @@ class RequiresSubscription
         }
 
         // Only apply to authenticated users
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return $next($request);
         }
 
@@ -37,12 +36,12 @@ class RequiresSubscription
         // Determine context
         $isInTenantContext = tenancy()->initialized;
         $isCentralDomain = in_array($request->getHost(), config('tenancy.central_domains', []));
-        
+
         // In tenant context, skip subscription checks entirely - tenants operate independently
         if ($isInTenantContext) {
             return $next($request);
         }
-        
+
         // In central context, handle tenant creation and central operations
         if ($isCentralDomain) {
             return $this->handleCentralContext($request, $next, $user);
@@ -51,7 +50,6 @@ class RequiresSubscription
         // Default: allow request to continue
         return $next($request);
     }
-
 
     /**
      * Handle subscription checks in central context
@@ -80,7 +78,7 @@ class RequiresSubscription
         // Check subscription status for central operations
         if ($user->hasRole('admin')) {
             // If user has no tenant_id, redirect to create tenant
-            if (!$user->tenant_id) {
+            if (! $user->tenant_id) {
                 return redirect()->route('tenant-management.create')
                     ->with('info', 'Crea tu conjunto para comenzar.');
             }

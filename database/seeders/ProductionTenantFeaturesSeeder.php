@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Tenant;
 use App\Models\TenantFeature;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Log;
 
@@ -19,9 +18,10 @@ class ProductionTenantFeaturesSeeder extends Seeder
 
         // Obtener todos los tenants existentes
         $tenants = Tenant::all();
-        
+
         if ($tenants->isEmpty()) {
             $this->command->warn('⚠️  No se encontraron tenants. Ejecute primero el seeder de tenants.');
+
             return;
         }
 
@@ -29,7 +29,7 @@ class ProductionTenantFeaturesSeeder extends Seeder
 
         // Definir plantillas de features
         $featureTemplates = $this->getFeatureTemplates();
-        
+
         $processedCount = 0;
         $errorCount = 0;
 
@@ -41,14 +41,14 @@ class ProductionTenantFeaturesSeeder extends Seeder
             } catch (\Exception $e) {
                 $errorCount++;
                 $this->command->error("❌ Error configurando tenant {$tenant->id}: {$e->getMessage()}");
-                Log::error("Error in ProductionTenantFeaturesSeeder", [
+                Log::error('Error in ProductionTenantFeaturesSeeder', [
                     'tenant_id' => $tenant->id,
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
                 ]);
             }
         }
 
-        $this->command->info("🎉 Configuración completada:");
+        $this->command->info('🎉 Configuración completada:');
         $this->command->info("   ✅ Tenants procesados: {$processedCount}");
         if ($errorCount > 0) {
             $this->command->warn("   ❌ Errores: {$errorCount}");
@@ -65,7 +65,7 @@ class ProductionTenantFeaturesSeeder extends Seeder
     {
         // Determinar el plan del tenant (puedes personalizar esta lógica)
         $plan = $this->determineTenantPlan($tenant);
-        
+
         // Obtener features del template
         $template = $featureTemplates[$plan];
         $features = $template['features'];
@@ -75,14 +75,14 @@ class ProductionTenantFeaturesSeeder extends Seeder
         // Configurar cada feature disponible
         foreach ($this->getAllAvailableFeatures() as $feature) {
             $enabled = in_array($feature, $features);
-            
+
             TenantFeature::updateOrCreate(
                 [
                     'tenant_id' => $tenant->id,
-                    'feature' => $feature
+                    'feature' => $feature,
                 ],
                 [
-                    'enabled' => $enabled
+                    'enabled' => $enabled,
                 ]
             );
 
@@ -99,12 +99,12 @@ class ProductionTenantFeaturesSeeder extends Seeder
     {
         try {
             // PERSONALIZABLE: Aquí puedes implementar tu lógica para determinar el plan
-            
+
             // Ejemplo 1: Basado en subscription_plan en los datos del tenant
             if (isset($tenant->data['subscription_plan'])) {
-                return match($tenant->data['subscription_plan']) {
+                return match ($tenant->data['subscription_plan']) {
                     'basic' => 'basic',
-                    'standard' => 'standard', 
+                    'standard' => 'standard',
                     'premium' => 'premium',
                     default => 'basic'
                 };
@@ -114,10 +114,11 @@ class ProductionTenantFeaturesSeeder extends Seeder
             if (isset($tenant->subscription_plan)) {
                 $planMap = [
                     'basic' => 'basic',
-                    'standard' => 'standard', 
+                    'standard' => 'standard',
                     'premium' => 'premium',
-                    'pro' => 'premium'
+                    'pro' => 'premium',
                 ];
+
                 return $planMap[$tenant->subscription_plan] ?? 'basic';
             }
 
@@ -129,7 +130,7 @@ class ProductionTenantFeaturesSeeder extends Seeder
             // Buscar indicadores de plan premium
             $premiumKeywords = ['premium', 'pro', 'torres', 'complete'];
             foreach ($premiumKeywords as $keyword) {
-                if (str_contains($adminEmail, $keyword) || 
+                if (str_contains($adminEmail, $keyword) ||
                     str_contains($tenantName, $keyword) ||
                     str_contains($tenantId, $keyword)) {
                     return 'premium';
@@ -139,7 +140,7 @@ class ProductionTenantFeaturesSeeder extends Seeder
             // Buscar indicadores de plan estándar
             $standardKeywords = ['standard', 'plus', 'cedros'];
             foreach ($standardKeywords as $keyword) {
-                if (str_contains($adminEmail, $keyword) || 
+                if (str_contains($adminEmail, $keyword) ||
                     str_contains($tenantName, $keyword) ||
                     str_contains($tenantId, $keyword)) {
                     return 'standard';
@@ -148,10 +149,11 @@ class ProductionTenantFeaturesSeeder extends Seeder
 
             // Por defecto: plan básico
             return 'basic';
-            
+
         } catch (\Exception $e) {
             // En caso de cualquier error, devolver plan básico
             Log::warning("Error determining tenant plan for {$tenant->id}: {$e->getMessage()}");
+
             return 'basic';
         }
     }
@@ -166,32 +168,32 @@ class ProductionTenantFeaturesSeeder extends Seeder
                 'name' => 'Plan Básico',
                 'features' => [
                     'correspondence',
-                    'announcements', 
-                    'support_tickets'
+                    'announcements',
+                    'support_tickets',
                 ],
             ],
             'standard' => [
-                'name' => 'Plan Estándar', 
+                'name' => 'Plan Estándar',
                 'features' => [
                     'correspondence',
                     'maintenance_requests',
                     'announcements',
                     'support_tickets',
-                    'documents'
+                    'documents',
                 ],
             ],
             'premium' => [
                 'name' => 'Plan Premium',
                 'features' => [
                     'correspondence',
-                    'maintenance_requests', 
+                    'maintenance_requests',
                     'visitor_management',
                     'accounting',
                     'reservations',
                     'announcements',
                     'documents',
                     'support_tickets',
-                    'payment_agreements'
+                    'payment_agreements',
                 ],
             ],
         ];
@@ -205,7 +207,7 @@ class ProductionTenantFeaturesSeeder extends Seeder
         return [
             'correspondence',
             'maintenance_requests',
-            'visitor_management', 
+            'visitor_management',
             'accounting',
             'reservations',
             'announcements',
@@ -234,7 +236,7 @@ class ProductionTenantFeaturesSeeder extends Seeder
         }
 
         $this->command->info('💡 PRÓXIMOS PASOS:');
-        $this->command->info('   1. Verificar configuración en /tenant-features');  
+        $this->command->info('   1. Verificar configuración en /tenant-features');
         $this->command->info('   2. Ajustar features individuales si es necesario');
         $this->command->info('   3. Aplicar middleware a las rutas correspondientes');
         $this->command->info('');

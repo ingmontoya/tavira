@@ -6,17 +6,16 @@ use App\Http\Controllers\Api\FeaturesController;
 use App\Models\Tenant;
 use App\Models\TenantFeature;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TenantFeatureController extends Controller
 {
     protected $featuresController;
-    
+
     public function __construct()
     {
         $this->middleware('auth');
-        $this->featuresController = new FeaturesController();
+        $this->featuresController = new FeaturesController;
     }
 
     /**
@@ -25,17 +24,17 @@ class TenantFeatureController extends Controller
     public function index(Request $request)
     {
         $tenantsQuery = Tenant::query();
-        
+
         if ($request->filled('search')) {
             $tenantsQuery->where(function ($q) use ($request) {
                 $q->where('id', 'like', '%'.$request->search.'%')
-                  ->orWhere('admin_name', 'like', '%'.$request->search.'%')
-                  ->orWhere('admin_email', 'like', '%'.$request->search.'%');
+                    ->orWhere('admin_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('admin_email', 'like', '%'.$request->search.'%');
             });
         }
 
         $tenants = $tenantsQuery->paginate(15);
-        
+
         // Load features for each tenant from their individual databases
         $tenants->getCollection()->transform(function ($tenant) {
             try {
@@ -47,6 +46,7 @@ class TenantFeatureController extends Controller
                 \Log::warning("Error loading tenant features for {$tenant->id}: {$e->getMessage()}");
                 $tenant->features = collect([]);
             }
+
             return $tenant;
         });
 
@@ -114,13 +114,13 @@ class TenantFeatureController extends Controller
         ]);
 
         $templates = $this->getFeatureTemplates();
-        
-        if (!isset($templates[$request->template])) {
+
+        if (! isset($templates[$request->template])) {
             return back()->with('error', 'Template no encontrado');
         }
 
         $templateFeatures = $templates[$request->template]['features'];
-        
+
         foreach ($this->getAvailableFeatures() as $feature) {
             $enabled = in_array($feature, $templateFeatures);
             if ($enabled) {
@@ -146,42 +146,42 @@ class TenantFeatureController extends Controller
             'notifications',
             'institutional_email',
             'messaging',
-            
+
             // Administración Básica
             'basic_administration',
             'resident_management',
             'apartment_management',
-            
+
             // Mantenimiento
             'maintenance_requests',
-            
+
             // Gestión de Visitantes y Seguridad
             'visitor_management',
             'security_scanner',
             'access_control',
             'panic_button',
-            
+
             // Finanzas y Contabilidad
             'accounting',
             'payment_agreements',
             'expense_approvals',
             'financial_reports',
             'provider_management',
-            
+
             // Reservas y Espacios Comunes
             'reservations',
-            
+
             // Documentos y Actas
             'documents',
             'meeting_minutes',
-            
+
             // Asambleas Digitales y Votaciones
             'voting',
-            
+
             // Reportes y Análisis
             'advanced_reports',
             'analytics_dashboard',
-            
+
             // Configuración Avanzada
             'system_settings',
             'audit_logs',
@@ -199,7 +199,7 @@ class TenantFeatureController extends Controller
                 'max_units' => 50,
                 'features' => [
                     'basic_administration',
-                    'resident_management', 
+                    'resident_management',
                     'apartment_management',
                     'correspondence',
                     'announcements',

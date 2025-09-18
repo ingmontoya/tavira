@@ -442,10 +442,10 @@ class MaintenanceRequestController extends Controller
 
         // Get resident's apartment
         $resident = $user->resident;
-        if (!$resident) {
+        if (! $resident) {
             return response()->json([
                 'success' => false,
-                'message' => 'Usuario no tiene apartamento asignado'
+                'message' => 'Usuario no tiene apartamento asignado',
             ], 400);
         }
 
@@ -455,24 +455,24 @@ class MaintenanceRequestController extends Controller
             'requestedBy',
             'assignedStaff',
         ])->where('conjunto_config_id', $conjuntoConfig->id)
-          ->where(function ($q) use ($resident) {
-              // Show requests that affect the resident's apartment or are general building maintenance
-              $q->where('apartment_id', $resident->apartment_id)
-                ->orWhereNull('apartment_id'); // General building maintenance
-          });
+            ->where(function ($q) use ($resident) {
+                // Show requests that affect the resident's apartment or are general building maintenance
+                $q->where('apartment_id', $resident->apartment_id)
+                    ->orWhereNull('apartment_id'); // General building maintenance
+            });
 
         // Filter by status - show only active/relevant requests
         $query->whereIn('status', [
             'assigned',
-            'in_progress', 
+            'in_progress',
             'approved',
-            'pending_approval'
+            'pending_approval',
         ]);
 
         // Get upcoming maintenance (next 30 days)
         $query->where(function ($q) {
             $q->whereDate('estimated_completion_date', '>=', now())
-              ->whereDate('estimated_completion_date', '<=', now()->addDays(30));
+                ->whereDate('estimated_completion_date', '<=', now()->addDays(30));
         });
 
         $maintenanceRequests = $query->orderBy('estimated_completion_date')->limit(20)->get();
@@ -522,9 +522,9 @@ class MaintenanceRequestController extends Controller
                     'total_requests' => $scheduleData->count(),
                     'personal_requests' => $scheduleData->where('affects_resident', true)->count(),
                     'general_maintenance' => $scheduleData->where('is_general_maintenance', true)->count(),
-                    'next_maintenance_date' => $scheduleData->first()['estimated_date_formatted'] ?? null
-                ]
-            ]
+                    'next_maintenance_date' => $scheduleData->first()['estimated_date_formatted'] ?? null,
+                ],
+            ],
         ]);
     }
 

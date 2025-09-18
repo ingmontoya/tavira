@@ -22,8 +22,8 @@ class AssemblyClosed implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('conjunto.' . $this->assembly->conjunto_config_id),
-            new PrivateChannel('assembly.' . $this->assembly->id),
+            new PrivateChannel('conjunto.'.$this->assembly->conjunto_config_id),
+            new PrivateChannel('assembly.'.$this->assembly->id),
         ];
     }
 
@@ -35,7 +35,7 @@ class AssemblyClosed implements ShouldBroadcast
     public function broadcastWith(): array
     {
         $votingResults = [];
-        
+
         foreach ($this->assembly->votes as $vote) {
             $votingResults[] = [
                 'id' => $vote->id,

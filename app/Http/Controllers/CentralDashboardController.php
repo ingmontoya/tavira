@@ -14,13 +14,13 @@ class CentralDashboardController extends Controller
 
         // For non-superadmin users, only show their own tenants
         $tenantQuery = Tenant::query();
-        
-        if (!$user->hasRole('superadmin')) {
+
+        if (! $user->hasRole('superadmin')) {
             // Filter tenants created by this user or where user is the admin
             $tenantQuery->where(function ($query) use ($user) {
                 $query->whereJsonContains('data->created_by', $user->id)
-                      ->orWhereJsonContains('data->created_by_email', $user->email)
-                      ->orWhereJsonContains('data->email', $user->email);
+                    ->orWhereJsonContains('data->created_by_email', $user->email)
+                    ->orWhereJsonContains('data->email', $user->email);
             });
         }
 
@@ -43,7 +43,7 @@ class CentralDashboardController extends Controller
                 // Get raw data directly from database to handle casting issues
                 $rawData = \DB::table('tenants')->where('id', $tenant->id)->value('data');
                 $data = $rawData ? json_decode($rawData, true) : [];
-                
+
                 return [
                     'id' => $tenant->id,
                     'name' => $data['name'] ?? 'Sin nombre',

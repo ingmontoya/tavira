@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Crypt;
 
 class Vote extends Model
 {
@@ -62,13 +61,13 @@ class Vote extends Model
 
     public function getIsActiveAttribute(): bool
     {
-        return $this->status === 'active' && 
+        return $this->status === 'active' &&
                now()->between($this->opens_at, $this->closes_at);
     }
 
     public function getIsClosedAttribute(): bool
     {
-        return $this->status === 'closed' || 
+        return $this->status === 'closed' ||
                ($this->closes_at && now()->gt($this->closes_at));
     }
 
@@ -111,7 +110,7 @@ class Vote extends Model
             foreach ($this->options as $option) {
                 $count = $this->apartmentVotes()->where('vote_option_id', $option->id)->count();
                 $weight = $this->apartmentVotes()->where('vote_option_id', $option->id)->sum('weight');
-                
+
                 $results[] = [
                     'option_id' => $option->id,
                     'option_title' => $option->title,
@@ -162,8 +161,8 @@ class Vote extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-                    ->where('opens_at', '<=', now())
-                    ->where('closes_at', '>=', now());
+            ->where('opens_at', '<=', now())
+            ->where('closes_at', '>=', now());
     }
 
     public function scopeForAssembly($query, int $assemblyId)
@@ -222,7 +221,7 @@ class Vote extends Model
 
         $results = $this->results;
         $yesPercentage = $results['yes']['percentage'] ?? 0;
-        
+
         return $yesPercentage >= $this->required_approval_percentage;
     }
 }

@@ -16,7 +16,7 @@ class ForcePasswordChange
     public function handle(Request $request, Closure $next): Response
     {
         // Only apply to authenticated users
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return $next($request);
         }
 
@@ -58,6 +58,7 @@ class ForcePasswordChange
         // In tenant context, check if the tenant has the requires_password_change flag
         if (tenant()) {
             $tenantData = tenant()->data ?? [];
+
             return $tenantData['requires_password_change'] ?? false;
         }
 

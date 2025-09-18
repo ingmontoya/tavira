@@ -27,7 +27,7 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->timestamps();
-            
+
             // Indexes for common queries
             $table->index(['conjunto_config_id', 'status']);
             $table->index(['conjunto_config_id', 'type']);

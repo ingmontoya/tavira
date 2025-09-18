@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('subscription_plan')->nullable()->after('subscription_status');
             $table->timestamp('subscription_expires_at')->nullable()->after('subscription_plan');
             $table->timestamp('subscription_renewed_at')->nullable()->after('subscription_expires_at');
-            
+
             // Index for subscription queries
             $table->index(['subscription_status', 'subscription_expires_at']);
         });
@@ -26,7 +26,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('requires_subscription')->default(false)->after('tenant_id');
             $table->timestamp('subscription_required_at')->nullable()->after('requires_subscription');
-            
+
             // Index for subscription queries
             $table->index('requires_subscription');
         });
@@ -41,9 +41,9 @@ return new class extends Migration
             $table->dropIndex(['subscription_status', 'subscription_expires_at']);
             $table->dropColumn([
                 'subscription_status',
-                'subscription_plan', 
+                'subscription_plan',
                 'subscription_expires_at',
-                'subscription_renewed_at'
+                'subscription_renewed_at',
             ]);
         });
 
@@ -51,7 +51,7 @@ return new class extends Migration
             $table->dropIndex(['requires_subscription']);
             $table->dropColumn([
                 'requires_subscription',
-                'subscription_required_at'
+                'subscription_required_at',
             ]);
         });
     }

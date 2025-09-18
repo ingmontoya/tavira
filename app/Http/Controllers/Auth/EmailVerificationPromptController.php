@@ -20,7 +20,7 @@ class EmailVerificationPromptController extends Controller
             // Using intended() will use the URL they were trying to access before verification
             return redirect()->intended(route('dashboard', absolute: false));
         }
-        
+
         // If not verified, show the verification notice page
         return Inertia::render('auth/VerifyEmail', ['status' => $request->session()->get('status')]);
     }

@@ -49,7 +49,7 @@ class TenantSubscription extends Model
      */
     public function isActive(): bool
     {
-        return $this->status === 'active' && 
+        return $this->status === 'active' &&
                ($this->expires_at === null || $this->expires_at->isFuture());
     }
 
@@ -92,10 +92,10 @@ class TenantSubscription extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-                    ->where(function ($q) {
-                        $q->whereNull('expires_at')
-                          ->orWhere('expires_at', '>', now());
-                    });
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
     }
 
     /**
@@ -104,6 +104,6 @@ class TenantSubscription extends Model
     public function scopeExpired($query)
     {
         return $query->where('expires_at', '<=', now())
-                    ->where('status', 'active');
+            ->where('status', 'active');
     }
 }

@@ -55,8 +55,8 @@ class PanicAlertTest extends TestCase
                     'id',
                     'status',
                     'created_at',
-                    'countdown_expires_at'
-                ]
+                    'countdown_expires_at',
+                ],
             ]);
 
         $this->assertDatabaseHas('panic_alerts', [
@@ -224,9 +224,9 @@ class PanicAlertTest extends TestCase
                         'apartment',
                         'status',
                         'created_at',
-                        'is_active'
-                    ]
-                ]
+                        'is_active',
+                    ],
+                ],
             ]);
 
         $this->assertCount(2, $response->json('alerts'));
@@ -259,9 +259,9 @@ class PanicAlertTest extends TestCase
                             'id',
                             'status',
                             'created_at',
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]);
 
         $this->assertCount(3, $response->json('alerts.data'));

@@ -14,7 +14,7 @@ class DebugEmailVerification
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user() && !$request->user()->hasVerifiedEmail()) {
+        if ($request->user() && ! $request->user()->hasVerifiedEmail()) {
             Log::info('DebugEmailVerification: User is not verified', [
                 'user_id' => $request->user()->id,
                 'email' => $request->user()->email,

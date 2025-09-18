@@ -22,9 +22,9 @@ class VoteCast implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('conjunto.' . $this->apartmentVote->vote->assembly->conjunto_config_id),
-            new PrivateChannel('assembly.' . $this->apartmentVote->vote->assembly_id),
-            new PrivateChannel('vote.' . $this->apartmentVote->vote_id),
+            new PrivateChannel('conjunto.'.$this->apartmentVote->vote->assembly->conjunto_config_id),
+            new PrivateChannel('assembly.'.$this->apartmentVote->vote->assembly_id),
+            new PrivateChannel('vote.'.$this->apartmentVote->vote_id),
         ];
     }
 

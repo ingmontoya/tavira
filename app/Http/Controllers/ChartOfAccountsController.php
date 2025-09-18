@@ -299,7 +299,7 @@ class ChartOfAccountsController extends Controller
         try {
             $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-            if (!$conjunto) {
+            if (! $conjunto) {
                 return back()->withErrors([
                     'create_defaults' => 'No se encontró configuración activa del conjunto.',
                 ]);
@@ -324,7 +324,7 @@ class ChartOfAccountsController extends Controller
 
         } catch (\Exception $e) {
             return back()->withErrors([
-                'create_defaults' => 'Error al crear el plan de cuentas: ' . $e->getMessage(),
+                'create_defaults' => 'Error al crear el plan de cuentas: '.$e->getMessage(),
             ]);
         }
     }

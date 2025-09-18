@@ -22,8 +22,8 @@ class VoteDelegateController extends Controller
 
         if ($request->filled('search')) {
             $query->whereHas('delegateUser', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -60,10 +60,10 @@ class VoteDelegateController extends Controller
 
         // Verify user can create delegate for this apartment
         $userApartment = Auth::user()->resident?->apartment_id;
-        $canDelegate = $userApartment === $validated['delegator_apartment_id'] || 
+        $canDelegate = $userApartment === $validated['delegator_apartment_id'] ||
                       Auth::user()->can('manage assemblies');
 
-        if (!$canDelegate) {
+        if (! $canDelegate) {
             return redirect()->back()
                 ->with('error', 'No tiene permisos para crear una delegación para este apartamento.');
         }
@@ -84,7 +84,7 @@ class VoteDelegateController extends Controller
         $delegate->load([
             'delegatorApartment',
             'delegateUser',
-            'authorizedByUser'
+            'authorizedByUser',
         ]);
 
         return Inertia::render('Assemblies/Delegates/Show', [
@@ -97,16 +97,16 @@ class VoteDelegateController extends Controller
 
     public function update(Request $request, Assembly $assembly, VoteDelegate $delegate)
     {
-        if (!in_array($delegate->status, ['pending', 'active'])) {
+        if (! in_array($delegate->status, ['pending', 'active'])) {
             return redirect()->back()
                 ->with('error', 'No se puede modificar una delegación revocada o expirada.');
         }
 
         // Check permissions
-        $canEdit = Auth::id() === $delegate->authorized_by_user_id || 
+        $canEdit = Auth::id() === $delegate->authorized_by_user_id ||
                   Auth::user()->can('manage assemblies');
 
-        if (!$canEdit) {
+        if (! $canEdit) {
             return redirect()->back()
                 ->with('error', 'No tiene permisos para editar esta delegación.');
         }
@@ -125,10 +125,10 @@ class VoteDelegateController extends Controller
     public function destroy(Assembly $assembly, VoteDelegate $delegate)
     {
         // Check permissions
-        $canDelete = Auth::id() === $delegate->authorized_by_user_id || 
+        $canDelete = Auth::id() === $delegate->authorized_by_user_id ||
                     Auth::user()->can('manage assemblies');
 
-        if (!$canDelete) {
+        if (! $canDelete) {
             return redirect()->back()
                 ->with('error', 'No tiene permisos para eliminar esta delegación.');
         }
@@ -141,12 +141,12 @@ class VoteDelegateController extends Controller
 
     public function approve(Assembly $assembly, VoteDelegate $delegate)
     {
-        if (!Auth::user()->can('manage assemblies')) {
+        if (! Auth::user()->can('manage assemblies')) {
             return redirect()->back()
                 ->with('error', 'No tiene permisos para aprobar delegaciones.');
         }
 
-        if (!$delegate->approve()) {
+        if (! $delegate->approve()) {
             return redirect()->back()
                 ->with('error', 'No se pudo aprobar la delegación.');
         }
@@ -161,12 +161,12 @@ class VoteDelegateController extends Controller
         $canRevoke = Auth::id() === $delegate->authorized_by_user_id ||
                     Auth::user()->can('manage assemblies');
 
-        if (!$canRevoke) {
+        if (! $canRevoke) {
             return redirect()->back()
                 ->with('error', 'No tiene permisos para revocar esta delegación.');
         }
 
-        if (!$delegate->revoke()) {
+        if (! $delegate->revoke()) {
             return redirect()->back()
                 ->with('error', 'No se pudo revocar la delegación.');
         }
@@ -187,10 +187,10 @@ class VoteDelegateController extends Controller
                 ->with(['delegatorApartment', 'delegateUser', 'authorizedByUser']);
 
             // For residents, only show their own delegations (as delegator or delegate)
-            if (!$user->can('manage assemblies')) {
+            if (! $user->can('manage assemblies')) {
                 $query->where(function ($q) use ($user) {
                     $q->where('delegate_user_id', $user->id)
-                      ->orWhere('authorized_by_user_id', $user->id);
+                        ->orWhere('authorized_by_user_id', $user->id);
                 });
             }
 
@@ -211,7 +211,7 @@ class VoteDelegateController extends Controller
                         'total' => $delegates->total(),
                         'last_page' => $delegates->lastPage(),
                     ],
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -231,7 +231,7 @@ class VoteDelegateController extends Controller
         try {
             $user = Auth::user();
 
-            if (!$user->resident || !$user->resident->apartment) {
+            if (! $user->resident || ! $user->resident->apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User must have an assigned apartment to create delegations',
@@ -258,8 +258,8 @@ class VoteDelegateController extends Controller
                 'success' => true,
                 'message' => 'Delegación creada exitosamente',
                 'data' => [
-                    'delegate' => $delegate->load(['delegatorApartment', 'delegateUser'])
-                ]
+                    'delegate' => $delegate->load(['delegatorApartment', 'delegateUser']),
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -283,14 +283,14 @@ class VoteDelegateController extends Controller
             $canRevoke = $user->id === $delegate->authorized_by_user_id ||
                         $user->can('manage assemblies');
 
-            if (!$canRevoke) {
+            if (! $canRevoke) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No tiene permisos para revocar esta delegación',
                 ], 403);
             }
 
-            if (!$delegate->revoke()) {
+            if (! $delegate->revoke()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se pudo revocar la delegación',

@@ -2,7 +2,7 @@
 
 /**
  * EJEMPLO: Aplicación del middleware RequiresFeature en rutas
- * 
+ *
  * Este archivo muestra cómo proteger rutas basándose en features habilitadas para tenants.
  * Las rutas solo serán accesibles si el tenant tiene la feature específica habilitada.
  */
@@ -47,7 +47,7 @@ Route::middleware(['auth', 'requires.feature:accounting'])->group(function () {
         Route::resource('budgets', 'BudgetController');
         Route::get('reports', 'AccountingReportController@index')->name('reports.index');
     });
-    
+
     // Finanzas también requieren contabilidad
     Route::get('account-statement', 'FinanceController@accountStatement')->name('account-statement');
     Route::resource('finance/payments', 'PaymentController');
@@ -111,12 +111,12 @@ Route::prefix('api')->middleware('auth:sanctum')->group(function () {
     Route::middleware('requires.feature:correspondence')->group(function () {
         Route::apiResource('correspondence', 'Api\CorrespondenceController');
     });
-    
+
     // API de mantenimiento
     Route::middleware('requires.feature:maintenance_requests')->group(function () {
         Route::apiResource('maintenance-requests', 'Api\MaintenanceRequestController');
     });
-    
+
     // API de visitantes
     Route::middleware('requires.feature:visitor_management')->group(function () {
         Route::apiResource('visits', 'Api\VisitController');
@@ -131,21 +131,21 @@ Route::prefix('api')->middleware('auth:sanctum')->group(function () {
 
 /**
  * EJEMPLO: Cómo verificar features en controladores
- * 
+ *
  * class ExampleController extends Controller
  * {
  *     public function index()
  *     {
  *         $tenantId = tenant('id');
- *         
+ *
  *         // Verificación manual de feature
  *         if (!TenantFeature::isFeatureEnabled($tenantId, 'correspondence')) {
  *             abort(403, 'Correspondencia no está habilitada para este tenant');
  *         }
- *         
+ *
  *         return view('correspondence.index');
  *     }
- *     
+ *
  *     public function dashboard()
  *     {
  *         $features = [
@@ -153,7 +153,7 @@ Route::prefix('api')->middleware('auth:sanctum')->group(function () {
  *             'hasMaintenace' => TenantFeature::isFeatureEnabled(tenant('id'), 'maintenance_requests'),
  *             'hasReservations' => TenantFeature::isFeatureEnabled(tenant('id'), 'reservations'),
  *         ];
- *         
+ *
  *         return Inertia::render('Dashboard', compact('features'));
  *     }
  * }

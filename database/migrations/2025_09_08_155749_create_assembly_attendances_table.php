@@ -21,10 +21,10 @@ return new class extends Migration
             $table->foreignId('registered_by')->nullable()->constrained('users');
             $table->json('metadata')->nullable(); // For additional info like online status, etc.
             $table->timestamps();
-            
+
             // Ensure one attendance record per user per assembly
             $table->unique(['assembly_id', 'user_id']);
-            
+
             // Index for quick queries
             $table->index(['assembly_id', 'status']);
             $table->index(['assembly_id', 'apartment_id']);

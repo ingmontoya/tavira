@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
 
 class ReservableAsset extends Model
 {
@@ -61,18 +61,18 @@ class ReservableAsset extends Model
         $conflictingReservations = $this->reservations()
             ->whereIn('status', ['approved', 'pending'])
             ->where(function ($query) use ($startTime, $endTime) {
-                $query->where(function ($q) use ($startTime, $endTime) {
+                $query->where(function ($q) use ($startTime) {
                     // Start time falls within existing reservation
                     $q->where('start_time', '<=', $startTime)
-                      ->where('end_time', '>', $startTime);
-                })->orWhere(function ($q) use ($startTime, $endTime) {
+                        ->where('end_time', '>', $startTime);
+                })->orWhere(function ($q) use ($endTime) {
                     // End time falls within existing reservation
                     $q->where('start_time', '<', $endTime)
-                      ->where('end_time', '>=', $endTime);
+                        ->where('end_time', '>=', $endTime);
                 })->orWhere(function ($q) use ($startTime, $endTime) {
                     // New reservation encompasses existing reservation
                     $q->where('start_time', '>=', $startTime)
-                      ->where('end_time', '<=', $endTime);
+                        ->where('end_time', '<=', $endTime);
                 });
             })
             ->exists();
@@ -82,7 +82,7 @@ class ReservableAsset extends Model
         }
 
         // Check availability rules if they exist
-        if (!empty($this->availability_rules)) {
+        if (! empty($this->availability_rules)) {
             return $this->checkAvailabilityRules($startTime, $endTime);
         }
 
@@ -94,18 +94,18 @@ class ReservableAsset extends Model
         $rules = $this->availability_rules;
 
         // Check allowed days of week (0 = Sunday, 6 = Saturday)
-        if (isset($rules['allowed_days']) && !empty($rules['allowed_days'])) {
+        if (isset($rules['allowed_days']) && ! empty($rules['allowed_days'])) {
             $dayOfWeek = $startTime->dayOfWeek;
-            if (!in_array($dayOfWeek, $rules['allowed_days'])) {
+            if (! in_array($dayOfWeek, $rules['allowed_days'])) {
                 return false;
             }
         }
 
         // Check time slots
-        if (isset($rules['time_slots']) && !empty($rules['time_slots'])) {
+        if (isset($rules['time_slots']) && ! empty($rules['time_slots'])) {
             $startHour = $startTime->format('H:i');
             $endHour = $endTime->format('H:i');
-            
+
             $withinTimeSlot = false;
             foreach ($rules['time_slots'] as $slot) {
                 if ($startHour >= $slot['start'] && $endHour <= $slot['end']) {
@@ -113,8 +113,8 @@ class ReservableAsset extends Model
                     break;
                 }
             }
-            
-            if (!$withinTimeSlot) {
+
+            if (! $withinTimeSlot) {
                 return false;
             }
         }

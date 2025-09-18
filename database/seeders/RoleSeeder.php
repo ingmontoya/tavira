@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -17,7 +16,7 @@ class RoleSeeder extends Seeder
         // Create roles for central administration
         $superadmin = Role::create(['name' => 'superadmin', 'guard_name' => 'web']);
         $admin = Role::create(['name' => 'admin', 'guard_name' => 'web']);
-        
+
         // Create roles that will also exist in tenants
         $adminConjunto = Role::create(['name' => 'admin_conjunto', 'guard_name' => 'web']);
         $residente = Role::create(['name' => 'residente', 'guard_name' => 'web']);
@@ -31,14 +30,14 @@ class RoleSeeder extends Seeder
             'view_tenants',
             'edit_tenants',
             'delete_tenants',
-            
+
             // User management
             'manage_users',
             'create_users',
             'view_users',
             'edit_users',
             'delete_users',
-            
+
             // General permissions
             'access_dashboard',
             'manage_settings',
@@ -50,11 +49,11 @@ class RoleSeeder extends Seeder
 
         // Assign permissions to superadmin (all permissions)
         $superadmin->givePermissionTo(Permission::all());
-        
+
         // Assign permissions to admin (tenant management)
         $admin->givePermissionTo([
             'manage_tenants',
-            'create_tenants', 
+            'create_tenants',
             'view_tenants',
             'edit_tenants',
             'access_dashboard',

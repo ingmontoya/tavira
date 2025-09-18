@@ -13,7 +13,7 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
         return response()->json([
             'authenticated' => auth()->check(),
             'user' => auth()->user() ? auth()->user()->only(['id', 'name', 'email']) : null,
-            'guard' => 'web'
+            'guard' => 'web',
         ]);
     });
 

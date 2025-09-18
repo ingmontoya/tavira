@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class CentralTenantFeatureController extends Controller
@@ -21,31 +20,32 @@ class CentralTenantFeatureController extends Controller
     public function index(Request $request)
     {
         $tenantsQuery = Tenant::query();
-        
+
         if ($request->filled('search')) {
             $tenantsQuery->where(function ($q) use ($request) {
                 $q->where('id', 'like', '%'.$request->search.'%')
-                  ->orWhere('admin_name', 'like', '%'.$request->search.'%')
-                  ->orWhere('admin_email', 'like', '%'.$request->search.'%');
+                    ->orWhere('admin_name', 'like', '%'.$request->search.'%')
+                    ->orWhere('admin_email', 'like', '%'.$request->search.'%');
             });
         }
 
         $tenants = $tenantsQuery->paginate(15);
-        
+
         // Load features for each tenant directly from their database
         $tenants->getCollection()->transform(function ($tenant) {
             try {
                 // Create direct connection to tenant database
-                $tenantDbName = 'tenant' . $tenant->id;
-                
+                $tenantDbName = 'tenant'.$tenant->id;
+
                 // Check if database exists
-                $dbExists = DB::select("SELECT datname FROM pg_database WHERE datname = ?", [$tenantDbName]);
-                
+                $dbExists = DB::select('SELECT datname FROM pg_database WHERE datname = ?', [$tenantDbName]);
+
                 if (empty($dbExists)) {
                     $tenant->features = collect([]);
+
                     return $tenant;
                 }
-                
+
                 // Configure tenant connection dynamically
                 config([
                     "database.connections.{$tenant->id}" => [
@@ -60,7 +60,7 @@ class CentralTenantFeatureController extends Controller
                         'prefix_indexes' => true,
                         'schema' => 'public',
                         'sslmode' => 'prefer',
-                    ]
+                    ],
                 ]);
 
                 // Get features from tenant database
@@ -68,17 +68,17 @@ class CentralTenantFeatureController extends Controller
                     ->table('tenant_features')
                     ->where('tenant_id', $tenant->id)
                     ->get();
-                
+
                 $tenant->features = $features;
-                
+
                 // Clean up connection
                 DB::purge($tenant->id);
-                
+
             } catch (\Exception $e) {
                 \Log::warning("Error loading tenant features for {$tenant->id}: {$e->getMessage()}");
                 $tenant->features = collect([]);
             }
-            
+
             return $tenant;
         });
 
@@ -102,15 +102,15 @@ class CentralTenantFeatureController extends Controller
 
         try {
             $tenant = Tenant::find($tenantId);
-            if (!$tenant) {
+            if (! $tenant) {
                 return back()->with('error', 'Tenant not found');
             }
 
-            $tenantDbName = 'tenant' . $tenantId;
-            
+            $tenantDbName = 'tenant'.$tenantId;
+
             // Configure tenant connection
             config([
-                "database.connections.temp_tenant" => [
+                'database.connections.temp_tenant' => [
                     'driver' => 'pgsql',
                     'host' => env('DB_HOST', '127.0.0.1'),
                     'port' => env('DB_PORT', '5433'),
@@ -122,7 +122,7 @@ class CentralTenantFeatureController extends Controller
                     'prefix_indexes' => true,
                     'schema' => 'public',
                     'sslmode' => 'prefer',
-                ]
+                ],
             ]);
 
             // Update or create the feature
@@ -141,8 +141,9 @@ class CentralTenantFeatureController extends Controller
         } catch (\Exception $e) {
             \Log::error("Error updating tenant feature: {$e->getMessage()}", [
                 'tenant_id' => $tenantId,
-                'feature' => $feature
+                'feature' => $feature,
             ]);
+
             return back()->with('error', 'Error al actualizar feature');
         }
     }
@@ -159,15 +160,15 @@ class CentralTenantFeatureController extends Controller
 
         try {
             $tenant = Tenant::find($tenantId);
-            if (!$tenant) {
+            if (! $tenant) {
                 return back()->with('error', 'Tenant not found');
             }
 
-            $tenantDbName = 'tenant' . $tenantId;
-            
+            $tenantDbName = 'tenant'.$tenantId;
+
             // Configure tenant connection
             config([
-                "database.connections.temp_tenant" => [
+                'database.connections.temp_tenant' => [
                     'driver' => 'pgsql',
                     'host' => env('DB_HOST', '127.0.0.1'),
                     'port' => env('DB_PORT', '5433'),
@@ -179,7 +180,7 @@ class CentralTenantFeatureController extends Controller
                     'prefix_indexes' => true,
                     'schema' => 'public',
                     'sslmode' => 'prefer',
-                ]
+                ],
             ]);
 
             // Update features
@@ -199,8 +200,9 @@ class CentralTenantFeatureController extends Controller
 
         } catch (\Exception $e) {
             \Log::error("Error bulk updating tenant features: {$e->getMessage()}", [
-                'tenant_id' => $tenantId
+                'tenant_id' => $tenantId,
             ]);
+
             return back()->with('error', 'Error al actualizar features');
         }
     }
@@ -215,23 +217,23 @@ class CentralTenantFeatureController extends Controller
         ]);
 
         $templates = $this->getFeatureTemplates();
-        
-        if (!isset($templates[$request->template])) {
+
+        if (! isset($templates[$request->template])) {
             return back()->with('error', 'Template no encontrado');
         }
 
         try {
             $tenant = Tenant::find($tenantId);
-            if (!$tenant) {
+            if (! $tenant) {
                 return back()->with('error', 'Tenant not found');
             }
 
             $templateFeatures = $templates[$request->template]['features'];
-            $tenantDbName = 'tenant' . $tenantId;
-            
+            $tenantDbName = 'tenant'.$tenantId;
+
             // Configure tenant connection
             config([
-                "database.connections.temp_tenant" => [
+                'database.connections.temp_tenant' => [
                     'driver' => 'pgsql',
                     'host' => env('DB_HOST', '127.0.0.1'),
                     'port' => env('DB_PORT', '5433'),
@@ -243,9 +245,9 @@ class CentralTenantFeatureController extends Controller
                     'prefix_indexes' => true,
                     'schema' => 'public',
                     'sslmode' => 'prefer',
-                ]
+                ],
             ]);
-            
+
             foreach ($this->getAvailableFeatures() as $feature) {
                 $enabled = in_array($feature, $templateFeatures);
                 DB::connection('temp_tenant')
@@ -264,8 +266,9 @@ class CentralTenantFeatureController extends Controller
         } catch (\Exception $e) {
             \Log::error("Error applying template: {$e->getMessage()}", [
                 'tenant_id' => $tenantId,
-                'template' => $request->template
+                'template' => $request->template,
             ]);
+
             return back()->with('error', 'Error al aplicar template');
         }
     }
@@ -280,42 +283,42 @@ class CentralTenantFeatureController extends Controller
             'notifications',
             'institutional_email',
             'messaging',
-            
+
             // Administración Básica
             'basic_administration',
             'resident_management',
             'apartment_management',
-            
+
             // Mantenimiento
             'maintenance_requests',
-            
+
             // Gestión de Visitantes y Seguridad
             'visitor_management',
             'security_scanner',
             'access_control',
             'panic_button',
-            
+
             // Finanzas y Contabilidad
             'accounting',
             'payment_agreements',
             'expense_approvals',
             'financial_reports',
             'provider_management',
-            
+
             // Reservas y Espacios Comunes
             'reservations',
-            
+
             // Documentos y Actas
             'documents',
             'meeting_minutes',
-            
+
             // Asambleas Digitales y Votaciones
             'voting',
-            
+
             // Reportes y Análisis
             'advanced_reports',
             'analytics_dashboard',
-            
+
             // Configuración Avanzada
             'system_settings',
             'audit_logs',
@@ -333,7 +336,7 @@ class CentralTenantFeatureController extends Controller
                 'max_units' => 50,
                 'features' => [
                     'basic_administration',
-                    'resident_management', 
+                    'resident_management',
                     'apartment_management',
                     'correspondence',
                     'announcements',

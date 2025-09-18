@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class SecurityUserSeeder extends Seeder
 {
@@ -26,7 +26,7 @@ class SecurityUserSeeder extends Seeder
 
         // Assign the porteria role using Spatie Permission
         $porteriaRole = Role::where('name', 'porteria')->first();
-        if ($porteriaRole && !$securityUser->hasRole('porteria')) {
+        if ($porteriaRole && ! $securityUser->hasRole('porteria')) {
             $securityUser->assignRole('porteria');
             $this->command->info('✅ Usuario de portería creado: porteria@test.com / password');
         } else {
@@ -44,7 +44,7 @@ class SecurityUserSeeder extends Seeder
         );
 
         $residentRole = Role::where('name', 'residente')->first();
-        if ($residentRole && !$residentUser->hasRole('residente')) {
+        if ($residentRole && ! $residentUser->hasRole('residente')) {
             $residentUser->assignRole('residente');
             $this->command->info('✅ Usuario residente creado: residente@test.com / password');
         } else {

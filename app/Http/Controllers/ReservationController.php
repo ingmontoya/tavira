@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreReservationRequest;
 use App\Models\Apartment;
 use App\Models\ConjuntoConfig;
-use App\Models\Reservation;
 use App\Models\ReservableAsset;
+use App\Models\Reservation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,18 +21,18 @@ class ReservationController extends Controller
         $query = Reservation::with(['reservableAsset', 'user', 'apartment', 'approvedBy', 'cancelledBy']);
 
         // Filter by user role - residents only see their own reservations
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin'])) {
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin'])) {
             $query->where('user_id', auth()->id());
         }
 
         // Apply filters
         if ($request->filled('search')) {
             $query->whereHas('reservableAsset', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%');
             })
-            ->orWhereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
-            });
+                ->orWhereHas('user', function ($q) use ($request) {
+                    $q->where('name', 'like', '%'.$request->search.'%');
+                });
         }
 
         if ($request->filled('status')) {
@@ -57,11 +57,11 @@ class ReservationController extends Controller
 
         // Get available assets for filter
         $conjuntoConfig = ConjuntoConfig::first();
-        $assets = $conjuntoConfig ? 
+        $assets = $conjuntoConfig ?
             ReservableAsset::where('conjunto_config_id', $conjuntoConfig->id)
                 ->active()
                 ->orderBy('name')
-                ->get(['id', 'name']) : 
+                ->get(['id', 'name']) :
             collect([]);
 
         $statuses = [
@@ -87,8 +87,8 @@ class ReservationController extends Controller
     public function create(Request $request)
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return redirect()->route('conjunto-config.create')
                 ->with('error', 'Debe configurar el conjunto antes de hacer reservas.');
         }
@@ -143,20 +143,20 @@ class ReservationController extends Controller
 
         // Set initial status based on asset approval requirements
         $data['status'] = $asset->requires_approval ? 'pending' : 'approved';
-        
-        if (!$asset->requires_approval) {
+
+        if (! $asset->requires_approval) {
             $data['approved_at'] = now();
             $data['approved_by'] = auth()->id();
         }
 
         // Set apartment from user's resident record if not provided
-        if (!isset($data['apartment_id']) && auth()->user()->resident) {
+        if (! isset($data['apartment_id']) && auth()->user()->resident) {
             $data['apartment_id'] = auth()->user()->resident->apartment_id;
         }
 
         $reservation = Reservation::create($data);
 
-        $message = $asset->requires_approval 
+        $message = $asset->requires_approval
             ? 'Reserva creada exitosamente. Está pendiente de aprobación.'
             : 'Reserva creada y aprobada exitosamente.';
 
@@ -170,7 +170,7 @@ class ReservationController extends Controller
     public function show(Reservation $reservation)
     {
         // Check authorization - users can only see their own reservations
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) && 
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) &&
             $reservation->user_id !== auth()->id()) {
             abort(403);
         }
@@ -180,7 +180,7 @@ class ReservationController extends Controller
             'user',
             'apartment',
             'approvedBy',
-            'cancelledBy'
+            'cancelledBy',
         ]);
 
         return Inertia::render('Reservations/Show', [
@@ -195,12 +195,12 @@ class ReservationController extends Controller
     public function edit(Reservation $reservation)
     {
         // Check authorization - users can only edit their own pending reservations
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) && 
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) &&
             $reservation->user_id !== auth()->id()) {
             abort(403);
         }
 
-        if (!$reservation->canBeCancelled()) {
+        if (! $reservation->canBeCancelled()) {
             return back()->with('error', 'Esta reserva no puede ser modificada.');
         }
 
@@ -222,12 +222,12 @@ class ReservationController extends Controller
     public function update(StoreReservationRequest $request, Reservation $reservation)
     {
         // Check authorization
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) && 
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) &&
             $reservation->user_id !== auth()->id()) {
             abort(403);
         }
 
-        if (!$reservation->canBeCancelled()) {
+        if (! $reservation->canBeCancelled()) {
             return back()->with('error', 'Esta reserva no puede ser modificada.');
         }
 
@@ -257,12 +257,12 @@ class ReservationController extends Controller
     public function destroy(Reservation $reservation)
     {
         // Check authorization
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) && 
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin']) &&
             $reservation->user_id !== auth()->id()) {
             abort(403);
         }
 
-        if (!$reservation->canBeCancelled()) {
+        if (! $reservation->canBeCancelled()) {
             return back()->with('error', 'Esta reserva no puede ser cancelada.');
         }
 
@@ -277,11 +277,11 @@ class ReservationController extends Controller
      */
     public function approve(Reservation $reservation)
     {
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin'])) {
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin'])) {
             abort(403);
         }
 
-        if (!$reservation->canBeApproved()) {
+        if (! $reservation->canBeApproved()) {
             return back()->with('error', 'Esta reserva no puede ser aprobada.');
         }
 
@@ -295,11 +295,11 @@ class ReservationController extends Controller
      */
     public function reject(Reservation $reservation)
     {
-        if (!auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin'])) {
+        if (! auth()->user()->hasAnyRole(['admin_conjunto', 'superadmin'])) {
             abort(403);
         }
 
-        if (!$reservation->canBeApproved()) {
+        if (! $reservation->canBeApproved()) {
             return back()->with('error', 'Esta reserva no puede ser rechazada.');
         }
 
@@ -325,7 +325,7 @@ class ReservationController extends Controller
         if ($date->gt($asset->getMaxAdvanceBookingDate())) {
             return response()->json([
                 'available' => false,
-                'message' => "Solo se pueden hacer reservas hasta {$asset->advance_booking_days} días de anticipación."
+                'message' => "Solo se pueden hacer reservas hasta {$asset->advance_booking_days} días de anticipación.",
             ]);
         }
 
@@ -337,9 +337,9 @@ class ReservationController extends Controller
 
         while ($start->lt($end)) {
             $slotEnd = $start->copy()->addMinutes($durationMinutes);
-            
+
             $isAvailable = $asset->isAvailableAt($start, $slotEnd);
-            
+
             $slots[] = [
                 'start' => $start->format('H:i'),
                 'end' => $slotEnd->format('H:i'),

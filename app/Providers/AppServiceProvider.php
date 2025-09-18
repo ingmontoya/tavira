@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Registrar driver personalizado de Pennant
         Feature::extend('central_api', function ($app, $config) {
-            return new CentralApiDriver();
+            return new CentralApiDriver;
         });
 
         Event::listen(Verified::class, SendWelcomeEmail::class);

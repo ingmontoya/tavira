@@ -70,7 +70,7 @@ class ComprehensiveTestSeeder extends Seeder
             $this->printSummary($conjunto, $apartments, $invoices);
         } catch (\Exception $e) {
             DB::rollback();
-            $this->command->error('❌ Error creating test scenario: ' . $e->getMessage());
+            $this->command->error('❌ Error creating test scenario: '.$e->getMessage());
             throw $e;
         }
     }
@@ -205,7 +205,7 @@ class ComprehensiveTestSeeder extends Seeder
                     $typeIndex = $floor - 1; // Floor 1 = Tipo A (index 0), etc.
                     $apartmentType = $apartmentTypes[$typeIndex];
 
-                    $apartmentNumber = $towerName[0] . $floor . sprintf('%02d', $position);
+                    $apartmentNumber = $towerName[0].$floor.sprintf('%02d', $position);
 
                     $apartments[] = Apartment::create([
                         'conjunto_config_id' => $conjunto->id,
@@ -246,7 +246,7 @@ class ComprehensiveTestSeeder extends Seeder
             // 85% of apartments have residents
             if (rand(1, 100) <= 85) {
                 $firstName = $firstNames[array_rand($firstNames)];
-                $lastName = $lastNames[array_rand($lastNames)] . ' ' . $lastNames[array_rand($lastNames)];
+                $lastName = $lastNames[array_rand($lastNames)].' '.$lastNames[array_rand($lastNames)];
 
                 Resident::create([
                     'apartment_id' => $apartment->id,
@@ -254,8 +254,8 @@ class ComprehensiveTestSeeder extends Seeder
                     'last_name' => $lastName,
                     'document_type' => 'CC',
                     'document_number' => (string) rand(10000000, 99999999),
-                    'phone' => '+57 3' . rand(10, 99) . ' ' . rand(100, 999) . ' ' . rand(1000, 9999),
-                    'email' => strtolower($firstName . '.' . explode(' ', $lastName)[0] . '.' . $apartment->number . '.' . rand(1000, 9999)) . '@example.com',
+                    'phone' => '+57 3'.rand(10, 99).' '.rand(100, 999).' '.rand(1000, 9999),
+                    'email' => strtolower($firstName.'.'.explode(' ', $lastName)[0].'.'.$apartment->number.'.'.rand(1000, 9999)).'@example.com',
                     'resident_type' => rand(1, 100) <= 70 ? 'Owner' : 'Tenant', // 70% owners, 30% tenants
                     'status' => 'Active',
                     'start_date' => now()->subYears(rand(1, 5))->subMonths(rand(1, 11)),
@@ -353,7 +353,7 @@ class ComprehensiveTestSeeder extends Seeder
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'payment_concept_id' => $administrationConcept->id,
-                    'description' => 'Administración ' . $billingDate->format('F Y'),
+                    'description' => 'Administración '.$billingDate->format('F Y'),
                     'quantity' => 1,
                     'unit_price' => $apartment->monthly_fee,
                     'total_price' => $apartment->monthly_fee,
@@ -464,7 +464,7 @@ class ComprehensiveTestSeeder extends Seeder
             'remaining_amount' => $amount,
             'payment_date' => now()->subDays(rand(0, 30)),
             'payment_method' => $method,
-            'reference_number' => 'REF-' . strtoupper(uniqid()),
+            'reference_number' => 'REF-'.strtoupper(uniqid()),
             'notes' => 'Pago generado automáticamente para pruebas',
             'status' => 'pending',
             'created_by' => 1,
@@ -546,19 +546,19 @@ class ComprehensiveTestSeeder extends Seeder
         $this->command->info("\n📊 RESUMEN DEL ESCENARIO DE PRUEBAS");
         $this->command->info('================================');
         $this->command->info("🏢 Conjunto: {$conjunto->name}");
-        $this->command->info('🏠 Total apartamentos: ' . count($apartments));
+        $this->command->info('🏠 Total apartamentos: '.count($apartments));
         $this->command->info("📋 Total facturas: {$totalInvoices}");
         $this->command->info('');
         $this->command->info('💰 Estados de facturación:');
-        $this->command->info("  ✅ Pagadas: {$paidInvoices} (" . round(($paidInvoices / $totalInvoices) * 100, 1) . '%)');
-        $this->command->info("  🔶 Pago parcial: {$partialInvoices} (" . round(($partialInvoices / $totalInvoices) * 100, 1) . '%)');
-        $this->command->info("  ❌ Vencidas: {$overdueInvoices} (" . round(($overdueInvoices / $totalInvoices) * 100, 1) . '%)');
-        $this->command->info("  ⏳ Pendientes: {$pendingInvoices} (" . round(($pendingInvoices / $totalInvoices) * 100, 1) . '%)');
+        $this->command->info("  ✅ Pagadas: {$paidInvoices} (".round(($paidInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info("  🔶 Pago parcial: {$partialInvoices} (".round(($partialInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info("  ❌ Vencidas: {$overdueInvoices} (".round(($overdueInvoices / $totalInvoices) * 100, 1).'%)');
+        $this->command->info("  ⏳ Pendientes: {$pendingInvoices} (".round(($pendingInvoices / $totalInvoices) * 100, 1).'%)');
         $this->command->info('');
         $this->command->info('💵 Montos:');
-        $this->command->info('  Total facturado: $' . number_format($totalAmount, 0));
-        $this->command->info('  Total pagado: $' . number_format($paidAmount, 0));
-        $this->command->info('  Saldo pendiente: $' . number_format($balanceAmount, 0));
+        $this->command->info('  Total facturado: $'.number_format($totalAmount, 0));
+        $this->command->info('  Total pagado: $'.number_format($paidAmount, 0));
+        $this->command->info('  Saldo pendiente: $'.number_format($balanceAmount, 0));
         $this->command->info('');
     }
 

@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\User;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Role;
-use App\Models\User;
 
 class CleanAdminConjuntoRole extends Command
 {
@@ -27,8 +27,9 @@ class CleanAdminConjuntoRole extends Command
      */
     public function handle()
     {
-        if (app()->environment('production') && !$this->option('force')) {
+        if (app()->environment('production') && ! $this->option('force')) {
             $this->error('This command is running in production. Use --force to proceed.');
+
             return 1;
         }
 
@@ -39,22 +40,24 @@ class CleanAdminConjuntoRole extends Command
             $adminConjuntoRole = Role::where('name', 'admin_conjunto')->first();
             $adminRole = Role::where('name', 'admin')->first();
 
-            if (!$adminConjuntoRole) {
+            if (! $adminConjuntoRole) {
                 $this->info('admin_conjunto role not found. Nothing to clean.');
+
                 return 0;
             }
 
-            if (!$adminRole) {
+            if (! $adminRole) {
                 $this->error('admin role not found. Cannot proceed.');
+
                 return 1;
             }
 
             // Transfer permissions
             $permissions = $adminConjuntoRole->permissions;
             $this->info("Transferring {$permissions->count()} permissions from admin_conjunto to admin...");
-            
+
             foreach ($permissions as $permission) {
-                if (!$adminRole->hasPermissionTo($permission)) {
+                if (! $adminRole->hasPermissionTo($permission)) {
                     $adminRole->givePermissionTo($permission);
                 }
             }
@@ -65,16 +68,16 @@ class CleanAdminConjuntoRole extends Command
 
             foreach ($users as $user) {
                 $this->line("  - Migrating: {$user->email}");
-                
+
                 // Remove admin_conjunto role
                 $user->removeRole('admin_conjunto');
-                
+
                 // Add admin role if not already present
-                if (!$user->hasRole('admin')) {
+                if (! $user->hasRole('admin')) {
                     $user->assignRole('admin');
-                    $this->line("    ✓ Assigned admin role");
+                    $this->line('    ✓ Assigned admin role');
                 } else {
-                    $this->line("    ✓ Already has admin role");
+                    $this->line('    ✓ Already has admin role');
                 }
             }
 
@@ -84,13 +87,14 @@ class CleanAdminConjuntoRole extends Command
 
             // Clear permission cache
             $this->call('permission:cache-reset');
-            
+
             $this->info('✅ Admin conjunto role cleanup completed successfully!');
-            
+
             return 0;
 
         } catch (\Exception $e) {
             $this->error("Error during cleanup: {$e->getMessage()}");
+
             return 1;
         }
     }

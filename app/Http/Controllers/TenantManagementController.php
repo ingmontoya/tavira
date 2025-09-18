@@ -5,14 +5,12 @@ namespace App\Http\Controllers;
 use App\Jobs\CreateTenantAdminUser;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\TenantCredentialsCreated;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\TenantApprovalRequest;
-use App\Notifications\TenantCredentialsCreated;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class TenantManagementController extends Controller
 {
@@ -29,6 +27,7 @@ class TenantManagementController extends Controller
     {
         // Get raw data directly from database to handle casting issues with stancl/tenancy
         $rawData = DB::table('tenants')->where('id', $tenant->id)->value('data');
+
         return $rawData ? json_decode($rawData, true) : [];
     }
 
@@ -37,7 +36,7 @@ class TenantManagementController extends Controller
         $user = $request->user();
 
         $tenants = Tenant::query()
-            ->when(!$user->hasRole('superadmin'), function ($query) use ($user) {
+            ->when(! $user->hasRole('superadmin'), function ($query) use ($user) {
                 // Filter tenants created by this user or where user is the admin
                 $query->where(function ($subQuery) use ($user) {
                     // Check direct model fields first
@@ -62,6 +61,7 @@ class TenantManagementController extends Controller
                 // Get raw data directly from database to handle casting issues
                 $rawData = \DB::table('tenants')->where('id', $tenant->id)->value('data');
                 $data = $rawData ? json_decode($rawData, true) : [];
+
                 return [
                     'id' => $tenant->id,
                     // Use data field as fallback for missing column values
@@ -85,7 +85,7 @@ class TenantManagementController extends Controller
         $user = auth()->user();
 
         // Ensure user can only access their own tenants (unless superadmin)
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
 
             // Check if user just created this tenant (from session)
@@ -98,7 +98,7 @@ class TenantManagementController extends Controller
                 // Also check tenant admin fields for immediate access after creation
                 $tenant->admin_email === $user->email;
 
-            if (!$canAccess) {
+            if (! $canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
             }
         }
@@ -190,11 +190,11 @@ class TenantManagementController extends Controller
         $retryCount = 0;
         $dataUpdated = false;
 
-        while ($retryCount < $maxRetries && !$dataUpdated) {
+        while ($retryCount < $maxRetries && ! $dataUpdated) {
             try {
-                \Log::info('Starting data field update for tenant (attempt ' . ($retryCount + 1) . '): ' . $tenant->id);
+                \Log::info('Starting data field update for tenant (attempt '.($retryCount + 1).'): '.$tenant->id);
                 sleep(1); // Wait for pipeline
-                \Log::info('Pipeline wait completed for tenant: ' . $tenant->id);
+                \Log::info('Pipeline wait completed for tenant: '.$tenant->id);
 
                 // Update the data field directly via database since Eloquent casting has issues with stancl/tenancy
                 $currentDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
@@ -233,23 +233,23 @@ class TenantManagementController extends Controller
                 // Verify the update worked by checking if created_by exists
                 $verifyDataRaw = DB::table('tenants')->where('id', $tenant->id)->value('data');
                 $verifyData = $verifyDataRaw ? json_decode($verifyDataRaw, true) : [];
-                
+
                 if (isset($verifyData['created_by']) && isset($verifyData['created_by_email'])) {
                     $dataUpdated = true;
-                    \Log::info('Tenant data field updated and verified successfully for: ' . $tenant->id);
+                    \Log::info('Tenant data field updated and verified successfully for: '.$tenant->id);
                 } else {
                     throw new \Exception('Data verification failed - created_by fields not found after update');
                 }
 
             } catch (\Exception $dataUpdateError) {
                 $retryCount++;
-                \Log::error('Failed to update tenant data field (attempt ' . $retryCount . ')', [
+                \Log::error('Failed to update tenant data field (attempt '.$retryCount.')', [
                     'tenant_id' => $tenant->id,
                     'error' => $dataUpdateError->getMessage(),
                     'temp_password' => $tempPassword,
                     'will_retry' => $retryCount < $maxRetries,
                 ]);
-                
+
                 if ($retryCount < $maxRetries) {
                     sleep(2); // Wait longer between retries
                 }
@@ -257,7 +257,7 @@ class TenantManagementController extends Controller
         }
 
         // If all retries failed, log a critical error
-        if (!$dataUpdated) {
+        if (! $dataUpdated) {
             \Log::critical('CRITICAL: Failed to update tenant data field after all retries', [
                 'tenant_id' => $tenant->id,
                 'user_id' => $user->id,
@@ -320,7 +320,7 @@ class TenantManagementController extends Controller
         $user = auth()->user();
 
         // Ensure user can only edit their own tenants (unless superadmin)
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
             $canAccess = ($data['created_by'] ?? null) == $user->id ||
                 ($data['created_by_email'] ?? null) == $user->email ||
@@ -328,7 +328,7 @@ class TenantManagementController extends Controller
                 // Also check tenant admin fields for immediate access after creation
                 $tenant->admin_email === $user->email;
 
-            if (!$canAccess) {
+            if (! $canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
             }
         }
@@ -358,7 +358,7 @@ class TenantManagementController extends Controller
         $user = auth()->user();
 
         // Ensure user can only update their own tenants (unless superadmin)
-        if (!$user->hasRole('superadmin')) {
+        if (! $user->hasRole('superadmin')) {
             $data = $this->getTenantData($tenant);
             $canAccess = ($data['created_by'] ?? null) == $user->id ||
                 ($data['created_by_email'] ?? null) == $user->email ||
@@ -366,14 +366,14 @@ class TenantManagementController extends Controller
                 // Also check tenant admin fields for immediate access after creation
                 $tenant->admin_email === $user->email;
 
-            if (!$canAccess) {
+            if (! $canAccess) {
                 abort(403, 'No tienes acceso a este tenant');
             }
         }
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:tenants,data->email,' . $tenant->id,
+            'email' => 'required|email|unique:tenants,data->email,'.$tenant->id,
             'status' => 'required|in:pending,active,suspended',
         ]);
 
@@ -409,7 +409,7 @@ class TenantManagementController extends Controller
     {
         $request->validate([
             'user_id' => 'nullable|integer',
-            'redirect_url' => 'string|nullable'
+            'redirect_url' => 'string|nullable',
         ]);
 
         $data = $this->getTenantData($tenant);
@@ -418,7 +418,7 @@ class TenantManagementController extends Controller
         }
 
         $domain = $tenant->domains->first();
-        if (!$domain) {
+        if (! $domain) {
             return response()->json(['error' => 'El tenant no tiene dominio configurado'], 409);
         }
 
@@ -427,10 +427,10 @@ class TenantManagementController extends Controller
             // Priority: request user_id -> stored admin_user_id -> error
             $userId = $request->user_id ?? $tenant->admin_user_id;
 
-            if (!$userId) {
+            if (! $userId) {
                 return response()->json([
-                    'error' => 'No se puede determinar qué usuario impersonar. ' .
-                        'Especifica un user_id o asegúrate de que el tenant tenga un admin_user_id válido.'
+                    'error' => 'No se puede determinar qué usuario impersonar. '.
+                        'Especifica un user_id o asegúrate de que el tenant tenga un admin_user_id válido.',
                 ], 400);
             }
 
@@ -442,20 +442,20 @@ class TenantManagementController extends Controller
             $token = $tokenObject->token ?? $tokenObject;
 
             // Build the impersonation URL
-            $tenantUrl = (app()->environment('local') ? 'http://' : 'https://') . $domain->domain;
+            $tenantUrl = (app()->environment('local') ? 'http://' : 'https://').$domain->domain;
             if (app()->environment('local')) {
                 $tenantUrl .= ':8001'; // Updated to match current server port
             }
 
-            $impersonationUrl = $tenantUrl . '/impersonate/' . $token;
+            $impersonationUrl = $tenantUrl.'/impersonate/'.$token;
 
             return response()->json([
                 'success' => true,
                 'url' => $impersonationUrl,
-                'message' => 'Token de impersonación generado exitosamente'
+                'message' => 'Token de impersonación generado exitosamente',
             ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al generar token de impersonación: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Error al generar token de impersonación: '.$e->getMessage()], 500);
         }
     }
 
@@ -470,7 +470,6 @@ class TenantManagementController extends Controller
 
         return back()->with('success', 'Tenant suspendido exitosamente');
     }
-
 
     public function activate(Tenant $tenant)
     {
@@ -508,7 +507,7 @@ class TenantManagementController extends Controller
 
             return back()->with('success', $message);
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al activar el tenant: ' . $e->getMessage());
+            return back()->with('error', 'Error al activar el tenant: '.$e->getMessage());
         }
     }
 
@@ -542,7 +541,8 @@ class TenantManagementController extends Controller
         } catch (\Exception $e) {
             // Ensure tenancy is ended even if there's an error
             tenancy()->end();
-            return response()->json(['error' => 'Error al obtener usuarios del tenant: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Error al obtener usuarios del tenant: '.$e->getMessage()], 500);
         }
     }
 
@@ -565,7 +565,7 @@ class TenantManagementController extends Controller
         $password .= $special[random_int(0, strlen($special) - 1)];
 
         // Fill remaining characters randomly
-        $allChars = $uppercase . $lowercase . $numbers . $special;
+        $allChars = $uppercase.$lowercase.$numbers.$special;
         for ($i = 4; $i < 12; $i++) { // Make it 12 characters total
             $password .= $allChars[random_int(0, strlen($allChars) - 1)];
         }

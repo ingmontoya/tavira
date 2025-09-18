@@ -27,7 +27,7 @@ class RedirectIfSubscribed
         }
 
         // Only apply to authenticated users
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return $next($request);
         }
 
@@ -41,16 +41,16 @@ class RedirectIfSubscribed
         // Check if user already has an active subscription
         $activeSubscription = TenantSubscription::where(function ($query) use ($user) {
             $query->where('user_id', $user->id)
-                  ->orWhere(function ($q) use ($user) {
-                      $q->whereNull('tenant_id')->whereNull('user_id'); // New signups
-                  });
+                ->orWhere(function ($q) {
+                    $q->whereNull('tenant_id')->whereNull('user_id'); // New signups
+                });
         })
-        ->where('status', 'active')
-        ->where(function ($query) {
-            $query->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
-        })
-        ->first();
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->first();
 
         // Log subscription check for debugging
         Log::info('RedirectIfSubscribed middleware check:', [
@@ -58,7 +58,7 @@ class RedirectIfSubscribed
             'user_email' => $user->email,
             'tenant_id' => $user->tenant_id,
             'has_admin_role' => $user->hasRole('admin'),
-            'active_subscription_found' => !is_null($activeSubscription),
+            'active_subscription_found' => ! is_null($activeSubscription),
             'subscription_id' => $activeSubscription?->id,
             'request_route' => $request->route()?->getName(),
         ]);
@@ -70,7 +70,7 @@ class RedirectIfSubscribed
                 'subscription_id' => $activeSubscription->id,
                 'from_route' => $request->route()?->getName(),
             ]);
-            
+
             return redirect()->route('dashboard')
                 ->with('info', 'Ya tienes una suscripción activa. ¡Bienvenido de vuelta!')
                 ->with('subscription', $activeSubscription);

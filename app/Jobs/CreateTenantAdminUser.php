@@ -8,7 +8,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Hash;
 use Stancl\Tenancy\Contracts\Tenant;
 
 class CreateTenantAdminUser implements ShouldQueue
@@ -25,7 +24,7 @@ class CreateTenantAdminUser implements ShouldQueue
     public function handle(): void
     {
         // Only create user if credentials are provided
-        if (!$this->tenant->admin_name || !$this->tenant->admin_email || !$this->tenant->admin_password) {
+        if (! $this->tenant->admin_name || ! $this->tenant->admin_email || ! $this->tenant->admin_password) {
             return;
         }
 
@@ -47,7 +46,7 @@ class CreateTenantAdminUser implements ShouldQueue
                     $user->assignRole($adminRole);
                 } catch (\Exception $e) {
                     // Role assignment failed, but user is created
-                    logger()->warning('Failed to assign admin role to tenant user: ' . $e->getMessage());
+                    logger()->warning('Failed to assign admin role to tenant user: '.$e->getMessage());
                 }
             }
 

@@ -31,6 +31,7 @@ class EnsureConjuntoConfigured
                     'name' => 'Central Administration',
                 ],
             ]);
+
             return $next($request);
         }
 

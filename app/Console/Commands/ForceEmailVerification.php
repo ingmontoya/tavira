@@ -27,25 +27,27 @@ class ForceEmailVerification extends Command
     public function handle()
     {
         $email = $this->argument('email');
-        
+
         $user = User::where('email', $email)->first();
-        
-        if (!$user) {
+
+        if (! $user) {
             $this->error("User with email '{$email}' not found");
+
             return Command::FAILURE;
         }
 
         if ($user->hasVerifiedEmail()) {
             $this->info("User '{$email}' is already verified");
+
             return Command::SUCCESS;
         }
 
         // Force verification
         $user->markEmailAsVerified();
-        
+
         $this->info("✅ Email verification forced for user: {$email}");
-        $this->line("User can now access the system normally.");
-        
+        $this->line('User can now access the system normally.');
+
         return Command::SUCCESS;
     }
 }

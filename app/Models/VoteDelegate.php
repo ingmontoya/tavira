@@ -53,8 +53,8 @@ class VoteDelegate extends Model
 
     public function getIsActiveAttribute(): bool
     {
-        return $this->status === 'active' && 
-               (!$this->expires_at || now()->lt($this->expires_at));
+        return $this->status === 'active' &&
+               (! $this->expires_at || now()->lt($this->expires_at));
     }
 
     public function getIsExpiredAttribute(): bool
@@ -80,10 +80,10 @@ class VoteDelegate extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-                    ->where(function ($query) {
-                        $query->whereNull('expires_at')
-                              ->orWhere('expires_at', '>', now());
-                    });
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
     }
 
     public function scopeForAssembly($query, int $assemblyId)
@@ -122,7 +122,7 @@ class VoteDelegate extends Model
 
     public function revoke(): bool
     {
-        if (!in_array($this->status, ['pending', 'active'])) {
+        if (! in_array($this->status, ['pending', 'active'])) {
             return false;
         }
 
@@ -133,7 +133,7 @@ class VoteDelegate extends Model
 
     public function canVoteFor(int $apartmentId): bool
     {
-        return $this->is_active && 
+        return $this->is_active &&
                $this->delegator_apartment_id === $apartmentId;
     }
 
@@ -142,7 +142,7 @@ class VoteDelegate extends Model
         parent::boot();
 
         static::creating(function ($delegate) {
-            if (!$delegate->expires_at && $delegate->assembly) {
+            if (! $delegate->expires_at && $delegate->assembly) {
                 // Set expiration to assembly end date by default
                 $delegate->expires_at = $delegate->assembly->scheduled_at->addDays(1);
             }

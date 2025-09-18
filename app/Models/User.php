@@ -160,7 +160,7 @@ class User extends Authenticatable implements MustVerifyEmail
             ->where('status', 'active')
             ->where(function ($query) {
                 $query->whereNull('expires_at')
-                      ->orWhere('expires_at', '>', now());
+                    ->orWhere('expires_at', '>', now());
             });
     }
 
@@ -185,9 +185,9 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function needsSubscription(): bool
     {
-        return $this->hasRole('admin') && 
-               !$this->tenant_id && 
-               !$this->hasActiveSubscription();
+        return $this->hasRole('admin') &&
+               ! $this->tenant_id &&
+               ! $this->hasActiveSubscription();
     }
 
     /**

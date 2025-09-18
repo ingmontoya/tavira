@@ -28,7 +28,7 @@ class FixUserRoles extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         if ($dryRun) {
             $this->info('Running in dry-run mode. No changes will be made.');
         }
@@ -38,6 +38,7 @@ class FixUserRoles extends Command
 
         if ($usersWithoutRoles->isEmpty()) {
             $this->info('All users have roles assigned. No action needed.');
+
             return Command::SUCCESS;
         }
 
@@ -49,16 +50,16 @@ class FixUserRoles extends Command
         foreach ($usersWithoutRoles as $user) {
             // Logic to determine appropriate role
             $suggestedRole = $this->getSuggestedRole($user);
-            
+
             $rows[] = [
                 $user->id,
                 $user->email,
                 $user->created_at->format('Y-m-d H:i:s'),
                 $user->tenant_id ?? 'null',
-                $suggestedRole
+                $suggestedRole,
             ];
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 $user->assignRole($suggestedRole);
                 $this->info("Assigned role '{$suggestedRole}' to user {$user->email}");
             }
@@ -79,8 +80,8 @@ class FixUserRoles extends Command
     {
         // Check if this is the first admin user (no tenant_id and created early)
         $hasExistingAdmins = User::role(['admin', 'superadmin'])->where('id', '!=', $user->id)->exists();
-        
-        if (!$user->tenant_id && !$hasExistingAdmins) {
+
+        if (! $user->tenant_id && ! $hasExistingAdmins) {
             return 'admin';
         }
 
@@ -91,16 +92,16 @@ class FixUserRoles extends Command
                 ->where('tenant_id', $user->tenant_id)
                 ->where('id', '!=', $user->id)
                 ->exists();
-            
-            if (!$hasAdminConjunto) {
+
+            if (! $hasAdminConjunto) {
                 return 'admin_conjunto';
             }
-            
+
             return 'residente';
         }
 
         // For central users without tenant_id, default to admin if they're early users
-        if (!$user->tenant_id) {
+        if (! $user->tenant_id) {
             return 'admin';
         }
 

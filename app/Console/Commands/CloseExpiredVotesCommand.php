@@ -27,11 +27,11 @@ class CloseExpiredVotesCommand extends Command
     public function handle()
     {
         $this->info('Dispatching job to close expired votes...');
-        
+
         CloseExpiredVotes::dispatch();
-        
+
         $this->info('Job dispatched successfully.');
-        
+
         return 0;
     }
 }

@@ -4,7 +4,6 @@ namespace App\Events;
 
 use App\Models\Assembly;
 use App\Models\User;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -23,7 +22,7 @@ class AssemblyCreated implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('conjunto.' . $this->assembly->conjunto_config_id),
+            new PrivateChannel('conjunto.'.$this->assembly->conjunto_config_id),
         ];
     }
 

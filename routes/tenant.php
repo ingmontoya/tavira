@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\TenantImpersonationController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
@@ -35,7 +34,7 @@ Route::middleware([
     });
 
     // Authentication routes for tenants (registration disabled)
-    require __DIR__ . '/tenant-auth.php';
+    require __DIR__.'/tenant-auth.php';
 
     Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -50,26 +49,26 @@ Route::middleware([
         });
 
         // Tenant-specific module route files
-        require __DIR__ . '/modules/dashboard.php';
-        require __DIR__ . '/modules/reports.php';
-        require __DIR__ . '/modules/residents.php';
-        require __DIR__ . '/modules/conjunto-config.php';
-        require __DIR__ . '/modules/apartments.php';
-        require __DIR__ . '/modules/finance.php';
-        require __DIR__ . '/modules/accounting.php';
-        require __DIR__ . '/modules/communication.php';
-        require __DIR__ . '/modules/visits.php';
-        require __DIR__ . '/modules/users.php';
-        require __DIR__ . '/modules/maintenance.php';
-        require __DIR__ . '/modules/reservations.php';
-        require __DIR__ . '/modules/notifications.php';
-        require __DIR__ . '/modules/support.php';
-        require __DIR__ . '/modules/assemblies.php';
-        require __DIR__ . '/modules/security.php';
+        require __DIR__.'/modules/dashboard.php';
+        require __DIR__.'/modules/reports.php';
+        require __DIR__.'/modules/residents.php';
+        require __DIR__.'/modules/conjunto-config.php';
+        require __DIR__.'/modules/apartments.php';
+        require __DIR__.'/modules/finance.php';
+        require __DIR__.'/modules/accounting.php';
+        require __DIR__.'/modules/communication.php';
+        require __DIR__.'/modules/visits.php';
+        require __DIR__.'/modules/users.php';
+        require __DIR__.'/modules/maintenance.php';
+        require __DIR__.'/modules/reservations.php';
+        require __DIR__.'/modules/notifications.php';
+        require __DIR__.'/modules/support.php';
+        require __DIR__.'/modules/assemblies.php';
+        require __DIR__.'/modules/security.php';
     });
 
     // Settings routes for tenants
-    require __DIR__ . '/settings.php';
+    require __DIR__.'/settings.php';
 });
 
 Route::middleware([
@@ -78,5 +77,5 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     // API routes for tenant mobile applications
-    require __DIR__ . '/tenant-api.php';
+    require __DIR__.'/tenant-api.php';
 });

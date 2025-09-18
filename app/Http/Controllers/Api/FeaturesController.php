@@ -12,7 +12,7 @@ class FeaturesController extends Controller
     public function show(string $tenantId, string $feature): JsonResponse
     {
         $cacheKey = "tenant_feature_{$tenantId}_{$feature}";
-        
+
         $enabled = Cache::remember($cacheKey, 300, function () use ($tenantId, $feature) {
             return TenantFeature::isFeatureEnabled($tenantId, $feature);
         });
@@ -27,7 +27,7 @@ class FeaturesController extends Controller
     public function index(string $tenantId): JsonResponse
     {
         $cacheKey = "tenant_features_{$tenantId}";
-        
+
         $features = Cache::remember($cacheKey, 300, function () use ($tenantId) {
             return TenantFeature::where('tenant_id', $tenantId)
                 ->get(['feature', 'enabled'])

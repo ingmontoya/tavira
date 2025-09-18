@@ -25,7 +25,7 @@ class TenantFeature extends Model
     public static function isFeatureEnabled(string $tenantId, string $feature): bool
     {
         $tenant = Tenant::find($tenantId);
-        if (!$tenant) {
+        if (! $tenant) {
             return false;
         }
 
@@ -42,7 +42,7 @@ class TenantFeature extends Model
     public static function enableFeature(string $tenantId, string $feature): void
     {
         $tenant = Tenant::find($tenantId);
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 
@@ -57,7 +57,7 @@ class TenantFeature extends Model
     public static function disableFeature(string $tenantId, string $feature): void
     {
         $tenant = Tenant::find($tenantId);
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 

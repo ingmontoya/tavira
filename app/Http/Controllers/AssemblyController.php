@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\AssemblyCreated;
 use App\Events\AssemblyClosed;
+use App\Events\AssemblyCreated;
 use App\Jobs\CloseScheduledAssembly;
 use App\Models\Assembly;
 use App\Models\ConjuntoConfig;
@@ -16,8 +16,8 @@ class AssemblyController extends Controller
     public function index(Request $request)
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return redirect()->route('dashboard')
                 ->with('error', 'Debe configurar el conjunto primero.');
         }
@@ -34,7 +34,7 @@ class AssemblyController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $query->where('title', 'like', '%'.$request->search.'%');
         }
 
         $assemblies = $query->orderByDesc('scheduled_at')
@@ -58,8 +58,8 @@ class AssemblyController extends Controller
     public function create()
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return redirect()->route('dashboard')
                 ->with('error', 'Debe configurar el conjunto primero.');
         }
@@ -72,8 +72,8 @@ class AssemblyController extends Controller
     public function store(Request $request)
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return redirect()->route('dashboard')
                 ->with('error', 'Debe configurar el conjunto primero.');
         }
@@ -110,10 +110,10 @@ class AssemblyController extends Controller
             'votes.apartmentVotes.apartment',
             'votes.apartmentVotes.castByUser',
             'delegates.delegatorApartment',
-            'delegates.delegateUser'
+            'delegates.delegateUser',
         ]);
 
-        $userApartments = Auth::user()->resident?->apartment_id ? 
+        $userApartments = Auth::user()->resident?->apartment_id ?
             [Auth::user()->resident->apartment] : [];
 
         $userDelegates = $assembly->delegates()
@@ -138,7 +138,7 @@ class AssemblyController extends Controller
                 ->map(function ($user) use ($attendanceMap) {
                     $apartment = $user->resident->apartment;
                     $attendance = $attendanceMap->get($user->id);
-                    
+
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
@@ -231,7 +231,7 @@ class AssemblyController extends Controller
 
     public function destroy(Assembly $assembly)
     {
-        if (!in_array($assembly->status, ['scheduled', 'closed'])) {
+        if (! in_array($assembly->status, ['scheduled', 'closed'])) {
             return redirect()->route('assemblies.show', $assembly)
                 ->with('error', 'No se puede eliminar una asamblea en curso.');
         }
@@ -244,7 +244,7 @@ class AssemblyController extends Controller
 
     public function start(Assembly $assembly)
     {
-        if (!$assembly->start()) {
+        if (! $assembly->start()) {
             return redirect()->route('assemblies.show', $assembly)
                 ->with('error', 'No se pudo iniciar la asamblea.');
         }
@@ -263,7 +263,7 @@ class AssemblyController extends Controller
 
         if ($validated['schedule_closure'] ?? false) {
             $delayMinutes = $validated['closure_delay_minutes'] ?? 5;
-            
+
             CloseScheduledAssembly::dispatch($assembly)
                 ->delay(now()->addMinutes($delayMinutes));
 
@@ -271,7 +271,7 @@ class AssemblyController extends Controller
                 ->with('success', "Asamblea será cerrada automáticamente en {$delayMinutes} minutos.");
         }
 
-        if (!$assembly->close($validated['meeting_notes'] ?? null)) {
+        if (! $assembly->close($validated['meeting_notes'] ?? null)) {
             return redirect()->route('assemblies.show', $assembly)
                 ->with('error', 'No se pudo cerrar la asamblea.');
         }
@@ -284,7 +284,7 @@ class AssemblyController extends Controller
 
     public function cancel(Assembly $assembly)
     {
-        if (!$assembly->cancel()) {
+        if (! $assembly->cancel()) {
             return redirect()->route('assemblies.show', $assembly)
                 ->with('error', 'No se pudo cancelar la asamblea.');
         }
@@ -315,10 +315,10 @@ class AssemblyController extends Controller
     public function getAttendanceStatus(Assembly $assembly)
     {
         // Allow residents and admins to view attendance status
-        if (!Auth::user()->can('participate_in_assemblies') && !Auth::user()->can('manage_assembly_attendance')) {
+        if (! Auth::user()->can('participate_in_assemblies') && ! Auth::user()->can('manage_assembly_attendance')) {
             return response()->json([
                 'error' => true,
-                'message' => 'No tienes permisos para ver el estado de asistencia.'
+                'message' => 'No tienes permisos para ver el estado de asistencia.',
             ], 403);
         }
 
@@ -333,7 +333,7 @@ class AssemblyController extends Controller
                 ->map(function ($user) use ($attendanceMap) {
                     $apartment = $user->resident->apartment;
                     $attendance = $attendanceMap->get($user->id);
-                    
+
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
@@ -393,43 +393,43 @@ class AssemblyController extends Controller
     {
         // Check if this is admin-managed attendance
         $isAdminManagement = $request->has('resident_id');
-        
+
         if ($isAdminManagement) {
             // Admin managing attendance for another user
-            if (!Auth::user()->can('manage_assembly_attendance')) {
+            if (! Auth::user()->can('manage_assembly_attendance')) {
                 return redirect()->route('assemblies.show', $assembly)
                     ->with('error', 'No tienes permisos para gestionar asistencia.');
             }
-            
+
             $validated = $request->validate([
                 'resident_id' => 'required|integer|exists:users,id',
                 'status' => 'required|in:present,absent,delegated',
             ]);
-            
+
             $targetUser = \App\Models\User::findOrFail($validated['resident_id']);
-            
-            if (!$targetUser->resident || !$targetUser->resident->apartment) {
+
+            if (! $targetUser->resident || ! $targetUser->resident->apartment) {
                 return redirect()->route('assemblies.show', $assembly)
                     ->with('error', 'El usuario seleccionado no tiene un apartamento asignado.');
             }
-            
+
             $apartment = $targetUser->resident->apartment;
             $attendanceStatus = $validated['status'];
             $user = $targetUser;
         } else {
             // Self-registration
-            if (!Auth::user()->can('participate_in_assemblies')) {
+            if (! Auth::user()->can('participate_in_assemblies')) {
                 return redirect()->route('assemblies.show', $assembly)
                     ->with('error', 'No tienes permisos para registrar asistencia.');
             }
-            
+
             $user = Auth::user();
-            
-            if (!$user->resident || !$user->resident->apartment) {
+
+            if (! $user->resident || ! $user->resident->apartment) {
                 return redirect()->route('assemblies.show', $assembly)
                     ->with('error', 'No tienes un apartamento asignado para registrar asistencia.');
             }
-            
+
             $apartment = $user->resident->apartment;
             $attendanceStatus = 'present';
         }
@@ -454,23 +454,23 @@ class AssemblyController extends Controller
                     'registered_by' => Auth::id(),
                     'metadata' => [
                         'is_online' => $attendanceStatus === 'present',
-                        'self_registered' => !$isAdminManagement,
+                        'self_registered' => ! $isAdminManagement,
                         'admin_managed' => $isAdminManagement,
                         'user_agent' => request()->header('User-Agent'),
-                    ]
+                    ],
                 ]
             );
-            
-            $message = $isAdminManagement ? 
-                "Asistencia actualizada para {$user->name}." : 
+
+            $message = $isAdminManagement ?
+                "Asistencia actualizada para {$user->name}." :
                 'Asistencia registrada exitosamente.';
-            
+
             return redirect()->route('assemblies.show', $assembly)
                 ->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->route('assemblies.show', $assembly)
-                ->with('error', 'Error al registrar asistencia: ' . $e->getMessage());
+                ->with('error', 'Error al registrar asistencia: '.$e->getMessage());
         }
     }
 
@@ -512,7 +512,7 @@ class AssemblyController extends Controller
         try {
             $conjuntoConfig = ConjuntoConfig::first();
 
-            if (!$conjuntoConfig) {
+            if (! $conjuntoConfig) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Conjunto configuration not found',
@@ -548,8 +548,8 @@ class AssemblyController extends Controller
                         'scheduled' => Assembly::forConjunto($conjuntoConfig->id)->byStatus('scheduled')->count(),
                         'in_progress' => Assembly::forConjunto($conjuntoConfig->id)->byStatus('in_progress')->count(),
                         'closed' => Assembly::forConjunto($conjuntoConfig->id)->byStatus('closed')->count(),
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -571,7 +571,7 @@ class AssemblyController extends Controller
 
             // Check if current user can view this assembly
             $user = Auth::user();
-            if (!$user->resident || !$user->resident->apartment) {
+            if (! $user->resident || ! $user->resident->apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User must have an assigned apartment',
@@ -600,7 +600,7 @@ class AssemblyController extends Controller
                     'delegated_by' => $delegatedBy,
                     'votes_count' => $assembly->votes()->count(),
                     'active_votes_count' => $assembly->votes()->where('status', 'active')->count(),
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {

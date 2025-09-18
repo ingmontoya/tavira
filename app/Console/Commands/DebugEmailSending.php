@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Event;
 
 class DebugEmailSending extends Command
 {
@@ -39,7 +39,7 @@ class DebugEmailSending extends Command
             $this->comment('Laravel automatically sends verification email for MustVerifyEmail users');
         } else {
             foreach ($registeredListeners as $listener) {
-                $this->line("- " . (is_string($listener) ? $listener : get_class($listener)));
+                $this->line('- '.(is_string($listener) ? $listener : get_class($listener)));
             }
         }
         $this->newLine();
@@ -51,16 +51,16 @@ class DebugEmailSending extends Command
             $this->warn('No listeners found for Verified event');
         } else {
             foreach ($verifiedListeners as $listener) {
-                $this->line("- " . (is_string($listener) ? $listener : get_class($listener)));
+                $this->line('- '.(is_string($listener) ? $listener : get_class($listener)));
             }
         }
         $this->newLine();
 
         // Check if User implements MustVerifyEmail
-        $user = new \App\Models\User();
+        $user = new \App\Models\User;
         $implementsVerify = $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail;
-        $this->info("User model implements MustVerifyEmail: " . ($implementsVerify ? '✅ Yes' : '❌ No'));
-        
+        $this->info('User model implements MustVerifyEmail: '.($implementsVerify ? '✅ Yes' : '❌ No'));
+
         if ($implementsVerify) {
             $this->comment('This means Laravel automatically sends verification emails on registration');
         }

@@ -31,14 +31,18 @@ class StoreReservationRequest extends FormRequest
                 'date',
                 'after:now',
                 function ($attribute, $value, $fail) {
-                    if (!$this->reservable_asset_id) return;
-                    
+                    if (! $this->reservable_asset_id) {
+                        return;
+                    }
+
                     $asset = ReservableAsset::find($this->reservable_asset_id);
-                    if (!$asset) return;
+                    if (! $asset) {
+                        return;
+                    }
 
                     $startTime = Carbon::parse($value);
                     $maxDate = $asset->getMaxAdvanceBookingDate();
-                    
+
                     if ($startTime->gt($maxDate)) {
                         $fail("La reserva no puede hacerse con más de {$asset->advance_booking_days} días de anticipación.");
                     }
@@ -49,21 +53,25 @@ class StoreReservationRequest extends FormRequest
                 'date',
                 'after:start_time',
                 function ($attribute, $value, $fail) {
-                    if (!$this->start_time || !$this->reservable_asset_id) return;
-                    
+                    if (! $this->start_time || ! $this->reservable_asset_id) {
+                        return;
+                    }
+
                     $asset = ReservableAsset::find($this->reservable_asset_id);
-                    if (!$asset) return;
+                    if (! $asset) {
+                        return;
+                    }
 
                     $startTime = Carbon::parse($this->start_time);
                     $endTime = Carbon::parse($value);
                     $durationMinutes = $startTime->diffInMinutes($endTime);
-                    
+
                     if ($durationMinutes > $asset->reservation_duration_minutes) {
                         $durationHours = $asset->reservation_duration_minutes / 60;
                         $fail("La duración máxima de reserva es de {$durationHours} horas.");
                     }
 
-                    if (!$asset->isAvailableAt($startTime, $endTime)) {
+                    if (! $asset->isAvailableAt($startTime, $endTime)) {
                         $fail('El activo no está disponible en el horario seleccionado.');
                     }
                 },
@@ -79,19 +87,24 @@ class StoreReservationRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if (!$this->reservable_asset_id) return;
-            
+            if (! $this->reservable_asset_id) {
+                return;
+            }
+
             $asset = ReservableAsset::find($this->reservable_asset_id);
-            if (!$asset) return;
+            if (! $asset) {
+                return;
+            }
 
             // Check if asset is active
-            if (!$asset->is_active) {
+            if (! $asset->is_active) {
                 $validator->errors()->add('reservable_asset_id', 'El activo no está disponible para reservas.');
+
                 return;
             }
 
             // Check if user can make more reservations for this asset
-            if (!$asset->canUserReserve(auth()->id())) {
+            if (! $asset->canUserReserve(auth()->id())) {
                 $validator->errors()->add('reservable_asset_id', "Ya has alcanzado el máximo de {$asset->max_reservations_per_user} reserva(s) para este activo.");
             }
         });

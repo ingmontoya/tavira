@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tenant;
-use Stancl\Tenancy\Features\UserImpersonation;
 use Inertia\Inertia;
+use Stancl\Tenancy\Features\UserImpersonation;
 
 class TenantImpersonationController extends Controller
 {
@@ -23,17 +23,17 @@ class TenantImpersonationController extends Controller
     {
         // Generate impersonation token using official package method
         $token = tenancy()->impersonate($tenant, $userId, $redirectUrl);
-        
+
         // Get tenant's domain for redirect
         $domain = $tenant->domains()->first();
-        
-        if (!$domain) {
+
+        if (! $domain) {
             return redirect()->back()->with('error', 'El tenant no tiene dominio configurado');
         }
 
         // Redirect to tenant's impersonation endpoint
         $protocol = app()->environment('local') ? 'http://' : 'https://';
-        $impersonationUrl = $protocol . $domain->domain . "/impersonate/{$token->token}";
+        $impersonationUrl = $protocol.$domain->domain."/impersonate/{$token->token}";
 
         return Inertia::location($impersonationUrl);
     }
@@ -43,11 +43,10 @@ class TenantImpersonationController extends Controller
      */
     public function impersonateAdmin(Tenant $tenant, $redirectUrl = '/dashboard')
     {
-        if (!$tenant->admin_user_id) {
+        if (! $tenant->admin_user_id) {
             return redirect()->back()->with('error', 'El tenant no tiene un admin_user_id configurado');
         }
 
         return $this->impersonate($tenant, $tenant->admin_user_id, $redirectUrl);
     }
-
 }

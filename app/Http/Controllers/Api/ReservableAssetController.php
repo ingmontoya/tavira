@@ -16,8 +16,8 @@ class ReservableAssetController extends Controller
     public function index(Request $request)
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return response()->json([
                 'success' => false,
                 'message' => 'No conjunto configuration found',
@@ -36,8 +36,8 @@ class ReservableAssetController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -50,7 +50,7 @@ class ReservableAssetController extends Controller
                 'name' => $asset->name,
                 'description' => $asset->description,
                 'type' => $asset->type,
-                'image_url' => $asset->image_path ? asset('storage/' . $asset->image_path) : null,
+                'image_url' => $asset->image_path ? asset('storage/'.$asset->image_path) : null,
                 'reservation_duration_minutes' => $asset->reservation_duration_minutes,
                 'reservation_cost' => (float) $asset->reservation_cost,
                 'advance_booking_days' => $asset->advance_booking_days,
@@ -73,7 +73,7 @@ class ReservableAssetController extends Controller
      */
     public function show(ReservableAsset $reservableAsset)
     {
-        if (!$reservableAsset->is_active) {
+        if (! $reservableAsset->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Asset not available',
@@ -107,7 +107,7 @@ class ReservableAssetController extends Controller
                 'name' => $reservableAsset->name,
                 'description' => $reservableAsset->description,
                 'type' => $reservableAsset->type,
-                'image_url' => $reservableAsset->image_path ? asset('storage/' . $reservableAsset->image_path) : null,
+                'image_url' => $reservableAsset->image_path ? asset('storage/'.$reservableAsset->image_path) : null,
                 'reservation_duration_minutes' => $reservableAsset->reservation_duration_minutes,
                 'reservation_cost' => (float) $reservableAsset->reservation_cost,
                 'advance_booking_days' => $reservableAsset->advance_booking_days,
@@ -131,7 +131,7 @@ class ReservableAssetController extends Controller
             'date' => 'required|date|after_or_equal:today',
         ]);
 
-        if (!$reservableAsset->is_active) {
+        if (! $reservableAsset->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Asset not available',
@@ -157,14 +157,14 @@ class ReservableAssetController extends Controller
 
         while ($start->lt($end)) {
             $slotEnd = $start->copy()->addMinutes($durationMinutes);
-            
+
             // Don't add slots that would go past midnight
             if ($slotEnd->greaterThan($date->copy()->setTime(23, 59))) {
                 break;
             }
-            
+
             $isAvailable = $reservableAsset->isAvailableAt($start, $slotEnd);
-            
+
             $slots[] = [
                 'start_time' => $start->format('H:i'),
                 'end_time' => $slotEnd->format('H:i'),
@@ -196,7 +196,7 @@ class ReservableAssetController extends Controller
     {
         $types = [
             'common_area' => 'Common Area',
-            'amenity' => 'Amenity', 
+            'amenity' => 'Amenity',
             'facility' => 'Facility',
             'sports' => 'Sports',
             'recreation' => 'Recreation',

@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Assembly extends Model
 {
@@ -71,7 +70,7 @@ class Assembly extends Model
         if ($this->started_at && $this->ended_at) {
             return $this->started_at->diffInMinutes($this->ended_at);
         }
-        
+
         return null;
     }
 
@@ -153,7 +152,7 @@ class Assembly extends Model
         return true;
     }
 
-    public function close(string $meetingNotes = null): bool
+    public function close(?string $meetingNotes = null): bool
     {
         if ($this->status !== 'in_progress') {
             return false;
@@ -170,7 +169,7 @@ class Assembly extends Model
 
     public function cancel(): bool
     {
-        if (!in_array($this->status, ['scheduled', 'in_progress'])) {
+        if (! in_array($this->status, ['scheduled', 'in_progress'])) {
             return false;
         }
 

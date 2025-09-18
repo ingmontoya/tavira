@@ -25,15 +25,15 @@ class SendWelcomeEmail
     public function handle(Verified $event): void
     {
         // Prevent duplicate emails by checking if welcome email was already sent
-        $cacheKey = 'welcome_email_sent_' . $event->user->id;
-        
+        $cacheKey = 'welcome_email_sent_'.$event->user->id;
+
         if (cache()->has($cacheKey)) {
             return; // Email already sent recently
         }
 
         // Send the welcome email
         Mail::to($event->user)->send(new WelcomeEmail($event->user));
-        
+
         // Cache for 24 hours to prevent duplicates
         cache()->put($cacheKey, true, now()->addHours(24));
     }

@@ -10,7 +10,9 @@ use Laravel\Pennant\Contracts\Driver;
 class CentralApiDriver implements Driver
 {
     protected string $centralUrl;
+
     protected int $cacheMinutes;
+
     protected array $definedFeatures = [];
 
     public function __construct()
@@ -32,7 +34,7 @@ class CentralApiDriver implements Driver
     public function getAll(array $features): array
     {
         $result = [];
-        
+
         foreach ($features as $feature => $scopes) {
             $result[$feature] = [];
             foreach ($scopes as $scope) {
@@ -128,6 +130,7 @@ class CentralApiDriver implements Driver
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $data['enabled'] ?? false;
             }
 
@@ -158,6 +161,7 @@ class CentralApiDriver implements Driver
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $data['features'] ?? [];
             }
 

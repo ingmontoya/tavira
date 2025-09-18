@@ -86,6 +86,7 @@ class PanicAlert extends Model
         if ($this->lat && $this->lng) {
             return "{$this->lat}, {$this->lng}";
         }
+
         return null;
     }
 
@@ -97,6 +98,7 @@ class PanicAlert extends Model
         if ($this->user) {
             return $this->user->name;
         }
+
         return 'Usuario desconocido';
     }
 
@@ -108,6 +110,7 @@ class PanicAlert extends Model
         if ($this->apartment) {
             return $this->apartment->full_address;
         }
+
         return 'Apartamento no especificado';
     }
 }

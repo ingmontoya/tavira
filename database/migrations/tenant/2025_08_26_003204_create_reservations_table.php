@@ -30,7 +30,7 @@ return new class extends Migration
             $table->foreignId('cancelled_by')->nullable()->constrained('users')->nullOnDelete();
             $table->json('metadata')->nullable();
             $table->timestamps();
-            
+
             $table->index(['reservable_asset_id', 'start_time', 'end_time']);
             $table->index(['user_id', 'status']);
             $table->index(['start_time', 'end_time']);

@@ -2,18 +2,20 @@
 
 namespace App\Notifications;
 
+use App\Models\Tenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Tenant;
 
 class TenantCredentialsCreated extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected $tenant;
+
     protected $tempPassword;
+
     protected $tenantDomain;
 
     /**
@@ -43,7 +45,7 @@ class TenantCredentialsCreated extends Notification implements ShouldQueue
     {
         $tenantData = $this->tenant->data ?? [];
         $tenantName = $tenantData['name'] ?? 'Sin nombre';
-        
+
         return (new MailMessage)
             ->subject('🎉 Tu conjunto ha sido creado exitosamente - Tavira')
             ->greeting("¡Hola {$notifiable->name}!")
@@ -76,7 +78,7 @@ class TenantCredentialsCreated extends Notification implements ShouldQueue
             'tenant_id' => $this->tenant->id,
             'tenant_domain' => $this->tenantDomain,
             'type' => 'tenant_credentials_created',
-            'message' => 'Credenciales del conjunto enviadas por correo'
+            'message' => 'Credenciales del conjunto enviadas por correo',
         ];
     }
 }

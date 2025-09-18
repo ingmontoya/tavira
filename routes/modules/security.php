@@ -19,7 +19,7 @@ Route::prefix('security')->name('security.')->group(function () {
     Route::get('/alerts', function () {
         return Inertia::render('security/alerts');
     })->name('alerts.index')
-      ->middleware('can:view_security_alerts,view_panic_alerts');
+        ->middleware('can:view_security_alerts,view_panic_alerts');
 
     // Panic Alerts Management (for security personnel)
     Route::prefix('panic-alerts')->name('panic-alerts.')->group(function () {
@@ -28,7 +28,7 @@ Route::prefix('security')->name('security.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('security/panic-alerts/dashboard');
         })->name('dashboard')
-          ->middleware('can:view_panic_alerts,manage_security_alerts');
+            ->middleware('can:view_panic_alerts,manage_security_alerts');
 
         // Individual panic alert details
         Route::get('/{panicAlert}', function (\App\Models\PanicAlert $panicAlert) {
@@ -36,14 +36,14 @@ Route::prefix('security')->name('security.')->group(function () {
                 'alert' => $panicAlert->load(['user', 'apartment']),
             ]);
         })->name('show')
-          ->middleware('can:view_panic_alerts,manage_security_alerts');
+            ->middleware('can:view_panic_alerts,manage_security_alerts');
     });
 
     // Access Logs (for security personnel and administrators)
     Route::get('/access-logs', function () {
         return Inertia::render('security/access-logs');
     })->name('access-logs.index')
-      ->middleware('can:view_access_logs');
+        ->middleware('can:view_access_logs');
 
     // Visitor Management (enhanced for security personnel)
     Route::prefix('visitors')->name('visitors.')->group(function () {
@@ -52,30 +52,30 @@ Route::prefix('security')->name('security.')->group(function () {
         Route::get('/dashboard', function () {
             return Inertia::render('security/visitors/dashboard');
         })->name('dashboard')
-          ->middleware('can:manage_visitors');
+            ->middleware('can:manage_visitors');
 
         // QR Code scanner for visitor check-in
         Route::get('/scanner', function () {
             return Inertia::render('security/visitors/scanner');
         })->name('scanner')
-          ->middleware('can:manage_visitors');
+            ->middleware('can:manage_visitors');
 
         // Recent entries and activity
         Route::get('/recent', function () {
             return Inertia::render('security/visitors/recent');
         })->name('recent')
-          ->middleware('can:manage_visitors');
+            ->middleware('can:manage_visitors');
     });
 
     // Security Reports
     Route::get('/reports', function () {
         return Inertia::render('security/reports');
     })->name('reports.index')
-      ->middleware('can:view_security_reports');
+        ->middleware('can:view_security_reports');
 
     // Security Settings (for security configuration)
     Route::get('/settings', function () {
         return Inertia::render('security/settings');
     })->name('settings.index')
-      ->middleware('can:manage_security_alerts');
+        ->middleware('can:manage_security_alerts');
 });

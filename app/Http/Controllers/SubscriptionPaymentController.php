@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\WompiPaymentService;
-use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -107,7 +106,7 @@ class SubscriptionPaymentController extends Controller
             $planId = $request->plan_id;
             $billingType = $request->billing_type;
             $amount = $planPrices[$planId][$billingType];
-            $planName = ($billingType === 'anual' ? 'ANUAL_' : '') . strtoupper($planId);
+            $planName = ($billingType === 'anual' ? 'ANUAL_' : '').strtoupper($planId);
 
             $subscriptionData = [
                 'tenant_id' => $request->tenant_id,
@@ -156,27 +155,27 @@ class SubscriptionPaymentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $result['error'] ?? 'Error creating payment link'
+                'message' => $result['error'] ?? 'Error creating payment link',
             ], 400);
 
         } catch (\Exception $e) {
             Log::error('Error creating subscription payment link', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
 
             // In production, provide more specific error information for debugging
             $errorMessage = config('app.debug') ? $e->getMessage() : 'Error interno del servidor';
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $errorMessage,
                 'error_details' => config('app.debug') ? [
                     'message' => $e->getMessage(),
                     'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ] : null
+                    'line' => $e->getLine(),
+                ] : null,
             ], 500);
         }
     }
@@ -192,20 +191,20 @@ class SubscriptionPaymentController extends Controller
         if ($reference && $transactionId) {
             // Get transaction details from Wompi
             $transactionResult = $this->wompiService->getTransactionById($transactionId);
-            
+
             if ($transactionResult['success'] && $transactionResult['transaction']) {
                 $transaction = $transactionResult['transaction'];
-                
+
                 if ($transaction['status'] === 'APPROVED') {
                     Log::info('Processing successful payment in success page', [
                         'transaction_id' => $transaction['id'],
                         'reference' => $transaction['reference'],
-                        'status' => $transaction['status']
+                        'status' => $transaction['status'],
                     ]);
 
                     // Process the successful payment
                     $paymentResult = $this->wompiService->processSuccessfulSubscriptionPayment($transaction);
-                    
+
                     Log::info('Payment processing result', [
                         'success' => $paymentResult['success'],
                         'has_subscription' => isset($paymentResult['subscription']),
@@ -216,9 +215,9 @@ class SubscriptionPaymentController extends Controller
                         // Payment was processed successfully, redirect to dashboard
                         Log::info('Payment successful, redirecting to dashboard', [
                             'subscription_id' => $paymentResult['subscription']->id ?? null,
-                            'user_id' => auth()->id()
+                            'user_id' => auth()->id(),
                         ]);
-                        
+
                         return redirect()->route('dashboard')
                             ->with('success', 'Pago procesado exitosamente. ¡Bienvenido a Tavira!')
                             ->with('subscription', $paymentResult['subscription'])
@@ -226,7 +225,7 @@ class SubscriptionPaymentController extends Controller
                     } else {
                         Log::error('Payment processing failed', [
                             'error' => $paymentResult['error'] ?? 'Unknown error',
-                            'transaction_id' => $transaction['id']
+                            'transaction_id' => $transaction['id'],
                         ]);
                     }
                 }
@@ -239,23 +238,23 @@ class SubscriptionPaymentController extends Controller
         if ($user) {
             $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user) {
                 $query->where('user_id', $user->id)
-                      ->orWhere(function ($q) use ($user) {
-                          $q->whereNull('tenant_id')->whereNull('user_id'); // New signups
-                      });
+                    ->orWhere(function ($q) {
+                        $q->whereNull('tenant_id')->whereNull('user_id'); // New signups
+                    });
             })
-            ->where('status', 'active')
-            ->where(function ($query) {
-                $query->whereNull('expires_at')
-                      ->orWhere('expires_at', '>', now());
-            })
-            ->first();
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->first();
 
             if ($activeSubscription) {
                 Log::info('User has active subscription after payment, redirecting to dashboard', [
                     'user_id' => $user->id,
-                    'subscription_id' => $activeSubscription->id
+                    'subscription_id' => $activeSubscription->id,
                 ]);
-                
+
                 return redirect()->route('dashboard')
                     ->with('success', '¡Pago procesado exitosamente! Bienvenido a Tavira.')
                     ->with('new_subscription', true);
@@ -282,7 +281,7 @@ class SubscriptionPaymentController extends Controller
         Log::warning('Subscription payment failed', [
             'reference' => $reference,
             'transaction_id' => $transactionId,
-            'request' => $request->all()
+            'request' => $request->all(),
         ]);
 
         return Inertia::render('Subscription/Failure', [
@@ -300,8 +299,9 @@ class SubscriptionPaymentController extends Controller
 
         try {
             // Verify webhook signature
-            if (!$this->wompiService->verifyWebhookSignature($request)) {
+            if (! $this->wompiService->verifyWebhookSignature($request)) {
                 Log::warning('Invalid webhook signature from Wompi');
+
                 return response()->json(['error' => 'Invalid signature'], 400);
             }
 
@@ -310,7 +310,7 @@ class SubscriptionPaymentController extends Controller
 
             if ($event === 'transaction.updated' && isset($data['transaction'])) {
                 $transaction = $data['transaction'];
-                
+
                 Log::info('Webhook transaction received', [
                     'transaction_id' => $transaction['id'],
                     'reference' => $transaction['reference'],
@@ -318,46 +318,46 @@ class SubscriptionPaymentController extends Controller
                     'payment_link_id' => $transaction['payment_link_id'] ?? null,
                     'redirect_url' => $transaction['redirect_url'] ?? null,
                 ]);
-                
+
                 // Check if this is a subscription payment by:
                 // 1. Reference starts with SUB- (our custom reference)
                 // 2. OR redirect_url contains subscription (payment link based)
-                $isSubscriptionPayment = str_starts_with($transaction['reference'], 'SUB-') || 
+                $isSubscriptionPayment = str_starts_with($transaction['reference'], 'SUB-') ||
                                         str_contains($transaction['redirect_url'] ?? '', 'subscription');
-                
+
                 if ($isSubscriptionPayment) {
                     if ($transaction['status'] === 'APPROVED') {
                         Log::info('Processing subscription payment via webhook', [
                             'transaction_id' => $transaction['id'],
-                            'reference' => $transaction['reference']
+                            'reference' => $transaction['reference'],
                         ]);
-                        
+
                         $result = $this->wompiService->processSuccessfulSubscriptionPayment($transaction);
-                        
+
                         if ($result['success']) {
                             Log::info('Subscription payment processed via webhook', [
                                 'reference' => $transaction['reference'],
                                 'transaction_id' => $transaction['id'],
-                                'subscription_id' => $result['subscription']->id ?? null
+                                'subscription_id' => $result['subscription']->id ?? null,
                             ]);
                         } else {
                             Log::error('Failed to process subscription payment via webhook', [
                                 'reference' => $transaction['reference'],
                                 'transaction_id' => $transaction['id'],
-                                'error' => $result['error'] ?? 'Unknown error'
+                                'error' => $result['error'] ?? 'Unknown error',
                             ]);
                         }
                     } elseif (in_array($transaction['status'], ['DECLINED', 'ERROR'])) {
                         Log::warning('Subscription payment failed via webhook', [
                             'reference' => $transaction['reference'],
                             'transaction_id' => $transaction['id'],
-                            'status' => $transaction['status']
+                            'status' => $transaction['status'],
                         ]);
                     }
                 } else {
                     Log::info('Non-subscription transaction ignored', [
                         'reference' => $transaction['reference'],
-                        'redirect_url' => $transaction['redirect_url'] ?? null
+                        'redirect_url' => $transaction['redirect_url'] ?? null,
                     ]);
                 }
             }
@@ -367,7 +367,7 @@ class SubscriptionPaymentController extends Controller
         } catch (\Exception $e) {
             Log::error('Error processing Wompi webhook', [
                 'error' => $e->getMessage(),
-                'request' => $request->all()
+                'request' => $request->all(),
             ]);
 
             return response()->json(['error' => 'Internal error'], 500);
@@ -380,10 +380,10 @@ class SubscriptionPaymentController extends Controller
     public function getFinancialInstitutions()
     {
         $result = $this->wompiService->getFinancialInstitutions();
-        
+
         return response()->json([
             'success' => $result['success'],
-            'institutions' => $result['institutions']
+            'institutions' => $result['institutions'],
         ]);
     }
 
@@ -397,17 +397,17 @@ class SubscriptionPaymentController extends Controller
         ]);
 
         $result = $this->wompiService->getTransactionByReference($request->reference);
-        
+
         if ($result['success'] && $result['transaction']) {
             return response()->json([
                 'success' => true,
-                'transaction' => $result['transaction']
+                'transaction' => $result['transaction'],
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Transaction not found'
+            'message' => 'Transaction not found',
         ], 404);
     }
 
@@ -418,17 +418,17 @@ class SubscriptionPaymentController extends Controller
     {
         try {
             $result = $this->wompiService->testConnection();
-            
+
             return response()->json([
                 'success' => $result['success'],
                 'message' => $result['success'] ? 'Connection successful' : 'Connection failed',
-                'details' => $result
+                'details' => $result,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Test failed',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -440,16 +440,16 @@ class SubscriptionPaymentController extends Controller
     {
         try {
             $user = auth()->user();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return response()->json([
-                    'error' => 'User not authenticated'
+                    'error' => 'User not authenticated',
                 ], 401);
             }
 
             $subscriptions = \App\Models\TenantSubscription::where(function ($query) use ($user) {
                 $query->where('user_id', $user->id)
-                      ->orWhereNull('tenant_id'); // For new signups
+                    ->orWhereNull('tenant_id'); // For new signups
             })->get();
 
             return response()->json([
@@ -459,7 +459,7 @@ class SubscriptionPaymentController extends Controller
                     'tenant_id' => $user->tenant_id,
                     'roles' => $user->getRoleNames(),
                 ],
-                'subscriptions' => $subscriptions->map(function($sub) {
+                'subscriptions' => $subscriptions->map(function ($sub) {
                     return [
                         'id' => $sub->id,
                         'user_id' => $sub->user_id,
@@ -476,7 +476,7 @@ class SubscriptionPaymentController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -485,19 +485,19 @@ class SubscriptionPaymentController extends Controller
     {
         $activeSubscription = \App\Models\TenantSubscription::where(function ($query) use ($user) {
             $query->whereNull('tenant_id') // For new signups
-                  ->orWhere('tenant_id', $user->tenant_id);
+                ->orWhere('tenant_id', $user->tenant_id);
         })
-        ->where('status', 'active')
-        ->where(function ($query) {
-            $query->whereNull('expires_at')
-                  ->orWhere('expires_at', '>', now());
-        })
-        ->first();
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->first();
 
         return [
             'user_has_admin_role' => $user->hasRole('admin'),
             'user_tenant_id' => $user->tenant_id,
-            'active_subscription_found' => !is_null($activeSubscription),
+            'active_subscription_found' => ! is_null($activeSubscription),
             'subscription_details' => $activeSubscription ? [
                 'id' => $activeSubscription->id,
                 'user_id' => $activeSubscription->user_id,
@@ -515,16 +515,16 @@ class SubscriptionPaymentController extends Controller
     {
         try {
             $user = auth()->user();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return response()->json(['error' => 'Not authenticated'], 401);
             }
 
             // Create test transaction data to simulate successful payment
             $testTransaction = [
-                'id' => 'test_transaction_' . time(),
+                'id' => 'test_transaction_'.time(),
                 'status' => 'APPROVED',
-                'reference' => 'SUB-NEW-PROFESIONAL-' . $user->id . '-' . time(),
+                'reference' => 'SUB-NEW-PROFESIONAL-'.$user->id.'-'.time(),
                 'amount_in_cents' => 19900000, // 199000 COP
                 'payment_method_type' => 'CARD',
             ];
@@ -547,7 +547,7 @@ class SubscriptionPaymentController extends Controller
 
             // Store pending data
             cache()->put(
-                'pending_subscription_' . $testTransaction['reference'],
+                'pending_subscription_'.$testTransaction['reference'],
                 $subscriptionData,
                 now()->addHours(24)
             );
@@ -559,7 +559,7 @@ class SubscriptionPaymentController extends Controller
                 'test_transaction' => $testTransaction,
                 'subscription_data' => $subscriptionData,
                 'processing_result' => $result,
-                'cache_check' => cache()->get('pending_subscription_' . $testTransaction['reference']),
+                'cache_check' => cache()->get('pending_subscription_'.$testTransaction['reference']),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -577,16 +577,16 @@ class SubscriptionPaymentController extends Controller
         try {
             // Get user and create a realistic scenario
             $user = auth()->user();
-            
-            if (!$user) {
+
+            if (! $user) {
                 return response()->json(['error' => 'Not authenticated'], 401);
             }
 
             // First, let's check if there are any cached pending subscriptions
             $cacheKeys = [];
             for ($i = 1; $i <= 10; $i++) {
-                $testReference = "SUB-NEW-PROFESIONAL-{$user->id}-" . (time() - ($i * 60));
-                $cached = cache()->get('pending_subscription_' . $testReference);
+                $testReference = "SUB-NEW-PROFESIONAL-{$user->id}-".(time() - ($i * 60));
+                $cached = cache()->get('pending_subscription_'.$testReference);
                 if ($cached) {
                     $cacheKeys[$testReference] = $cached;
                 }
@@ -594,15 +594,15 @@ class SubscriptionPaymentController extends Controller
 
             // Now let's test what happens if we manually hit the success URL
             // with typical Wompi parameters
-            $testReference = $request->get('reference') ?? 'SUB-NEW-PROFESIONAL-' . $user->id . '-' . (time() - 300);
-            $testTransactionId = $request->get('id') ?? 'test_tx_' . time();
+            $testReference = $request->get('reference') ?? 'SUB-NEW-PROFESIONAL-'.$user->id.'-'.(time() - 300);
+            $testTransactionId = $request->get('id') ?? 'test_tx_'.time();
 
             // Create pending data if it doesn't exist
-            if (!cache()->has('pending_subscription_' . $testReference)) {
+            if (! cache()->has('pending_subscription_'.$testReference)) {
                 $subscriptionData = [
                     'tenant_id' => null,
                     'user_id' => $user->id,
-                    'plan_name' => 'PROFESIONAL', 
+                    'plan_name' => 'PROFESIONAL',
                     'amount' => 199000,
                     'customer_name' => $user->name,
                     'customer_email' => $user->email,
@@ -615,7 +615,7 @@ class SubscriptionPaymentController extends Controller
                 ];
 
                 cache()->put(
-                    'pending_subscription_' . $testReference,
+                    'pending_subscription_'.$testReference,
                     $subscriptionData,
                     now()->addHours(24)
                 );
@@ -624,7 +624,7 @@ class SubscriptionPaymentController extends Controller
             // Now simulate the success page visit
             $successUrl = route('subscription.success', [
                 'reference' => $testReference,
-                'id' => $testTransactionId
+                'id' => $testTransactionId,
             ]);
 
             return response()->json([

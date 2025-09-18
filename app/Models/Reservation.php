@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
-use Carbon\Carbon;
 
 class Reservation extends Model
 {
@@ -39,13 +38,19 @@ class Reservation extends Model
     ];
 
     const STATUS_PENDING = 'pending';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_REJECTED = 'rejected';
+
     const STATUS_CANCELLED = 'cancelled';
+
     const STATUS_COMPLETED = 'completed';
 
     const PAYMENT_STATUS_PENDING = 'pending';
+
     const PAYMENT_STATUS_PAID = 'paid';
+
     const PAYMENT_STATUS_REFUNDED = 'refunded';
 
     public function reservableAsset(): BelongsTo
@@ -125,7 +130,7 @@ class Reservation extends Model
 
     public function canBeCancelled(): bool
     {
-        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_APPROVED]) 
+        return in_array($this->status, [self::STATUS_PENDING, self::STATUS_APPROVED])
             && $this->start_time > now();
     }
 
@@ -134,7 +139,7 @@ class Reservation extends Model
         return $this->status === self::STATUS_PENDING;
     }
 
-    public function approve(int $approvedById = null): void
+    public function approve(?int $approvedById = null): void
     {
         $this->update([
             'status' => self::STATUS_APPROVED,
@@ -143,14 +148,14 @@ class Reservation extends Model
         ]);
     }
 
-    public function reject(int $rejectedById = null): void
+    public function reject(?int $rejectedById = null): void
     {
         $this->update([
             'status' => self::STATUS_REJECTED,
         ]);
     }
 
-    public function cancel(int $cancelledById = null): void
+    public function cancel(?int $cancelledById = null): void
     {
         $this->update([
             'status' => self::STATUS_CANCELLED,
@@ -194,12 +199,13 @@ class Reservation extends Model
     public function isInProgress(): bool
     {
         $now = now();
+
         return $this->start_time <= $now && $this->end_time >= $now;
     }
 
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_PENDING => 'yellow',
             self::STATUS_APPROVED => 'green',
             self::STATUS_REJECTED => 'red',
@@ -211,7 +217,7 @@ class Reservation extends Model
 
     public function getStatusLabelAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_PENDING => 'Pendiente',
             self::STATUS_APPROVED => 'Aprobada',
             self::STATUS_REJECTED => 'Rechazada',

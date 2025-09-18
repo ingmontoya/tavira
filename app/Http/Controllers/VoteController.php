@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Events\VoteCast;
-use App\Models\Assembly;
 use App\Models\Apartment;
 use App\Models\ApartmentVote;
+use App\Models\Assembly;
 use App\Models\Vote;
 use App\Models\VoteDelegate;
-use App\Models\VoteOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,8 +19,8 @@ class VoteController extends Controller
     {
         $votes = $assembly->votes()
             ->with(['options', 'apartmentVotes'])
-            ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
-            ->when($request->filled('type'), fn($q) => $q->where('type', $request->type))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->when($request->filled('type'), fn ($q) => $q->where('type', $request->type))
             ->orderBy('created_at')
             ->paginate(10)
             ->withQueryString();
@@ -70,7 +69,7 @@ class VoteController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
-            if ($validated['type'] === 'multiple_choice' && !empty($validated['options'])) {
+            if ($validated['type'] === 'multiple_choice' && ! empty($validated['options'])) {
                 foreach ($validated['options'] as $index => $optionData) {
                     $vote->options()->create([
                         ...$optionData,
@@ -87,7 +86,7 @@ class VoteController extends Controller
     public function show(Assembly $assembly, Vote $vote)
     {
         $vote->load(['options', 'apartmentVotes.apartment', 'apartmentVotes.castByUser']);
-        
+
         $userApartment = Auth::user()->resident?->apartment;
         $userVote = null;
         $canVote = false;
@@ -95,7 +94,7 @@ class VoteController extends Controller
 
         if ($userApartment && $vote->can_vote) {
             $userVote = $vote->getUserVote($userApartment->id);
-            $canVote = !$userVote;
+            $canVote = ! $userVote;
         }
 
         // Check if user is a delegate for other apartments
@@ -106,7 +105,7 @@ class VoteController extends Controller
             ->get();
 
         foreach ($activeDelegates as $delegate) {
-            if (!$vote->hasUserVoted($delegate->delegator_apartment_id)) {
+            if (! $vote->hasUserVoted($delegate->delegator_apartment_id)) {
                 $delegateFor[] = $delegate;
             }
         }
@@ -162,9 +161,9 @@ class VoteController extends Controller
         DB::transaction(function () use ($validated, $vote) {
             $vote->update($validated);
 
-            if ($vote->type === 'multiple_choice' && !empty($validated['options'])) {
+            if ($vote->type === 'multiple_choice' && ! empty($validated['options'])) {
                 $vote->options()->delete();
-                
+
                 foreach ($validated['options'] as $index => $optionData) {
                     $vote->options()->create([
                         ...$optionData,
@@ -193,7 +192,7 @@ class VoteController extends Controller
 
     public function activate(Assembly $assembly, Vote $vote)
     {
-        if (!$vote->activate()) {
+        if (! $vote->activate()) {
             return redirect()->route('assemblies.votes.show', [$assembly, $vote])
                 ->with('error', 'No se pudo activar la votación.');
         }
@@ -204,7 +203,7 @@ class VoteController extends Controller
 
     public function close(Assembly $assembly, Vote $vote)
     {
-        if (!$vote->close()) {
+        if (! $vote->close()) {
             return redirect()->route('assemblies.votes.show', [$assembly, $vote])
                 ->with('error', 'No se pudo cerrar la votación.');
         }
@@ -215,7 +214,7 @@ class VoteController extends Controller
 
     public function cast(Request $request, Assembly $assembly, Vote $vote)
     {
-        if (!$vote->can_vote) {
+        if (! $vote->can_vote) {
             return response()->json([
                 'message' => 'La votación no está disponible.',
             ], 422);
@@ -235,7 +234,7 @@ class VoteController extends Controller
         // Verify user can vote for this apartment
         $canVote = $this->canUserVoteForApartment(Auth::id(), $apartmentId, $assembly->id, $onBehalfOf);
 
-        if (!$canVote) {
+        if (! $canVote) {
             return response()->json([
                 'message' => 'No tiene permisos para votar por este apartamento.',
             ], 403);
@@ -269,7 +268,7 @@ class VoteController extends Controller
             }
 
             $apartmentVote = ApartmentVote::create($voteData);
-            
+
             // Encrypt sensitive vote data
             $apartmentVote->encryptVoteData($validated);
             $apartmentVote->save();
@@ -330,7 +329,7 @@ class VoteController extends Controller
                         'total' => $votes->total(),
                         'last_page' => $votes->lastPage(),
                     ],
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -364,9 +363,9 @@ class VoteController extends Controller
                 'data' => [
                     'vote' => $vote,
                     'user_vote' => $userVote,
-                    'can_vote' => $vote->status === 'active' && !$userVote,
+                    'can_vote' => $vote->status === 'active' && ! $userVote,
                     'participation_stats' => $vote->participation_stats,
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -386,7 +385,7 @@ class VoteController extends Controller
         try {
             $user = Auth::user();
 
-            if (!$user->resident || !$user->resident->apartment) {
+            if (! $user->resident || ! $user->resident->apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User must have an assigned apartment to vote',
@@ -412,7 +411,7 @@ class VoteController extends Controller
             $onBehalfOf = $validated['on_behalf_of'] ?? null;
 
             // Check voting permissions
-            if (!$this->canUserVoteForApartment($user->id, $apartment->id, $assembly->id, $onBehalfOf)) {
+            if (! $this->canUserVoteForApartment($user->id, $apartment->id, $assembly->id, $onBehalfOf)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No tienes permisos para votar por este apartamento',
@@ -469,7 +468,7 @@ class VoteController extends Controller
                 'message' => 'Voto registrado exitosamente',
                 'data' => [
                     'participation_stats' => $vote->fresh()->participation_stats,
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {

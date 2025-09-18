@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Auth\Notifications\VerifyEmail;
 
 class TestEmailVerification extends Command
 {
@@ -29,11 +28,12 @@ class TestEmailVerification extends Command
     public function handle()
     {
         $email = $this->argument('email');
-        
+
         $user = User::where('email', $email)->first();
-        
-        if (!$user) {
+
+        if (! $user) {
             $this->error("User with email '{$email}' not found");
+
             return Command::FAILURE;
         }
 
@@ -46,29 +46,29 @@ class TestEmailVerification extends Command
 
         // Check if user needs verification
         if ($user->hasVerifiedEmail()) {
-            $this->warn("⚠️  User email is already verified");
+            $this->warn('⚠️  User email is already verified');
             $response = $this->confirm('Do you want to test sending anyway?');
-            if (!$response) {
+            if (! $response) {
                 return Command::SUCCESS;
             }
         }
 
         // Test sending verification email
         try {
-            $this->info("Attempting to send verification email...");
-            
+            $this->info('Attempting to send verification email...');
+
             $user->sendEmailVerificationNotification();
-            
-            $this->info("✅ Verification email sent successfully!");
+
+            $this->info('✅ Verification email sent successfully!');
             $this->line("Check the user's inbox and spam folder.");
-            
+
         } catch (\Exception $e) {
-            $this->error("❌ Failed to send verification email:");
+            $this->error('❌ Failed to send verification email:');
             $this->error($e->getMessage());
-            
+
             if (app()->environment('local')) {
                 $this->newLine();
-                $this->warn("Full error trace:");
+                $this->warn('Full error trace:');
                 $this->line($e->getTraceAsString());
             }
         }
@@ -78,8 +78,8 @@ class TestEmailVerification extends Command
 
     private function checkMailConfiguration()
     {
-        $this->info("Mail Configuration Check:");
-        
+        $this->info('Mail Configuration Check:');
+
         $config = [
             'MAIL_MAILER' => config('mail.default'),
             'MAIL_HOST' => config('mail.mailers.smtp.host'),
@@ -99,9 +99,9 @@ class TestEmailVerification extends Command
         // Test if mail is properly configured
         try {
             $mailer = Mail::mailer();
-            $this->info("✅ Mail driver loaded successfully");
+            $this->info('✅ Mail driver loaded successfully');
         } catch (\Exception $e) {
-            $this->error("❌ Mail driver error: " . $e->getMessage());
+            $this->error('❌ Mail driver error: '.$e->getMessage());
         }
     }
 }

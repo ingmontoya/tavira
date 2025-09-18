@@ -20,15 +20,15 @@ foreach (config('tenancy.central_domains') as $domain) {
         })->name('security');
 
         // Include module route files outside of middleware groups
-        require __DIR__ . '/modules/placeholder-modules.php';
-        require __DIR__ . '/modules/subscription-payment.php';
+        require __DIR__.'/modules/placeholder-modules.php';
+        require __DIR__.'/modules/subscription-payment.php';
 
         Route::middleware(['auth', 'verified'])->group(function () {
             // Central dashboard for tenant management
-            require __DIR__ . '/modules/central-dashboard.php';
+            require __DIR__.'/modules/central-dashboard.php';
         });
 
-        require __DIR__ . '/settings.php';
-        require __DIR__ . '/auth.php';
+        require __DIR__.'/settings.php';
+        require __DIR__.'/auth.php';
     });
 }

@@ -17,7 +17,7 @@ class FeatureController extends Controller
         try {
             $conjuntoConfig = ConjuntoConfig::first();
 
-            if (!$conjuntoConfig) {
+            if (! $conjuntoConfig) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Conjunto configuration not found',
@@ -32,78 +32,78 @@ class FeatureController extends Controller
                     'metadata' => [
                         'description' => 'Voting and assembly participation',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'maintenance_requests' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Submit and track maintenance requests',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'visitor_management' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Manage visitor access and QR codes',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'financial_reports' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Access financial statements and reports',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'social_hall_reservations' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Reserve common areas and amenities',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'announcements' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'View and confirm announcements',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'correspondence' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Manage postal correspondence',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'notifications' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Push notifications and alerts',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'biometric_auth' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Biometric authentication support',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'dark_mode' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Dark theme support',
                         'version' => '1.0.0',
-                    ]
+                    ],
                 ],
                 'panic_button' => [
                     'enabled' => true,
                     'metadata' => [
                         'description' => 'Emergency panic button for security alerts',
                         'version' => '1.0.0',
-                    ]
-                ]
+                    ],
+                ],
             ];
 
             // Override with actual tenant feature settings from database
@@ -126,10 +126,10 @@ class FeatureController extends Controller
                         // Only override if not already set by tenant features
                         $tenantFeatureExists = function_exists('tenant') && tenant() &&
                             TenantFeature::where('tenant_id', tenant('id'))
-                                        ->where('feature', $feature)
-                                        ->exists();
+                                ->where('feature', $feature)
+                                ->exists();
 
-                        if (!$tenantFeatureExists) {
+                        if (! $tenantFeatureExists) {
                             $features[$feature]['enabled'] = $config['enabled'] ?? $features[$feature]['enabled'];
                         }
                     }
@@ -138,7 +138,7 @@ class FeatureController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $features
+                'data' => $features,
             ]);
 
         } catch (\Exception $e) {
@@ -158,7 +158,7 @@ class FeatureController extends Controller
         try {
             $conjuntoConfig = ConjuntoConfig::first();
 
-            if (!$conjuntoConfig) {
+            if (! $conjuntoConfig) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Conjunto configuration not found',
@@ -168,7 +168,7 @@ class FeatureController extends Controller
             // Get all features first
             $allFeatures = $this->getAllFeatures($conjuntoConfig);
 
-            if (!isset($allFeatures[$feature])) {
+            if (! isset($allFeatures[$feature])) {
                 return response()->json([
                     'success' => false,
                     'message' => "Feature '{$feature}' not found",
@@ -180,8 +180,8 @@ class FeatureController extends Controller
                 'data' => [
                     'feature' => $feature,
                     'enabled' => $allFeatures[$feature]['enabled'],
-                    'metadata' => $allFeatures[$feature]['metadata'] ?? []
-                ]
+                    'metadata' => $allFeatures[$feature]['metadata'] ?? [],
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -204,78 +204,78 @@ class FeatureController extends Controller
                 'metadata' => [
                     'description' => 'Voting and assembly participation',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'maintenance_requests' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Submit and track maintenance requests',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'visitor_management' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Manage visitor access and QR codes',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'financial_reports' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Access financial statements and reports',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'social_hall_reservations' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Reserve common areas and amenities',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'announcements' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'View and confirm announcements',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'correspondence' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Manage postal correspondence',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'notifications' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Push notifications and alerts',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'biometric_auth' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Biometric authentication support',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'dark_mode' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Dark theme support',
                     'version' => '1.0.0',
-                ]
+                ],
             ],
             'panic_button' => [
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Emergency panic button for security alerts',
                     'version' => '1.0.0',
-                ]
-            ]
+                ],
+            ],
         ];
 
         // Override with actual tenant feature settings from database
@@ -297,10 +297,10 @@ class FeatureController extends Controller
                     // Only override if not already set by tenant features
                     $tenantFeatureExists = function_exists('tenant') && tenant() &&
                         TenantFeature::where('tenant_id', tenant('id'))
-                                    ->where('feature', $feature)
-                                    ->exists();
+                            ->where('feature', $feature)
+                            ->exists();
 
-                    if (!$tenantFeatureExists) {
+                    if (! $tenantFeatureExists) {
                         $features[$feature]['enabled'] = $config['enabled'] ?? $features[$feature]['enabled'];
                         if (isset($config['metadata'])) {
                             $features[$feature]['metadata'] = array_merge(

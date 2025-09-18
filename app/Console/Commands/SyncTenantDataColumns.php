@@ -39,7 +39,7 @@ class SyncTenantDataColumns extends Command
         if ($specificTenant) {
             $query->where('id', $specificTenant);
         }
-        
+
         $tenants = $query->get();
         $this->info("📋 Found {$tenants->count()} tenant(s) to process");
 
@@ -54,8 +54,9 @@ class SyncTenantDataColumns extends Command
             $data = $rawData ? json_decode($rawData, true) : [];
 
             if (empty($data)) {
-                $this->warn("  ⚠️  No data found in JSON field, skipping");
+                $this->warn('  ⚠️  No data found in JSON field, skipping');
                 $skipped++;
+
                 continue;
             }
 
@@ -96,33 +97,34 @@ class SyncTenantDataColumns extends Command
                 $this->line("    ℹ️  email: '{$data['email']}' (admin_email: '{$tenant->admin_email}')");
             }
             if (isset($data['temp_password'])) {
-                $this->line("    🔑 temp_password: " . substr($data['temp_password'], 0, 8) . '...');
+                $this->line('    🔑 temp_password: '.substr($data['temp_password'], 0, 8).'...');
             }
 
             if (empty($updates)) {
-                $this->info("  ✅ No updates needed");
+                $this->info('  ✅ No updates needed');
                 $skipped++;
+
                 continue;
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 // Perform the actual update
                 DB::table('tenants')->where('id', $tenant->id)->update($updates);
-                $this->info("  ✅ Updated " . count($updates) . " column(s)");
+                $this->info('  ✅ Updated '.count($updates).' column(s)');
                 $updated++;
             } else {
-                $this->info("  🔍 Would update " . count($updates) . " column(s)");
+                $this->info('  🔍 Would update '.count($updates).' column(s)');
             }
         }
 
         $this->newLine();
         if ($dryRun) {
-            $this->info("🔍 DRY RUN SUMMARY:");
+            $this->info('🔍 DRY RUN SUMMARY:');
             $this->info("  - Tenants that would be updated: {$updated}");
             $this->info("  - Tenants skipped: {$skipped}");
             $this->info("\n💡 Run without --dry-run to apply changes");
         } else {
-            $this->info("✅ SYNC COMPLETE:");
+            $this->info('✅ SYNC COMPLETE:');
             $this->info("  - Tenants updated: {$updated}");
             $this->info("  - Tenants skipped: {$skipped}");
         }

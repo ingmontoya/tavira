@@ -40,7 +40,7 @@ class VoteOption extends Model
     public function getVotePercentageAttribute(): float
     {
         $totalVotes = $this->vote->apartmentVotes()->count();
-        
+
         if ($totalVotes === 0) {
             return 0;
         }

@@ -114,6 +114,7 @@ class PaymentConceptAccountMapping extends Model
         foreach ($concepts as $concept) {
             if (self::where('payment_concept_id', $concept->id)->exists()) {
                 $skippedCount++;
+
                 continue; // Skip if mapping already exists
             }
 
@@ -125,7 +126,7 @@ class PaymentConceptAccountMapping extends Model
                     'income_account_id' => $defaultAccounts['income_account']->id,
                     'receivable_account_id' => $defaultAccounts['receivable_account']->id,
                     'is_active' => true,
-                    'notes' => 'Mapeo automático basado en tipo de concepto: ' . $concept->type,
+                    'notes' => 'Mapeo automático basado en tipo de concepto: '.$concept->type,
                 ]);
                 $createdCount++;
             }

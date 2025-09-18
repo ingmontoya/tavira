@@ -64,11 +64,12 @@ class NotificationController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$user) {
+            if (! $user) {
                 return response()->json(['error' => 'User not authenticated'], 401);
             }
-            
+
             $counts = $this->notificationService->getNotificationCounts($user);
+
             return response()->json($counts);
         } catch (\Exception $e) {
             // Return default counts if service fails
@@ -123,7 +124,7 @@ class NotificationController extends Controller
     }
 
     // API methods for mobile app
-    
+
     /**
      * API: Get all notifications for authenticated user.
      */

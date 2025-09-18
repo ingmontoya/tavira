@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
+import { useToast } from '@/composables/useToast';
 import type { ColumnFiltersState, ExpandedState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import {
     createColumnHelper,
@@ -61,6 +62,7 @@ const props = defineProps<{
 }>();
 
 const data: ChartOfAccount[] = props.accounts.data;
+const { error, success } = useToast();
 
 // Custom filters state
 const customFilters = ref({
@@ -96,7 +98,15 @@ const clearCustomFilters = () => {
 
 // Create default accounts
 const createDefaultAccounts = () => {
-    router.post('/accounting/chart-of-accounts/create-defaults');
+    router.post('/accounting/chart-of-accounts/create-defaults', {}, {
+        onSuccess: () => {
+            success('Plan de cuentas creado exitosamente');
+        },
+        onError: (errors) => {
+            const errorMessage = errors?.create_defaults || 'Error al crear el plan de cuentas';
+            error(errorMessage);
+        }
+    });
 };
 
 // Apply custom filters to data

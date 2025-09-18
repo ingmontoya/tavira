@@ -31,6 +31,7 @@ class SyncPanicButtonFeaturesCommand extends Command
 
         if ($tenants->isEmpty()) {
             $this->warn('No tenants found.');
+
             return Command::SUCCESS;
         }
 
@@ -44,21 +45,22 @@ class SyncPanicButtonFeaturesCommand extends Command
 
         foreach ($tenants as $tenant) {
             try {
-                $tenantDbName = 'tenant' . $tenant->id;
+                $tenantDbName = 'tenant'.$tenant->id;
 
                 // Check if database exists
-                $dbExists = DB::select("SELECT datname FROM pg_database WHERE datname = ?", [$tenantDbName]);
+                $dbExists = DB::select('SELECT datname FROM pg_database WHERE datname = ?', [$tenantDbName]);
 
                 if (empty($dbExists)) {
                     $this->error("\nDatabase for tenant {$tenant->id} does not exist. Skipping...");
                     $errorCount++;
                     $bar->advance();
+
                     continue;
                 }
 
                 // Configure tenant connection dynamically
                 config([
-                    "database.connections.temp_sync" => [
+                    'database.connections.temp_sync' => [
                         'driver' => 'pgsql',
                         'host' => env('DB_HOST', '127.0.0.1'),
                         'port' => env('DB_PORT', '5433'),
@@ -70,17 +72,18 @@ class SyncPanicButtonFeaturesCommand extends Command
                         'prefix_indexes' => true,
                         'schema' => 'public',
                         'sslmode' => 'prefer',
-                    ]
+                    ],
                 ]);
 
                 // Check if tenant_features table exists
                 $tableExists = DB::connection('temp_sync')
                     ->select("SELECT to_regclass('public.tenant_features') as exists");
 
-                if (!$tableExists[0]->exists) {
+                if (! $tableExists[0]->exists) {
                     $this->error("\ntenant_features table does not exist for tenant {$tenant->id}. Skipping...");
                     $errorCount++;
                     $bar->advance();
+
                     continue;
                 }
 
@@ -92,7 +95,7 @@ class SyncPanicButtonFeaturesCommand extends Command
                         [
                             'enabled' => true,
                             'created_at' => now(),
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ]
                     );
 

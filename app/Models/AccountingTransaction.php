@@ -303,7 +303,7 @@ class AccountingTransaction extends Model
         foreach ($invoice->items as $item) {
             $mapping = PaymentConceptAccountMapping::getAccountsForConcept($item->payment_concept_id);
 
-            if (!$mapping || !$mapping['income_account'] || !$mapping['receivable_account']) {
+            if (! $mapping || ! $mapping['income_account'] || ! $mapping['receivable_account']) {
                 throw new \Exception("No se encontró mapeo contable válido para el concepto: {$item->paymentConcept->name}");
             }
 

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Models\User;
 use App\Models\Invitation;
+use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
     {
         $centralDomains = config('tenancy.central_domains', []);
         $isCentralDomain = in_array($request->getHost(), $centralDomains);
-        
+
         // Allow free registration on central domains
         if ($isCentralDomain) {
             return Inertia::render('auth/Register', [
@@ -39,29 +39,29 @@ class RegisteredUserController extends Controller
                 'apartments' => [],
             ]);
         }
-        
+
         // Require invitation token for tenant registrations
         $token = $request->get('token');
-        
-        if (!$token) {
+
+        if (! $token) {
             return redirect()->route('login')
                 ->with('error', 'El registro solo es posible mediante invitación. Contacta al administrador para obtener acceso.');
         }
-        
+
         $invitation = Invitation::where('token', $token)
             ->where('expires_at', '>', now())
             ->first();
-            
-        if (!$invitation) {
+
+        if (! $invitation) {
             return redirect()->route('login')
                 ->with('error', 'El enlace de invitación es inválido o ha expirado.');
         }
-        
-        if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
+
+        if (! $invitation->is_mass_invitation && $invitation->isAccepted()) {
             return redirect()->route('login')
                 ->with('error', 'Esta invitación ya fue utilizada.');
         }
-        
+
         $apartments = [];
         if ($invitation->is_mass_invitation) {
             $apartments = \App\Models\Apartment::with('apartmentType')
@@ -75,7 +75,7 @@ class RegisteredUserController extends Controller
                         'number' => $apartment->number,
                         'tower' => $apartment->tower,
                         'floor' => $apartment->floor,
-                        'apartment_type' => $apartment->apartmentType?->name ?? 'Sin tipo'
+                        'apartment_type' => $apartment->apartmentType?->name ?? 'Sin tipo',
                     ];
                 });
         }
@@ -119,7 +119,7 @@ class RegisteredUserController extends Controller
         $validated = $request->validated();
         $centralDomains = config('tenancy.central_domains', []);
         $isCentralDomain = in_array($request->getHost(), $centralDomains);
-        
+
         // Allow free registration on central domains
         if ($isCentralDomain) {
             $user = User::create([
@@ -136,31 +136,31 @@ class RegisteredUserController extends Controller
             return redirect()->route('verification.notice')
                 ->with('success', 'Cuenta creada exitosamente. Verifica tu correo electrónico para continuar.');
         }
-        
+
         // Require invitation token for tenant registrations
         $token = $request->get('token');
-        
-        if (!$token) {
+
+        if (! $token) {
             return back()->with('error', 'El registro solo es posible mediante invitación. Token requerido.');
         }
-        
+
         $invitation = Invitation::where('token', $token)
             ->where('expires_at', '>', now())
             ->first();
-            
-        if (!$invitation) {
+
+        if (! $invitation) {
             return back()->with('error', 'El enlace de invitación es inválido o ha expirado.');
         }
-        
-        if (!$invitation->is_mass_invitation && $invitation->isAccepted()) {
+
+        if (! $invitation->is_mass_invitation && $invitation->isAccepted()) {
             return back()->with('error', 'Esta invitación ya fue utilizada.');
         }
-        
+
         // Check if email matches for individual invitations
-        if (!$invitation->is_mass_invitation && $invitation->email !== $validated['email']) {
+        if (! $invitation->is_mass_invitation && $invitation->email !== $validated['email']) {
             return back()->with('error', 'El email no coincide con la invitación.');
         }
-        
+
         $role = $invitation->role;
 
         $user = User::create([
@@ -170,7 +170,7 @@ class RegisteredUserController extends Controller
         ]);
 
         $user->assignRole($role);
-        
+
         // Handle apartment assignment for mass invitations
         if ($invitation->is_mass_invitation && $request->has('apartment_id')) {
             $apartmentId = $request->get('apartment_id');
@@ -179,16 +179,16 @@ class RegisteredUserController extends Controller
                 $nameParts = explode(' ', $validated['name'], 2);
                 $firstName = $nameParts[0];
                 $lastName = $nameParts[1] ?? '';
-                
+
                 // Check if resident already exists with this email
                 $existingResident = \App\Models\Resident::where('email', $validated['email'])->first();
-                
-                if (!$existingResident) {
+
+                if (! $existingResident) {
                     // Create a resident record with required fields
                     \App\Models\Resident::create([
                         'apartment_id' => $apartmentId,
                         'document_type' => 'CC', // Default to Cédula de Ciudadanía
-                        'document_number' => 'PENDIENTE_' . time(), // Temporary unique value
+                        'document_number' => 'PENDIENTE_'.time(), // Temporary unique value
                         'first_name' => $firstName,
                         'last_name' => $lastName,
                         'email' => $validated['email'],
@@ -206,9 +206,9 @@ class RegisteredUserController extends Controller
                 }
             }
         }
-        
+
         // Mark invitation as accepted if it's not a mass invitation
-        if (!$invitation->is_mass_invitation) {
+        if (! $invitation->is_mass_invitation) {
             $invitation->update([
                 'accepted_at' => now(),
                 'accepted_by' => $user->id,

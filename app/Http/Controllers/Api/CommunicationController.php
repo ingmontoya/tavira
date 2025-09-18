@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\Assembly;
-use App\Models\Correspondence;
 use App\Models\ConjuntoConfig;
+use App\Models\Correspondence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,7 +21,7 @@ class CommunicationController extends Controller
             $user = Auth::user();
             $conjuntoConfig = ConjuntoConfig::first();
 
-            if (!$conjuntoConfig) {
+            if (! $conjuntoConfig) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Conjunto configuration not found',
@@ -52,7 +52,7 @@ class CommunicationController extends Controller
                     'unread_announcements' => $unreadAnnouncements,
                     'unread_correspondence' => $unreadCorrespondence,
                     'active_assemblies' => $activeAssemblies,
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {
@@ -73,7 +73,7 @@ class CommunicationController extends Controller
             $user = Auth::user();
             $conjuntoConfig = ConjuntoConfig::first();
 
-            if (!$conjuntoConfig) {
+            if (! $conjuntoConfig) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Conjunto configuration not found',
@@ -101,8 +101,8 @@ class CommunicationController extends Controller
 
             // Get recent correspondence
             $recentCorrespondence = Correspondence::whereHas('apartment.residents', function ($query) use ($user) {
-                    $query->where('user_id', $user->id);
-                })
+                $query->where('user_id', $user->id);
+            })
                 ->latest('created_at')
                 ->limit(3)
                 ->get()
@@ -110,7 +110,7 @@ class CommunicationController extends Controller
                     return [
                         'id' => $correspondence->id,
                         'type' => 'correspondence',
-                        'title' => $correspondence->sender_name . ' - ' . $correspondence->type,
+                        'title' => $correspondence->sender_name.' - '.$correspondence->type,
                         'description' => \Str::limit($correspondence->description, 100),
                         'created_at' => $correspondence->created_at,
                         'status' => $correspondence->status,
@@ -146,7 +146,7 @@ class CommunicationController extends Controller
                 'data' => [
                     'items' => $activities,
                     'count' => $activities->count(),
-                ]
+                ],
             ]);
 
         } catch (\Exception $e) {

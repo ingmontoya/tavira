@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\CentralDashboardController;
 use App\Http\Controllers\TenantManagementController;
-use App\Http\Controllers\TenantFeatureController;
 use Illuminate\Support\Facades\Route;
 
 // Central Dashboard for tenant management
@@ -20,7 +19,7 @@ Route::prefix('tenants')->name('tenant-management.')->group(function () {
     Route::get('/{tenant}/edit', [TenantManagementController::class, 'edit'])->name('edit');
     Route::put('/{tenant}', [TenantManagementController::class, 'update'])->name('update');
     Route::delete('/{tenant}', [TenantManagementController::class, 'destroy'])->name('destroy');
-    
+
     // Tenant actions
     Route::get('/{tenant}/users', [TenantManagementController::class, 'getUsers'])->name('users');
     Route::post('/{tenant}/impersonate', [TenantManagementController::class, 'impersonate'])->name('impersonate');

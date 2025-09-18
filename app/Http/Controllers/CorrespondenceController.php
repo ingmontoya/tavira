@@ -27,7 +27,7 @@ class CorrespondenceController extends Controller
     public function index(Request $request)
     {
         // Check if correspondence feature is enabled for this tenant
-        if (!Feature::active('correspondence', function_exists('tenant') ? tenant('id') : 'default')) {
+        if (! Feature::active('correspondence', function_exists('tenant') ? tenant('id') : 'default')) {
             return Inertia::render('FeatureDisabled', [
                 'feature' => 'correspondence',
                 'message' => 'El módulo de correspondencia no está disponible en su plan actual.',

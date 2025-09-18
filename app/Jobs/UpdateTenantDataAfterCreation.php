@@ -15,6 +15,7 @@ class UpdateTenantDataAfterCreation implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $tenantId;
+
     protected array $customData;
 
     /**
@@ -33,15 +34,16 @@ class UpdateTenantDataAfterCreation implements ShouldQueue
     {
         try {
             $tenant = Tenant::find($this->tenantId);
-            
-            if (!$tenant) {
+
+            if (! $tenant) {
                 \Log::warning('Tenant not found for data update', ['tenant_id' => $this->tenantId]);
+
                 return;
             }
 
             // Get current data from the tenant (may have been modified by pipeline)
             $currentData = is_array($tenant->data) ? $tenant->data : (json_decode($tenant->data ?? '{}', true) ?: []);
-            
+
             // Merge current data with our custom data (our data takes precedence)
             $finalData = array_merge($currentData, $this->customData);
 
@@ -52,16 +54,16 @@ class UpdateTenantDataAfterCreation implements ShouldQueue
 
             \Log::info('Tenant data updated successfully after creation', [
                 'tenant_id' => $this->tenantId,
-                'final_data_keys' => array_keys($finalData)
+                'final_data_keys' => array_keys($finalData),
             ]);
 
         } catch (\Exception $e) {
             \Log::error('Failed to update tenant data after creation', [
                 'tenant_id' => $this->tenantId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Re-throw to trigger failed job handling
             throw $e;
         }

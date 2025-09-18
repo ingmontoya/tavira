@@ -28,7 +28,7 @@ class DiagnoseEmailVerification extends Command
     public function handle()
     {
         $userEmail = $this->option('user-email');
-        
+
         $this->info('=== Email Verification Diagnostics ===');
         $this->newLine();
 
@@ -50,15 +50,15 @@ class DiagnoseEmailVerification extends Command
     private function checkConfiguration()
     {
         $this->info('Configuration Check:');
-        
+
         $appUrl = config('app.url');
         $appEnv = config('app.env');
         $mailFrom = config('mail.from.address');
-        
+
         $this->line("APP_URL: {$appUrl}");
         $this->line("APP_ENV: {$appEnv}");
         $this->line("MAIL_FROM: {$mailFrom}");
-        
+
         // Check if APP_URL matches current request
         if (app()->runningInConsole()) {
             $this->comment('Running in console - cannot compare with request URL');
@@ -75,9 +75,10 @@ class DiagnoseEmailVerification extends Command
     private function diagnoseUser(string $email)
     {
         $user = User::where('email', $email)->first();
-        
-        if (!$user) {
+
+        if (! $user) {
             $this->error("User with email '{$email}' not found");
+
             return;
         }
 
@@ -89,7 +90,7 @@ class DiagnoseEmailVerification extends Command
             $this->info('✓ Email is already verified');
         } else {
             $this->warn('✗ Email is NOT verified');
-            $this->line("Email verified at: " . ($user->email_verified_at ?: 'Never'));
+            $this->line('Email verified at: '.($user->email_verified_at ?: 'Never'));
         }
 
         // Check roles
@@ -97,7 +98,7 @@ class DiagnoseEmailVerification extends Command
         if ($roles->isEmpty()) {
             $this->error('✗ User has NO roles assigned');
         } else {
-            $this->info('✓ User roles: ' . $roles->join(', '));
+            $this->info('✓ User roles: '.$roles->join(', '));
         }
 
         // Generate a sample verification URL
@@ -110,20 +111,21 @@ class DiagnoseEmailVerification extends Command
                     'hash' => sha1($user->getEmailForVerification()),
                 ]
             );
-            
+
             $this->info('Sample verification URL:');
             $this->line($verificationUrl);
         } catch (\Exception $e) {
-            $this->error('Error generating verification URL: ' . $e->getMessage());
+            $this->error('Error generating verification URL: '.$e->getMessage());
         }
     }
 
     private function showUnverifiedUsers()
     {
         $unverifiedUsers = User::whereNull('email_verified_at')->get();
-        
+
         if ($unverifiedUsers->isEmpty()) {
             $this->info('No unverified users found');
+
             return;
         }
 
@@ -140,12 +142,12 @@ class DiagnoseEmailVerification extends Command
                 $user->email,
                 $user->created_at->format('Y-m-d H:i:s'),
                 $roles->isEmpty() ? '❌ NO ROLES' : $roles->join(', '),
-                $user->tenant_id ?? 'null'
+                $user->tenant_id ?? 'null',
             ];
         }
 
         $this->table($headers, $rows);
-        
+
         $this->newLine();
         $this->comment('To diagnose a specific user, use: php artisan email:diagnose-verification --user-email=user@example.com');
     }

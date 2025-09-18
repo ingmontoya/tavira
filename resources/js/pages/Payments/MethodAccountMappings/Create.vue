@@ -5,8 +5,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Save } from 'lucide-vue-next';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Save, Settings } from 'lucide-vue-next';
+import { useToast } from '@/composables/useToast';
 
 interface ChartOfAccount {
     id: number;
@@ -27,8 +28,22 @@ const form = useForm({
     is_active: true,
 });
 
+const { error, success } = useToast();
+
 const submit = () => {
     form.post('/payment-method-account-mappings');
+};
+
+const createDefaultMappings = () => {
+    router.post('/payment-method-account-mappings/create-defaults', {}, {
+        onSuccess: () => {
+            success('Mapeos por defecto creados exitosamente');
+        },
+        onError: (errors) => {
+            const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';
+            error(errorMessage);
+        }
+    });
 };
 
 const breadcrumbs = [
@@ -160,6 +175,24 @@ const breadcrumbs = [
                         <CardContent>
                             <div class="space-y-2">
                                 <p class="text-sm text-muted-foreground">{{ cashAccounts.length }} cuentas de efectivo/banco disponibles</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Quick Setup Card -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle class="text-lg">Configuración Rápida</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-4">
+                                <p class="text-sm text-muted-foreground">
+                                    ¿Prefieres crear todos los mapeos básicos de una vez? Esto configurará automáticamente los métodos de pago más comunes.
+                                </p>
+                                <Button @click="createDefaultMappings" variant="default" size="sm" class="w-full">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Crear Mapeos por Defecto
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

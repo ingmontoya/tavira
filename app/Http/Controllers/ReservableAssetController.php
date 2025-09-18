@@ -18,8 +18,8 @@ class ReservableAssetController extends Controller
     public function index(Request $request)
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return redirect()->route('conjunto-config.create')
                 ->with('error', 'Debe configurar el conjunto antes de gestionar activos.');
         }
@@ -30,8 +30,8 @@ class ReservableAssetController extends Controller
         // Apply filters
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -71,8 +71,8 @@ class ReservableAssetController extends Controller
     public function create()
     {
         $conjuntoConfig = ConjuntoConfig::first();
-        
-        if (!$conjuntoConfig) {
+
+        if (! $conjuntoConfig) {
             return redirect()->route('conjunto-config.create')
                 ->with('error', 'Debe configurar el conjunto antes de crear activos.');
         }
@@ -122,7 +122,7 @@ class ReservableAssetController extends Controller
             'reservations' => function ($query) {
                 $query->with(['user', 'apartment'])
                     ->latest('start_time');
-            }
+            },
         ]);
 
         // Get reservation statistics
@@ -182,7 +182,7 @@ class ReservableAssetController extends Controller
             if ($reservableAsset->image_path && Storage::disk('public')->exists($reservableAsset->image_path)) {
                 Storage::disk('public')->delete($reservableAsset->image_path);
             }
-            
+
             $imagePath = $request->file('image')->store('reservable-assets', 'public');
             $data['image_path'] = $imagePath;
         }

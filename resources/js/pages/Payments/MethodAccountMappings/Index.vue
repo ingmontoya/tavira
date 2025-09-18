@@ -23,7 +23,7 @@ import {
     useVueTable,
 } from '@tanstack/vue-table';
 import { AlertTriangle, ChevronDown, ChevronsUpDown, Database, Edit, Eye, Filter, Plus, Search, Settings, ToggleLeft, ToggleRight, Trash2, X } from 'lucide-vue-next';
-import { computed, h, ref, watch } from 'vue';
+import { computed, h, ref, toRefs, watch } from 'vue';
 import { valueUpdater } from '../../../utils';
 
 interface ChartOfAccount {
@@ -64,6 +64,7 @@ const props = defineProps<{
 }>();
 
 const data = computed(() => props.mappings.data);
+const { has_chart_of_accounts } = toRefs(props);
 
 // Custom filters state
 const customFilters = ref({
@@ -381,8 +382,8 @@ const breadcrumbs = [
                             Volver a Pagos
                         </Link>
                     </Button>
-                    <Button asChild>
-                        <Link href="/payment-method-account-mappings/create">
+                    <Button asChild :disabled="!has_chart_of_accounts">
+                        <Link href="/payment-method-account-mappings/create" :class="{ 'pointer-events-none opacity-50': !has_chart_of_accounts }">
                             <Plus class="mr-2 h-4 w-4" />
                             Nuevo Mapeo
                         </Link>

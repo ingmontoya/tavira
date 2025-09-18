@@ -174,10 +174,10 @@ class VisitController extends Controller
     {
         try {
             $user = $request->user();
-            
+
             // Get user's apartment
             $apartment = $user->apartment;
-            if (!$apartment) {
+            if (! $apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró apartamento asociado al usuario.',
@@ -229,7 +229,7 @@ class VisitController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las visitas: ' . $e->getMessage(),
+                'message' => 'Error al obtener las visitas: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -241,10 +241,10 @@ class VisitController extends Controller
     {
         try {
             $user = $request->user();
-            
+
             // Get user's apartment
             $apartment = $user->apartment;
-            if (!$apartment) {
+            if (! $apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró apartamento asociado al usuario.',
@@ -301,7 +301,7 @@ class VisitController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear la visita: ' . $e->getMessage(),
+                'message' => 'Error al crear la visita: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -313,10 +313,10 @@ class VisitController extends Controller
     {
         try {
             $user = request()->user();
-            
+
             // Get user's apartment
             $apartment = $user->apartment;
-            if (!$apartment) {
+            if (! $apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró apartamento asociado al usuario.',
@@ -341,7 +341,7 @@ class VisitController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener la visita: ' . $e->getMessage(),
+                'message' => 'Error al obtener la visita: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -353,10 +353,10 @@ class VisitController extends Controller
     {
         try {
             $user = $request->user();
-            
+
             // Get user's apartment
             $apartment = $user->apartment;
-            if (!$apartment) {
+            if (! $apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró apartamento asociado al usuario.',
@@ -417,7 +417,7 @@ class VisitController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar la visita: ' . $e->getMessage(),
+                'message' => 'Error al actualizar la visita: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -429,10 +429,10 @@ class VisitController extends Controller
     {
         try {
             $user = request()->user();
-            
+
             // Get user's apartment
             $apartment = $user->apartment;
-            if (!$apartment) {
+            if (! $apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró apartamento asociado al usuario.',
@@ -464,7 +464,7 @@ class VisitController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al cancelar la visita: ' . $e->getMessage(),
+                'message' => 'Error al cancelar la visita: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -476,10 +476,10 @@ class VisitController extends Controller
     {
         try {
             $user = request()->user();
-            
+
             // Get user's apartment
             $apartment = $user->apartment;
-            if (!$apartment) {
+            if (! $apartment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró apartamento asociado al usuario.',
@@ -495,7 +495,7 @@ class VisitController extends Controller
             }
 
             // Check if visit is active
-            if (!in_array($visit->status, ['pending', 'active'])) {
+            if (! in_array($visit->status, ['pending', 'active'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'El código QR solo está disponible para visitas pendientes o activas.',
@@ -517,7 +517,7 @@ class VisitController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener el código QR: ' . $e->getMessage(),
+                'message' => 'Error al obtener el código QR: '.$e->getMessage(),
             ], 500);
         }
     }

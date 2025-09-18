@@ -42,12 +42,12 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
             return response()->json([
                 'success' => true,
                 'message' => 'Cache cleared successfully',
-                'timestamp' => now()->toISOString()
+                'timestamp' => now()->toISOString(),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     })->name('tenant.api.debug.clear-cache');
@@ -77,7 +77,7 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
 
             $validated = $request->validate([
                 'name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|max:255|unique:users,email,' . $user->id,
+                'email' => 'sometimes|email|max:255|unique:users,email,'.$user->id,
                 'phone' => 'sometimes|string|max:20',
             ]);
 
@@ -263,11 +263,11 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
 
         // === PANIC ALERTS ===
         Route::prefix('panic-alerts')->name('tenant.api.panic-alerts.')
-            ->middleware([\App\Http\Middleware\RequiresFeature::class . ':panic_button'])
+            ->middleware([\App\Http\Middleware\RequiresFeature::class.':panic_button'])
             ->group(function () {
                 // Trigger panic alert (with specific rate limiting)
                 Route::post('/', [\App\Http\Controllers\Api\PanicAlertController::class, 'store'])
-                    ->middleware([\App\Http\Middleware\RateLimitMiddleware::class . ':panic'])
+                    ->middleware([\App\Http\Middleware\RateLimitMiddleware::class.':panic'])
                     ->name('store');
 
                 // Cancel panic alert (within 10-second window)
@@ -291,7 +291,7 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
 
         // === ASSEMBLIES & VOTING (with feature flag middleware) ===
         Route::prefix('assemblies')->name('tenant.api.assemblies.')
-            ->middleware([\App\Http\Middleware\RequiresFeature::class . ':voting'])
+            ->middleware([\App\Http\Middleware\RequiresFeature::class.':voting'])
             ->group(function () {
                 // Assembly listing for residents
                 Route::get('/', [\App\Http\Controllers\AssemblyController::class, 'apiIndex'])

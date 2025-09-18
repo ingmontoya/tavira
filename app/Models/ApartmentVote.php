@@ -89,7 +89,7 @@ class ApartmentVote extends Model
 
     public function decryptVoteData(): ?array
     {
-        if (!$this->encrypted_vote) {
+        if (! $this->encrypted_vote) {
             return null;
         }
 
@@ -135,7 +135,7 @@ class ApartmentVote extends Model
         parent::boot();
 
         static::creating(function ($apartmentVote) {
-            if (!$apartmentVote->cast_at) {
+            if (! $apartmentVote->cast_at) {
                 $apartmentVote->cast_at = now();
             }
         });

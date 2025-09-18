@@ -25,12 +25,13 @@ class CloseScheduledAssembly implements ShouldQueue
                     'assembly_id' => $this->assembly->id,
                     'current_status' => $this->assembly->status,
                 ]);
+
                 return;
             }
 
             // Close all active votes first
             $activeVotes = $this->assembly->votes()->where('status', 'active')->get();
-            
+
             foreach ($activeVotes as $vote) {
                 $vote->close();
                 Log::info('Vote closed during assembly closure', [
@@ -42,7 +43,7 @@ class CloseScheduledAssembly implements ShouldQueue
 
             // Close the assembly
             $this->assembly->close();
-            
+
             AssemblyClosed::dispatch($this->assembly);
 
             Log::info('Assembly closed automatically', [

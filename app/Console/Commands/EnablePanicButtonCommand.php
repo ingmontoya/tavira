@@ -44,8 +44,9 @@ class EnablePanicButtonCommand extends Command
     {
         $tenant = Tenant::find($tenantId);
 
-        if (!$tenant) {
+        if (! $tenant) {
             $this->error("Tenant with ID '{$tenantId}' not found.");
+
             return;
         }
 
@@ -70,6 +71,7 @@ class EnablePanicButtonCommand extends Command
 
         if ($tenants->isEmpty()) {
             $this->warn('No tenants found.');
+
             return;
         }
 

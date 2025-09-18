@@ -93,14 +93,14 @@ class PanicAlertController extends Controller
     public function resolve(PanicAlert $panicAlert)
     {
         // Check if user has permission (admin, security, porteria, or admin_conjunto roles)
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos para resolver alertas',
             ], 403);
         }
 
-        if (!$panicAlert->isActive()) {
+        if (! $panicAlert->isActive()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Esta alerta no está activa',
@@ -126,7 +126,7 @@ class PanicAlertController extends Controller
     public function index()
     {
         // Check if user has permission to view alerts
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos para ver las alertas',
@@ -164,7 +164,7 @@ class PanicAlertController extends Controller
     public function active()
     {
         // Check if user has permission to view alerts
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
             return response()->json([
                 'success' => true,
                 'alerts' => [], // Return empty array instead of error for better UX
@@ -203,7 +203,7 @@ class PanicAlertController extends Controller
     public function acknowledge(PanicAlert $panicAlert)
     {
         // Check if user has permission
-        if (!auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'consejo', 'porteria'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permisos para reconocer alertas',
@@ -256,7 +256,6 @@ class PanicAlertController extends Controller
         ]);
     }
 
-
     /**
      * Get active panic alerts for admin dashboard (cross-tenant).
      */
@@ -268,17 +267,17 @@ class PanicAlertController extends Controller
 
         foreach ($tenants as $tenant) {
             try {
-                $tenantDbName = 'tenant' . $tenant->id;
+                $tenantDbName = 'tenant'.$tenant->id;
 
                 // Check if database exists
-                $dbExists = \DB::select("SELECT datname FROM pg_database WHERE datname = ?", [$tenantDbName]);
+                $dbExists = \DB::select('SELECT datname FROM pg_database WHERE datname = ?', [$tenantDbName]);
                 if (empty($dbExists)) {
                     continue;
                 }
 
                 // Configure tenant connection dynamically
                 config([
-                    "database.connections.temp_alerts" => [
+                    'database.connections.temp_alerts' => [
                         'driver' => 'pgsql',
                         'host' => env('DB_HOST', '127.0.0.1'),
                         'port' => env('DB_PORT', '5433'),
@@ -290,7 +289,7 @@ class PanicAlertController extends Controller
                         'prefix_indexes' => true,
                         'schema' => 'public',
                         'sslmode' => 'prefer',
-                    ]
+                    ],
                 ]);
 
                 // Get active panic alerts from this tenant
@@ -306,7 +305,7 @@ class PanicAlertController extends Controller
                         'panic_alerts.status',
                         'panic_alerts.created_at',
                         'users.name as user_name',
-                        'apartments.number as apartment_number'
+                        'apartments.number as apartment_number',
                     ])
                     ->get();
 
@@ -337,6 +336,7 @@ class PanicAlertController extends Controller
 
             } catch (\Exception $e) {
                 \Log::warning("Error loading panic alerts for tenant {$tenant->id}: {$e->getMessage()}");
+
                 continue;
             }
         }
