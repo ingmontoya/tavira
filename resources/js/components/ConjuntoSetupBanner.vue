@@ -48,7 +48,7 @@
             </div>
             <div class="ml-4 flex-shrink-0">
                 <Link
-                    href="/setup/accounting-wizard"
+                    :href="route('setup.accounting-wizard.index')"
                     class="inline-flex items-center rounded-md border border-transparent bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:outline-none"
                 >
                     <Icon name="zap" class="mr-2 h-4 w-4" />
