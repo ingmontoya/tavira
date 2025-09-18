@@ -742,8 +742,8 @@ class DashboardController extends Controller
 
         $hasApartments = Apartment::where('conjunto_config_id', $conjunto->id)->exists();
         $hasChartOfAccounts = ChartOfAccounts::where('conjunto_config_id', $conjunto->id)->exists();
-        $hasPaymentConcepts = PaymentConcept::where('conjunto_config_id', $conjunto->id)->exists();
-        $hasAccountingMappings = PaymentConceptAccountMapping::where('conjunto_config_id', $conjunto->id)->exists();
+        $hasPaymentConcepts = PaymentConcept::exists();
+        $hasAccountingMappings = PaymentConceptAccountMapping::exists();
 
         $isReady = $hasApartments && $hasChartOfAccounts && $hasPaymentConcepts && $hasAccountingMappings;
 
