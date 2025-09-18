@@ -38,6 +38,8 @@ const createDefaultMappings = () => {
     router.post('/payment-method-account-mappings/create-defaults', {}, {
         onSuccess: () => {
             success('Mapeos por defecto creados exitosamente');
+            // Redirect to index page to see the new mappings
+            router.visit('/payment-method-account-mappings');
         },
         onError: (errors) => {
             const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';

@@ -8,6 +8,8 @@ use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\PaymentAgreementInstallment;
+use App\Models\PaymentConcept;
+use App\Models\PaymentConceptAccountMapping;
 use App\Models\Resident;
 use App\Models\Visit;
 use Illuminate\Http\Request;
@@ -93,6 +95,11 @@ class DashboardController extends Controller
         // Notificaciones pendientes - Datos reales del sistema
         $pendingNotifications = $this->getPendingNotifications();
 
+        // Check accounting system readiness (only for users who can manage accounting)
+        $accountingReadiness = $user->can('manage_accounting')
+            ? $this->getAccountingSystemReadiness()
+            : ['needs_wizard' => false];
+
         return Inertia::render('Dashboard', [
             'kpis' => $kpis,
             'charts' => [
@@ -111,6 +118,7 @@ class DashboardController extends Controller
                 'canViewPayments' => $canViewPayments,
                 'canViewReports' => $canViewReports,
             ],
+            'accountingReadiness' => $accountingReadiness,
         ]);
     }
 
@@ -715,5 +723,40 @@ class DashboardController extends Controller
         }
 
         return $notifications->take(5); // Limitar a 5 notificaciones máximas
+    }
+
+    private function getAccountingSystemReadiness(): array
+    {
+        $conjunto = ConjuntoConfig::first();
+
+        if (!$conjunto) {
+            return [
+                'has_apartments' => false,
+                'has_chart_of_accounts' => false,
+                'has_payment_concepts' => false,
+                'has_accounting_mappings' => false,
+                'is_ready' => false,
+                'needs_wizard' => false,
+            ];
+        }
+
+        $hasApartments = Apartment::where('conjunto_config_id', $conjunto->id)->exists();
+        $hasChartOfAccounts = ChartOfAccounts::where('conjunto_config_id', $conjunto->id)->exists();
+        $hasPaymentConcepts = PaymentConcept::where('conjunto_config_id', $conjunto->id)->exists();
+        $hasAccountingMappings = PaymentConceptAccountMapping::where('conjunto_config_id', $conjunto->id)->exists();
+
+        $isReady = $hasApartments && $hasChartOfAccounts && $hasPaymentConcepts && $hasAccountingMappings;
+
+        // Only show wizard if conjunto is configured but accounting is not
+        $needsWizard = $conjunto->exists && $hasApartments && !$isReady;
+
+        return [
+            'has_apartments' => $hasApartments,
+            'has_chart_of_accounts' => $hasChartOfAccounts,
+            'has_payment_concepts' => $hasPaymentConcepts,
+            'has_accounting_mappings' => $hasAccountingMappings,
+            'is_ready' => $isReady,
+            'needs_wizard' => $needsWizard,
+        ];
     }
 }

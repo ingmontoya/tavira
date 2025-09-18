@@ -101,6 +101,8 @@ const createDefaultAccounts = () => {
     router.post('/accounting/chart-of-accounts/create-defaults', {}, {
         onSuccess: () => {
             success('Plan de cuentas creado exitosamente');
+            // Reload the page to show the new accounts
+            router.reload();
         },
         onError: (errors) => {
             const errorMessage = errors?.create_defaults || 'Error al crear el plan de cuentas';

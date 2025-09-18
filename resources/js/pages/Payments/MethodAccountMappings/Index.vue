@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useToast } from '@/composables/useToast';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import {
     createColumnHelper,
@@ -65,6 +66,7 @@ const props = defineProps<{
 
 const data = computed(() => props.mappings.data);
 const { has_chart_of_accounts } = toRefs(props);
+const { success, error } = useToast();
 
 // Custom filters state
 const customFilters = ref({
@@ -350,7 +352,17 @@ const statusOptions = [
 
 // Create default mappings
 const createDefaultMappings = () => {
-    router.post('/payment-method-account-mappings/create-defaults');
+    router.post('/payment-method-account-mappings/create-defaults', {}, {
+        onSuccess: () => {
+            success('Mapeos por defecto creados exitosamente');
+            // Reload the page to show the new mappings
+            router.reload();
+        },
+        onError: (errors) => {
+            const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';
+            error(errorMessage);
+        }
+    });
 };
 
 const breadcrumbs = [
