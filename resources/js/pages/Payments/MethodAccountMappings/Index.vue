@@ -401,7 +401,7 @@ const breadcrumbs = [
                             <p class="font-medium">Plan de cuentas no configurado</p>
                             <p>Debe crear el plan de cuentas antes de configurar mapeos de métodos de pago.</p>
                             <Button asChild variant="outline" size="sm" class="mt-2">
-                                <Link href="/chart-of-accounts">
+                                <Link href="/accounting/chart-of-accounts">
                                     <Settings class="mr-2 h-4 w-4" />
                                     Configurar Plan de Cuentas
                                 </Link>
