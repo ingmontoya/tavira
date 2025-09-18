@@ -185,7 +185,7 @@ watch(
                             <p class="font-medium">Plan de cuentas contable no configurado</p>
                             <p>El sistema contable requiere un plan de cuentas antes de generar facturas.</p>
                             <Button asChild variant="outline" size="sm" class="mt-2">
-                                <Link href="/settings/chart-of-accounts">
+                                <Link href="/chart-of-accounts">
                                     <Settings class="mr-2 h-4 w-4" />
                                     Configurar Plan de Cuentas
                                 </Link>

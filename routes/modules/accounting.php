@@ -11,6 +11,7 @@ Route::prefix('accounting')->name('accounting.')->middleware('can:view_accountin
     // Chart of Accounts
     Route::resource('chart-of-accounts', ChartOfAccountsController::class);
     Route::get('chart-of-accounts/{chartOfAccount}/balance', [ChartOfAccountsController::class, 'getBalance'])->name('chart-of-accounts.balance');
+    Route::post('chart-of-accounts/create-defaults', [ChartOfAccountsController::class, 'createDefaults'])->name('chart-of-accounts.create-defaults');
     Route::get('accounts/by-type', [ChartOfAccountsController::class, 'getByType'])->name('accounts.by-type');
     Route::get('accounts/hierarchical', [ChartOfAccountsController::class, 'getHierarchical'])->name('accounts.hierarchical');
 

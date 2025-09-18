@@ -1,84 +1,116 @@
-import type { ToastMessage } from '@/components/ToastNotification.vue';
-import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed, watch, ref } from 'vue';
 
-// Global toast state
-const toasts = ref<ToastMessage[]>([]);
+interface Toast {
+    id: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+    title?: string;
+    message: string;
+    duration?: number;
+}
 
-// Generate unique IDs for toasts
-let toastId = 0;
-const generateId = () => `toast-${++toastId}`;
+const toasts = ref<Toast[]>([]);
+
+let toastIdCounter = 0;
 
 export function useToast() {
-    const addToast = (message: Omit<ToastMessage, 'id'>) => {
-        const toast: ToastMessage = {
-            id: generateId(),
-            ...message,
+    const page = usePage();
+
+    // Watch for flash messages and convert them to toasts
+    watch(
+        () => page.props.flash,
+        (flash) => {
+            if (flash?.success) {
+                addToast({
+                    type: 'success',
+                    title: 'Éxito',
+                    message: flash.success,
+                });
+            }
+            if (flash?.error) {
+                addToast({
+                    type: 'error',
+                    title: 'Error',
+                    message: flash.error,
+                });
+            }
+            if (flash?.warning) {
+                addToast({
+                    type: 'warning',
+                    title: 'Advertencia',
+                    message: flash.warning,
+                });
+            }
+            if (flash?.info) {
+                addToast({
+                    type: 'info',
+                    title: 'Información',
+                    message: flash.info,
+                });
+            }
+        },
+        { immediate: true, deep: true }
+    );
+
+    function addToast(toast: Omit<Toast, 'id'>) {
+        const id = `toast-${++toastIdCounter}`;
+        const newToast: Toast = {
+            id,
+            duration: 5000, // 5 seconds default
+            ...toast,
         };
 
-        toasts.value.push(toast);
-        return toast.id;
-    };
+        toasts.value.push(newToast);
 
-    const removeToast = (id: string) => {
-        const index = toasts.value.findIndex((toast) => toast.id === id);
+        // Auto remove after duration
+        if (newToast.duration && newToast.duration > 0) {
+            setTimeout(() => {
+                removeToast(id);
+            }, newToast.duration);
+        }
+
+        return id;
+    }
+
+    function removeToast(id: string) {
+        const index = toasts.value.findIndex(toast => toast.id === id);
         if (index > -1) {
             toasts.value.splice(index, 1);
         }
-    };
+    }
 
-    const clearAllToasts = () => {
-        toasts.value = [];
-    };
-
-    // Convenience methods
-    const success = (message: string, title?: string, options?: Partial<ToastMessage>) => {
+    function toast(message: string, type: Toast['type'] = 'info', options?: Partial<Toast>) {
         return addToast({
-            type: 'success',
-            title,
+            type,
             message,
             ...options,
         });
-    };
+    }
 
-    const error = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-        return addToast({
-            type: 'error',
-            title,
-            message,
-            duration: 7000, // Errors show longer by default
-            ...options,
-        });
-    };
+    function success(message: string, options?: Partial<Toast>) {
+        return toast(message, 'success', options);
+    }
 
-    const warning = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-        return addToast({
-            type: 'warning',
-            title,
-            message,
-            ...options,
-        });
-    };
+    function error(message: string, options?: Partial<Toast>) {
+        return toast(message, 'error', options);
+    }
 
-    const info = (message: string, title?: string, options?: Partial<ToastMessage>) => {
-        return addToast({
-            type: 'info',
-            title,
-            message,
-            ...options,
-        });
-    };
+    function warning(message: string, options?: Partial<Toast>) {
+        return toast(message, 'warning', options);
+    }
+
+    function info(message: string, options?: Partial<Toast>) {
+        return toast(message, 'info', options);
+    }
 
     return {
-        toasts,
+        toasts: computed(() => toasts.value),
         addToast,
         removeToast,
-        clearAllToasts,
+        toast,
         success,
         error,
         warning,
         info,
     };
 }
-
-// Export a global instance for use across the app
-export const globalToast = useToast();

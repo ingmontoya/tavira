@@ -53,9 +53,17 @@ class PaymentMethodAccountMappingController extends Controller
             $filters = null;
         }
 
+        // Check system readiness
+        $hasChartOfAccounts = ChartOfAccounts::exists();
+        $hasMappings = PaymentMethodAccountMapping::where('conjunto_config_id', $conjunto->id)->exists();
+        $mappingsCount = PaymentMethodAccountMapping::where('conjunto_config_id', $conjunto->id)->count();
+
         return Inertia::render('Payments/MethodAccountMappings/Index', [
             'mappings' => $mappings,
             'filters' => $filters,
+            'has_chart_of_accounts' => $hasChartOfAccounts,
+            'has_mappings' => $hasMappings,
+            'mappings_count' => $mappingsCount,
         ]);
     }
 
@@ -178,6 +186,75 @@ class PaymentMethodAccountMappingController extends Controller
 
         return redirect()->route('payment-method-account-mappings.index')
             ->with('success', 'Mapeo de cuenta eliminado exitosamente.');
+    }
+
+    public function createDefaults()
+    {
+        try {
+            $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+            if (!$conjunto) {
+                return back()->withErrors([
+                    'create_defaults' => 'No se encontró configuración activa del conjunto.',
+                ]);
+            }
+
+            // Check if chart of accounts exists
+            if (!ChartOfAccounts::exists()) {
+                return back()->withErrors([
+                    'create_defaults' => 'Debe crear el plan de cuentas antes de configurar mapeos de métodos de pago.',
+                ]);
+            }
+
+            // Define default payment method mappings
+            $defaultMappings = [
+                'efectivo' => '111001', // Caja General
+                'transferencia' => '111001', // Banco - Cuenta Corriente
+                'tarjeta_credito' => '111001', // Banco - Cuenta Corriente
+                'tarjeta_debito' => '111001', // Banco - Cuenta Corriente
+                'cheque' => '111001', // Banco - Cuenta Corriente
+            ];
+
+            $createdCount = 0;
+            $skippedCount = 0;
+
+            foreach ($defaultMappings as $paymentMethod => $accountCode) {
+                // Check if mapping already exists
+                $existingMapping = PaymentMethodAccountMapping::where('conjunto_config_id', $conjunto->id)
+                    ->where('payment_method', $paymentMethod)
+                    ->first();
+
+                if ($existingMapping) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                // Find the account
+                $account = ChartOfAccounts::where('code', $accountCode)->first();
+
+                if ($account) {
+                    PaymentMethodAccountMapping::create([
+                        'conjunto_config_id' => $conjunto->id,
+                        'payment_method' => $paymentMethod,
+                        'cash_account_id' => $account->id,
+                        'is_active' => true,
+                    ]);
+                    $createdCount++;
+                }
+            }
+
+            $message = "Mapeos por defecto procesados: {$createdCount} creados";
+            if ($skippedCount > 0) {
+                $message .= ", {$skippedCount} ya existían";
+            }
+
+            return back()->with('success', $message . '.');
+
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'create_defaults' => 'Error al crear mapeos por defecto: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     public function toggle(PaymentMethodAccountMapping $paymentMethodAccountMapping)

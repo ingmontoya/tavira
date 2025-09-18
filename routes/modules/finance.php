@@ -69,6 +69,7 @@ Route::post('payment-concepts/{paymentConcept}/toggle', [PaymentConceptControlle
 // Payment Method Account Mappings Management
 Route::resource('payment-method-account-mappings', PaymentMethodAccountMappingController::class)->middleware('can:view_payments');
 Route::post('payment-method-account-mappings/{paymentMethodAccountMapping}/toggle', [PaymentMethodAccountMappingController::class, 'toggle'])->name('payment-method-account-mappings.toggle')->middleware('can:edit_payments');
+Route::post('payment-method-account-mappings/create-defaults', [PaymentMethodAccountMappingController::class, 'createDefaults'])->name('payment-method-account-mappings.create-defaults')->middleware('can:edit_payments');
 
 // Payment Management (New System)
 Route::prefix('finance')->name('finance.')->group(function () {

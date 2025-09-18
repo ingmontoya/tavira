@@ -47,6 +47,9 @@ class ChartOfAccountsController extends Controller
             ->paginate(50)
             ->withQueryString();
 
+        $hasAccounts = ChartOfAccounts::forConjunto($conjunto->id)->exists();
+        $accountsCount = ChartOfAccounts::forConjunto($conjunto->id)->count();
+
         return Inertia::render('Accounting/ChartOfAccounts/Index', [
             'accounts' => $accounts,
             'filters' => $request->only(['account_type', 'level', 'search', 'parent_id', 'postable_only']),
@@ -58,6 +61,8 @@ class ChartOfAccountsController extends Controller
                 'expense' => 'Gastos',
             ],
             'hierarchicalTree' => ChartOfAccounts::buildHierarchicalTree($conjunto->id),
+            'has_accounts' => $hasAccounts,
+            'accounts_count' => $accountsCount,
         ]);
     }
 
@@ -287,5 +292,40 @@ class ChartOfAccountsController extends Controller
             'balance' => $balance,
             'account' => $chartOfAccount->full_name,
         ]);
+    }
+
+    public function createDefaults()
+    {
+        try {
+            $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+            if (!$conjunto) {
+                return back()->withErrors([
+                    'create_defaults' => 'No se encontró configuración activa del conjunto.',
+                ]);
+            }
+
+            // Check if accounts already exist
+            $existingAccounts = ChartOfAccounts::forConjunto($conjunto->id)->count();
+
+            if ($existingAccounts > 0) {
+                return back()->withErrors([
+                    'create_defaults' => 'Ya existen cuentas configuradas para este conjunto.',
+                ]);
+            }
+
+            // Create default chart of accounts
+            $seeder = new \Database\Seeders\ChartOfAccountsSeeder;
+            $seeder->run();
+
+            $accountsCreated = ChartOfAccounts::forConjunto($conjunto->id)->count();
+
+            return back()->with('success', "Plan de cuentas inicializado exitosamente. Se crearon {$accountsCreated} cuentas contables.");
+
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'create_defaults' => 'Error al crear el plan de cuentas: ' . $e->getMessage(),
+            ]);
+        }
     }
 }

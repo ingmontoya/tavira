@@ -39,7 +39,7 @@ const steps = [
         title: 'Plan de Cuentas Contable',
         description: 'Inicialice el plan de cuentas contable colombiano',
         icon: FileText,
-        route: '/settings/chart-of-accounts',
+        route: '/chart-of-accounts',
         completed: props.setup_status.has_chart_of_accounts,
         count: props.setup_status.chart_accounts_count,
         action: 'Configurar Plan de Cuentas',

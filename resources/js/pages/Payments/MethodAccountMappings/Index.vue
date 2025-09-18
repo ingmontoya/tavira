@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DropdownAction from '@/components/DataTableDropDown.vue';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -21,7 +22,7 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Plus, Search, Settings, ToggleLeft, ToggleRight, Trash2, X } from 'lucide-vue-next';
+import { AlertTriangle, ChevronDown, ChevronsUpDown, Database, Edit, Eye, Filter, Plus, Search, Settings, ToggleLeft, ToggleRight, Trash2, X } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { valueUpdater } from '../../../utils';
 
@@ -57,6 +58,9 @@ const props = defineProps<{
         payment_method?: string;
         is_active?: boolean;
     };
+    has_chart_of_accounts: boolean;
+    has_mappings: boolean;
+    mappings_count: number;
 }>();
 
 const data = computed(() => props.mappings.data);
@@ -343,6 +347,11 @@ const statusOptions = [
     { value: 'false', label: 'Inactivos' },
 ];
 
+// Create default mappings
+const createDefaultMappings = () => {
+    router.post('/payment-method-account-mappings/create-defaults');
+};
+
 const breadcrumbs = [
     {
         title: 'Escritorio',
@@ -379,6 +388,41 @@ const breadcrumbs = [
                         </Link>
                     </Button>
                 </div>
+            </div>
+
+            <!-- System Readiness Alerts -->
+            <div class="space-y-4">
+                <!-- No Chart of Accounts Alert -->
+                <Alert v-if="!has_chart_of_accounts" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Plan de cuentas no configurado</p>
+                            <p>Debe crear el plan de cuentas antes de configurar mapeos de métodos de pago.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/chart-of-accounts">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Plan de Cuentas
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Mappings Alert -->
+                <Alert v-else-if="!has_mappings" class="bg-blue-50 border-blue-200">
+                    <Database class="h-4 w-4 text-blue-600" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium text-blue-800">Mapeos de métodos de pago no configurados</p>
+                            <p class="text-blue-700">Configure qué cuenta contable se usa para cada método de pago (efectivo, transferencia, etc.).</p>
+                            <Button @click="createDefaultMappings" variant="default" size="sm" class="mt-3">
+                                <Settings class="mr-2 h-4 w-4" />
+                                Crear Mapeos por Defecto
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
             </div>
 
             <!-- Filters -->

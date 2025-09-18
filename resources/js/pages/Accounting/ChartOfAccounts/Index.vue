@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DropdownAction from '@/components/DataTableDropDown.vue';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -21,7 +22,7 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ChevronDown, ChevronsUpDown, Download, Plus, Search, X } from 'lucide-vue-next';
+import { ChevronDown, ChevronsUpDown, Database, Download, Plus, Search, Settings, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 
@@ -55,6 +56,8 @@ const props = defineProps<{
         account_type?: string;
         status?: string;
     };
+    has_accounts: boolean;
+    accounts_count: number;
 }>();
 
 const data: ChartOfAccount[] = props.accounts.data;
@@ -89,6 +92,11 @@ const clearCustomFilters = () => {
     };
     // Also clear table filters
     table.getColumn('name')?.setFilterValue('');
+};
+
+// Create default accounts
+const createDefaultAccounts = () => {
+    router.post('/accounting/chart-of-accounts/create-defaults');
 };
 
 // Apply custom filters to data
@@ -311,6 +319,21 @@ const exportAccounts = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <!-- Alert for no accounts -->
+            <Alert v-if="!has_accounts" class="bg-blue-50 border-blue-200">
+                <Database class="h-4 w-4 text-blue-600" />
+                <AlertDescription>
+                    <div class="space-y-2">
+                        <p class="font-medium text-blue-800">Plan de cuentas no configurado</p>
+                        <p class="text-blue-700">Para comenzar a usar el sistema contable, debe inicializar el plan de cuentas con las cuentas estándar colombianas.</p>
+                        <Button @click="createDefaultAccounts" variant="default" size="sm" class="mt-3">
+                            <Settings class="mr-2 h-4 w-4" />
+                            Crear Plan de Cuentas por Defecto
+                        </Button>
+                    </div>
+                </AlertDescription>
+            </Alert>
+
             <!-- Filtros Avanzados -->
             <Card class="mb-4 p-4">
                 <div class="space-y-4">
