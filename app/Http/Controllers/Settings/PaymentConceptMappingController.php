@@ -208,10 +208,34 @@ class PaymentConceptMappingController extends Controller
                 ]);
             }
 
+            // Contar mapeos antes y después
+            $mappingsBefore = PaymentConceptAccountMapping::count();
+            $conceptsTotal = PaymentConcept::count();
+
             $seeder = new PaymentConceptAccountMappingSeeder;
             $seeder->run();
 
-            return back()->with('success', 'Mapeos por defecto creados exitosamente.');
+            $mappingsAfter = PaymentConceptAccountMapping::count();
+            $mappingsCreated = $mappingsAfter - $mappingsBefore;
+            $mappingsExisting = $conceptsTotal - $mappingsCreated;
+
+            $message = "✅ Configuración completada: {$mappingsCreated} mapeos creados.";
+            if ($mappingsExisting > 0) {
+                $message .= " {$mappingsExisting} mapeos ya existían.";
+            }
+
+            // Mostrar detalles de los mapeos creados
+            $message .= "\n\nMapeos configurados:";
+            $recentMappings = PaymentConceptAccountMapping::with(['paymentConcept', 'incomeAccount'])
+                ->latest()
+                ->take($mappingsCreated)
+                ->get();
+
+            foreach ($recentMappings as $mapping) {
+                $message .= "\n• {$mapping->paymentConcept->name} → {$mapping->incomeAccount->code} - {$mapping->incomeAccount->name}";
+            }
+
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             return back()->withErrors([
                 'seed_mappings' => 'Error al crear mapeos por defecto: '.$e->getMessage(),

@@ -60,10 +60,23 @@ class InvoiceController extends Controller
             ->with('apartmentType')
             ->orderBy('tower')->orderBy('number')->get();
 
+        // Check system readiness for invoicing
+        $hasApartments = $apartments->isNotEmpty();
+        $hasPaymentConcepts = PaymentConcept::where('is_active', true)->exists();
+        $hasAccountingMappings = \App\Models\PaymentConceptAccountMapping::exists();
+        $hasChartOfAccounts = \App\Models\ChartOfAccounts::exists();
+
         return Inertia::render('Payments/Invoices/Index', [
             'invoices' => $invoices,
             'apartments' => $apartments,
             'filters' => $request->only(['status', 'type', 'apartment_id', 'period', 'search']),
+            'system_readiness' => [
+                'has_apartments' => $hasApartments,
+                'has_payment_concepts' => $hasPaymentConcepts,
+                'has_accounting_mappings' => $hasAccountingMappings,
+                'has_chart_of_accounts' => $hasChartOfAccounts,
+                'is_ready' => $hasApartments && $hasPaymentConcepts && $hasAccountingMappings && $hasChartOfAccounts,
+            ],
         ]);
     }
 
@@ -78,10 +91,23 @@ class InvoiceController extends Controller
         $paymentConcepts = PaymentConcept::where('is_active', true)
             ->get();
 
+        // Check system readiness for invoicing
+        $hasApartments = $apartments->isNotEmpty();
+        $hasPaymentConcepts = $paymentConcepts->isNotEmpty();
+        $hasAccountingMappings = \App\Models\PaymentConceptAccountMapping::exists();
+        $hasChartOfAccounts = \App\Models\ChartOfAccounts::exists();
+
         return Inertia::render('Payments/Invoices/Create', [
             'apartments' => $apartments,
             'paymentConcepts' => $paymentConcepts,
             'apartmentId' => $request->apartment_id,
+            'system_readiness' => [
+                'has_apartments' => $hasApartments,
+                'has_payment_concepts' => $hasPaymentConcepts,
+                'has_accounting_mappings' => $hasAccountingMappings,
+                'has_chart_of_accounts' => $hasChartOfAccounts,
+                'is_ready' => $hasApartments && $hasPaymentConcepts && $hasAccountingMappings && $hasChartOfAccounts,
+            ],
         ]);
     }
 
@@ -161,6 +187,17 @@ class InvoiceController extends Controller
 
                 // Check if this invoice should be eligible for electronic invoicing
                 $this->evaluateElectronicInvoicing($invoice);
+
+                // Create accounting transaction if mappings are configured
+                try {
+                    \App\Models\AccountingTransaction::createFromInvoice($invoice);
+                } catch (\Exception $e) {
+                    // Log the error but don't fail the invoice creation
+                    \Illuminate\Support\Facades\Log::warning('No se pudo crear la transacción contable para la factura', [
+                        'invoice_id' => $invoice->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
 
                 // Send notification to administrative users
                 $notificationService = app(NotificationService::class);
@@ -382,6 +419,18 @@ class InvoiceController extends Controller
 
                     // Check if this invoice should be eligible for electronic invoicing
                     $this->evaluateElectronicInvoicing($invoice);
+
+                    // Create accounting transaction if mappings are configured
+                    try {
+                        \App\Models\AccountingTransaction::createFromInvoice($invoice);
+                    } catch (\Exception $e) {
+                        // Log the error but don't fail the invoice creation
+                        \Illuminate\Support\Facades\Log::warning('No se pudo crear la transacción contable para la factura masiva', [
+                            'invoice_id' => $invoice->id,
+                            'apartment_id' => $apartment->id,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
 
                     $generatedCount++;
                 }

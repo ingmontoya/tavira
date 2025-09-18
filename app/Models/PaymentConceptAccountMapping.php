@@ -108,23 +108,31 @@ class PaymentConceptAccountMapping extends Model
     public static function createDefaultMappings(): void
     {
         $concepts = PaymentConcept::all();
+        $createdCount = 0;
+        $skippedCount = 0;
 
         foreach ($concepts as $concept) {
             if (self::where('payment_concept_id', $concept->id)->exists()) {
+                $skippedCount++;
                 continue; // Skip if mapping already exists
             }
 
             $defaultAccounts = self::getDefaultAccountsForConceptType($concept->id);
 
-            if ($defaultAccounts && $defaultAccounts['income_account']) {
+            if ($defaultAccounts && $defaultAccounts['income_account'] && $defaultAccounts['receivable_account']) {
                 self::create([
                     'payment_concept_id' => $concept->id,
                     'income_account_id' => $defaultAccounts['income_account']->id,
-                    'receivable_account_id' => $defaultAccounts['receivable_account']?->id,
+                    'receivable_account_id' => $defaultAccounts['receivable_account']->id,
                     'is_active' => true,
-                    'notes' => 'Mapeo automático basado en tipo de concepto',
+                    'notes' => 'Mapeo automático basado en tipo de concepto: ' . $concept->type,
                 ]);
+                $createdCount++;
             }
+        }
+
+        if (app()->runningInConsole()) {
+            echo "✅ Mapeos contables procesados: {$createdCount} creados, {$skippedCount} ya existían.\n";
         }
     }
 }

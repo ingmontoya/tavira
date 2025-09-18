@@ -207,7 +207,7 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                         <!-- Botón para crear mapeos por defecto -->
                         <Button
                             @click="seedPaymentConceptMappings"
-                            variant="outline"
+                            :variant="mappings.length === 0 ? 'default' : 'outline'"
                             :disabled="!has_payment_concepts || !has_chart_of_accounts"
                             :title="
                                 !has_chart_of_accounts
@@ -218,7 +218,7 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                             "
                         >
                             <Settings class="mr-2 h-4 w-4" />
-                            Crear Mapeos por Defecto
+                            {{ mappings.length === 0 ? 'Configurar Mapeos por Defecto' : 'Crear Mapeos por Defecto' }}
                         </Button>
 
                         <!-- Botón original para mapeos individuales -->
@@ -273,6 +273,30 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                     </div>
                 </div>
 
+                <!-- Alert for no mappings at all -->
+                <div v-else-if="mappings.length === 0 && has_payment_concepts && has_chart_of_accounts" class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <Settings class="h-5 w-5 text-orange-400" />
+                        </div>
+                        <div class="ml-3 flex-1">
+                            <h3 class="text-sm font-medium text-orange-800">Mapeo contable no configurado</h3>
+                            <div class="mt-2 text-sm text-orange-700">
+                                <p>No hay mapeos contables configurados. Para que las facturas generen transacciones contables automáticas, debe configurar los mapeos entre conceptos de pago y cuentas contables.</p>
+                                <Button
+                                    @click="seedPaymentConceptMappings"
+                                    variant="outline"
+                                    size="sm"
+                                    class="mt-3 border-orange-300 text-orange-800 hover:bg-orange-100"
+                                >
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Mapeos Automáticamente
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Alert for unmapped concepts -->
                 <div v-else-if="hasUnmappedConcepts" class="rounded-lg border border-amber-200 bg-amber-50 p-4">
                     <div class="flex items-center">
@@ -289,6 +313,16 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                             <h3 class="text-sm font-medium text-amber-800">Conceptos sin mapeo contable</h3>
                             <div class="mt-2 text-sm text-amber-700">
                                 <p>Hay {{ concepts_without_mapping.length }} conceptos de pago que no tienen mapeo contable configurado.</p>
+                                <Button
+                                    @click="seedPaymentConceptMappings"
+                                    variant="outline"
+                                    size="sm"
+                                    class="mt-3"
+                                    v-if="concepts_without_mapping.length > 0"
+                                >
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Crear Mapeos Faltantes
+                                </Button>
                             </div>
                         </div>
                     </div>

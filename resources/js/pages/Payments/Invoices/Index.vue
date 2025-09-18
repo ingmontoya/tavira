@@ -15,7 +15,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { CheckCircle, ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Mail, Plus, Receipt, Search, Trash2, X, XCircle } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle, ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Mail, Plus, Receipt, Search, Settings, Trash2, X, XCircle } from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 
@@ -71,6 +71,14 @@ interface Apartment {
     full_address: string;
 }
 
+interface SystemReadiness {
+    has_apartments: boolean;
+    has_payment_concepts: boolean;
+    has_accounting_mappings: boolean;
+    has_chart_of_accounts: boolean;
+    is_ready: boolean;
+}
+
 const props = defineProps<{
     invoices: {
         data: Invoice[];
@@ -89,6 +97,7 @@ const props = defineProps<{
         apartment_id?: string;
         period?: string;
     };
+    system_readiness: SystemReadiness;
 }>();
 
 // Get page data for errors and flash messages
@@ -395,6 +404,84 @@ const typeOptions = [
             <!-- Validation Errors -->
             <ValidationErrors :errors="errors" />
 
+            <!-- System Readiness Alerts -->
+            <div v-if="!system_readiness.is_ready" class="space-y-4">
+                <!-- No Apartments Alert -->
+                <Alert v-if="!system_readiness.has_apartments" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">No hay apartamentos configurados</p>
+                            <p>Antes de crear facturas, debe configurar los apartamentos del conjunto residencial.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/apartments">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Apartamentos
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Chart of Accounts Alert -->
+                <Alert v-else-if="!system_readiness.has_chart_of_accounts" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Plan de cuentas contable no configurado</p>
+                            <p>El sistema contable requiere un plan de cuentas antes de generar facturas.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/settings/chart-of-accounts">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Plan de Cuentas
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Payment Concepts Alert -->
+                <Alert v-else-if="!system_readiness.has_payment_concepts" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Conceptos de pago no configurados</p>
+                            <p>Debe crear los conceptos de pago (administración, multas, etc.) antes de facturar.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/settings/payment-concepts">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Conceptos de Pago
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Accounting Mappings Alert -->
+                <Alert v-else-if="!system_readiness.has_accounting_mappings" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Mapeo contable no configurado</p>
+                            <p>Los conceptos de pago deben estar mapeados a cuentas contables para generar transacciones automáticas.</p>
+                            <div class="flex gap-2 mt-2">
+                                <Button asChild variant="outline" size="sm">
+                                    <Link href="/setup/accounting-wizard">
+                                        <Settings class="mr-2 h-4 w-4" />
+                                        Configuración Guiada
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="ghost" size="sm">
+                                    <Link href="/settings/payment-concept-mapping">
+                                        Mapeo Manual
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            </div>
+
             <!-- Filters -->
             <Card class="p-6">
                 <div class="space-y-4">
@@ -636,7 +723,7 @@ const typeOptions = [
                     </Link>
                 </Button>
 
-                <Button asChild>
+                <Button asChild :disabled="!system_readiness.is_ready" :title="!system_readiness.is_ready ? 'Complete la configuración del sistema para crear facturas' : ''">
                     <Link href="/invoices/create">
                         <Plus class="mr-2 h-4 w-4" />
                         Nueva Factura

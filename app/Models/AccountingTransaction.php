@@ -286,8 +286,10 @@ class AccountingTransaction extends Model
         return $entry;
     }
 
-    public function createFromInvoice(Invoice $invoice): self
+    public static function createFromInvoice(Invoice $invoice): self
     {
+        $invoice->load(['apartment.apartmentType', 'items.paymentConcept']);
+
         $transaction = self::create([
             'conjunto_config_id' => $invoice->apartment->apartmentType->conjunto_config_id,
             'transaction_date' => $invoice->billing_date,
@@ -297,23 +299,34 @@ class AccountingTransaction extends Model
             'created_by' => auth()->id(),
         ]);
 
-        // Débito: Cartera de clientes
-        $transaction->addEntry([
-            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '130501'),
-            'description' => "Cartera factura {$invoice->invoice_number}",
-            'debit_amount' => $invoice->total_amount,
-            'credit_amount' => 0,
-            'third_party_type' => 'apartment',
-            'third_party_id' => $invoice->apartment_id,
-        ]);
+        // Procesar cada item de la factura usando su mapeo contable
+        foreach ($invoice->items as $item) {
+            $mapping = PaymentConceptAccountMapping::getAccountsForConcept($item->payment_concept_id);
 
-        // Crédito: Ingresos por administración
-        $transaction->addEntry([
-            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '413501'),
-            'description' => "Ingreso por administración {$invoice->invoice_number}",
-            'debit_amount' => 0,
-            'credit_amount' => $invoice->total_amount,
-        ]);
+            if (!$mapping || !$mapping['income_account'] || !$mapping['receivable_account']) {
+                throw new \Exception("No se encontró mapeo contable válido para el concepto: {$item->paymentConcept->name}");
+            }
+
+            $itemTotal = $item->quantity * $item->unit_price;
+
+            // Débito: Cuenta por cobrar específica del concepto
+            $transaction->addEntry([
+                'account_id' => $mapping['receivable_account']->id,
+                'description' => "Cartera - {$item->description}",
+                'debit_amount' => $itemTotal,
+                'credit_amount' => 0,
+                'third_party_type' => 'apartment',
+                'third_party_id' => $invoice->apartment_id,
+            ]);
+
+            // Crédito: Cuenta de ingresos específica del concepto
+            $transaction->addEntry([
+                'account_id' => $mapping['income_account']->id,
+                'description' => "Ingreso - {$item->description}",
+                'debit_amount' => 0,
+                'credit_amount' => $itemTotal,
+            ]);
+        }
 
         $transaction->post();
 

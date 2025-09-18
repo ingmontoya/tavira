@@ -39,6 +39,16 @@ Route::middleware([
 
     Route::middleware(['auth', 'verified'])->group(function () {
 
+        // Setup/Wizard routes
+        Route::prefix('setup')->name('setup.')->group(function () {
+            Route::get('accounting-wizard', [\App\Http\Controllers\Setup\AccountingWizardController::class, 'index'])
+                ->name('accounting-wizard.index')
+                ->middleware('can:manage_accounting');
+            Route::post('accounting-wizard/quick-setup', [\App\Http\Controllers\Setup\AccountingWizardController::class, 'quickSetup'])
+                ->name('accounting-wizard.quick-setup')
+                ->middleware('can:manage_accounting');
+        });
+
         // Tenant-specific module route files
         require __DIR__ . '/modules/dashboard.php';
         require __DIR__ . '/modules/reports.php';

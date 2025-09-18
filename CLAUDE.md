@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Tavira is a comprehensive property management platform for residential complexes (condominiums/HOAs) in Colombia. It's built as a multitenant SaaS application using Laravel 12, Vue 3 with Composition API, Inertia.js, and shadcn/ui Vue components.
+Tavira is a comprehensive property management platform for residential complexes (condominiums/HOAs) in Colombia. It's built as a multitenant SaaS application using Laravel 12, Vue 3 with Composition API, Inertia.js, shadcn/ui Vue components, and stancl/tenancy for multitenancy.
 
 ## Development Commands
 
@@ -19,6 +19,9 @@ Tavira is a comprehensive property management platform for residential complexes
 - `php artisan queue:work` - Start queue worker
 - `php artisan pail` - Monitor logs in real-time
 - `./vendor/bin/pint` - Format PHP code (Laravel Pint)
+- `php artisan tenants:migrate` - Run tenant migrations
+- `php artisan tenants:seed` - Seed tenant databases
+- `php artisan tenants:run <command>` - Run artisan command for all tenants
 
 ### Frontend (Vue/TypeScript)
 - `npm run dev` - Start Vite development server
@@ -38,14 +41,15 @@ Tavira is a comprehensive property management platform for residential complexes
 ## Architecture Overview
 
 ### Backend Structure
-- **Single Conjunto Architecture**: Application manages one residential complex (configurable)
-- **Authentication**: Laravel Breeze with simplified user management
+- **Multitenancy Architecture**: Full multitenancy using stancl/tenancy package with domain-based tenant identification
+- **Central vs Tenant Apps**: Separate central app for tenant management and tenant apps for residential complex operations
+- **Authentication**: Laravel Breeze with tenant-scoped user management and central tenant administration
 - **Security**: Comprehensive middleware for rate limiting, input sanitization, security headers, and audit logging
-- **Key Models**: User, ConjuntoConfig, Apartment, ApartmentType, Resident
+- **Key Models**: User, ConjuntoConfig, Apartment, ApartmentType, Resident (tenant-scoped)
+- **Central Models**: Tenant, TenantFeature, Domain (central database)
 - **Accounting Models**: ChartOfAccounts, AccountingTransaction, AccountingTransactionEntry, Budget, BudgetItem
-- **Permissions**: Uses Spatie Laravel Permission for role-based access control
-- **Settings**: Spatie Laravel Settings for configurable application settings
-- **Note**: Multitenancy has been removed but ConjuntoConfig remains for single conjunto configuration
+- **Permissions**: Uses Spatie Laravel Permission for role-based access control (tenant-scoped)
+- **Settings**: Spatie Laravel Settings for configurable application settings (tenant-scoped)
 
 ### Frontend Structure
 - **Framework**: Vue 3 with Composition API and TypeScript
@@ -55,13 +59,16 @@ Tavira is a comprehensive property management platform for residential complexes
 - **Layout System**: Nested layouts for different app sections (auth, app, settings)
 
 ### Key Directories
-- `app/Http/Controllers/` - Laravel controllers for each module
-- `app/Models/` - Eloquent models with relationships
+- `app/Http/Controllers/` - Laravel controllers for each module (tenant-scoped)
+- `app/Models/` - Eloquent models with relationships (includes both central and tenant models)
 - `app/Http/Middleware/` - Security and application middleware
 - `resources/js/pages/` - Vue page components organized by feature
 - `resources/js/components/` - Reusable Vue components
 - `resources/js/layouts/` - Layout components for different app sections
-- `database/migrations/` - Database schema definitions
+- `database/migrations/` - Central database schema definitions
+- `database/migrations/tenant/` - Tenant database schema definitions
+- `routes/tenant.php` - Tenant-specific routes with domain middleware
+- `routes/web.php` - Central application routes
 
 ### Security Features
 - Rate limiting middleware with different tiers (strict, search, default)
@@ -71,6 +78,45 @@ Tavira is a comprehensive property management platform for residential complexes
 - Two-factor authentication service
 - Secure file upload handling
 - Session security management
+
+### Multitenancy Architecture (stancl/tenancy)
+
+#### Domain-Based Identification
+- **Central Domains**: `tavira.com.co` (production), `localhost`, `127.0.0.1`, `192.168.1.21` (development)
+- **Tenant Domains**: Each residential complex gets its own subdomain/domain (e.g., `conjunto-torres.tavira.com.co`)
+- **Automatic Resolution**: Middleware automatically identifies and initializes tenant context based on domain
+
+#### Database Architecture
+- **Central Database**: Stores tenant information, domains, subscriptions, and global configuration
+- **Tenant Databases**: Each tenant gets its own database with prefix `tenant{tenant_id}`
+- **Separate Migrations**: Central and tenant migrations are managed separately
+- **Dynamic Connection**: Database connections are switched automatically based on tenant context
+
+#### Tenant Features
+- **User Impersonation**: Central admins can impersonate tenant users for support
+- **Subscription Management**: Built-in subscription tracking with status, plans, and expiration
+- **Feature Toggles**: Configurable features per tenant via TenantFeature model
+- **File Isolation**: Each tenant has isolated file storage using filesystem tenancy
+- **Cache Isolation**: Redis/cache keys are automatically prefixed per tenant
+
+#### Bootstrappers Enabled
+- **DatabaseTenancyBootstrapper**: Switches database connections per tenant
+- **CacheTenancyBootstrapper**: Isolates cache per tenant with prefixed keys
+- **FilesystemTenancyBootstrapper**: Separates file storage per tenant
+- **QueueTenancyBootstrapper**: Maintains tenant context in queued jobs
+- **ViteBundler**: Handles tenant-specific asset bundling
+
+#### Central vs Tenant Applications
+- **Central App** (`routes/web.php`): Tenant management, subscriptions, global administration
+- **Tenant App** (`routes/tenant.php`): Residential complex management, residents, apartments, finance
+- **Shared Middleware**: Security and common functionality work across both contexts
+- **Tenant Context**: All tenant operations automatically scoped to current tenant
+
+#### Tenant Model Extensions
+- **Subscription Fields**: `subscription_status`, `subscription_plan`, `subscription_expires_at`
+- **Admin Credentials**: `admin_name`, `admin_email`, `admin_user_id` for tenant setup
+- **Pending Updates**: JSON field for tracking configuration changes
+- **Custom Data**: Extensible `data` JSON field for additional tenant metadata
 
 ### Module Organization
 The application is organized into logical modules:
@@ -109,13 +155,17 @@ The application is organized into logical modules:
 
 ## Important Notes
 
-- All apartments and apartment types must reference the conjunto_config_id
+- **Multitenancy Context**: All tenant operations are automatically scoped to the current tenant
+- **Database Separation**: Each tenant has its own database - avoid cross-tenant data access
+- **Domain Routing**: Use tenant domains for all tenant-specific operations
+- **Migration Separation**: Use `database/migrations/tenant/` for tenant-specific tables
+- **Central vs Tenant Models**: Place tenant-scoped models in tenant context, central models in central context
 - Use existing middleware patterns for security and rate limiting
 - Follow the established component patterns when creating new Vue components (apartments/index.vue, Edit.vue, Create.vue and Show.vue)
 - Maintain type safety with TypeScript definitions
 - Use the existing composables for common functionality
 - Security is a priority - leverage existing security services and patterns
-- When implementing new multitenancy in the future, plan to use the stancl/tenancy package
+- **Tenant Commands**: Use `php artisan tenants:migrate` and `php artisan tenants:seed` for tenant operations
 
 ## Current Data Structure
 
@@ -138,7 +188,15 @@ The application is organized into logical modules:
 - **Penthouse**: 3 bedrooms, 3 bathrooms, luxury units with terraces
 
 ### Key Relationships
+
+#### Central Database Relationships
+- `Tenant` hasMany `Domain` and `TenantFeature`
+- `Domain` belongsTo `Tenant`
+- `TenantFeature` belongsTo `Tenant`
+
+#### Tenant Database Relationships (Scoped per Tenant)
 - `ConjuntoConfig` hasMany `ApartmentType` and `Apartment`
 - `ApartmentType` belongsTo `ConjuntoConfig` and hasMany `Apartment`
 - `Apartment` belongsTo `ConjuntoConfig` and `ApartmentType`
 - `Resident` belongsTo `Apartment`
+- `User` belongsTo tenant context (automatically scoped)

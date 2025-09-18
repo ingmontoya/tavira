@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,8 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
-import { Head, useForm } from '@inertiajs/vue3';
-import { Plus, Save, Trash2 } from 'lucide-vue-next';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { AlertTriangle, Plus, Save, Settings, Trash2 } from 'lucide-vue-next';
 import { computed, watch } from 'vue';
 
 // Breadcrumbs
@@ -57,10 +58,19 @@ interface InvoiceItem {
     notes: string;
 }
 
+interface SystemReadiness {
+    has_apartments: boolean;
+    has_payment_concepts: boolean;
+    has_accounting_mappings: boolean;
+    has_chart_of_accounts: boolean;
+    is_ready: boolean;
+}
+
 const props = defineProps<{
     apartments: Apartment[];
     paymentConcepts: PaymentConcept[];
     apartmentId?: number;
+    system_readiness: SystemReadiness;
 }>();
 
 const form = useForm({
@@ -148,7 +158,85 @@ watch(
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-            <form @submit.prevent="submit" class="space-y-6">
+            <!-- System Readiness Alerts -->
+            <div v-if="!system_readiness.is_ready" class="space-y-4">
+                <!-- No Apartments Alert -->
+                <Alert v-if="!system_readiness.has_apartments" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">No hay apartamentos configurados</p>
+                            <p>Antes de crear facturas, debe configurar los apartamentos del conjunto residencial.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/apartments">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Apartamentos
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Chart of Accounts Alert -->
+                <Alert v-else-if="!system_readiness.has_chart_of_accounts" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Plan de cuentas contable no configurado</p>
+                            <p>El sistema contable requiere un plan de cuentas antes de generar facturas.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/settings/chart-of-accounts">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Plan de Cuentas
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Payment Concepts Alert -->
+                <Alert v-else-if="!system_readiness.has_payment_concepts" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Conceptos de pago no configurados</p>
+                            <p>Debe crear los conceptos de pago (administración, multas, etc.) antes de facturar.</p>
+                            <Button asChild variant="outline" size="sm" class="mt-2">
+                                <Link href="/settings/payment-concepts">
+                                    <Settings class="mr-2 h-4 w-4" />
+                                    Configurar Conceptos de Pago
+                                </Link>
+                            </Button>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+
+                <!-- No Accounting Mappings Alert -->
+                <Alert v-else-if="!system_readiness.has_accounting_mappings" variant="destructive">
+                    <AlertTriangle class="h-4 w-4" />
+                    <AlertDescription>
+                        <div class="space-y-2">
+                            <p class="font-medium">Mapeo contable no configurado</p>
+                            <p>Los conceptos de pago deben estar mapeados a cuentas contables para generar transacciones automáticas.</p>
+                            <div class="flex gap-2 mt-2">
+                                <Button asChild variant="outline" size="sm">
+                                    <Link href="/setup/accounting-wizard">
+                                        <Settings class="mr-2 h-4 w-4" />
+                                        Configuración Guiada
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="ghost" size="sm">
+                                    <Link href="/settings/payment-concept-mapping">
+                                        Mapeo Manual
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </AlertDescription>
+                </Alert>
+            </div>
+
+            <form @submit.prevent="submit" class="space-y-6" v-if="system_readiness.is_ready">
                 <div class="grid gap-6 lg:grid-cols-3">
                     <!-- Form Fields -->
                     <div class="space-y-6 lg:col-span-2">
