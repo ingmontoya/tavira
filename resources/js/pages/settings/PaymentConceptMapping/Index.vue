@@ -154,15 +154,36 @@ const toggleActive = (mapping: PaymentConceptMapping) => {
 };
 
 const createDefaultMappings = () => {
-    router.post(route('settings.payment-concept-mapping.create-defaults'));
+    router.post(route('settings.payment-concept-mapping.create-defaults'), {}, {
+        onSuccess: () => {
+            // Refresh data to show new mappings
+            setTimeout(() => {
+                router.reload();
+            }, 100);
+        }
+    });
 };
 
 const seedPaymentConcepts = () => {
-    router.post(route('settings.payment-concept-mapping.seed-concepts'));
+    router.post(route('settings.payment-concept-mapping.seed-concepts'), {}, {
+        onSuccess: () => {
+            // Refresh data to show new concepts
+            setTimeout(() => {
+                router.reload();
+            }, 100);
+        }
+    });
 };
 
 const seedPaymentConceptMappings = () => {
-    router.post(route('settings.payment-concept-mapping.seed-mappings'));
+    router.post(route('settings.payment-concept-mapping.seed-mappings'), {}, {
+        onSuccess: () => {
+            // Refresh data to show new mappings
+            setTimeout(() => {
+                router.reload();
+            }, 100);
+        }
+    });
 };
 
 const getTypeColor = (type: string) => {

@@ -101,10 +101,10 @@ const createDefaultAccounts = () => {
     router.post('/accounting/chart-of-accounts/create-defaults', {}, {
         onSuccess: () => {
             success('Plan de cuentas creado exitosamente');
-            // Refresh data without full page reload
-            router.reload({
-                only: ['accounts', 'has_accounts', 'accounts_count', 'hierarchicalTree']
-            });
+            // Use setTimeout to ensure toast shows first, then reload
+            setTimeout(() => {
+                router.reload();
+            }, 100);
         },
         onError: (errors) => {
             const errorMessage = errors?.create_defaults || 'Error al crear el plan de cuentas';
