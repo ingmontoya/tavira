@@ -102,10 +102,8 @@ const createDefaultAccounts = () => {
         onSuccess: () => {
             success('Plan de cuentas creado exitosamente');
             // Refresh data without full page reload
-            router.visit(route('accounting.chart-of-accounts.index'), {
-                preserveState: true,
-                preserveScroll: true,
-                only: ['accounts']
+            router.reload({
+                only: ['accounts', 'has_accounts', 'accounts_count', 'hierarchicalTree']
             });
         },
         onError: (errors) => {

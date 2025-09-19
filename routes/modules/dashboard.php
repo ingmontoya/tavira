@@ -22,4 +22,9 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
         Route::get('/panic-alerts', [\App\Http\Controllers\Api\PanicAlertController::class, 'index']);
         Route::patch('/panic-alerts/{panicAlert}/resolve', [\App\Http\Controllers\Api\PanicAlertController::class, 'resolve']);
     });
+
+    // Security alerts for global banner (web auth only)
+    Route::prefix('security')->group(function () {
+        Route::get('/alerts/active', [\App\Http\Controllers\Api\PanicAlertController::class, 'active']);
+    });
 });
