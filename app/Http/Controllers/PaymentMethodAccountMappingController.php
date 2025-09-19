@@ -210,11 +210,11 @@ class PaymentMethodAccountMappingController extends Controller
 
             // Define default payment method mappings
             $defaultMappings = [
-                'efectivo' => '111001', // Caja General
-                'transferencia' => '111001', // Banco - Cuenta Corriente
-                'tarjeta_credito' => '111001', // Banco - Cuenta Corriente
-                'tarjeta_debito' => '111001', // Banco - Cuenta Corriente
-                'cheque' => '111001', // Banco - Cuenta Corriente
+                'cash' => '110501', // Caja General
+                'bank_transfer' => '111001', // Banco - Cuenta Corriente
+                'credit_card' => '111001', // Banco - Cuenta Corriente
+                'debit_card' => '111001', // Banco - Cuenta Corriente
+                'check' => '111001', // Banco - Cuenta Corriente
             ];
 
             $createdCount = 0;

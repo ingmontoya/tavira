@@ -23,7 +23,7 @@ const props = defineProps<{
     setup_status: SetupStatus;
 }>();
 
-const steps = [
+const steps = computed(() => [
     {
         id: 'apartments',
         title: 'Configurar Apartamentos',
@@ -64,12 +64,12 @@ const steps = [
         count: props.setup_status.mappings_count,
         action: 'Configurar Mapeos',
     },
-];
+]);
 
-const completedSteps = computed(() => steps.filter(step => step.completed).length);
-const totalSteps = steps.length;
-const progressPercentage = computed(() => (completedSteps.value / totalSteps) * 100);
-const isComplete = computed(() => completedSteps.value === totalSteps);
+const completedSteps = computed(() => steps.value.filter(step => step.completed).length);
+const totalSteps = computed(() => steps.value.length);
+const progressPercentage = computed(() => (completedSteps.value / totalSteps.value) * 100);
+const isComplete = computed(() => completedSteps.value === totalSteps.value);
 
 const breadcrumbs = [
     {
@@ -83,8 +83,16 @@ const breadcrumbs = [
 ];
 
 const quickSetup = () => {
-    // Redirect to a page that automatically runs all seeders
-    router.post('/setup/accounting-wizard/quick-setup');
+    router.post('/setup/accounting-wizard/quick-setup', {}, {
+        onSuccess: () => {
+            // Refresh data without full page reload to update progress
+            router.visit(route('setup.accounting-wizard.index'), {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['setup_status']
+            });
+        }
+    });
 };
 </script>
 

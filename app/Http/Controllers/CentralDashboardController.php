@@ -26,8 +26,12 @@ class CentralDashboardController extends Controller
 
         // Stats for central management
         $totalTenants = $tenantQuery->count();
-        $activeTenants = (clone $tenantQuery)->where('data->status', 'active')->count();
-        $pendingTenants = (clone $tenantQuery)->where('data->status', 'pending')->count();
+
+        // Count active tenants (those with domains)
+        $activeTenants = (clone $tenantQuery)->whereHas('domains')->count();
+
+        // Count pending tenants (those without domains)
+        $pendingTenants = (clone $tenantQuery)->whereDoesntHave('domains')->count();
 
         $stats = [
             'totalTenants' => $totalTenants,
@@ -36,7 +40,8 @@ class CentralDashboardController extends Controller
         ];
 
         // Recent tenants
-        $recentTenants = $tenantQuery->orderBy('created_at', 'desc')
+        $recentTenants = $tenantQuery->with('domains')
+            ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($tenant) {
@@ -44,10 +49,17 @@ class CentralDashboardController extends Controller
                 $rawData = \DB::table('tenants')->where('id', $tenant->id)->value('data');
                 $data = $rawData ? json_decode($rawData, true) : [];
 
+                // Use admin_name as fallback if data['name'] is not available
+                $name = $data['name'] ?? $tenant->admin_name ?? 'Sin nombre';
+
+                // Determine status: if tenant has domains, consider it active
+                $hasActiveDomain = $tenant->domains()->exists();
+                $status = $data['status'] ?? ($hasActiveDomain ? 'active' : 'pending');
+
                 return [
                     'id' => $tenant->id,
-                    'name' => $data['name'] ?? 'Sin nombre',
-                    'status' => $data['status'] ?? 'pending',
+                    'name' => $name,
+                    'status' => $status,
                     'created_at' => $tenant->created_at->format('d/m/Y'),
                 ];
             });

@@ -150,10 +150,11 @@
                             </Button>
                         </div>
                         <div v-else>
-                            <div 
-                                v-for="tenant in recentTenants" 
-                                :key="tenant.id" 
-                                class="flex items-center justify-between p-4 border rounded-lg transition-colors hover:bg-muted/50"
+                            <div
+                                v-for="tenant in recentTenants"
+                                :key="tenant.id"
+                                class="flex items-center justify-between p-4 border rounded-lg transition-colors hover:bg-muted/50 cursor-pointer"
+                                @click="router.visit(`/tenants/${tenant.id}`)"
                             >
                                 <div class="flex items-center space-x-4">
                                     <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -168,18 +169,18 @@
                                     <Badge :variant="tenant.status === 'active' ? 'default' : 'secondary'">
                                         {{ tenant.status === 'active' ? 'Activo' : 'Pendiente' }}
                                     </Badge>
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         size="sm"
-                                        @click="router.visit(`/tenants/${tenant.id}`)"
+                                        @click.stop="router.visit(`/tenants/${tenant.id}`)"
                                     >
                                         <Icon name="settings" class="h-4 w-4 mr-1" />
                                         Gestionar
                                     </Button>
-                                    <Button 
+                                    <Button
                                         v-if="tenant.status === 'active'"
                                         size="sm"
-                                        @click="loginToTenant(tenant.id)"
+                                        @click.stop="loginToTenant(tenant.id)"
                                     >
                                         <Icon name="log-in" class="h-4 w-4 mr-1" />
                                         Acceder

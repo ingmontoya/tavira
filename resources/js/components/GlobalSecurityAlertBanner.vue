@@ -87,7 +87,9 @@ const fetchActiveAlerts = async () => {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
+            credentials: 'same-origin',
         });
 
         if (response.ok) {
@@ -109,6 +111,9 @@ const fetchActiveAlerts = async () => {
 
             activeAlerts.value = newAlerts;
             lastCheck.value = Date.now();
+        } else if (response.status === 401) {
+            console.warn('Usuario no autenticado para ver alertas de seguridad');
+            // Optionally redirect to login or handle authentication issue
         }
     } catch (error) {
         console.error('Error fetching security alerts:', error);
