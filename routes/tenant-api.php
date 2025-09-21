@@ -52,6 +52,36 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         }
     })->name('tenant.api.debug.clear-cache');
 
+    // === DEBUG USER ROLES ENDPOINT ===
+    Route::get('/debug/user-roles', function (Request $request) {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json([
+                    'error' => 'No authenticated user',
+                ], 401);
+            }
+
+            $user->load(['roles']);
+            $roleNames = $user->roles->pluck('name')->toArray();
+
+            return response()->json([
+                'user_email' => $user->email,
+                'user_id' => $user->id,
+                'roles_array' => $roleNames,
+                'roles_detailed' => $user->roles->toArray(),
+                'tenant_context' => config('app.name'),
+                'tenant_id' => tenant('id'),
+                'timestamp' => now()->toISOString(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
+    })->middleware('auth:sanctum')->name('tenant.api.debug.user-roles');
+
     // Protected routes requiring authentication
     Route::middleware(['auth:sanctum'])->group(function () {
         // Logout
@@ -67,17 +97,32 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
 
             // Prioritize specific roles for mobile app
             $roleNames = $user->roles->pluck('name')->toArray();
+
+            // 🔥 DEBUG LOGGING - REMOVE AFTER TESTING
+            \Log::info('USER API DEBUG', [
+                'user_email' => $user->email,
+                'user_roles' => $roleNames,
+                'all_roles_data' => $user->roles->toArray()
+            ]);
+
             if (in_array('porteria', $roleNames)) {
                 $userData['role'] = 'porteria';
+                \Log::info('ROLE SET TO PORTERIA for user: ' . $user->email);
             } elseif (in_array('admin', $roleNames)) {
                 $userData['role'] = 'admin';
+                \Log::info('ROLE SET TO ADMIN for user: ' . $user->email);
             } elseif (in_array('propietario', $roleNames)) {
                 $userData['role'] = 'propietario';
+                \Log::info('ROLE SET TO PROPIETARIO for user: ' . $user->email);
             } elseif (in_array('residente', $roleNames)) {
                 $userData['role'] = 'residente';
+                \Log::info('ROLE SET TO RESIDENTE for user: ' . $user->email);
             } else {
                 $userData['role'] = $user->roles->first()?->name ?? 'residente';
+                \Log::info('ROLE SET TO FALLBACK: ' . $userData['role'] . ' for user: ' . $user->email);
             }
+
+            \Log::info('FINAL USER DATA ROLE: ' . $userData['role'] . ' for user: ' . $user->email);
 
             return response()->json([
                 'user' => $userData,
