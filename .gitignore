@@ -34,3 +34,4 @@ mobile-app
 **/caddy
 frankenphp
 frankenphp-worker.php
+.DS_Store

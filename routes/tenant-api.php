@@ -62,9 +62,22 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
         Route::get('/user', function (Request $request) {
             $user = $request->user()->load(['resident.apartment.apartmentType', 'roles']);
 
-            // Add the first role name as 'role' field for mobile compatibility
+            // Add the correct role name as 'role' field for mobile compatibility
             $userData = $user->toArray();
-            $userData['role'] = $user->roles->first()?->name ?? 'residente';
+
+            // Prioritize specific roles for mobile app
+            $roleNames = $user->roles->pluck('name')->toArray();
+            if (in_array('porteria', $roleNames)) {
+                $userData['role'] = 'porteria';
+            } elseif (in_array('admin', $roleNames)) {
+                $userData['role'] = 'admin';
+            } elseif (in_array('propietario', $roleNames)) {
+                $userData['role'] = 'propietario';
+            } elseif (in_array('residente', $roleNames)) {
+                $userData['role'] = 'residente';
+            } else {
+                $userData['role'] = $user->roles->first()?->name ?? 'residente';
+            }
 
             return response()->json([
                 'user' => $userData,
