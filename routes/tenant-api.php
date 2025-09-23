@@ -222,6 +222,21 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
                 ->name('qr-code');
         });
 
+        // === VISITOR QR SCANNER (for security/porteria) ===
+        Route::prefix('visitors')->name('tenant.api.visitors.')->group(function () {
+            // Look up visitor by QR code
+            Route::get('/lookup/{qrCode}', [\App\Http\Controllers\VisitorController::class, 'lookup'])
+                ->name('lookup');
+
+            // Visit authorization/management actions
+            Route::put('/{visitId}/authorize', [\App\Http\Controllers\VisitorController::class, 'authorizeVisit'])
+                ->name('authorize');
+            Route::put('/{visitId}/deny', [\App\Http\Controllers\VisitorController::class, 'denyVisit'])
+                ->name('deny');
+            Route::put('/{visitId}/complete', [\App\Http\Controllers\VisitorController::class, 'completeVisit'])
+                ->name('complete');
+        });
+
         // === MAINTENANCE REQUESTS ===
         Route::prefix('maintenance')->name('tenant.api.maintenance.')->group(function () {
             Route::get('/requests', [MaintenanceRequestController::class, 'apiResidentIndex'])
