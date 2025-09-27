@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\InvoiceCreated;
 use App\Exceptions\InvoiceGenerationException;
 use App\Http\Resources\InvoiceResource;
 use App\Mail\InvoiceMail;
@@ -188,16 +189,8 @@ class InvoiceController extends Controller
                 // Check if this invoice should be eligible for electronic invoicing
                 $this->evaluateElectronicInvoicing($invoice);
 
-                // Create accounting transaction if mappings are configured
-                try {
-                    \App\Models\AccountingTransaction::createFromInvoice($invoice);
-                } catch (\Exception $e) {
-                    // Log the error but don't fail the invoice creation
-                    \Illuminate\Support\Facades\Log::warning('No se pudo crear la transacción contable para la factura', [
-                        'invoice_id' => $invoice->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
+                // Fire the InvoiceCreated event to generate accounting entries
+                event(new InvoiceCreated($invoice));
 
                 // Send notification to administrative users
                 $notificationService = app(NotificationService::class);
@@ -420,17 +413,8 @@ class InvoiceController extends Controller
                     // Check if this invoice should be eligible for electronic invoicing
                     $this->evaluateElectronicInvoicing($invoice);
 
-                    // Create accounting transaction if mappings are configured
-                    try {
-                        \App\Models\AccountingTransaction::createFromInvoice($invoice);
-                    } catch (\Exception $e) {
-                        // Log the error but don't fail the invoice creation
-                        \Illuminate\Support\Facades\Log::warning('No se pudo crear la transacción contable para la factura masiva', [
-                            'invoice_id' => $invoice->id,
-                            'apartment_id' => $apartment->id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
+                    // Fire the InvoiceCreated event to generate accounting entries
+                    event(new InvoiceCreated($invoice));
 
                     $generatedCount++;
                 }

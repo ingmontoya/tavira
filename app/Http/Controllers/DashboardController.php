@@ -729,7 +729,7 @@ class DashboardController extends Controller
     {
         $conjunto = ConjuntoConfig::first();
 
-        if (!$conjunto) {
+        if (! $conjunto) {
             return [
                 'has_apartments' => false,
                 'has_chart_of_accounts' => false,
@@ -748,7 +748,7 @@ class DashboardController extends Controller
         $isReady = $hasApartments && $hasChartOfAccounts && $hasPaymentConcepts && $hasAccountingMappings;
 
         // Only show wizard if conjunto is configured but accounting is not
-        $needsWizard = $conjunto->exists && $hasApartments && !$isReady;
+        $needsWizard = $conjunto->exists && $hasApartments && ! $isReady;
 
         return [
             'has_apartments' => $hasApartments,

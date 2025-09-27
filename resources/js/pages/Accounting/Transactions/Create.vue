@@ -127,10 +127,11 @@ const onAccountChange = (index: number, accountId: number) => {
     }
 };
 
-const clearAmount = (index: number, type: 'debit' | 'credit') => {
-    if (type === 'debit') {
+const clearOppositeAmount = (index: number, type: 'debit' | 'credit') => {
+    // Only clear the opposite field if the current field has a value
+    if (type === 'debit' && form.entries[index].debit_amount > 0) {
         form.entries[index].credit_amount = 0;
-    } else {
+    } else if (type === 'credit' && form.entries[index].credit_amount > 0) {
         form.entries[index].debit_amount = 0;
     }
 };
@@ -340,7 +341,7 @@ const breadcrumbs = [
                                                 min="0"
                                                 placeholder="0.00"
                                                 class="text-right font-mono"
-                                                @focus="clearAmount(index, 'debit')"
+                                                @input="clearOppositeAmount(index, 'debit')"
                                             />
                                         </TableCell>
                                         <TableCell>
@@ -351,7 +352,7 @@ const breadcrumbs = [
                                                 min="0"
                                                 placeholder="0.00"
                                                 class="text-right font-mono"
-                                                @focus="clearAmount(index, 'credit')"
+                                                @input="clearOppositeAmount(index, 'credit')"
                                             />
                                         </TableCell>
                                         <TableCell>
