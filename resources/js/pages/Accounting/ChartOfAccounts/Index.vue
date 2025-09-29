@@ -537,13 +537,27 @@ const exportAccounts = () => {
                 </Table>
             </div>
 
-            <div class="flex items-center justify-end space-x-2 py-4">
+            <div class="flex items-center justify-between space-x-2 py-4">
                 <div class="flex-1 text-sm text-muted-foreground">
-                    {{ table.getFilteredSelectedRowModel().rows.length }} de {{ table.getFilteredRowModel().rows.length }} fila(s) seleccionadas.
+                    Mostrando {{ accounts.from }} a {{ accounts.to }} de {{ accounts.total }} cuentas
                 </div>
-                <div class="space-x-2">
-                    <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Anterior </Button>
-                    <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Siguiente </Button>
+                <div class="flex items-center space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        :disabled="!accounts.prev_page_url"
+                        @click="router.visit(accounts.prev_page_url)"
+                    >
+                        Anterior
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        :disabled="!accounts.next_page_url"
+                        @click="router.visit(accounts.next_page_url)"
+                    >
+                        Siguiente
+                    </Button>
                 </div>
             </div>
         </div>
