@@ -61,7 +61,7 @@ class ChartOfAccountsController extends Controller
                 'income' => 'Ingresos',
                 'expense' => 'Gastos',
             ],
-            'hierarchicalTree' => ChartOfAccounts::buildHierarchicalTree($conjunto->id),
+            // 'hierarchicalTree' => ChartOfAccounts::buildHierarchicalTree($conjunto->id), // Commented out for performance - generates 350+ queries
             'has_accounts' => $hasAccounts,
             'accounts_count' => $accountsCount,
             'needs_sync' => $needsSync,
