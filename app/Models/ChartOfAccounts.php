@@ -197,6 +197,7 @@ class ChartOfAccounts extends Model
             2 => $codeLength === 2 && is_numeric($this->code),
             3 => $codeLength === 4 && is_numeric($this->code),
             4 => $codeLength === 6 && is_numeric($this->code),
+            5 => $codeLength === 8 && is_numeric($this->code),
             default => false,
         };
     }

@@ -49,6 +49,7 @@ class ChartOfAccountsController extends Controller
 
         $hasAccounts = ChartOfAccounts::forConjunto($conjunto->id)->exists();
         $accountsCount = ChartOfAccounts::forConjunto($conjunto->id)->count();
+        $needsSync = $accountsCount > 0 && $accountsCount < 350;
 
         return Inertia::render('Accounting/ChartOfAccounts/Index', [
             'accounts' => $accounts,
@@ -63,6 +64,7 @@ class ChartOfAccountsController extends Controller
             'hierarchicalTree' => ChartOfAccounts::buildHierarchicalTree($conjunto->id),
             'has_accounts' => $hasAccounts,
             'accounts_count' => $accountsCount,
+            'needs_sync' => $needsSync,
         ]);
     }
 
@@ -325,6 +327,42 @@ class ChartOfAccountsController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors([
                 'create_defaults' => 'Error al crear el plan de cuentas: '.$e->getMessage(),
+            ]);
+        }
+    }
+
+    public function sync()
+    {
+        try {
+            $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+            if (! $conjunto) {
+                return back()->withErrors([
+                    'sync' => 'No se encontró configuración activa del conjunto.',
+                ]);
+            }
+
+            $beforeCount = ChartOfAccounts::forConjunto($conjunto->id)->count();
+
+            // Run seeder with reflection to call private method
+            $seeder = new \Database\Seeders\ChartOfAccountsSeeder;
+            $reflection = new \ReflectionClass($seeder);
+            $method = $reflection->getMethod('seedAccountsForConjunto');
+            $method->setAccessible(true);
+            $method->invoke($seeder, $conjunto->id);
+
+            $afterCount = ChartOfAccounts::forConjunto($conjunto->id)->count();
+            $newAccounts = $afterCount - $beforeCount;
+
+            if ($newAccounts > 0) {
+                return back()->with('success', "Plan de cuentas sincronizado exitosamente. Se agregaron {$newAccounts} cuentas nuevas. Total: {$afterCount} cuentas.");
+            } else {
+                return back()->with('success', "Plan de cuentas sincronizado exitosamente. Total: {$afterCount} cuentas.");
+            }
+
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'sync' => 'Error al sincronizar el plan de cuentas: '.$e->getMessage(),
             ]);
         }
     }

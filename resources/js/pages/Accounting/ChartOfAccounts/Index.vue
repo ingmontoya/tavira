@@ -59,6 +59,7 @@ const props = defineProps<{
     };
     has_accounts: boolean;
     accounts_count: number;
+    needs_sync: boolean;
 }>();
 
 const data: ChartOfAccount[] = props.accounts.data;
@@ -108,6 +109,23 @@ const createDefaultAccounts = () => {
         },
         onError: (errors) => {
             const errorMessage = errors?.create_defaults || 'Error al crear el plan de cuentas';
+            error(errorMessage);
+        }
+    });
+};
+
+// Sync accounts
+const syncAccounts = () => {
+    router.post('/accounting/chart-of-accounts/sync', {}, {
+        onSuccess: () => {
+            success('Plan de cuentas sincronizado exitosamente');
+            // Use setTimeout to ensure toast shows first, then reload
+            setTimeout(() => {
+                router.reload();
+            }, 100);
+        },
+        onError: (errors) => {
+            const errorMessage = errors?.sync || 'Error al sincronizar el plan de cuentas';
             error(errorMessage);
         }
     });
@@ -343,6 +361,20 @@ const exportAccounts = () => {
                         <Button @click="createDefaultAccounts" variant="default" size="sm" class="mt-3">
                             <Settings class="mr-2 h-4 w-4" />
                             Crear Plan de Cuentas por Defecto
+                        </Button>
+                    </div>
+                </AlertDescription>
+            </Alert>
+
+            <Alert v-if="needs_sync" class="bg-amber-50 border-amber-200">
+                <Database class="h-4 w-4 text-amber-600" />
+                <AlertDescription>
+                    <div class="space-y-2">
+                        <p class="font-medium text-amber-800">Plan de cuentas incompleto</p>
+                        <p class="text-amber-700">Tienes {{ accounts_count }} cuentas de 350 esperadas. Sincroniza el plan de cuentas para agregar las cuentas faltantes del PUC colombiano para propiedad horizontal.</p>
+                        <Button @click="syncAccounts" variant="default" size="sm" class="mt-3">
+                            <Settings class="mr-2 h-4 w-4" />
+                            Sincronizar Plan de Cuentas
                         </Button>
                     </div>
                 </AlertDescription>

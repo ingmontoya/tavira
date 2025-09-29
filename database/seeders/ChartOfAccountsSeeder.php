@@ -34,19 +34,23 @@ class ChartOfAccountsSeeder extends Seeder
                 $parentId = $parent?->id;
             }
 
-            ChartOfAccounts::create([
-                'conjunto_config_id' => $conjuntoConfigId,
-                'code' => $accountData['code'],
-                'name' => $accountData['name'],
-                'description' => $accountData['description'],
-                'account_type' => $accountData['account_type'],
-                'parent_id' => $parentId,
-                'level' => $accountData['level'],
-                'is_active' => $accountData['is_active'],
-                'requires_third_party' => $accountData['requires_third_party'],
-                'nature' => $accountData['nature'],
-                'accepts_posting' => $accountData['accepts_posting'],
-            ]);
+            ChartOfAccounts::updateOrCreate(
+                [
+                    'conjunto_config_id' => $conjuntoConfigId,
+                    'code' => $accountData['code'],
+                ],
+                [
+                    'name' => $accountData['name'],
+                    'description' => $accountData['description'],
+                    'account_type' => $accountData['account_type'],
+                    'parent_id' => $parentId,
+                    'level' => $accountData['level'],
+                    'is_active' => $accountData['is_active'],
+                    'requires_third_party' => $accountData['requires_third_party'],
+                    'nature' => $accountData['nature'],
+                    'accepts_posting' => $accountData['accepts_posting'],
+                ]
+            );
         }
     }
 
@@ -85,13 +89,27 @@ class ChartOfAccountsSeeder extends Seeder
             }
         };
 
+        // Helper function to calculate level based on code length
+        $calculateLevel = function($code) {
+            $length = strlen($code);
+            return match ($length) {
+                1 => 1,
+                2 => 2,
+                4 => 3,
+                6 => 4,
+                8 => 5,
+                default => 1,
+            };
+        };
+
         // Helper function to get parent code
-        $getParentCode = function($code, $level) {
-            if ($level == 1) return null;
-            if ($level == 2) return substr($code, 0, 1);
-            if ($level == 3) return substr($code, 0, 2);
-            if ($level == 4) return substr($code, 0, 4);
-            if ($level == 5) return substr($code, 0, 6);
+        $getParentCode = function($code) {
+            $length = strlen($code);
+            if ($length == 1) return null;
+            if ($length == 2) return substr($code, 0, 1);
+            if ($length == 4) return substr($code, 0, 2);
+            if ($length == 6) return substr($code, 0, 4);
+            if ($length == 8) return substr($code, 0, 6);
             return null;
         };
 
@@ -432,10 +450,11 @@ class ChartOfAccountsSeeder extends Seeder
         foreach ($pucData as $data) {
             $code = $data[0];
             $name = $data[1];
-            $level = $data[2];
+            // Ignore the level from SQL, calculate it from code length
+            $level = $calculateLevel($code);
 
             $info = $getAccountInfo($code);
-            $parentCode = $getParentCode($code, $level);
+            $parentCode = $getParentCode($code);
 
             // Determine if account accepts posting (only level 4 and 5 for most accounts)
             $acceptsPosting = in_array($level, [4, 5]) && !empty($name);
