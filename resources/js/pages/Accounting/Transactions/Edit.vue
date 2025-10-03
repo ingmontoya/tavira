@@ -70,7 +70,7 @@ const form = useForm<FormData>({
 
 // UI state
 const isUnsavedChanges = ref(false);
-const canEdit = computed(() => props.transaction.status === 'Draft');
+const canEdit = computed(() => props.transaction.status === 'borrador');
 
 // Computed properties
 const activeAccounts = computed(() => {

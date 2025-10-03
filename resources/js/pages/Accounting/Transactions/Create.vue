@@ -76,6 +76,7 @@ const form = useForm<FormData>({
 // UI state
 const isUnsavedChanges = ref(false);
 const accountSearchQuery = ref('');
+const apartmentSearchQuery = ref('');
 
 // Computed properties
 const activeAccounts = computed(() => {
@@ -93,6 +94,17 @@ const filteredAccounts = computed(() => {
             account.code.toLowerCase().includes(query) ||
             account.name.toLowerCase().includes(query)
         );
+    });
+});
+
+const filteredApartments = computed(() => {
+    if (!apartmentSearchQuery.value) {
+        return props.apartments;
+    }
+
+    const query = apartmentSearchQuery.value.toLowerCase();
+    return props.apartments.filter((apartment) => {
+        return apartment.number.toLowerCase().includes(query);
     });
 });
 
@@ -285,9 +297,17 @@ const breadcrumbs = [
                                     <SelectValue placeholder="Seleccionar apartamento (opcional)" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <div class="p-2">
+                                        <Input
+                                            v-model="apartmentSearchQuery"
+                                            placeholder="Buscar apartamento..."
+                                            class="mb-2"
+                                            @click.stop
+                                        />
+                                    </div>
                                     <SelectItem :value="null">Ninguno</SelectItem>
                                     <SelectItem
-                                        v-for="apartment in apartments"
+                                        v-for="apartment in filteredApartments"
                                         :key="apartment.id"
                                         :value="apartment.id"
                                     >
