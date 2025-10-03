@@ -86,7 +86,7 @@
                     <CardContent class="space-y-4">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <Button
-                                @click="$inertia.visit(route('accounting.accounting-transactions.index'))"
+                                @click="$inertia.visit(route('accounting.transactions.index'))"
                                 variant="outline"
                                 class="justify-start"
                             >

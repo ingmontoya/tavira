@@ -137,7 +137,7 @@ class AccountingTransactionController extends Controller
         });
 
         return redirect()
-            ->route('accounting-transactions.index')
+            ->route('accounting.transactions.index')
             ->with('success', 'Transacción contable creada exitosamente.');
     }
 
@@ -237,7 +237,7 @@ class AccountingTransactionController extends Controller
         });
 
         return redirect()
-            ->route('accounting-transactions.show', $transaction)
+            ->route('accounting.transactions.show', $transaction)
             ->with('success', 'Transacción contable actualizada exitosamente.');
     }
 
@@ -251,7 +251,7 @@ class AccountingTransactionController extends Controller
         $transaction->delete();
 
         return redirect()
-            ->route('accounting-transactions.index')
+            ->route('accounting.transactions.index')
             ->with('success', 'Transacción contable eliminada exitosamente.');
     }
 
