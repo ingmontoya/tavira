@@ -23,7 +23,7 @@ Route::prefix('accounting')->name('accounting.')->middleware('can:view_accountin
     Route::post('transactions/{transaction}/entries', [AccountingTransactionController::class, 'addEntry'])->name('transactions.add-entry');
     Route::delete('transactions/{transaction}/entries/{entry}', [AccountingTransactionController::class, 'removeEntry'])->name('transactions.remove-entry');
     Route::post('transactions/validate-double-entry', [AccountingTransactionController::class, 'validateDoubleEntry'])->name('transactions.validate-double-entry');
-    Route::resource('transactions', AccountingTransactionController::class, ['as' => 'accounting-transactions']);
+    Route::resource('transactions', AccountingTransactionController::class);
 
     // Budgets
     Route::resource('budgets', BudgetController::class);
