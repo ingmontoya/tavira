@@ -82,8 +82,20 @@ class AccountingTransactionController extends Controller
             ->orderBy('code')
             ->get();
 
+        $apartments = \App\Models\Apartment::where('conjunto_config_id', $conjunto->id)
+            ->orderBy('number')
+            ->get(['id', 'number', 'apartment_type_id'])
+            ->map(function ($apartment) {
+                return [
+                    'id' => $apartment->id,
+                    'number' => $apartment->number,
+                    'label' => $apartment->number,
+                ];
+            });
+
         return Inertia::render('Accounting/Transactions/Create', [
             'accounts' => $accounts,
+            'apartments' => $apartments,
             'referenceTypes' => [
                 'manual' => 'Manual',
                 'adjustment' => 'Ajuste',
@@ -101,6 +113,7 @@ class AccountingTransactionController extends Controller
             'transaction_date' => 'required|date',
             'description' => 'required|string|max:500',
             'reference_type' => 'nullable|string|max:50',
+            'apartment_id' => 'nullable|exists:apartments,id',
             'entries' => 'required|array|min:2',
             'entries.*.account_id' => 'required|exists:chart_of_accounts,id',
             'entries.*.description' => 'required|string|max:255',
@@ -132,6 +145,7 @@ class AccountingTransactionController extends Controller
                 'transaction_date' => $validated['transaction_date'],
                 'description' => $validated['description'],
                 'reference_type' => $validated['reference_type'] ?? 'manual',
+                'apartment_id' => $validated['apartment_id'] ?? null,
                 'status' => 'borrador',
                 'created_by' => auth()->id(),
             ]);
@@ -153,8 +167,12 @@ class AccountingTransactionController extends Controller
             'entries.thirdParty',
             'createdBy',
             'postedBy',
-            'reference',
         ]);
+
+        // Load reference only if it's not a manual transaction
+        if ($transaction->reference_type && $transaction->reference_type !== 'manual' && $transaction->reference_id) {
+            $transaction->load('reference');
+        }
 
         return Inertia::render('Accounting/Transactions/Show', [
             'transaction' => $transaction,

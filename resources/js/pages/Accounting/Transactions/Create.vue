@@ -27,6 +27,7 @@ interface FormData {
     reference: string;
     description: string;
     transaction_date: string;
+    apartment_id: number | null;
     entries: TransactionEntry[];
 }
 
@@ -38,8 +39,15 @@ interface Account {
     is_active: boolean;
 }
 
+interface Apartment {
+    id: number;
+    number: string;
+    label: string;
+}
+
 const props = defineProps<{
     accounts: Account[];
+    apartments: Apartment[];
     duplicateFrom?: {
         description: string;
         reference_type: string;
@@ -52,6 +60,7 @@ const form = useForm<FormData>({
     reference: '',
     description: props.duplicateFrom?.description || '',
     transaction_date: new Date().toISOString().split('T')[0],
+    apartment_id: null,
     entries: props.duplicateFrom?.entries.map((entry) => ({
         account_id: entry.account_id,
         account: entry.account,
@@ -66,10 +75,25 @@ const form = useForm<FormData>({
 
 // UI state
 const isUnsavedChanges = ref(false);
+const accountSearchQuery = ref('');
 
 // Computed properties
 const activeAccounts = computed(() => {
     return props.accounts.filter((account) => account.is_active);
+});
+
+const filteredAccounts = computed(() => {
+    if (!accountSearchQuery.value) {
+        return activeAccounts.value;
+    }
+
+    const query = accountSearchQuery.value.toLowerCase();
+    return activeAccounts.value.filter((account) => {
+        return (
+            account.code.toLowerCase().includes(query) ||
+            account.name.toLowerCase().includes(query)
+        );
+    });
 });
 
 const totalDebits = computed(() => {
@@ -252,6 +276,29 @@ const breadcrumbs = [
                                 {{ form.errors.description }}
                             </p>
                         </div>
+
+                        <!-- Apartment (optional) -->
+                        <div class="space-y-2">
+                            <Label for="apartment_id">Apartamento (Opcional)</Label>
+                            <Select v-model="form.apartment_id">
+                                <SelectTrigger id="apartment_id">
+                                    <SelectValue placeholder="Seleccionar apartamento (opcional)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem :value="null">Ninguno</SelectItem>
+                                    <SelectItem
+                                        v-for="apartment in apartments"
+                                        :key="apartment.id"
+                                        :value="apartment.id"
+                                    >
+                                        {{ apartment.number }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p class="text-xs text-muted-foreground">
+                                Asocia esta transacción con un apartamento específico
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -321,10 +368,18 @@ const breadcrumbs = [
                                                     <SelectValue placeholder="Seleccionar cuenta" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem v-for="account in activeAccounts" :key="account.id" :value="account.id">
-                                                        <div class="flex flex-col">
-                                                            <span class="font-mono text-sm">{{ account.code }}</span>
-                                                            <span class="text-xs text-muted-foreground">{{ account.name }}</span>
+                                                    <div class="p-2">
+                                                        <Input
+                                                            v-model="accountSearchQuery"
+                                                            placeholder="Buscar cuenta..."
+                                                            class="mb-2"
+                                                            @click.stop
+                                                        />
+                                                    </div>
+                                                    <SelectItem v-for="account in filteredAccounts" :key="account.id" :value="account.id">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="font-mono text-sm font-semibold">{{ account.code }}</span>
+                                                            <span class="text-sm">{{ account.name }}</span>
                                                         </div>
                                                     </SelectItem>
                                                 </SelectContent>
