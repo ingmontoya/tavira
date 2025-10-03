@@ -84,8 +84,8 @@ class AccountingTransaction extends Model
 
     public function apartment(): ?BelongsTo
     {
-        // Get apartment through the referenced object
-        $reference = $this->reference;
+        // Get apartment through the referenced object (skip for manual transactions)
+        $reference = $this->getReferencedModel();
 
         if (! $reference) {
             return null;
