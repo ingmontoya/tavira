@@ -70,6 +70,18 @@ class AccountingTransaction extends Model
         return $this->morphTo('reference', 'reference_type', 'reference_id');
     }
 
+    /**
+     * Get the reference model, returns null for manual transactions
+     */
+    public function getReferencedModel()
+    {
+        if ($this->reference_type === 'manual' || !$this->reference_id) {
+            return null;
+        }
+
+        return $this->reference;
+    }
+
     public function apartment(): ?BelongsTo
     {
         // Get apartment through the referenced object

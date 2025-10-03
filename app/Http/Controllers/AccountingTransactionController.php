@@ -17,7 +17,7 @@ class AccountingTransactionController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $query = AccountingTransaction::forConjunto($conjunto->id)
-            ->with(['entries.account', 'entries.thirdParty', 'createdBy', 'postedBy', 'reference']);
+            ->with(['entries.account', 'entries.thirdParty', 'createdBy', 'postedBy']);
 
         if ($request->filled('status')) {
             $query->byStatus($request->status);
@@ -44,6 +44,11 @@ class AccountingTransactionController extends Controller
             ->paginate(100)
             ->withQueryString()
             ->through(function ($transaction) {
+                // Load reference only if it's not a manual transaction
+                if ($transaction->reference_type && $transaction->reference_type !== 'manual' && $transaction->reference_id) {
+                    $transaction->load('reference');
+                }
+
                 // Add apartment information to each transaction
                 $apartment = $transaction->apartment;
                 $transaction->apartment_number = $apartment ? $apartment->number : null;
