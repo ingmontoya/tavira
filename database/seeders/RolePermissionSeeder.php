@@ -116,6 +116,7 @@ class RolePermissionSeeder extends Seeder
             'invite_visitors',
             'receive_notifications',
             'send_pqrs',
+            'manage_pqrs',
             'send_messages_to_admin',
 
             // Council/Consejo specific
@@ -174,6 +175,7 @@ class RolePermissionSeeder extends Seeder
             'view_correspondence', 'create_correspondence', 'edit_correspondence', 'delete_correspondence', 'deliver_correspondence', 'manage_correspondence_attachments',
             'view_admin_email', 'create_admin_email', 'edit_admin_email', 'delete_admin_email', 'manage_email_templates', // Admin solo puede ver su email
             'view_access_logs', 'manage_visitors', 'view_security_reports', 'view_security_alerts', 'manage_security_alerts', 'respond_to_panic_alerts', 'resolve_security_incidents', 'view_panic_alerts', 'acknowledge_panic_alerts', 'resolve_panic_alerts',
+            'manage_pqrs',
             'view_reservations', 'create_reservations', 'edit_reservations', 'delete_reservations', 'manage_reservable_assets', 'approve_reservations',
             'view_assemblies', 'create_assemblies', 'edit_assemblies', 'delete_assemblies', 'start_assemblies', 'close_assemblies', 'manage_assembly_attendance',
             'view_assembly_votes', 'create_assembly_votes', 'edit_assembly_votes', 'delete_assembly_votes', 'participate_in_assemblies',

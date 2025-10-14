@@ -36,6 +36,12 @@ Route::middleware([
     // Authentication routes for tenants (registration disabled)
     require __DIR__.'/tenant-auth.php';
 
+    // Public PQRS routes (no authentication required)
+    Route::get('/pqrs/public/create', [\App\Http\Controllers\PqrsController::class, 'publicCreate'])->name('pqrs.public.create');
+    Route::post('/pqrs/public', [\App\Http\Controllers\PqrsController::class, 'store'])->name('pqrs.public.store');
+    Route::get('/pqrs/public/success/{ticket}', [\App\Http\Controllers\PqrsController::class, 'publicSuccess'])->name('pqrs.public.success');
+    Route::get('/pqrs/track', [\App\Http\Controllers\PqrsController::class, 'track'])->name('pqrs.track');
+
     Route::middleware(['auth', 'verified'])->group(function () {
 
         // Setup/Wizard routes
@@ -65,6 +71,7 @@ Route::middleware([
         require __DIR__.'/modules/support.php';
         require __DIR__.'/modules/assemblies.php';
         require __DIR__.'/modules/security.php';
+        require __DIR__.'/modules/pqrs.php';
     });
 
     // Settings routes for tenants

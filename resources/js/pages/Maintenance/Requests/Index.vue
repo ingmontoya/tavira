@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DropdownAction from '@/components/DataTableDropDown.vue';
+import SetupWizard from '@/components/maintenance/SetupWizard.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -70,6 +71,9 @@ interface Props {
         search?: string;
     };
     categories: MaintenanceCategory[];
+    hasCategoriesConfigured: boolean;
+    hasStaffConfigured: boolean;
+    needsSetup: boolean;
 }
 
 const props = defineProps<Props>();
@@ -302,7 +306,10 @@ const breadcrumbs = [
                     <h1 class="text-2xl font-semibold text-gray-900">Solicitudes de Mantenimiento</h1>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <Link v-if="hasPermission('create_maintenance_requests')" :href="route('maintenance-requests.calendar')">
+                    <Link
+                        v-if="hasPermission('create_maintenance_requests') && hasCategoriesConfigured"
+                        :href="route('maintenance-requests.calendar')"
+                    >
                         <Button variant="outline">
                             <CalendarDays class="mr-2 h-4 w-4" />
                             Ver Cronograma
@@ -317,8 +324,16 @@ const breadcrumbs = [
                 </div>
             </div>
 
-            <!-- Filters -->
-            <Card class="p-6">
+            <!-- Setup Wizard (shown when no categories configured) -->
+            <SetupWizard
+                v-if="needsSetup"
+                :has-categories-configured="hasCategoriesConfigured"
+                :has-staff-configured="hasStaffConfigured"
+                :show-staff-step="true"
+            />
+
+            <!-- Filters (hidden when setup is needed) -->
+            <Card v-if="!needsSetup" class="p-6">
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-medium">Filtros</h3>
@@ -405,8 +420,8 @@ const breadcrumbs = [
                 </div>
             </Card>
 
-            <!-- Table -->
-            <Card>
+            <!-- Table (hidden when setup is needed) -->
+            <Card v-if="!needsSetup">
                 <div class="p-6">
                     <div class="rounded-md border">
                         <Table>

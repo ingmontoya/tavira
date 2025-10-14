@@ -68,12 +68,25 @@ class MaintenanceRequestController extends Controller
 
         $maintenanceRequests = $query->latest()->paginate(15);
 
+        // Check if categories are configured
+        $categories = MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
+            ->where('is_active', true)
+            ->get();
+
+        $hasCategoriesConfigured = $categories->count() > 0;
+
+        // Check if staff is configured (optional)
+        $hasStaffConfigured = MaintenanceStaff::where('conjunto_config_id', $conjuntoConfig->id)
+            ->where('is_active', true)
+            ->count() > 0;
+
         return Inertia::render('Maintenance/Requests/Index', [
             'maintenanceRequests' => $maintenanceRequests,
             'filters' => $request->only(['status', 'priority', 'category', 'search']),
-            'categories' => MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
-                ->where('is_active', true)
-                ->get(),
+            'categories' => $categories,
+            'hasCategoriesConfigured' => $hasCategoriesConfigured,
+            'hasStaffConfigured' => $hasStaffConfigured,
+            'needsSetup' => ! $hasCategoriesConfigured,
         ]);
     }
 
@@ -193,10 +206,31 @@ class MaintenanceRequestController extends Controller
     {
         $conjuntoConfig = ConjuntoConfig::first();
 
+        $categories = MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
+            ->where('is_active', true)
+            ->get();
+
+        $hasCategoriesConfigured = $categories->count() > 0;
+
+        // Check if staff is configured (optional)
+        $hasStaffConfigured = MaintenanceStaff::where('conjunto_config_id', $conjuntoConfig->id)
+            ->where('is_active', true)
+            ->count() > 0;
+
+        // If no categories exist, redirect to wizard
+        if (! $hasCategoriesConfigured) {
+            return Inertia::render('Maintenance/Requests/Create', [
+                'categories' => $categories,
+                'apartments' => [],
+                'suppliers' => [],
+                'hasCategoriesConfigured' => false,
+                'hasStaffConfigured' => $hasStaffConfigured,
+                'needsSetup' => true,
+            ]);
+        }
+
         return Inertia::render('Maintenance/Requests/Create', [
-            'categories' => MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
-                ->where('is_active', true)
-                ->get(),
+            'categories' => $categories,
             'apartments' => Apartment::where('conjunto_config_id', $conjuntoConfig->id)
                 ->with('apartmentType')
                 ->orderBy('number')
@@ -205,6 +239,9 @@ class MaintenanceRequestController extends Controller
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(),
+            'hasCategoriesConfigured' => true,
+            'hasStaffConfigured' => $hasStaffConfigured,
+            'needsSetup' => false,
         ]);
     }
 

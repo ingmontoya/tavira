@@ -20,6 +20,7 @@
         "laraveles/spanish": "^1.5",
         "maatwebsite/excel": "^3.1",
         "oscar-rey/laravel-wompi": "^1.0",
+        "predis/predis": "^3.2",
         "sentry/sentry-laravel": "^4.15",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-permission": "^6.20",

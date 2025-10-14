@@ -270,12 +270,13 @@
                         <Icon name="user-plus" class="mb-2 h-8 w-8 text-purple-600" />
                         <span class="text-sm font-medium">Autorizar Visita</span>
                     </button>
-                    <button
+                    <Link
+                        :href="route('pqrs.public.create')"
                         class="flex flex-col items-center justify-center rounded-lg border border-border p-4 text-center transition-colors hover:bg-muted/50"
                     >
                         <Icon name="phone" class="mb-2 h-8 w-8 text-orange-600" />
                         <span class="text-sm font-medium">PQRS</span>
-                    </button>
+                    </Link>
                 </div>
             </Card>
         </AppContent>

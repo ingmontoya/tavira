@@ -469,7 +469,7 @@ export function useNavigation() {
                     href: '/pqrs',
                     icon: FileQuestion,
                     tourId: 'nav-pqrs',
-                    visible: hasPermission('send_pqrs') && isFeatureEnabled('support_tickets'),
+                    visible: hasPermission('manage_pqrs'),
                 },
                 {
                     title: 'Mensajería',

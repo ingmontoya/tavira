@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SetupWizard from '@/components/maintenance/SetupWizard.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -44,6 +45,9 @@ interface Props {
     categories: MaintenanceCategory[];
     apartments: Apartment[];
     suppliers: Supplier[];
+    hasCategoriesConfigured: boolean;
+    hasStaffConfigured: boolean;
+    needsSetup: boolean;
 }
 
 const props = defineProps<Props>();
@@ -192,7 +196,16 @@ const breadcrumbs = [
                 </div>
             </div>
 
-            <Card>
+            <!-- Setup Wizard (shown when no categories configured) -->
+            <SetupWizard
+                v-if="needsSetup"
+                :has-categories-configured="hasCategoriesConfigured"
+                :has-staff-configured="hasStaffConfigured"
+                :show-staff-step="false"
+            />
+
+            <!-- Form (only shown when categories are configured) -->
+            <Card v-if="!needsSetup">
                 <CardHeader>
                     <CardTitle>Información de la Solicitud</CardTitle>
                 </CardHeader>
