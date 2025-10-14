@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AccountCombobox from '@/components/AccountCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -75,26 +76,11 @@ const form = useForm<FormData>({
 
 // UI state
 const isUnsavedChanges = ref(false);
-const accountSearchQuery = ref('');
 const apartmentSearchQuery = ref('');
 
 // Computed properties
 const activeAccounts = computed(() => {
     return props.accounts.filter((account) => account.is_active);
-});
-
-const filteredAccounts = computed(() => {
-    if (!accountSearchQuery.value) {
-        return activeAccounts.value;
-    }
-
-    const query = accountSearchQuery.value.toLowerCase();
-    return activeAccounts.value.filter((account) => {
-        return (
-            account.code.toLowerCase().includes(query) ||
-            account.name.toLowerCase().includes(query)
-        );
-    });
 });
 
 const filteredApartments = computed(() => {
@@ -375,35 +361,17 @@ const breadcrumbs = [
                                 <TableBody>
                                     <TableRow v-for="(entry, index) in form.entries" :key="index">
                                         <TableCell>
-                                            <Select
+                                            <AccountCombobox
+                                                :accounts="activeAccounts"
                                                 :model-value="entry.account_id"
+                                                placeholder="Seleccionar cuenta..."
                                                 @update:model-value="
                                                     (value) => {
                                                         entry.account_id = value;
                                                         onAccountChange(index, value);
                                                     }
                                                 "
-                                            >
-                                                <SelectTrigger class="w-full">
-                                                    <SelectValue placeholder="Seleccionar cuenta" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <div class="p-2">
-                                                        <Input
-                                                            v-model="accountSearchQuery"
-                                                            placeholder="Buscar cuenta..."
-                                                            class="mb-2"
-                                                            @click.stop
-                                                        />
-                                                    </div>
-                                                    <SelectItem v-for="account in filteredAccounts" :key="account.id" :value="account.id">
-                                                        <div class="flex items-center gap-2">
-                                                            <span class="font-mono text-sm font-semibold">{{ account.code }}</span>
-                                                            <span class="text-sm">{{ account.name }}</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            />
                                         </TableCell>
                                         <TableCell>
                                             <Input v-model="entry.description" placeholder="Descripción del movimiento" class="w-full" />

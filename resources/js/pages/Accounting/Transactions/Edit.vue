@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AccountCombobox from '@/components/AccountCombobox.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,7 @@ interface FormData {
     reference: string;
     description: string;
     transaction_date: string;
+    status: string;
     entries: TransactionEntry[];
 }
 
@@ -58,6 +60,7 @@ const form = useForm<FormData>({
     reference: props.transaction.reference,
     description: props.transaction.description,
     transaction_date: props.transaction.transaction_date,
+    status: props.transaction.status,
     entries: props.transaction.entries.map((entry) => ({
         id: entry.id,
         account_id: entry.account_id,
@@ -254,6 +257,36 @@ const breadcrumbs = [
                             </div>
                         </div>
 
+                        <!-- Status -->
+                        <div class="space-y-2">
+                            <Label for="status">Estado *</Label>
+                            <Select v-model="form.status" :disabled="!canEdit">
+                                <SelectTrigger id="status" :class="{ 'border-red-500': form.errors.status }">
+                                    <SelectValue placeholder="Seleccionar estado" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="borrador">
+                                        <div class="flex items-center gap-2">
+                                            <span>Borrador</span>
+                                            <span class="text-xs text-muted-foreground">- Transacción editable</span>
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem value="contabilizado">
+                                        <div class="flex items-center gap-2">
+                                            <span>Contabilizado</span>
+                                            <span class="text-xs text-muted-foreground">- Transacción confirmada</span>
+                                        </div>
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p class="text-xs text-muted-foreground">
+                                El estado "Contabilizado" confirma y bloquea la transacción permanentemente
+                            </p>
+                            <p v-if="form.errors.status" class="text-sm text-red-600">
+                                {{ form.errors.status }}
+                            </p>
+                        </div>
+
                         <!-- Description -->
                         <div class="space-y-2">
                             <Label for="description">Descripción *</Label>
@@ -325,28 +358,18 @@ const breadcrumbs = [
                                 <TableBody>
                                     <TableRow v-for="(entry, index) in form.entries" :key="index">
                                         <TableCell>
-                                            <Select
+                                            <AccountCombobox
+                                                :accounts="activeAccounts"
                                                 :model-value="entry.account_id"
                                                 :disabled="!canEdit"
+                                                placeholder="Seleccionar cuenta..."
                                                 @update:model-value="
                                                     (value) => {
                                                         entry.account_id = value;
                                                         onAccountChange(index, value);
                                                     }
                                                 "
-                                            >
-                                                <SelectTrigger class="w-full">
-                                                    <SelectValue placeholder="Seleccionar cuenta" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem v-for="account in activeAccounts" :key="account.id" :value="account.id">
-                                                        <div class="flex flex-col">
-                                                            <span class="font-mono text-sm">{{ account.code }}</span>
-                                                            <span class="text-xs text-muted-foreground">{{ account.name }}</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            />
                                         </TableCell>
                                         <TableCell>
                                             <Input
@@ -416,7 +439,13 @@ const breadcrumbs = [
 
                         <Button type="submit" :disabled="form.processing || !canSubmit" class="gap-2">
                             <Save class="h-4 w-4" />
-                            {{ form.processing ? 'Guardando...' : 'Guardar Cambios' }}
+                            {{
+                                form.processing
+                                    ? 'Guardando...'
+                                    : form.status === 'contabilizado'
+                                        ? 'Guardar y Contabilizar'
+                                        : 'Guardar Cambios'
+                            }}
                         </Button>
                     </div>
                 </div>

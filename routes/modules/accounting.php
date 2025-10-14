@@ -42,6 +42,7 @@ Route::prefix('accounting')->name('accounting.')->middleware('can:view_accountin
     // Accounting Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [AccountingReportsController::class, 'index'])->name('index');
+        Route::get('journal-book', [AccountingReportsController::class, 'journalBook'])->name('journal-book');
         Route::get('balance-sheet', [AccountingReportsController::class, 'balanceSheet'])->name('balance-sheet');
         Route::get('income-statement', [AccountingReportsController::class, 'incomeStatement'])->name('income-statement');
         Route::get('trial-balance', [AccountingReportsController::class, 'trialBalance'])->name('trial-balance');

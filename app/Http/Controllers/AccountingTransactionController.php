@@ -181,7 +181,7 @@ class AccountingTransactionController extends Controller
 
     public function edit(AccountingTransaction $transaction)
     {
-        if ($transaction->status !== 'draft') {
+        if ($transaction->status !== 'borrador') {
             return back()->withErrors(['transaction' => 'Solo se pueden editar transacciones en borrador.']);
         }
 
@@ -209,7 +209,7 @@ class AccountingTransactionController extends Controller
 
     public function update(Request $request, AccountingTransaction $transaction)
     {
-        if ($transaction->status !== 'draft') {
+        if ($transaction->status !== 'borrador' && $request->input('status') !== 'contabilizado') {
             return back()->withErrors(['transaction' => 'Solo se pueden editar transacciones en borrador.']);
         }
 
@@ -217,6 +217,7 @@ class AccountingTransactionController extends Controller
             'transaction_date' => 'required|date',
             'description' => 'required|string|max:500',
             'reference_type' => 'nullable|string|max:50',
+            'status' => 'required|in:borrador,contabilizado',
             'entries' => 'required|array|min:2',
             'entries.*.account_id' => 'required|exists:chart_of_accounts,id',
             'entries.*.description' => 'required|string|max:255',
@@ -256,6 +257,11 @@ class AccountingTransactionController extends Controller
             // Create new entries
             foreach ($validated['entries'] as $entryData) {
                 $transaction->addEntry($entryData);
+            }
+
+            // Handle status change
+            if ($validated['status'] === 'contabilizado' && $transaction->status === 'borrador') {
+                $transaction->post();
             }
         });
 
@@ -344,7 +350,7 @@ class AccountingTransactionController extends Controller
 
     public function addEntry(Request $request, AccountingTransaction $transaction)
     {
-        if ($transaction->status !== 'draft') {
+        if ($transaction->status !== 'borrador') {
             return response()->json(['error' => 'Solo se pueden agregar movimientos a transacciones en borrador.'], 422);
         }
 
@@ -372,7 +378,7 @@ class AccountingTransactionController extends Controller
 
     public function removeEntry(AccountingTransaction $transaction, AccountingTransactionEntry $entry)
     {
-        if ($transaction->status !== 'draft') {
+        if ($transaction->status !== 'borrador') {
             return response()->json(['error' => 'Solo se pueden eliminar movimientos de transacciones en borrador.'], 422);
         }
 

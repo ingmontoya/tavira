@@ -15,6 +15,11 @@ class AccountingReportsController extends Controller
     {
         return Inertia::render('Accounting/Reports/Index', [
             'availableReports' => [
+                'journal-book' => [
+                    'name' => 'Libro Diario',
+                    'description' => 'Registro cronológico de transacciones',
+                    'icon' => 'calendar',
+                ],
                 'balance-sheet' => [
                     'name' => 'Balance General',
                     'description' => 'Estado de situación financiera',
@@ -45,6 +50,99 @@ class AccountingReportsController extends Controller
                     'description' => 'Entradas y salidas de efectivo',
                     'icon' => 'dollar',
                 ],
+            ],
+        ]);
+    }
+
+    public function journalBook(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'status' => 'nullable|in:borrador,contabilizado,cancelado',
+        ]);
+
+        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+        $endDate = $validated['end_date'] ?? now()->toDateString();
+        $status = $validated['status'] ?? 'contabilizado';
+
+        // Get transactions for the period
+        $query = \App\Models\AccountingTransaction::forConjunto($conjunto->id)
+            ->with(['entries.account', 'createdBy', 'postedBy'])
+            ->whereBetween('transaction_date', [$startDate, $endDate])
+            ->orderBy('transaction_date')
+            ->orderBy('id');
+
+        if ($status) {
+            $query->byStatus($status);
+        }
+
+        $transactions = $query->get()->map(function ($transaction) {
+            return [
+                'id' => $transaction->id,
+                'transaction_number' => $transaction->transaction_number,
+                'transaction_date' => $transaction->transaction_date->format('Y-m-d'),
+                'description' => $transaction->description,
+                'reference_type' => $transaction->reference_type,
+                'status' => $transaction->status,
+                'status_label' => $transaction->status_label,
+                'total_debit' => $transaction->total_debit,
+                'total_credit' => $transaction->total_credit,
+                'is_balanced' => $transaction->is_balanced,
+                'created_by' => $transaction->createdBy ? [
+                    'id' => $transaction->createdBy->id,
+                    'name' => $transaction->createdBy->name,
+                ] : null,
+                'posted_by' => $transaction->postedBy ? [
+                    'id' => $transaction->postedBy->id,
+                    'name' => $transaction->postedBy->name,
+                ] : null,
+                'posted_at' => $transaction->posted_at ? $transaction->posted_at->format('Y-m-d H:i:s') : null,
+                'entries' => $transaction->entries->map(function ($entry) {
+                    return [
+                        'id' => $entry->id,
+                        'account' => [
+                            'id' => $entry->account->id,
+                            'code' => $entry->account->code,
+                            'name' => $entry->account->name,
+                            'full_name' => $entry->account->full_name,
+                        ],
+                        'description' => $entry->description,
+                        'debit_amount' => $entry->debit_amount,
+                        'credit_amount' => $entry->credit_amount,
+                    ];
+                }),
+            ];
+        });
+
+        // Calculate totals
+        $totalDebits = $transactions->sum('total_debit');
+        $totalCredits = $transactions->sum('total_credit');
+
+        return Inertia::render('Accounting/Reports/JournalBook', [
+            'report' => [
+                'period' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'description' => 'Del '.date('d/m/Y', strtotime($startDate)).' al '.date('d/m/Y', strtotime($endDate)),
+                ],
+                'transactions' => $transactions,
+                'total_debits' => $totalDebits,
+                'total_credits' => $totalCredits,
+                'is_balanced' => abs($totalDebits - $totalCredits) < 0.01,
+                'transaction_count' => $transactions->count(),
+            ],
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'status' => $status,
+            ],
+            'statuses' => [
+                'borrador' => 'Borrador',
+                'contabilizado' => 'Contabilizado',
+                'cancelado' => 'Cancelado',
             ],
         ]);
     }
