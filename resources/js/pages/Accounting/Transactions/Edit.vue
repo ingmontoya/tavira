@@ -66,8 +66,8 @@ const form = useForm<FormData>({
         account_id: entry.account_id,
         account: entry.account,
         description: entry.description,
-        debit_amount: entry.debit_amount,
-        credit_amount: entry.credit_amount,
+        debit_amount: Number(entry.debit_amount) || 0,
+        credit_amount: Number(entry.credit_amount) || 0,
     })),
 });
 
@@ -81,11 +81,11 @@ const activeAccounts = computed(() => {
 });
 
 const totalDebits = computed(() => {
-    return form.entries.reduce((sum, entry) => sum + (entry.debit_amount || 0), 0);
+    return form.entries.reduce((sum, entry) => sum + (Number(entry.debit_amount) || 0), 0);
 });
 
 const totalCredits = computed(() => {
-    return form.entries.reduce((sum, entry) => sum + (entry.credit_amount || 0), 0);
+    return form.entries.reduce((sum, entry) => sum + (Number(entry.credit_amount) || 0), 0);
 });
 
 const isBalanced = computed(() => {

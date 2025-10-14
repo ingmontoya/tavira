@@ -112,5 +112,4 @@ import LanguageSwitcher from '../LanguageSwitcher.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 
 const mobileMenuOpen = ref(false);
-const mobilePqrsOpen = ref(false);
 </script>
