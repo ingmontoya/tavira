@@ -67,12 +67,18 @@ interface Supplier {
     full_contact_info: string;
 }
 
+interface ApprovalSettings {
+    approval_threshold_amount: number;
+    council_approval_required: boolean;
+}
+
 const props = defineProps<{
     categories: ExpenseCategory[];
     expenseAccounts: Account[];
     assetAccounts: Account[];
     liabilityAccounts: Account[];
     suppliers: Supplier[];
+    approvalSettings: ApprovalSettings;
 }>();
 
 // Get page data for errors
@@ -115,6 +121,25 @@ const selectedSupplier = computed(() => {
 
 const showVendorFields = computed(() => {
     return !form.supplier_id;
+});
+
+const requiresApproval = computed(() => {
+    if (!props.approvalSettings) return false;
+
+    let needsApproval = false;
+
+    // Check if amount exceeds threshold (4 salarios mínimos)
+    if (props.approvalSettings.council_approval_required &&
+        form.total_amount >= props.approvalSettings.approval_threshold_amount) {
+        needsApproval = true;
+    }
+
+    // Also check if category requires approval
+    if (selectedCategory.value?.requires_approval) {
+        needsApproval = true;
+    }
+
+    return needsApproval;
 });
 
 // Watch for category changes to set default accounts
@@ -388,13 +413,19 @@ const cancel = () => {
                                         <Textarea id="notes" v-model="form.notes" placeholder="Observaciones adicionales..." rows="3" />
                                     </div>
 
-                                    <div v-if="selectedCategory?.requires_approval" class="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                    <div v-if="requiresApproval" class="rounded-lg border border-amber-200 bg-amber-50 p-3">
                                         <div class="flex items-center gap-2 text-amber-800">
                                             <AlertTriangle class="h-4 w-4" />
                                             <span class="text-sm font-medium">Aprobación Requerida</span>
                                         </div>
                                         <p class="mt-1 text-sm text-amber-700">
-                                            Este gasto será enviado automáticamente para aprobación debido a la categoría seleccionada.
+                                            Este gasto requiere aprobación
+                                            <template v-if="form.total_amount >= approvalSettings.approval_threshold_amount">
+                                                del concejo debido a que el monto ({{ formatCurrency(form.total_amount) }}) supera el límite de {{ formatCurrency(approvalSettings.approval_threshold_amount) }} (4 salarios mínimos)
+                                            </template>
+                                            <template v-else-if="selectedCategory?.requires_approval">
+                                                debido a la categoría seleccionada
+                                            </template>.
                                         </p>
                                     </div>
                                     <div v-else class="rounded-lg border border-green-200 bg-green-50 p-3">
@@ -403,7 +434,7 @@ const cancel = () => {
                                             <span class="text-sm font-medium">Aprobación Automática</span>
                                         </div>
                                         <p class="mt-1 text-sm text-green-700">
-                                            Este gasto será aprobado automáticamente y estará listo para ser pagado.
+                                            Este gasto será aprobado automáticamente porque el monto está por debajo del límite de {{ formatCurrency(approvalSettings.approval_threshold_amount) }} y no requiere aprobación de categoría.
                                         </p>
                                     </div>
                                 </CardContent>

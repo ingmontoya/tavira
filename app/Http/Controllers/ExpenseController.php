@@ -117,6 +117,7 @@ class ExpenseController extends Controller
     public function create()
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
+        $expenseSettings = app(\App\Settings\ExpenseSettings::class);
 
         $categories = ExpenseCategory::forConjunto($conjunto->id)
             ->active()
@@ -156,6 +157,10 @@ class ExpenseController extends Controller
             'assetAccounts' => $assetAccounts,
             'liabilityAccounts' => $liabilityAccounts,
             'suppliers' => $suppliers,
+            'approvalSettings' => [
+                'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,
+                'council_approval_required' => $expenseSettings->council_approval_required,
+            ],
         ]);
     }
 
@@ -190,12 +195,26 @@ class ExpenseController extends Controller
         $validated['created_by'] = auth()->id();
         $validated['tax_amount'] = $validated['tax_amount'] ?? 0;
 
-        // Set initial status based on category approval requirements
+        // Set initial status based on amount threshold and category approval requirements
+        $expenseSettings = app(\App\Settings\ExpenseSettings::class);
+        $requiresApproval = false;
+
+        // Check if amount exceeds threshold (4 salarios mínimos)
+        if ($expenseSettings->council_approval_required &&
+            $validated['total_amount'] >= $expenseSettings->approval_threshold_amount) {
+            $requiresApproval = true;
+        }
+
+        // Also check if category requires approval
         $category = ExpenseCategory::find($validated['expense_category_id']);
         if ($category->requires_approval) {
+            $requiresApproval = true;
+        }
+
+        if ($requiresApproval) {
             $validated['status'] = 'pendiente';
         } else {
-            // For categories that don't require approval, mark as approved automatically
+            // Auto-approve expenses below threshold and without category approval requirement
             $validated['status'] = 'aprobado';
             $validated['approved_by'] = auth()->id();
             $validated['approved_at'] = now();
@@ -302,15 +321,32 @@ class ExpenseController extends Controller
 
         $validated['tax_amount'] = $validated['tax_amount'] ?? 0;
 
-        // Handle status change based on category approval requirements
+        // Handle status change based on amount threshold and category approval requirements
+        $expenseSettings = app(\App\Settings\ExpenseSettings::class);
         $category = ExpenseCategory::find($validated['expense_category_id']);
 
-        // Only update status if we're changing from borrador or the category changed
-        if ($expense->status === 'borrador' || $expense->expense_category_id != $validated['expense_category_id']) {
+        // Only update status if we're changing from borrador or the category/amount changed
+        if ($expense->status === 'borrador' ||
+            $expense->expense_category_id != $validated['expense_category_id'] ||
+            $expense->total_amount != $validated['total_amount']) {
+
+            $requiresApproval = false;
+
+            // Check if amount exceeds threshold (4 salarios mínimos)
+            if ($expenseSettings->council_approval_required &&
+                $validated['total_amount'] >= $expenseSettings->approval_threshold_amount) {
+                $requiresApproval = true;
+            }
+
+            // Also check if category requires approval
             if ($category->requires_approval) {
+                $requiresApproval = true;
+            }
+
+            if ($requiresApproval) {
                 $validated['status'] = 'pendiente';
             } else {
-                // For categories that don't require approval, mark as approved automatically
+                // Auto-approve expenses below threshold and without category approval requirement
                 $validated['status'] = 'aprobado';
                 $validated['approved_by'] = auth()->id();
                 $validated['approved_at'] = now();

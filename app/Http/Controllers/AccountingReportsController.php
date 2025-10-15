@@ -61,12 +61,17 @@ class AccountingReportsController extends Controller
         $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
-            'status' => 'nullable|in:borrador,contabilizado,cancelado',
+            'status' => 'nullable|in:all,borrador,contabilizado,cancelado',
         ]);
 
         $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
         $endDate = $validated['end_date'] ?? now()->toDateString();
         $status = $validated['status'] ?? 'contabilizado';
+
+        // Convert 'all' to empty string for filtering
+        if ($status === 'all') {
+            $status = '';
+        }
 
         // Get transactions for the period
         $query = \App\Models\AccountingTransaction::forConjunto($conjunto->id)

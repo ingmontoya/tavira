@@ -119,12 +119,12 @@ const exportReport = () => {
 };
 
 const getStatusBadge = (status: string) => {
-    const badges = {
+    const badges: Record<string, { text: string; class: string; icon: any }> = {
         borrador: { text: 'Borrador', class: 'bg-gray-100 text-gray-800', icon: Edit },
         contabilizado: { text: 'Contabilizado', class: 'bg-green-100 text-green-800', icon: CheckCircle },
         cancelado: { text: 'Cancelado', class: 'bg-red-100 text-red-800', icon: XCircle },
     };
-    return badges[status] || badges.borrador;
+    return badges[status] || badges['borrador'];
 };
 
 const viewTransaction = (transactionId: number) => {
@@ -198,7 +198,7 @@ const transactionSummary = computed(() => {
                                     <SelectValue placeholder="Todos los estados" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Todos</SelectItem>
+                                    <SelectItem value="all">Todos</SelectItem>
                                     <SelectItem v-for="(label, value) in statuses" :key="value" :value="value">
                                         {{ label }}
                                     </SelectItem>
