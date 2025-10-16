@@ -1,0 +1,581 @@
+<script setup lang="ts">
+import DropdownAction from '@/components/DataTableDropDown.vue';
+import ValidationErrors from '@/components/ValidationErrors.vue';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { formatCurrency } from '@/utils/format';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
+import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
+import {
+    Building2,
+    CheckCircle,
+    ChevronDown,
+    ChevronsUpDown,
+    Clock,
+    Copy,
+    Edit,
+    Eye,
+    Filter,
+    Plus,
+    Search,
+    Trash2,
+    X,
+    XCircle,
+} from 'lucide-vue-next';
+import { computed, h, ref, watch } from 'vue';
+import { valueUpdater } from '../../utils';
+
+// Breadcrumbs
+const breadcrumbs = [
+    {
+        title: 'Escritorio',
+        href: '/dashboard',
+    },
+    {
+        title: 'Proveedores',
+        href: '/providers',
+    },
+];
+
+interface Provider {
+    id: number;
+    name: string;
+    document_type: string;
+    document_number: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    contact_name?: string;
+    contact_phone?: string;
+    contact_email?: string;
+    notes?: string;
+    tax_regime?: string;
+    is_active: boolean;
+    status_badge: {
+        text: string;
+        class: string;
+    };
+    full_contact_info: string;
+    expenses_count: number;
+    total_expenses: number;
+    last_expense_date?: string;
+    created_at: string;
+}
+
+interface Stats {
+    total_providers: number;
+    active_providers: number;
+    inactive_providers: number;
+    total_expenses: number;
+}
+
+const props = defineProps<{
+    providers: {
+        data: Provider[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number;
+        to: number;
+    };
+    stats: Stats;
+    filters?: {
+        search?: string;
+        status?: string;
+        document_type?: string;
+        city?: string;
+    };
+}>();
+
+// Get page data for errors and flash messages
+const page = usePage();
+const errors = computed(() => page.props.errors || {});
+const flashSuccess = computed(() => page.props.flash?.success);
+const flashError = computed(() => page.props.flash?.error);
+
+const data = computed(() => props.providers?.data || []);
+
+// Search and filters
+const search = ref(props.filters?.search || '');
+const statusFilter = ref(props.filters?.status || 'all');
+const documentTypeFilter = ref(props.filters?.document_type || 'all');
+const cityFilter = ref(props.filters?.city || '');
+
+// Table setup
+const columnHelper = createColumnHelper<Provider>();
+
+const columns = [
+    columnHelper.accessor('name', {
+        header: 'Nombre',
+        cell: (info) => {
+            const provider = info.row.original;
+            return h('div', { class: 'space-y-1' }, [
+                h('div', { class: 'font-medium' }, provider.name),
+                h('div', { class: 'text-xs text-muted-foreground' }, `${provider.document_type}: ${provider.document_number}`),
+            ]);
+        },
+    }),
+    columnHelper.accessor('full_contact_info', {
+        header: 'Contacto',
+        cell: (info) => {
+            const provider = info.row.original;
+            return h(
+                'div',
+                { class: 'space-y-1' },
+                [
+                    provider.email ? h('div', { class: 'text-sm' }, provider.email) : null,
+                    provider.phone ? h('div', { class: 'text-xs text-muted-foreground' }, provider.phone) : null,
+                    !provider.email && !provider.phone ? h('div', { class: 'text-xs text-muted-foreground' }, 'Sin contacto') : null,
+                ].filter(Boolean),
+            );
+        },
+    }),
+    columnHelper.accessor('city', {
+        header: 'Ciudad',
+        cell: (info) => {
+            const value = info.getValue();
+            return value || '-';
+        },
+    }),
+    columnHelper.accessor('expenses_count', {
+        header: 'Gastos',
+        cell: (info) => {
+            const count = info.getValue();
+            return h('div', { class: 'text-center font-mono' }, count.toString());
+        },
+    }),
+    columnHelper.accessor('last_expense_date', {
+        header: 'Último Gasto',
+        cell: (info) => {
+            const date = info.getValue();
+            return date ? new Date(date).toLocaleDateString('es-CO') : '-';
+        },
+    }),
+    columnHelper.accessor('status_badge', {
+        header: 'Estado',
+        cell: (info) => {
+            const badge = info.getValue();
+            return h(
+                Badge,
+                {
+                    class: badge.class,
+                },
+                badge.text,
+            );
+        },
+    }),
+    columnHelper.display({
+        id: 'actions',
+        header: 'Acciones',
+        cell: (info) => {
+            const provider = info.row.original;
+            const actions = [
+                {
+                    icon: Eye,
+                    label: 'Ver',
+                    onClick: () => router.visit(`/providers/${provider.id}`),
+                },
+                {
+                    icon: Edit,
+                    label: 'Editar',
+                    onClick: () => router.visit(`/providers/${provider.id}/edit`),
+                },
+                {
+                    icon: Copy,
+                    label: 'Duplicar',
+                    onClick: () => duplicateProvider(provider.id),
+                },
+            ];
+
+            if (!provider.is_active) {
+                actions.push({
+                    icon: CheckCircle,
+                    label: 'Activar',
+                    onClick: () => toggleProviderStatus(provider.id, true),
+                });
+            } else {
+                actions.push({
+                    icon: XCircle,
+                    label: 'Desactivar',
+                    onClick: () => toggleProviderStatus(provider.id, false),
+                });
+            }
+
+            if (provider.expenses_count === 0) {
+                actions.push({
+                    icon: Trash2,
+                    label: 'Eliminar',
+                    onClick: () => deleteProvider(provider.id),
+                    variant: 'destructive',
+                });
+            }
+
+            return h(DropdownAction, { actions });
+        },
+    }),
+];
+
+const sorting = ref<SortingState>([]);
+const columnFilters = ref<ColumnFiltersState>([]);
+const columnVisibility = ref<VisibilityState>({});
+
+const table = useVueTable({
+    get data() {
+        return data.value;
+    },
+    get columns() {
+        return columns;
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
+    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
+    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
+    state: {
+        get sorting() {
+            return sorting.value;
+        },
+        get columnFilters() {
+            return columnFilters.value;
+        },
+        get columnVisibility() {
+            return columnVisibility.value;
+        },
+    },
+});
+
+// Filter functions
+const applyFilters = () => {
+    const params: any = {};
+
+    if (search.value) params.search = search.value;
+    if (statusFilter.value !== 'all') params.status = statusFilter.value;
+    if (documentTypeFilter.value !== 'all') params.document_type = documentTypeFilter.value;
+    if (cityFilter.value) params.city = cityFilter.value;
+
+    router.get('/providers', params, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
+
+const clearFilters = () => {
+    search.value = '';
+    statusFilter.value = 'all';
+    documentTypeFilter.value = 'all';
+    cityFilter.value = '';
+    router.get(
+        '/providers',
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
+};
+
+// Watch for filter changes
+watch([search, statusFilter, documentTypeFilter, cityFilter], () => {
+    // Debounce the search
+    if (search.value !== props.filters?.search) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 300);
+    } else {
+        applyFilters();
+    }
+});
+
+let searchTimeout: number;
+
+// Action functions
+const toggleProviderStatus = (providerId: number, active: boolean) => {
+    const action = active ? 'activar' : 'desactivar';
+    if (confirm(`¿Está seguro de que desea ${action} este proveedor?`)) {
+        router.post(
+            `/providers/${providerId}/toggle-status`,
+            {
+                is_active: active,
+            },
+            {
+                onSuccess: () => {
+                    router.reload();
+                },
+            },
+        );
+    }
+};
+
+const duplicateProvider = (providerId: number) => {
+    router.post(
+        `/providers/${providerId}/duplicate`,
+        {},
+        {
+            onSuccess: () => {
+                // Will redirect to edit page
+            },
+        },
+    );
+};
+
+const deleteProvider = (providerId: number) => {
+    if (confirm('¿Está seguro de que desea eliminar este proveedor? Esta acción no se puede deshacer.')) {
+        router.delete(`/providers/${providerId}`, {
+            onSuccess: () => {
+                router.reload();
+            },
+        });
+    }
+};
+</script>
+
+<template>
+    <Head title="Proveedores" />
+
+    <AppLayout title="Proveedores" :breadcrumbs="breadcrumbs">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <ValidationErrors :errors="errors" />
+
+            <!-- Success Alert -->
+            <Alert v-if="flashSuccess" class="mb-6 border-green-200 bg-green-50">
+                <CheckCircle class="h-4 w-4 text-green-600" />
+                <AlertDescription class="text-green-800">
+                    {{ flashSuccess }}
+                </AlertDescription>
+            </Alert>
+
+            <!-- Error Alert -->
+            <Alert v-if="flashError" class="mb-6 border-red-200 bg-red-50">
+                <XCircle class="h-4 w-4 text-red-600" />
+                <AlertDescription class="text-red-800">
+                    {{ flashError }}
+                </AlertDescription>
+            </Alert>
+
+            <!-- Stats Cards -->
+            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">Total Proveedores</CardTitle>
+                        <Building2 class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold">{{ stats?.total_providers || 0 }}</div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">Activos</CardTitle>
+                        <CheckCircle class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold text-green-600">{{ stats?.active_providers || 0 }}</div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">Inactivos</CardTitle>
+                        <XCircle class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold text-gray-600">{{ stats?.inactive_providers || 0 }}</div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle class="text-sm font-medium">Gastos Registrados</CardTitle>
+                        <Clock class="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div class="text-2xl font-bold">{{ formatCurrency(stats?.total_expenses || 0) }}</div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Header with actions -->
+                <div class="flex items-center justify-between">
+                    <div class="space-y-1">
+                        <h2 class="text-2xl font-semibold tracking-tight">Proveedores</h2>
+                        <p class="text-sm text-muted-foreground">Gestiona todos los proveedores del conjunto</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <Button asChild size="sm">
+                            <Link href="/providers/create">
+                                <Plus class="mr-2 h-4 w-4" />
+                                Nuevo Proveedor
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <Card>
+                    <CardHeader>
+                        <CardTitle class="text-lg">Filtros</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            <div class="space-y-2">
+                                <Label for="search">Buscar</Label>
+                                <div class="relative">
+                                    <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
+                                    <Input id="search" v-model="search" placeholder="Nombre, documento, email..." class="pl-8" />
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="status">Estado</Label>
+                                <Select v-model="statusFilter">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos los estados" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos</SelectItem>
+                                        <SelectItem value="active">Activo</SelectItem>
+                                        <SelectItem value="inactive">Inactivo</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="document_type">Tipo de Documento</Label>
+                                <Select v-model="documentTypeFilter">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Todos los tipos" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Todos</SelectItem>
+                                        <SelectItem value="NIT">NIT</SelectItem>
+                                        <SelectItem value="CC">Cédula de Ciudadanía</SelectItem>
+                                        <SelectItem value="CE">Cédula de Extranjería</SelectItem>
+                                        <SelectItem value="PA">Pasaporte</SelectItem>
+                                        <SelectItem value="RUT">RUT</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="city">Ciudad</Label>
+                                <Input id="city" v-model="cityFilter" placeholder="Filtrar por ciudad" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <Button @click="applyFilters" size="sm">
+                                    <Filter class="mr-2 h-4 w-4" />
+                                    Aplicar Filtros
+                                </Button>
+                                <Button @click="clearFilters" variant="outline" size="sm">
+                                    <X class="mr-2 h-4 w-4" />
+                                    Limpiar
+                                </Button>
+                            </div>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        Columnas
+                                        <ChevronDown class="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuCheckboxItem
+                                        v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
+                                        :key="column.id"
+                                        :checked="column.getIsVisible()"
+                                        @update:checked="(value) => column.toggleVisibility(!!value)"
+                                    >
+                                        {{ column.columnDef.header }}
+                                    </DropdownMenuCheckboxItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <!-- Data Table -->
+                <Card>
+                    <Table>
+                        <TableHeader>
+                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                                <TableHead v-for="header in headerGroup.headers" :key="header.id">
+                                    <Button
+                                        v-if="!header.isPlaceholder && header.column.getCanSort()"
+                                        variant="ghost"
+                                        @click="header.column.getToggleSortingHandler()?.($event)"
+                                    >
+                                        <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+                                        <ChevronsUpDown class="ml-2 h-4 w-4" />
+                                    </Button>
+                                    <FlexRender v-else :render="header.column.columnDef.header" :props="header.getContext()" />
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <template v-if="table.getRowModel().rows?.length">
+                                <TableRow
+                                    v-for="row in table.getRowModel().rows"
+                                    :key="row.id"
+                                    :data-state="row.getIsSelected() ? 'selected' : undefined"
+                                    class="cursor-pointer hover:bg-muted/50"
+                                    @click="router.visit(`/providers/${row.original.id}/edit`)"
+                                >
+                                    <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                                    </TableCell>
+                                </TableRow>
+                            </template>
+                            <template v-else>
+                                <TableRow>
+                                    <TableCell :colspan="columns.length" class="h-24 text-center"> No se encontraron proveedores. </TableCell>
+                                </TableRow>
+                            </template>
+                        </TableBody>
+                    </Table>
+                </Card>
+
+                <!-- Pagination -->
+                <div v-if="providers?.last_page > 1" class="flex items-center justify-between">
+                    <div class="flex-1 text-sm text-muted-foreground">
+                        Mostrando {{ providers.from }} a {{ providers.to }} de {{ providers.total }} resultados.
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            :disabled="providers.current_page === 1"
+                            @click="router.get(window.location.pathname, { ...route().params, page: providers.current_page - 1 })"
+                        >
+                            Anterior
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            :disabled="providers.current_page === providers.last_page"
+                            @click="router.get(window.location.pathname, { ...route().params, page: providers.current_page + 1 })"
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AppLayout>
+</template>

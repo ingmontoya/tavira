@@ -17,7 +17,14 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         Route::get('/security', function () {
             return Inertia::render('Security');
-        })->name('security');
+        })->name('security.page');
+
+        Route::get('/provider-register', function () {
+            return Inertia::render('ProviderRegister');
+        })->name('provider-register');
+
+        Route::post('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'store'])
+            ->name('provider-register.store');
 
         // Include module route files outside of middleware groups
         require __DIR__.'/modules/placeholder-modules.php';

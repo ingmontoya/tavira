@@ -10,7 +10,7 @@ use App\Http\Controllers\PaymentConceptController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentManagementController;
 use App\Http\Controllers\PaymentMethodAccountMappingController;
-use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ProviderController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -98,18 +98,15 @@ Route::post('payment-agreements/{paymentAgreement}/cancel', [PaymentAgreementCon
 Route::post('payment-agreements/{paymentAgreement}/submit-for-approval', [PaymentAgreementController::class, 'submitForApproval'])->name('payment-agreements.submit-for-approval')->middleware('can:view_payments');
 Route::post('payment-agreements/{paymentAgreement}/record-payment', [PaymentAgreementController::class, 'recordPayment'])->name('payment-agreements.record-payment')->middleware('can:edit_payments');
 
-// Providers
-Route::get('providers', [SupplierController::class, 'index'])->name('providers.index')->middleware(['rate.limit:default', 'can:view_payments']);
-
 // Email Provider Webhooks (no auth required)
 Route::post('webhooks/email/{provider}', [InvoiceEmailController::class, 'webhook'])
     ->name('webhooks.email')
     ->middleware(['rate.limit:strict'])
     ->where('provider', 'sendgrid|ses|mailgun|smtp');
 
-// Suppliers Management - Resource routes
-Route::resource('suppliers', SupplierController::class)->middleware('can:view_expenses');
-Route::post('suppliers/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status')->middleware('can:edit_expenses');
+// Providers Management - Resource routes
+Route::resource('providers', ProviderController::class)->middleware('can:view_expenses');
+Route::post('providers/{provider}/toggle-status', [ProviderController::class, 'toggleStatus'])->name('providers.toggle-status')->middleware('can:edit_expenses');
 
 // Expense Categories Management
 Route::resource('expense-categories', ExpenseCategoryController::class)->middleware('can:manage_expense_categories');

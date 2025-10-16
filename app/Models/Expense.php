@@ -14,7 +14,7 @@ class Expense extends Model
     protected $fillable = [
         'conjunto_config_id',
         'expense_category_id',
-        'supplier_id',
+        'provider_id',
         'expense_number',
         'vendor_name',
         'vendor_document',
@@ -72,9 +72,9 @@ class Expense extends Model
         return $this->belongsTo(ExpenseCategory::class);
     }
 
-    public function supplier(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Provider::class);
     }
 
     public function debitAccount(): BelongsTo
@@ -394,11 +394,11 @@ class Expense extends Model
             'credit_amount' => $this->total_amount,
         ];
 
-        // If credit account requires third party (like suppliers account), add supplier info
+        // If credit account requires third party (like providers account), add provider info
         $creditAccount = ChartOfAccounts::find($this->credit_account_id);
-        if ($creditAccount && $creditAccount->requires_third_party && $this->supplier_id) {
-            $creditEntry['third_party_type'] = 'supplier';
-            $creditEntry['third_party_id'] = $this->supplier_id;
+        if ($creditAccount && $creditAccount->requires_third_party && $this->provider_id) {
+            $creditEntry['third_party_type'] = 'provider';
+            $creditEntry['third_party_id'] = $this->provider_id;
         }
 
         $transaction->addEntry($creditEntry);
@@ -406,8 +406,8 @@ class Expense extends Model
 
     public function getVendorDisplayName(): string
     {
-        if ($this->supplier_id && $this->supplier) {
-            return $this->supplier->name;
+        if ($this->provider_id && $this->provider) {
+            return $this->provider->name;
         }
 
         return $this->vendor_name ?: 'Proveedor no especificado';
@@ -470,10 +470,10 @@ class Expense extends Model
             'credit_amount' => 0,
         ];
 
-        // If supplier account requires third party, add supplier info
-        if ($supplierAccount->requires_third_party && $this->supplier_id) {
-            $debitEntry['third_party_type'] = 'supplier';
-            $debitEntry['third_party_id'] = $this->supplier_id;
+        // If provider account requires third party, add provider info
+        if ($supplierAccount->requires_third_party && $this->provider_id) {
+            $debitEntry['third_party_type'] = 'provider';
+            $debitEntry['third_party_id'] = $this->provider_id;
         }
 
         $paymentTransaction->addEntry($debitEntry);

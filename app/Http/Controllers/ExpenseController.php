@@ -6,7 +6,7 @@ use App\Models\ChartOfAccounts;
 use App\Models\ConjuntoConfig;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
-use App\Models\Supplier;
+use App\Models\Provider;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +24,7 @@ class ExpenseController extends Controller
     {
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        $query = Expense::with(['expenseCategory', 'supplier', 'debitAccount', 'creditAccount', 'createdBy', 'approvedBy']);
+        $query = Expense::with(['expenseCategory', 'provider', 'debitAccount', 'creditAccount', 'createdBy', 'approvedBy']);
 
         // Filters
         if ($request->filled('status')) {
@@ -85,7 +85,7 @@ class ExpenseController extends Controller
     {
         $expense->load([
             'expenseCategory',
-            'supplier',
+            'provider',
             'debitAccount',
             'creditAccount',
             'createdBy',
@@ -146,8 +146,7 @@ class ExpenseController extends Controller
             ->orderBy('code')
             ->get();
 
-        $suppliers = Supplier::forConjunto($conjunto->id)
-            ->active()
+        $providers = Provider::active()
             ->orderBy('name')
             ->get();
 
@@ -156,7 +155,7 @@ class ExpenseController extends Controller
             'expenseAccounts' => $expenseAccounts,
             'assetAccounts' => $assetAccounts,
             'liabilityAccounts' => $liabilityAccounts,
-            'suppliers' => $suppliers,
+            'providers' => $providers,
             'approvalSettings' => [
                 'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,
                 'council_approval_required' => $expenseSettings->council_approval_required,
@@ -170,7 +169,7 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
-            'supplier_id' => 'nullable|exists:suppliers,id',
+            'provider_id' => 'nullable|exists:providers,id',
             'vendor_name' => 'nullable|string|max:255',
             'vendor_document' => 'nullable|string|max:50',
             'vendor_email' => 'nullable|email|max:255',
@@ -186,8 +185,8 @@ class ExpenseController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Validate that we have either supplier or vendor information
-        if (! $validated['supplier_id'] && ! $validated['vendor_name']) {
+        // Validate that we have either provider or vendor information
+        if (! $validated['provider_id'] && ! $validated['vendor_name']) {
             return back()->withErrors(['vendor_name' => 'Debe seleccionar un proveedor o ingresar información del proveedor']);
         }
 
@@ -270,8 +269,7 @@ class ExpenseController extends Controller
             ->orderBy('code')
             ->get();
 
-        $suppliers = Supplier::forConjunto($conjunto->id)
-            ->active()
+        $providers = Provider::active()
             ->orderBy('name')
             ->get();
 
@@ -281,7 +279,7 @@ class ExpenseController extends Controller
             'expenseAccounts' => $expenseAccounts,
             'assetAccounts' => $assetAccounts,
             'liabilityAccounts' => $liabilityAccounts,
-            'suppliers' => $suppliers,
+            'providers' => $providers,
             'approvalSettings' => [
                 'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,
                 'council_approval_required' => $expenseSettings->council_approval_required,
@@ -298,7 +296,7 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
-            'supplier_id' => 'nullable|exists:suppliers,id',
+            'provider_id' => 'nullable|exists:providers,id',
             'vendor_name' => 'nullable|string|max:255',
             'vendor_document' => 'nullable|string|max:50',
             'vendor_email' => 'nullable|email|max:255',
@@ -314,8 +312,8 @@ class ExpenseController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Validate that we have either supplier or vendor information
-        if (! $validated['supplier_id'] && ! $validated['vendor_name']) {
+        // Validate that we have either provider or vendor information
+        if (! $validated['provider_id'] && ! $validated['vendor_name']) {
             return back()->withErrors(['vendor_name' => 'Debe seleccionar un proveedor o ingresar información del proveedor']);
         }
 

@@ -7,7 +7,7 @@ use App\Models\ConjuntoConfig;
 use App\Models\MaintenanceCategory;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceStaff;
-use App\Models\Supplier;
+use App\Models\Provider;
 use App\Notifications\MaintenanceRequestCreated;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +40,7 @@ class MaintenanceRequestController extends Controller
             'requestedBy',
             'assignedStaff',
             'approvedBy',
-            'supplier',
+            'provider',
         ])->where('conjunto_config_id', $conjuntoConfig->id);
 
         // Filter by status
@@ -222,7 +222,7 @@ class MaintenanceRequestController extends Controller
             return Inertia::render('Maintenance/Requests/Create', [
                 'categories' => $categories,
                 'apartments' => [],
-                'suppliers' => [],
+                'providers' => [],
                 'hasCategoriesConfigured' => false,
                 'hasStaffConfigured' => $hasStaffConfigured,
                 'needsSetup' => true,
@@ -235,8 +235,7 @@ class MaintenanceRequestController extends Controller
                 ->with('apartmentType')
                 ->orderBy('number')
                 ->get(),
-            'suppliers' => Supplier::where('conjunto_config_id', $conjuntoConfig->id)
-                ->where('is_active', true)
+            'providers' => Provider::active()
                 ->orderBy('name')
                 ->get(),
             'hasCategoriesConfigured' => true,
@@ -262,7 +261,7 @@ class MaintenanceRequestController extends Controller
             'estimated_completion_date' => 'nullable|date|after:today',
             'requires_council_approval' => 'boolean',
             // Vendor fields (optional)
-            'supplier_id' => 'nullable|exists:suppliers,id',
+            'provider_id' => 'nullable|exists:providers,id',
             'vendor_quote_amount' => 'nullable|numeric|min:0',
             'vendor_quote_description' => 'nullable|string',
             'vendor_quote_valid_until' => 'nullable|date|after:today',
@@ -325,7 +324,7 @@ class MaintenanceRequestController extends Controller
             'maintenanceRequest' => $maintenanceRequest->load([
                 'maintenanceCategory',
                 'apartment',
-                'supplier',
+                'provider',
             ]),
             'categories' => MaintenanceCategory::where('conjunto_config_id', $conjuntoConfig->id)
                 ->where('is_active', true)
@@ -334,8 +333,7 @@ class MaintenanceRequestController extends Controller
                 ->with('apartmentType')
                 ->orderBy('number')
                 ->get(),
-            'suppliers' => Supplier::where('conjunto_config_id', $conjuntoConfig->id)
-                ->where('is_active', true)
+            'providers' => Provider::active()
                 ->orderBy('name')
                 ->get(),
         ]);
@@ -356,7 +354,7 @@ class MaintenanceRequestController extends Controller
             'estimated_completion_date' => 'nullable|date',
             'requires_council_approval' => 'boolean',
             // Vendor fields (optional)
-            'supplier_id' => 'nullable|exists:suppliers,id',
+            'provider_id' => 'nullable|exists:providers,id',
             'vendor_quote_amount' => 'nullable|numeric|min:0',
             'vendor_quote_description' => 'nullable|string',
             'vendor_quote_valid_until' => 'nullable|date',

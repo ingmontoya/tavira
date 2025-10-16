@@ -16,7 +16,7 @@ class MaintenanceRequest extends Model
         'requested_by_user_id',
         'assigned_staff_id',
         'approved_by_user_id',
-        'supplier_id',
+        'provider_id',
         'title',
         'description',
         'priority',
@@ -118,9 +118,9 @@ class MaintenanceRequest extends Model
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
-    public function supplier(): BelongsTo
+    public function provider(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Provider::class);
     }
 
     public function workOrders(): HasMany
@@ -208,8 +208,8 @@ class MaintenanceRequest extends Model
 
     public function getVendorDisplayName(): string
     {
-        if ($this->supplier_id && $this->supplier) {
-            return $this->supplier->name;
+        if ($this->provider_id && $this->provider) {
+            return $this->provider->name;
         }
 
         return $this->vendor_contact_name ?: 'Proveedor externo';
@@ -217,11 +217,11 @@ class MaintenanceRequest extends Model
 
     public function getVendorContactInfo(): array
     {
-        if ($this->supplier_id && $this->supplier) {
+        if ($this->provider_id && $this->provider) {
             return [
-                'name' => $this->supplier->contact_name ?: $this->supplier->name,
-                'phone' => $this->supplier->contact_phone ?: $this->supplier->phone,
-                'email' => $this->supplier->contact_email ?: $this->supplier->email,
+                'name' => $this->provider->contact_name ?: $this->provider->name,
+                'phone' => $this->provider->contact_phone ?: $this->provider->phone,
+                'email' => $this->provider->contact_email ?: $this->provider->email,
             ];
         }
 
