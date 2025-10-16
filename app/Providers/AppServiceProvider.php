@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Events\AccountingTransactionPosted;
 use App\Events\InvoiceCreated;
+use App\Events\LateFeeApplied;
 use App\Events\PaymentReceived;
 use App\Listeners\GenerateAccountingEntryFromInvoice;
+use App\Listeners\GenerateAccountingEntryFromLateFee;
 use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
@@ -55,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
         // Eventos contables
         Event::listen(InvoiceCreated::class, GenerateAccountingEntryFromInvoice::class);
         Event::listen(PaymentReceived::class, GenerateAccountingEntryFromPayment::class);
+        Event::listen(LateFeeApplied::class, GenerateAccountingEntryFromLateFee::class);
         Event::listen(AccountingTransactionPosted::class, UpdateBudgetExecutionFromTransaction::class);
     }
 }

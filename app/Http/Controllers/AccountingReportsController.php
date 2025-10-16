@@ -174,17 +174,45 @@ class AccountingReportsController extends Controller
         $equity = $this->getAccountBalances($conjunto->id, 'equity', null, $asOfDate);
         $totalEquity = array_sum(array_column($equity, 'balance'));
 
+        // Calculate Net Income (Income - Expenses) to include in equity
+        $income = $this->getAccountBalances($conjunto->id, 'income', null, $asOfDate);
+        $totalIncome = array_sum(array_column($income, 'balance'));
+
+        $expenses = $this->getAccountBalances($conjunto->id, 'expense', null, $asOfDate);
+        $totalExpenses = array_sum(array_column($expenses, 'balance'));
+
+        $netIncome = $totalIncome - $totalExpenses;
+
+        // Add retained earnings entry to equity
+        $equityWithNetIncome = $equity;
+        if (abs($netIncome) > 0.01) {
+            $equityWithNetIncome[] = [
+                'id' => null,
+                'code' => '3605',
+                'name' => 'UTILIDAD O EXCEDENTE DEL EJERCICIO',
+                'full_name' => '3605 - UTILIDAD O EXCEDENTE DEL EJERCICIO',
+                'account_type' => 'equity',
+                'nature' => 'credit',
+                'balance' => $netIncome,
+            ];
+        }
+
+        $totalEquityWithNetIncome = $totalEquity + $netIncome;
+
         return Inertia::render('Accounting/Reports/BalanceSheet', [
             'report' => [
                 'as_of_date' => $asOfDate,
                 'assets' => $assets,
                 'liabilities' => $liabilities,
-                'equity' => $equity,
+                'equity' => $equityWithNetIncome,
                 'total_assets' => $totalAssets,
                 'total_liabilities' => $totalLiabilities,
-                'total_equity' => $totalEquity,
-                'total_liabilities_equity' => $totalLiabilities + $totalEquity,
-                'is_balanced' => abs($totalAssets - ($totalLiabilities + $totalEquity)) < 0.01,
+                'total_equity' => $totalEquityWithNetIncome,
+                'total_liabilities_equity' => $totalLiabilities + $totalEquityWithNetIncome,
+                'is_balanced' => abs($totalAssets - ($totalLiabilities + $totalEquityWithNetIncome)) < 0.01,
+                'net_income' => $netIncome,
+                'total_income' => $totalIncome,
+                'total_expenses' => $totalExpenses,
             ],
             'filters' => [
                 'as_of_date' => $asOfDate,

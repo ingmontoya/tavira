@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\LateFeeApplied;
 use App\Models\Invoice;
 use App\Settings\PaymentSettings;
 use Carbon\Carbon;
@@ -150,6 +151,9 @@ class LateFeesService
                 'process_date' => $processDate->format('Y-m-d'),
                 'month' => $processDate->format('Y-m'),
             ]);
+
+            // Disparar evento para generar asiento contable independiente
+            event(new LateFeeApplied($invoice, $lateFeeAmount, $processDate));
         });
     }
 
