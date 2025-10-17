@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Stancl\Tenancy\Database\Concerns\ResourceSyncing;
 
 class Provider extends Model
 {
-    use SoftDeletes, ResourceSyncing;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -77,11 +77,63 @@ class Provider extends Model
     }
 
     /**
+     * Get the name of the column that stores the global identifier.
+     *
+     * @return string
+     */
+    public function getGlobalIdentifierKeyName(): string
+    {
+        return 'global_provider_id';
+    }
+
+    /**
+     * Get the global identifier value.
+     *
+     * @return mixed
+     */
+    public function getGlobalIdentifierKey()
+    {
+        return $this->{$this->getGlobalIdentifierKeyName()};
+    }
+
+    /**
+     * Get the synced attribute names.
+     *
+     * @return array
+     */
+    public function getSyncedAttributeNames(): array
+    {
+        return [
+            'name',
+            'category',
+            'phone',
+            'email',
+            'address',
+            'document_type',
+            'document_number',
+            'city',
+            'country',
+            'contact_name',
+            'contact_phone',
+            'contact_email',
+            'notes',
+            'tax_regime',
+            'is_active',
+        ];
+    }
+
+    /**
      * Relationships
      */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(ProviderCategory::class, 'provider_category')
+            ->withTimestamps();
     }
 
     public function expenses(): HasMany
@@ -115,6 +167,20 @@ class Provider extends Model
     public function scopeByCategory($query, string $category)
     {
         return $query->where('category', $category);
+    }
+
+    public function scopeHasCategory($query, int $categoryId)
+    {
+        return $query->whereHas('categories', function ($q) use ($categoryId) {
+            $q->where('provider_category_id', $categoryId);
+        });
+    }
+
+    public function scopeHasAnyCategory($query, array $categoryIds)
+    {
+        return $query->whereHas('categories', function ($q) use ($categoryIds) {
+            $q->whereIn('provider_category_id', $categoryIds);
+        });
     }
 
     /**

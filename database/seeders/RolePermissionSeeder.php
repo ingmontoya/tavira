@@ -56,6 +56,9 @@ class RolePermissionSeeder extends Seeder
             'approve_expenses',
             'manage_expense_categories',
 
+            // Provider Management
+            'manage_providers',
+
             // Accounting Management
             'view_accounting',
             'create_accounting',
@@ -169,6 +172,7 @@ class RolePermissionSeeder extends Seeder
             'view_users', 'create_users', 'edit_users', 'manage_invitations',
             'view_payments', 'create_payments', 'edit_payments', 'view_reports',
             'view_expenses', 'create_expenses', 'edit_expenses', 'delete_expenses', 'approve_expenses', 'manage_expense_categories',
+            'manage_providers',
             'view_accounting', 'create_accounting', 'edit_accounting', 'delete_accounting', 'approve_accounting', 'manage_accounting',
             'view_budgets', 'create_budgets', 'edit_budgets', 'delete_budgets', 'activate_budgets', 'close_budgets',
             'view_announcements', 'create_announcements', 'edit_announcements', 'send_notifications',

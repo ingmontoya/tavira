@@ -105,6 +105,12 @@ class TenancyServiceProvider extends ServiceProvider
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+
+        // Configure synced resources to use queue in production
+        // Recommended by: https://tenancyforlaravel.com/docs/v3/synced-resources-between-tenants
+        if (app()->environment('production')) {
+            Listeners\UpdateSyncedResource::$shouldQueue = true;
+        }
     }
 
     protected function bootEvents()

@@ -13,35 +13,29 @@ return new class extends Migration
     {
         Schema::create('providers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('global_provider_id')->nullable(); // Reference to central provider
             $table->string('name');
-            $table->string('category')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->text('address')->nullable();
-            $table->string('document_type')->nullable();
+            $table->string('category')->nullable(); // Category of service provided
+            $table->string('document_type')->nullable(); // NIT, CC, CE, etc.
             $table->string('document_number')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
             $table->string('city')->nullable();
             $table->string('country')->default('Colombia');
             $table->string('contact_name')->nullable();
             $table->string('contact_phone')->nullable();
             $table->string('contact_email')->nullable();
             $table->text('notes')->nullable();
-            $table->string('tax_regime')->nullable();
+            $table->string('tax_regime')->nullable(); // Régimen tributario
             $table->boolean('is_active')->default(true);
-            $table->unsignedBigInteger('created_by')->nullable(); // Tenant-specific field
             $table->timestamps();
             $table->softDeletes();
 
-            // Indexes for better performance
-            $table->index('global_provider_id');
-            $table->index('name');
-            $table->index('category');
-            $table->index('is_active');
-            $table->index('created_by');
-
-            // Foreign key for created_by (tenant-specific)
-            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            // Indexes for performance
+            $table->index(['is_active']);
+            $table->index(['name']);
+            $table->index(['category']);
+            $table->index(['document_number']);
         });
     }
 

@@ -5,11 +5,10 @@ namespace App\Models\Central;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Stancl\Tenancy\Database\Concerns\CentralConnection;
-use Stancl\Tenancy\Database\Concerns\SyncMaster;
 
 class Provider extends Model
 {
-    use CentralConnection, SoftDeletes, SyncMaster;
+    use CentralConnection, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -42,42 +41,6 @@ class Provider extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
-
-    /**
-     * Get the tenant model class name for syncing.
-     *
-     * @return string
-     */
-    public function getTenantModelName(): string
-    {
-        return \App\Models\Provider::class;
-    }
-
-    /**
-     * Get the attributes that should be synced to tenant databases.
-     *
-     * @return array<int, string>
-     */
-    public function getSyncedAttributeNames(): array
-    {
-        return [
-            'name',
-            'category',
-            'phone',
-            'email',
-            'address',
-            'document_type',
-            'document_number',
-            'city',
-            'country',
-            'contact_name',
-            'contact_phone',
-            'contact_email',
-            'notes',
-            'tax_regime',
-            'is_active',
-        ];
-    }
 
     /**
      * Scopes

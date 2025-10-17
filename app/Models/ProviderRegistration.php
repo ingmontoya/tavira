@@ -4,9 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 class ProviderRegistration extends Model
 {
+    use CentralConnection;
+
     protected $fillable = [
         'company_name',
         'contact_name',
@@ -27,6 +31,16 @@ class ProviderRegistration extends Model
     public function reviewedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Models\Central\ProviderCategory::class,
+            'provider_registration_category',
+            'provider_registration_id',
+            'provider_category_id'
+        )->withTimestamps();
     }
 
     public function scopePending($query)

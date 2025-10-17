@@ -37,7 +37,7 @@
                     </Link>
                     <Link href="provider-register"
                         class="text-white/80 font-medium transition-colors duration-200 hover:text-[#06D6A0]">
-                    Eres Proveedor
+                    ¿Eres Proveedor?
                     </Link>
                 </div>
 

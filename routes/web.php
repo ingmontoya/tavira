@@ -19,9 +19,8 @@ foreach (config('tenancy.central_domains') as $domain) {
             return Inertia::render('Security');
         })->name('security.page');
 
-        Route::get('/provider-register', function () {
-            return Inertia::render('ProviderRegister');
-        })->name('provider-register');
+        Route::get('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
+            ->name('provider-register');
 
         Route::post('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'store'])
             ->name('provider-register.store');
@@ -33,6 +32,16 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::middleware(['auth', 'verified'])->group(function () {
             // Central dashboard for tenant management
             require __DIR__.'/modules/central-dashboard.php';
+
+            // Provider Registration Management (Superadmin only)
+            Route::prefix('admin/provider-registrations')->name('admin.provider-registrations.')->group(function () {
+                Route::get('/', [App\Http\Controllers\ProviderRegistrationController::class, 'index'])->name('index');
+                Route::get('/{registration}/edit', [App\Http\Controllers\ProviderRegistrationController::class, 'edit'])->name('edit');
+                Route::put('/{registration}', [App\Http\Controllers\ProviderRegistrationController::class, 'update'])->name('update');
+                Route::post('/{registration}/approve', [App\Http\Controllers\ProviderRegistrationController::class, 'approve'])->name('approve');
+                Route::post('/{registration}/reject', [App\Http\Controllers\ProviderRegistrationController::class, 'reject'])->name('reject');
+                Route::get('/{registration}', [App\Http\Controllers\ProviderRegistrationController::class, 'show'])->name('show');
+            });
         });
 
         require __DIR__.'/settings.php';

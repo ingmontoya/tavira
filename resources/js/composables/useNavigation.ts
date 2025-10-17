@@ -8,6 +8,7 @@ import {
     Building2,
     Calculator,
     CalendarDays,
+    CheckCircle,
     Clock,
     CreditCard,
     FileQuestion,
@@ -244,27 +245,6 @@ export function useNavigation() {
                     ],
                 },
                 {
-                    title: 'Proveedores',
-                    icon: UserCog,
-                    visible: isFeatureEnabled('provider_management') && (hasPermission('view_payments') || hasPermission('review_provider_proposals')),
-                    items: [
-                        {
-                            title: 'Proveedores',
-                            href: '/providers',
-                            icon: UserCog,
-                            tourId: 'nav-providers',
-                            visible: hasPermission('view_payments'),
-                        },
-                        {
-                            title: 'Propuestas',
-                            href: '/provider-proposals',
-                            icon: Truck,
-                            tourId: 'nav-provider-proposals',
-                            visible: hasPermission('review_provider_proposals'),
-                        },
-                    ],
-                },
-                {
                     title: 'Gastos',
                     icon: TrendingDown,
                     visible: isFeatureEnabled('expense_approvals') && (hasPermission('view_expenses') || hasPermission('manage_expense_categories') || hasPermission('approve_expenses')),
@@ -298,6 +278,27 @@ export function useNavigation() {
                     icon: Settings,
                     tourId: 'nav-payment-settings',
                     visible: hasPermission('view_payments'),
+                },
+            ],
+        },
+        {
+            title: 'Proveedores',
+            icon: Truck,
+            visible: isFeatureEnabled('provider_management') && (hasPermission('view_payments') || hasPermission('review_provider_proposals')),
+            items: [
+                {
+                    title: 'Proveedores',
+                    href: '/providers',
+                    icon: UserCog,
+                    tourId: 'nav-providers',
+                    visible: hasPermission('view_payments'),
+                },
+                {
+                    title: 'Propuestas',
+                    href: '/provider-proposals',
+                    icon: Truck,
+                    tourId: 'nav-provider-proposals',
+                    visible: hasPermission('review_provider_proposals'),
                 },
             ],
         },
@@ -575,6 +576,19 @@ export function useNavigation() {
                     title: 'Crear Tenant',
                     href: '/tenants/create',
                     icon: Building2,
+                    visible: true,
+                },
+            ],
+        },
+        {
+            title: 'Proveedores',
+            icon: UserCog,
+            visible: true,
+            items: [
+                {
+                    title: 'Solicitudes de Registro',
+                    href: '/admin/provider-registrations',
+                    icon: CheckCircle,
                     visible: true,
                 },
             ],

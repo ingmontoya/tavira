@@ -1,12 +1,27 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Building2, CheckCircle, Mail, Phone, User, AlertCircle } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+
+interface ProviderCategory {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    sort_order: number;
+}
+
+interface Props {
+    categories: ProviderCategory[];
+}
+
+const props = defineProps<Props>();
 
 const page = usePage();
 const flashSuccess = computed(() => page.props.flash?.success);
@@ -19,7 +34,21 @@ const form = useForm({
     phone: '',
     service_type: '',
     description: '',
+    category_ids: [] as number[],
 });
+
+const toggleCategory = (categoryId: number) => {
+    const index = form.category_ids.indexOf(categoryId);
+    if (index > -1) {
+        form.category_ids.splice(index, 1);
+    } else {
+        form.category_ids.push(categoryId);
+    }
+};
+
+const isCategorySelected = (categoryId: number) => {
+    return form.category_ids.includes(categoryId);
+};
 
 const submit = () => {
     form.post(route('provider-register.store'), {
@@ -203,15 +232,39 @@ const submit = () => {
                                     </div>
                                 </div>
 
-                                <div class="space-y-2">
-                                    <Label for="service_type">Tipo de Servicio *</Label>
-                                    <Input
-                                        id="service_type"
-                                        v-model="form.service_type"
-                                        type="text"
-                                        required
-                                        placeholder="Ej: Plomería, Electricidad, Mantenimiento"
-                                    />
+                                <div class="space-y-3">
+                                    <div>
+                                        <Label>Categorías de Servicio *</Label>
+                                        <p class="text-sm text-muted-foreground">Selecciona todas las categorías que apliquen</p>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto p-4 border rounded-lg bg-muted/30">
+                                        <div
+                                            v-for="category in categories"
+                                            :key="category.id"
+                                            class="flex items-start space-x-3 p-2 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+                                            @click="toggleCategory(category.id)"
+                                        >
+                                            <Checkbox
+                                                :id="`category-${category.id}`"
+                                                :checked="isCategorySelected(category.id)"
+                                                @update:checked="() => toggleCategory(category.id)"
+                                            />
+                                            <div class="flex-1">
+                                                <Label
+                                                    :for="`category-${category.id}`"
+                                                    class="font-medium cursor-pointer"
+                                                >
+                                                    {{ category.name }}
+                                                </Label>
+                                                <p v-if="category.description" class="text-xs text-muted-foreground mt-0.5">
+                                                    {{ category.description }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p v-if="form.errors.category_ids" class="text-sm text-red-600">
+                                        {{ form.errors.category_ids }}
+                                    </p>
                                 </div>
 
                                 <div class="space-y-2">

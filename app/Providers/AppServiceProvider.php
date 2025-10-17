@@ -65,7 +65,8 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(AccountingTransactionPosted::class, UpdateBudgetExecutionFromTransaction::class);
 
         // Eventos de sincronización de recursos (Stancl Tenancy)
-        Event::listen(SyncedResourceSaved::class, UpdateSyncedResource::class);
+        // NOTA: SyncedResourceSaved ya está registrado en TenancyServiceProvider
+        // Solo registramos el listener personalizado para nuevos tenants aquí
         Event::listen(TenantCreated::class, SyncProvidersToNewTenant::class);
     }
 }

@@ -35,8 +35,9 @@ class SyncProvidersToNewTenant implements ShouldQueue
         try {
             // Initialize tenant context
             $tenant->run(function () use ($tenant) {
-                // Get all active providers from central database
-                $centralProviders = Provider::on('central')->get();
+                // Get all providers from central database
+                // Provider model already uses CentralConnection trait, so it automatically uses 'central' connection
+                $centralProviders = Provider::all();
 
                 Log::info("Found {$centralProviders->count()} providers to sync");
 

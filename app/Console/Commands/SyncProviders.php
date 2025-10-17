@@ -35,7 +35,8 @@ class SyncProviders extends Command
 
         try {
             // Get central providers
-            $centralProviders = CentralProvider::on('central')->get();
+            // CentralProvider already uses CentralConnection trait
+            $centralProviders = CentralProvider::all();
 
             if ($centralProviders->isEmpty()) {
                 $this->warn('No providers found in central database.');

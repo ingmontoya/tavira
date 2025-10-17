@@ -326,7 +326,8 @@ class SyncProviderToTenants implements ShouldQueue
 
     public function handle(): void
     {
-        $centralProvider = CentralProvider::on('central')->find($this->centralProviderId);
+        // CentralProvider already uses CentralConnection trait, no need for ::on('central')
+        $centralProvider = CentralProvider::find($this->centralProviderId);
 
         if (!$centralProvider) {
             Log::warning("Central provider {$this->centralProviderId} not found");
@@ -539,7 +540,8 @@ class AuditProviderSync extends Command
     {
         $this->info('Auditing provider synchronization...');
 
-        $centralProviders = CentralProvider::on('central')->count();
+        // CentralProvider already uses CentralConnection trait
+        $centralProviders = CentralProvider::count();
         $this->info("Central providers: {$centralProviders}");
 
         $tenants = Tenant::all();
