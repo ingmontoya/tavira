@@ -108,6 +108,11 @@ Route::post('webhooks/email/{provider}', [InvoiceEmailController::class, 'webhoo
 Route::resource('providers', ProviderController::class)->middleware('can:view_expenses');
 Route::post('providers/{provider}/toggle-status', [ProviderController::class, 'toggleStatus'])->name('providers.toggle-status')->middleware('can:edit_expenses');
 
+// Quotation Requests Management - Resource routes
+Route::resource('quotation-requests', \App\Http\Controllers\QuotationRequestController::class)->middleware('can:view_expenses');
+Route::post('quotation-requests/{quotationRequest}/publish', [\App\Http\Controllers\QuotationRequestController::class, 'publish'])->name('quotation-requests.publish')->middleware('can:edit_expenses');
+Route::post('quotation-requests/{quotationRequest}/close', [\App\Http\Controllers\QuotationRequestController::class, 'close'])->name('quotation-requests.close')->middleware('can:edit_expenses');
+
 // Expense Categories Management
 Route::resource('expense-categories', ExpenseCategoryController::class)->middleware('can:manage_expense_categories');
 

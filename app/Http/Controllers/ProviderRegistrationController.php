@@ -171,6 +171,12 @@ class ProviderRegistrationController extends Controller
                 'is_active' => true,
             ]);
 
+            // Sync categories from registration to provider
+            $registration->load('categories');
+            if ($registration->categories->isNotEmpty()) {
+                $provider->categories()->sync($registration->categories->pluck('id'));
+            }
+
             // Update registration status
             $registration->update([
                 'status' => 'approved',

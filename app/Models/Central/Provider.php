@@ -43,6 +43,19 @@ class Provider extends Model
     ];
 
     /**
+     * Relationships
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(
+            ProviderCategory::class,
+            'provider_category_provider',
+            'provider_id',
+            'provider_category_id'
+        )->withTimestamps();
+    }
+
+    /**
      * Scopes
      */
     public function scopeActive($query)

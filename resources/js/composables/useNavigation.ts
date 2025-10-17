@@ -294,6 +294,13 @@ export function useNavigation() {
                     visible: hasPermission('view_payments'),
                 },
                 {
+                    title: 'Solicitudes de Cotización',
+                    href: '/quotation-requests',
+                    icon: FileText,
+                    tourId: 'nav-quotation-requests',
+                    visible: hasPermission('view_payments'),
+                },
+                {
                     title: 'Propuestas',
                     href: '/provider-proposals',
                     icon: Truck,
@@ -582,9 +589,15 @@ export function useNavigation() {
         },
         {
             title: 'Proveedores',
-            icon: UserCog,
+            icon: Truck,
             visible: true,
             items: [
+                {
+                    title: 'Proveedores Aprobados',
+                    href: '/admin/providers',
+                    icon: UserCog,
+                    visible: true,
+                },
                 {
                     title: 'Solicitudes de Registro',
                     href: '/admin/provider-registrations',

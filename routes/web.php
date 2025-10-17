@@ -42,6 +42,16 @@ foreach (config('tenancy.central_domains') as $domain) {
                 Route::post('/{registration}/reject', [App\Http\Controllers\ProviderRegistrationController::class, 'reject'])->name('reject');
                 Route::get('/{registration}', [App\Http\Controllers\ProviderRegistrationController::class, 'show'])->name('show');
             });
+
+            // Central Provider Management (Superadmin only)
+            Route::prefix('admin/providers')->name('admin.providers.')->group(function () {
+                Route::get('/', [App\Http\Controllers\CentralProviderController::class, 'index'])->name('index');
+                Route::get('/{provider}', [App\Http\Controllers\CentralProviderController::class, 'show'])->name('show');
+                Route::get('/{provider}/edit', [App\Http\Controllers\CentralProviderController::class, 'edit'])->name('edit');
+                Route::put('/{provider}', [App\Http\Controllers\CentralProviderController::class, 'update'])->name('update');
+                Route::post('/{provider}/toggle-status', [App\Http\Controllers\CentralProviderController::class, 'toggleStatus'])->name('toggle-status');
+                Route::delete('/{provider}', [App\Http\Controllers\CentralProviderController::class, 'destroy'])->name('destroy');
+            });
         });
 
         require __DIR__.'/settings.php';
