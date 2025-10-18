@@ -53,6 +53,13 @@ class AuthenticatedSessionController extends Controller
         // For web requests, regenerate session and redirect
         $request->session()->regenerate();
 
+        // Redirect based on user role
+        $user = Auth::user();
+
+        if ($user->hasRole('provider')) {
+            return redirect()->intended(route('provider.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

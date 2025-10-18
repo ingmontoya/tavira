@@ -55,6 +55,16 @@ class Provider extends Model
         )->withTimestamps();
     }
 
+    public function services()
+    {
+        return $this->hasMany(ProviderService::class);
+    }
+
+    public function users()
+    {
+        return $this->hasMany(\App\Models\User::class);
+    }
+
     /**
      * Scopes
      */

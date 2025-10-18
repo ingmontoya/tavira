@@ -80,7 +80,7 @@ class AccountingTransactionController extends Controller
             ->postable()
             ->active()
             ->orderBy('code')
-            ->get();
+            ->get(['id', 'code', 'name', 'account_type', 'is_active', 'requires_third_party', 'nature']);
 
         $apartments = \App\Models\Apartment::where('conjunto_config_id', $conjunto->id)
             ->orderBy('number')
@@ -139,6 +139,21 @@ class AccountingTransactionController extends Controller
                 ->withErrors(['entries' => 'Debe haber al menos un movimiento con valor mayor a cero.']);
         }
 
+        // Validate accounts that require third parties
+        $accountErrors = [];
+        foreach ($validated['entries'] as $index => $entryData) {
+            $account = ChartOfAccounts::find($entryData['account_id']);
+            if ($account && $account->requires_third_party && empty($entryData['third_party_id'])) {
+                $accountErrors[] = 'Línea '.($index + 1).": La cuenta '{$account->full_name}' requiere un tercero asignado";
+            }
+        }
+
+        if (! empty($accountErrors)) {
+            return back()
+                ->withInput()
+                ->withErrors(['entries' => implode('; ', $accountErrors)]);
+        }
+
         DB::transaction(function () use ($validated, $conjunto) {
             $transaction = AccountingTransaction::create([
                 'conjunto_config_id' => $conjunto->id,
@@ -191,13 +206,25 @@ class AccountingTransactionController extends Controller
             ->postable()
             ->active()
             ->orderBy('code')
-            ->get();
+            ->get(['id', 'code', 'name', 'account_type', 'is_active', 'requires_third_party', 'nature']);
 
         $transaction->load('entries.account');
+
+        $apartments = \App\Models\Apartment::where('conjunto_config_id', $conjunto->id)
+            ->orderBy('number')
+            ->get(['id', 'number', 'apartment_type_id'])
+            ->map(function ($apartment) {
+                return [
+                    'id' => $apartment->id,
+                    'number' => $apartment->number,
+                    'label' => $apartment->number,
+                ];
+            });
 
         return Inertia::render('Accounting/Transactions/Edit', [
             'transaction' => $transaction,
             'accounts' => $accounts,
+            'apartments' => $apartments,
             'referenceTypes' => [
                 'manual' => 'Manual',
                 'adjustment' => 'Ajuste',
@@ -241,6 +268,23 @@ class AccountingTransactionController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['entries' => 'Debe haber al menos un movimiento con valor mayor a cero.']);
+        }
+
+        // Validate accounts that require third parties BEFORE processing
+        if ($validated['status'] === 'contabilizado') {
+            $accountErrors = [];
+            foreach ($validated['entries'] as $index => $entryData) {
+                $account = ChartOfAccounts::find($entryData['account_id']);
+                if ($account && $account->requires_third_party && empty($entryData['third_party_id'])) {
+                    $accountErrors[] = 'Línea '.($index + 1).": La cuenta '{$account->full_name}' requiere un tercero asignado";
+                }
+            }
+
+            if (! empty($accountErrors)) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['entries' => implode('; ', $accountErrors)]);
+            }
         }
 
         DB::transaction(function () use ($validated, $transaction) {
@@ -292,7 +336,7 @@ class AccountingTransactionController extends Controller
             ->postable()
             ->active()
             ->orderBy('code')
-            ->get();
+            ->get(['id', 'code', 'name', 'account_type', 'is_active', 'requires_third_party', 'nature']);
 
         // Load the transaction entries for duplication
         $transaction->load('entries.account');

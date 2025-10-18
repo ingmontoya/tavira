@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, FileText, Pencil, Send, User, XCircle } from 'lucide-vue-next';
+import { ArrowLeft, Calendar, FileText, Pencil, Send, User, XCircle, CheckCircle, Ban } from 'lucide-vue-next';
 
 interface ProviderCategory {
     id: number;
@@ -16,15 +16,15 @@ interface QuotationResponse {
     id: number;
     provider_id: number;
     quotation_request_id: number;
-    amount: number;
-    currency: string;
-    notes: string | null;
+    quoted_amount: number;
+    proposal: string | null;
+    estimated_days: number | null;
     attachments: string | null;
-    status: string;
+    status: 'pending' | 'accepted' | 'rejected';
     created_at: string;
     provider: {
         id: number;
-        company_name: string;
+        name: string;
         email: string;
         phone: string;
     };
@@ -108,11 +108,37 @@ const formatDate = (dateString: string | null) => {
     });
 };
 
-const formatCurrency = (amount: number, currency: string = 'COP') => {
+const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
-        currency: currency,
+        currency: 'COP',
+        minimumFractionDigits: 0,
     }).format(amount);
+};
+
+const approveResponse = (responseId: number) => {
+    if (!confirm('¿Está seguro de aprobar esta cotización?')) return;
+
+    router.post(`/quotation-requests/${props.quotationRequest.id}/responses/${responseId}/approve`, {}, {
+        preserveState: false,
+    });
+};
+
+const rejectResponse = (responseId: number) => {
+    if (!confirm('¿Está seguro de rechazar esta cotización?')) return;
+
+    router.post(`/quotation-requests/${props.quotationRequest.id}/responses/${responseId}/reject`, {}, {
+        preserveState: false,
+    });
+};
+
+const getResponseStatusBadge = (status: string) => {
+    const badges = {
+        pending: { text: 'Pendiente', class: 'bg-yellow-100 text-yellow-800' },
+        accepted: { text: 'Aprobada', class: 'bg-green-100 text-green-800' },
+        rejected: { text: 'Rechazada', class: 'bg-red-100 text-red-800' },
+    };
+    return badges[status] || badges.pending;
 };
 </script>
 
@@ -206,25 +232,59 @@ const formatCurrency = (amount: number, currency: string = 'COP') => {
                                         <TableRow>
                                             <TableHead>Proveedor</TableHead>
                                             <TableHead>Monto</TableHead>
+                                            <TableHead>Tiempo Estimado</TableHead>
                                             <TableHead>Notas</TableHead>
+                                            <TableHead>Estado</TableHead>
                                             <TableHead>Fecha</TableHead>
+                                            <TableHead class="text-right">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         <TableRow v-for="response in quotationRequest.responses" :key="response.id">
                                             <TableCell>
                                                 <div>
-                                                    <p class="font-medium">{{ response.provider.company_name }}</p>
+                                                    <p class="font-medium">{{ response.provider.name }}</p>
                                                     <p class="text-sm text-muted-foreground">{{ response.provider.email }}</p>
                                                 </div>
                                             </TableCell>
                                             <TableCell class="font-semibold">
-                                                {{ formatCurrency(response.amount, response.currency) }}
+                                                {{ formatCurrency(response.quoted_amount) }}
                                             </TableCell>
                                             <TableCell>
-                                                <p class="max-w-xs truncate">{{ response.notes || '-' }}</p>
+                                                <span v-if="response.estimated_days">{{ response.estimated_days }} días</span>
+                                                <span v-else class="text-muted-foreground">-</span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <p class="max-w-xs truncate">{{ response.proposal || '-' }}</p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge :class="getResponseStatusBadge(response.status).class">
+                                                    {{ getResponseStatusBadge(response.status).text }}
+                                                </Badge>
                                             </TableCell>
                                             <TableCell>{{ formatDate(response.created_at) }}</TableCell>
+                                            <TableCell class="text-right">
+                                                <div class="flex justify-end gap-2">
+                                                    <Button
+                                                        v-if="response.status === 'pending'"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        @click="approveResponse(response.id)"
+                                                    >
+                                                        <CheckCircle class="mr-1 h-4 w-4" />
+                                                        Aprobar
+                                                    </Button>
+                                                    <Button
+                                                        v-if="response.status === 'pending'"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        @click="rejectResponse(response.id)"
+                                                    >
+                                                        <Ban class="mr-1 h-4 w-4" />
+                                                        Rechazar
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
                                         </TableRow>
                                     </TableBody>
                                 </Table>
@@ -247,7 +307,7 @@ const formatCurrency = (amount: number, currency: string = 'COP') => {
                             <CardTitle>Detalles</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-3">
-                            <div class="flex items-start space-x-2">
+                            <div v-if="quotationRequest.createdBy" class="flex items-start space-x-2">
                                 <User class="mt-0.5 h-4 w-4 text-muted-foreground" />
                                 <div class="flex-1">
                                     <p class="text-sm font-medium">Creado por</p>

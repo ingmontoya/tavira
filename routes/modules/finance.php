@@ -112,6 +112,8 @@ Route::post('providers/{provider}/toggle-status', [ProviderController::class, 't
 Route::resource('quotation-requests', \App\Http\Controllers\QuotationRequestController::class)->middleware('can:view_expenses');
 Route::post('quotation-requests/{quotationRequest}/publish', [\App\Http\Controllers\QuotationRequestController::class, 'publish'])->name('quotation-requests.publish')->middleware('can:edit_expenses');
 Route::post('quotation-requests/{quotationRequest}/close', [\App\Http\Controllers\QuotationRequestController::class, 'close'])->name('quotation-requests.close')->middleware('can:edit_expenses');
+Route::post('quotation-requests/{quotationRequest}/responses/{response}/approve', [\App\Http\Controllers\QuotationRequestController::class, 'approveResponse'])->name('quotation-requests.responses.approve')->middleware('can:edit_expenses');
+Route::post('quotation-requests/{quotationRequest}/responses/{response}/reject', [\App\Http\Controllers\QuotationRequestController::class, 'rejectResponse'])->name('quotation-requests.responses.reject')->middleware('can:edit_expenses');
 
 // Expense Categories Management
 Route::resource('expense-categories', ExpenseCategoryController::class)->middleware('can:manage_expense_categories');

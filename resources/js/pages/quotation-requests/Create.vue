@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -147,10 +146,13 @@ const submit = () => {
                                     :key="category.id"
                                     class="flex items-start space-x-3 rounded-lg border p-3"
                                 >
-                                    <Checkbox
+                                    <input
                                         :id="`category-${category.id}`"
+                                        type="checkbox"
+                                        :value="category.id"
                                         :checked="form.category_ids.includes(category.id)"
-                                        @update:checked="toggleCategory(category.id)"
+                                        @change="toggleCategory(category.id)"
+                                        class="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
                                     />
                                     <div class="flex-1">
                                         <Label
@@ -177,9 +179,11 @@ const submit = () => {
                         </CardHeader>
                         <CardContent>
                             <div class="flex items-center space-x-2">
-                                <Checkbox
+                                <input
                                     id="publish_now"
-                                    v-model:checked="form.publish_now"
+                                    v-model="form.publish_now"
+                                    type="checkbox"
+                                    class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
                                 />
                                 <Label for="publish_now" class="cursor-pointer">
                                     Publicar inmediatamente y notificar a proveedores

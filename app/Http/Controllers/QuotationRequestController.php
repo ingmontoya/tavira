@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Mail\QuotationRequestNotification;
-use App\Models\Provider;
+use App\Models\Central\Provider;
 use App\Models\ProviderCategory;
 use App\Models\QuotationRequest;
+use App\Models\QuotationResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -284,6 +285,91 @@ class QuotationRequestController extends Controller
             ]);
 
             return redirect()->back()->with('error', 'Ocurrió un error al eliminar la solicitud.');
+        }
+    }
+
+    /**
+     * Approve a quotation response.
+     */
+    public function approveResponse(QuotationRequest $quotationRequest, QuotationResponse $response)
+    {
+        // Verify that the response belongs to this quotation request
+        if ($response->quotation_request_id !== $quotationRequest->id) {
+            return redirect()->back()->with('error', 'La cotización no pertenece a esta solicitud.');
+        }
+
+        // Check if response is already approved or rejected
+        if ($response->isAccepted()) {
+            return redirect()->back()->with('warning', 'Esta cotización ya ha sido aprobada.');
+        }
+
+        if ($response->isRejected()) {
+            return redirect()->back()->with('error', 'No se puede aprobar una cotización rechazada.');
+        }
+
+        try {
+            $response->accept();
+
+            Log::info('Quotation response approved', [
+                'quotation_request_id' => $quotationRequest->id,
+                'quotation_response_id' => $response->id,
+                'approved_by' => auth()->id(),
+            ]);
+
+            return redirect()->back()->with('success', 'Cotización aprobada exitosamente.');
+        } catch (\Exception $e) {
+            Log::error('Quotation response approval failed', [
+                'quotation_request_id' => $quotationRequest->id,
+                'quotation_response_id' => $response->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', 'Ocurrió un error al aprobar la cotización.');
+        }
+    }
+
+    /**
+     * Reject a quotation response.
+     */
+    public function rejectResponse(Request $request, QuotationRequest $quotationRequest, QuotationResponse $response)
+    {
+        // Verify that the response belongs to this quotation request
+        if ($response->quotation_request_id !== $quotationRequest->id) {
+            return redirect()->back()->with('error', 'La cotización no pertenece a esta solicitud.');
+        }
+
+        // Check if response is already rejected or approved
+        if ($response->isRejected()) {
+            return redirect()->back()->with('warning', 'Esta cotización ya ha sido rechazada.');
+        }
+
+        if ($response->isAccepted()) {
+            return redirect()->back()->with('error', 'No se puede rechazar una cotización aprobada.');
+        }
+
+        // Validate optional admin notes
+        $validated = $request->validate([
+            'admin_notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $response->reject($validated['admin_notes'] ?? null);
+
+            Log::info('Quotation response rejected', [
+                'quotation_request_id' => $quotationRequest->id,
+                'quotation_response_id' => $response->id,
+                'rejected_by' => auth()->id(),
+            ]);
+
+            return redirect()->back()->with('success', 'Cotización rechazada exitosamente.');
+        } catch (\Exception $e) {
+            Log::error('Quotation response rejection failed', [
+                'quotation_request_id' => $quotationRequest->id,
+                'quotation_response_id' => $response->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', 'Ocurrió un error al rechazar la cotización.');
         }
     }
 

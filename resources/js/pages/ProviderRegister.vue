@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -241,21 +240,23 @@ const submit = () => {
                                         <div
                                             v-for="category in categories"
                                             :key="category.id"
-                                            class="flex items-start space-x-3 p-2 rounded hover:bg-muted/50 cursor-pointer transition-colors"
-                                            @click="toggleCategory(category.id)"
+                                            class="flex items-start space-x-3 p-2 rounded hover:bg-muted/50 transition-colors"
                                         >
-                                            <Checkbox
+                                            <input
                                                 :id="`category-${category.id}`"
+                                                type="checkbox"
+                                                :value="category.id"
                                                 :checked="isCategorySelected(category.id)"
-                                                @update:checked="() => toggleCategory(category.id)"
+                                                @change="toggleCategory(category.id)"
+                                                class="w-4 h-4 mt-1 text-[#1D3557] border-gray-300 rounded focus:ring-[#1D3557] focus:ring-2 cursor-pointer"
                                             />
                                             <div class="flex-1">
-                                                <Label
+                                                <label
                                                     :for="`category-${category.id}`"
                                                     class="font-medium cursor-pointer"
                                                 >
                                                     {{ category.name }}
-                                                </Label>
+                                                </label>
                                                 <p v-if="category.description" class="text-xs text-muted-foreground mt-0.5">
                                                     {{ category.description }}
                                                 </p>

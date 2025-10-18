@@ -3,14 +3,15 @@
 namespace App\Mail;
 
 use App\Models\Central\Provider;
-use App\Models\QuotationRequest;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class QuotationRequestNotification extends Mailable
+class ProviderAccountCreated extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -18,9 +19,11 @@ class QuotationRequestNotification extends Mailable
      * Create a new message instance.
      */
     public function __construct(
-        public QuotationRequest $quotationRequest,
-        public \App\Models\Central\Provider $provider
+        public User $user,
+        public string $token,
+        public Provider $provider
     ) {
+        //
     }
 
     /**
@@ -29,7 +32,7 @@ class QuotationRequestNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nueva Solicitud de Cotización - '.$this->quotationRequest->title,
+            subject: '¡Bienvenido a Tavira! Configura tu cuenta de proveedor',
         );
     }
 
@@ -39,11 +42,15 @@ class QuotationRequestNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.providers.quotation-request-notification',
+            view: 'emails.provider-account-created',
             with: [
-                'quotationRequest' => $this->quotationRequest,
-                'provider' => $this->provider,
-            ],
+                'setupUrl' => route('provider.password.setup', [
+                    'token' => $this->token,
+                    'email' => $this->user->email,
+                ]),
+                'providerName' => $this->provider->name,
+                'contactName' => $this->user->name,
+            ]
         );
     }
 

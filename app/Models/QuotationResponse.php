@@ -45,9 +45,14 @@ class QuotationResponse extends Model
         return $this->belongsTo(QuotationRequest::class);
     }
 
+    /**
+     * Get the provider from the central database.
+     * Note: Providers are stored in the central database, not the tenant database,
+     * so this relationship crosses database boundaries.
+     */
     public function provider(): BelongsTo
     {
-        return $this->belongsTo(Provider::class);
+        return $this->belongsTo(\App\Models\Central\Provider::class, 'provider_id');
     }
 
     /**

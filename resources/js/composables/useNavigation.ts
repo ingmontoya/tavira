@@ -89,7 +89,7 @@ export function useNavigation() {
             href: '/dashboard',
             icon: LayoutGrid,
             tourId: 'nav-dashboard',
-            visible: hasPermission('view_dashboard'),
+            visible: hasPermission('view_dashboard') && !roles.value.includes('provider'),
         },
         {
             title: 'Administración',

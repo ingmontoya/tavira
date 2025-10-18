@@ -18,10 +18,13 @@ interface TransactionEntry {
     account?: {
         code: string;
         name: string;
+        requires_third_party?: boolean;
     };
     description: string;
     debit_amount: number;
     credit_amount: number;
+    third_party_type?: string | null;
+    third_party_id?: number | null;
 }
 
 interface FormData {
@@ -38,6 +41,8 @@ interface Account {
     name: string;
     account_type: string;
     is_active: boolean;
+    requires_third_party: boolean;
+    nature: string;
 }
 
 interface Apartment {
@@ -68,9 +73,11 @@ const form = useForm<FormData>({
         description: entry.description,
         debit_amount: entry.debit_amount,
         credit_amount: entry.credit_amount,
+        third_party_type: entry.third_party_type || null,
+        third_party_id: entry.third_party_id || null,
     })) || [
-        { account_id: null, description: '', debit_amount: 0, credit_amount: 0 },
-        { account_id: null, description: '', debit_amount: 0, credit_amount: 0 },
+        { account_id: null, description: '', debit_amount: 0, credit_amount: 0, third_party_type: null, third_party_id: null },
+        { account_id: null, description: '', debit_amount: 0, credit_amount: 0, third_party_type: null, third_party_id: null },
     ],
 });
 
@@ -125,6 +132,8 @@ const addEntry = () => {
         description: '',
         debit_amount: 0,
         credit_amount: 0,
+        third_party_type: null,
+        third_party_id: null,
     });
 };
 
@@ -145,8 +154,28 @@ const onAccountChange = (index: number, accountId: number) => {
         form.entries[index].account = {
             code: account.code,
             name: account.name,
+            requires_third_party: account.requires_third_party,
         };
+
+        // If account requires third party, set type to apartment by default
+        if (account.requires_third_party) {
+            form.entries[index].third_party_type = 'apartment';
+            // Clear third_party_id to force user selection
+            if (!form.entries[index].third_party_id) {
+                form.entries[index].third_party_id = null;
+            }
+        } else {
+            // Clear third party fields if account doesn't require it
+            form.entries[index].third_party_type = null;
+            form.entries[index].third_party_id = null;
+        }
     }
+};
+
+const getAccountRequiresThirdParty = (accountId: number | null): boolean => {
+    if (!accountId) return false;
+    const account = activeAccounts.value.find((acc) => acc.id === accountId);
+    return account?.requires_third_party || false;
 };
 
 const clearOppositeAmount = (index: number, type: 'debit' | 'credit') => {
@@ -169,8 +198,8 @@ const submit = () => {
 const resetForm = () => {
     form.reset();
     form.entries = [
-        { account_id: null, description: '', debit_amount: 0, credit_amount: 0 },
-        { account_id: null, description: '', debit_amount: 0, credit_amount: 0 },
+        { account_id: null, description: '', debit_amount: 0, credit_amount: 0, third_party_type: null, third_party_id: null },
+        { account_id: null, description: '', debit_amount: 0, credit_amount: 0, third_party_type: null, third_party_id: null },
     ];
     isUnsavedChanges.value = false;
 };
@@ -351,10 +380,11 @@ const breadcrumbs = [
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead class="w-[300px]">Cuenta</TableHead>
+                                        <TableHead class="w-[250px]">Cuenta</TableHead>
+                                        <TableHead class="w-[120px]">Tercero</TableHead>
                                         <TableHead>Descripción</TableHead>
-                                        <TableHead class="w-[150px] text-right">Débito</TableHead>
-                                        <TableHead class="w-[150px] text-right">Crédito</TableHead>
+                                        <TableHead class="w-[130px] text-right">Débito</TableHead>
+                                        <TableHead class="w-[130px] text-right">Crédito</TableHead>
                                         <TableHead class="w-[80px]">Acción</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -372,6 +402,22 @@ const breadcrumbs = [
                                                     }
                                                 "
                                             />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Select
+                                                v-if="getAccountRequiresThirdParty(entry.account_id)"
+                                                v-model="entry.third_party_id"
+                                            >
+                                                <SelectTrigger :class="{ 'border-red-500': getAccountRequiresThirdParty(entry.account_id) && !entry.third_party_id }">
+                                                    <SelectValue placeholder="Apto..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem v-for="apt in apartments" :key="apt.id" :value="apt.id">
+                                                        {{ apt.number }}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
                                             <Input v-model="entry.description" placeholder="Descripción del movimiento" class="w-full" />

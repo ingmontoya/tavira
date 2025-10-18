@@ -21,6 +21,7 @@ class RoleSeeder extends Seeder
         $adminConjunto = Role::create(['name' => 'admin_conjunto', 'guard_name' => 'web']);
         $residente = Role::create(['name' => 'residente', 'guard_name' => 'web']);
         $portero = Role::create(['name' => 'portero', 'guard_name' => 'web']);
+        $provider = Role::create(['name' => 'provider', 'guard_name' => 'web']);
 
         // Create basic permissions
         $permissions = [
@@ -41,6 +42,14 @@ class RoleSeeder extends Seeder
             // General permissions
             'access_dashboard',
             'manage_settings',
+
+            // Provider permissions
+            'view_quotation_requests',
+            'submit_proposals',
+            'manage_service_catalog',
+            'view_provider_dashboard',
+            'manage_provider_services',
+            'view_provider_proposals',
         ];
 
         foreach ($permissions as $permission) {
@@ -65,6 +74,16 @@ class RoleSeeder extends Seeder
             'manage_users',
             'view_users',
             'manage_settings',
+        ]);
+
+        // Assign permissions to provider
+        $provider->givePermissionTo([
+            'view_provider_dashboard',
+            'view_quotation_requests',
+            'submit_proposals',
+            'manage_service_catalog',
+            'manage_provider_services',
+            'view_provider_proposals',
         ]);
     }
 }

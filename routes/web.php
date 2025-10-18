@@ -25,6 +25,13 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::post('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'store'])
             ->name('provider-register.store');
 
+        // Provider Password Setup (public routes)
+        Route::get('/provider/password-setup/{token}', [App\Http\Controllers\ProviderPasswordSetupController::class, 'show'])
+            ->name('provider.password.setup');
+
+        Route::post('/provider/password-setup', [App\Http\Controllers\ProviderPasswordSetupController::class, 'store'])
+            ->name('provider.password.store');
+
         // Include module route files outside of middleware groups
         require __DIR__.'/modules/placeholder-modules.php';
         require __DIR__.'/modules/subscription-payment.php';
@@ -51,6 +58,32 @@ foreach (config('tenancy.central_domains') as $domain) {
                 Route::put('/{provider}', [App\Http\Controllers\CentralProviderController::class, 'update'])->name('update');
                 Route::post('/{provider}/toggle-status', [App\Http\Controllers\CentralProviderController::class, 'toggleStatus'])->name('toggle-status');
                 Route::delete('/{provider}', [App\Http\Controllers\CentralProviderController::class, 'destroy'])->name('destroy');
+            });
+
+            // Provider Routes (for authenticated providers)
+            Route::middleware('role:provider')->prefix('provider')->name('provider.')->group(function () {
+                // Dashboard
+                Route::get('/dashboard', [App\Http\Controllers\Provider\ProviderDashboardController::class, 'index'])
+                    ->name('dashboard');
+
+                // Service Catalog Management
+                Route::resource('services', App\Http\Controllers\Provider\ProviderServiceController::class);
+                Route::post('/services/{service}/toggle-status', [App\Http\Controllers\Provider\ProviderServiceController::class, 'toggleStatus'])
+                    ->name('services.toggle-status');
+
+                // Quotation Requests
+                Route::prefix('quotations')->name('quotations.')->group(function () {
+                    Route::get('/', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'index'])
+                        ->name('index');
+                    Route::get('/{tenantId}/{quotationRequestId}', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'show'])
+                        ->name('show');
+                    Route::post('/{tenantId}/{quotationRequestId}/respond', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'respond'])
+                        ->name('respond');
+                });
+
+                // Proposals History
+                Route::get('/proposals', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'proposals'])
+                    ->name('quotations.proposals');
             });
         });
 

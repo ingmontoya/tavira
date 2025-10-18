@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Mail\NewProviderRegistration;
+use App\Mail\ProviderAccountCreated;
 use App\Mail\ProviderApproved;
 use App\Models\Central\Provider;
 use App\Models\Central\ProviderCategory;
 use App\Models\ProviderRegistration;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class ProviderRegistrationController extends Controller
@@ -158,50 +161,80 @@ class ProviderRegistrationController extends Controller
                 return redirect()->back()->with('error', 'Este proveedor ya fue aprobado.');
             }
 
-            // Create provider from registration in central database
-            $provider = Provider::create([
-                'name' => $registration->company_name,
-                'category' => $registration->service_type,
-                'phone' => $registration->phone,
-                'email' => $registration->email,
-                'contact_name' => $registration->contact_name,
-                'contact_phone' => $registration->phone,
-                'contact_email' => $registration->email,
-                'notes' => $registration->description,
-                'is_active' => true,
-            ]);
-
-            // Sync categories from registration to provider
-            $registration->load('categories');
-            if ($registration->categories->isNotEmpty()) {
-                $provider->categories()->sync($registration->categories->pluck('id'));
+            // Check if user with this email already exists
+            $existingUser = User::where('email', $registration->email)->first();
+            if ($existingUser) {
+                return redirect()->back()->with('error', 'Ya existe un usuario con este correo electrónico.');
             }
 
-            // Update registration status
-            $registration->update([
-                'status' => 'approved',
-                'admin_notes' => $validated['admin_notes'] ?? null,
-                'reviewed_at' => now(),
-                'reviewed_by' => auth()->id(),
-            ]);
+            // Use database transaction to ensure all operations succeed or fail together
+            DB::transaction(function () use ($registration, $validated) {
+                // Create provider from registration in central database
+                $provider = Provider::create([
+                    'name' => $registration->company_name,
+                    'category' => $registration->service_type,
+                    'phone' => $registration->phone,
+                    'email' => $registration->email,
+                    'contact_name' => $registration->contact_name,
+                    'contact_phone' => $registration->phone,
+                    'contact_email' => $registration->email,
+                    'notes' => $registration->description,
+                    'is_active' => true,
+                ]);
 
-            Log::info('Provider registration approved', [
-                'registration_id' => $registration->id,
-                'provider_id' => $provider->id,
-                'approved_by' => auth()->id(),
-            ]);
+                // Sync categories from registration to provider
+                $registration->load('categories');
+                if ($registration->categories->isNotEmpty()) {
+                    $provider->categories()->sync($registration->categories->pluck('id'));
+                }
 
-            // Send approval email to provider (queued)
-            Mail::to($registration->email)->queue(new ProviderApproved($registration, $provider));
+                // Create user account for provider
+                $user = User::create([
+                    'name' => $registration->contact_name,
+                    'email' => $registration->email,
+                    'password' => bcrypt(Str::random(32)), // Temporary random password
+                    'email_verified_at' => now(), // Auto-verify email since admin approved
+                ]);
 
-            return redirect()->back()->with('success', 'Proveedor aprobado exitosamente.');
+                // Assign provider role
+                $user->assignRole('provider');
+
+                // Store provider_id in user's data (for easy access)
+                $user->update([
+                    'provider_id' => $provider->id,
+                ]);
+
+                // Generate password reset token
+                $token = app('auth.password.broker')->createToken($user);
+
+                // Update registration status
+                $registration->update([
+                    'status' => 'approved',
+                    'admin_notes' => $validated['admin_notes'] ?? null,
+                    'reviewed_at' => now(),
+                    'reviewed_by' => auth()->id(),
+                ]);
+
+                Log::info('Provider registration approved', [
+                    'registration_id' => $registration->id,
+                    'provider_id' => $provider->id,
+                    'user_id' => $user->id,
+                    'approved_by' => auth()->id(),
+                ]);
+
+                // Send account creation email with password setup link
+                Mail::to($registration->email)->queue(new ProviderAccountCreated($user, $token, $provider));
+            });
+
+            return redirect()->back()->with('success', 'Proveedor aprobado exitosamente. Se ha enviado un correo para configurar su cuenta.');
         } catch (\Exception $e) {
             Log::error('Provider approval failed', [
                 'registration_id' => $registration->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->back()->with('error', 'Ocurrió un error al aprobar el proveedor.');
+            return redirect()->back()->with('error', 'Ocurrió un error al aprobar el proveedor: '.$e->getMessage());
         }
     }
 
