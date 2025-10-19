@@ -16,7 +16,7 @@ class ExpenseService
             // The transaction status will be managed separately from the expense status
             $expense->createAccountingTransaction();
 
-            return $expense->load(['expenseCategory', 'supplier', 'debitAccount', 'creditAccount']);
+            return $expense->load(['expenseCategory', 'provider', 'debitAccount', 'creditAccount']);
         });
     }
 
@@ -30,7 +30,7 @@ class ExpenseService
                 $expense->createAccountingTransaction();
             }
 
-            return $expense->load(['expenseCategory', 'supplier', 'debitAccount', 'creditAccount']);
+            return $expense->load(['expenseCategory', 'provider', 'debitAccount', 'creditAccount']);
         });
     }
 
@@ -126,7 +126,7 @@ class ExpenseService
     {
         $expenses = Expense::forConjunto($conjuntoConfigId)
             ->overdue()
-            ->with(['expenseCategory', 'supplier', 'createdBy'])
+            ->with(['expenseCategory', 'provider', 'createdBy'])
             ->orderBy('due_date')
             ->get();
 
@@ -149,7 +149,7 @@ class ExpenseService
     {
         $expenses = Expense::forConjunto($conjuntoConfigId)
             ->pending()
-            ->with(['expenseCategory', 'supplier', 'createdBy'])
+            ->with(['expenseCategory', 'provider', 'createdBy'])
             ->orderBy('created_at')
             ->get();
 

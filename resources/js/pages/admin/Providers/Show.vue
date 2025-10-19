@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -12,20 +9,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import {
-    ArrowLeft,
-    Building2,
-    Mail,
-    Phone,
-    MapPin,
-    FileText,
-    User,
-    Edit,
-    Power,
-    Trash2
-} from 'lucide-vue-next';
+import { ArrowLeft, Building2, Edit, FileText, Mail, MapPin, Phone, Power, Trash2, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface ProviderCategory {
@@ -130,27 +119,15 @@ const getStatusBadge = () => {
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        @click="showToggleDialog = true"
-                    >
+                    <Button variant="outline" size="sm" @click="showToggleDialog = true">
                         <Power class="mr-2 h-4 w-4" />
                         {{ provider.is_active ? 'Desactivar' : 'Activar' }}
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        @click="router.visit(`/admin/providers/${provider.id}/edit`)"
-                    >
+                    <Button variant="outline" size="sm" @click="router.visit(`/admin/providers/${provider.id}/edit`)">
                         <Edit class="mr-2 h-4 w-4" />
                         Editar
                     </Button>
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        @click="showDeleteDialog = true"
-                    >
+                    <Button variant="destructive" size="sm" @click="showDeleteDialog = true">
                         <Trash2 class="mr-2 h-4 w-4" />
                         Eliminar
                     </Button>
@@ -205,7 +182,7 @@ const getStatusBadge = () => {
                         </div>
 
                         <div v-if="provider.address || provider.city" class="flex items-start gap-2">
-                            <MapPin class="h-4 w-4 text-muted-foreground mt-1" />
+                            <MapPin class="mt-1 h-4 w-4 text-muted-foreground" />
                             <div class="flex-1">
                                 <label class="text-sm font-medium text-muted-foreground">Dirección</label>
                                 <p v-if="provider.address" class="text-sm">{{ provider.address }}</p>
@@ -247,7 +224,10 @@ const getStatusBadge = () => {
                             </div>
                         </div>
 
-                        <div v-if="!provider.contact_name && !provider.contact_email && !provider.contact_phone" class="text-sm text-muted-foreground">
+                        <div
+                            v-if="!provider.contact_name && !provider.contact_email && !provider.contact_phone"
+                            class="text-sm text-muted-foreground"
+                        >
                             No hay información de contacto adicional
                         </div>
                     </CardContent>
@@ -261,18 +241,11 @@ const getStatusBadge = () => {
                     </CardHeader>
                     <CardContent>
                         <div v-if="provider.categories.length > 0" class="flex flex-wrap gap-2">
-                            <Badge
-                                v-for="category in provider.categories"
-                                :key="category.id"
-                                variant="outline"
-                                class="text-sm"
-                            >
+                            <Badge v-for="category in provider.categories" :key="category.id" variant="outline" class="text-sm">
                                 {{ category.name }}
                             </Badge>
                         </div>
-                        <p v-else class="text-sm text-muted-foreground">
-                            No hay categorías asignadas
-                        </p>
+                        <p v-else class="text-sm text-muted-foreground">No hay categorías asignadas</p>
                     </CardContent>
                 </Card>
 
@@ -312,19 +285,19 @@ const getStatusBadge = () => {
         <AlertDialog v-model:open="showToggleDialog">
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>
-                        {{ provider.is_active ? 'Desactivar' : 'Activar' }} Proveedor
-                    </AlertDialogTitle>
+                    <AlertDialogTitle> {{ provider.is_active ? 'Desactivar' : 'Activar' }} Proveedor </AlertDialogTitle>
                     <AlertDialogDescription>
                         ¿Estás seguro de que deseas {{ provider.is_active ? 'desactivar' : 'activar' }} a {{ provider.name }}?
-                        {{ provider.is_active ? 'El proveedor no aparecerá en las listas de proveedores activos.' : 'El proveedor volverá a estar disponible.' }}
+                        {{
+                            provider.is_active
+                                ? 'El proveedor no aparecerá en las listas de proveedores activos.'
+                                : 'El proveedor volverá a estar disponible.'
+                        }}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction @click="handleToggleStatus">
-                        Confirmar
-                    </AlertDialogAction>
+                    <AlertDialogAction @click="handleToggleStatus"> Confirmar </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -335,16 +308,12 @@ const getStatusBadge = () => {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Eliminar Proveedor</AlertDialogTitle>
                     <AlertDialogDescription>
-                        ¿Estás seguro de que deseas eliminar a {{ provider.name }}?
-                        Esta acción no se puede deshacer.
+                        ¿Estás seguro de que deseas eliminar a {{ provider.name }}? Esta acción no se puede deshacer.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        @click="handleDelete"
-                    >
+                    <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="handleDelete">
                         Eliminar
                     </AlertDialogAction>
                 </AlertDialogFooter>

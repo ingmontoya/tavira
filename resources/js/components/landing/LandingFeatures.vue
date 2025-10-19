@@ -4,13 +4,12 @@
             <div class="mb-16 text-center">
                 <h2 class="mb-6 text-4xl font-bold text-gray-900 lg:text-5xl">
                     Todo lo que necesitas para una
-                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent">
-                        administración
-                    </span>
+                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent"> administración </span>
                     exitosa
                 </h2>
                 <p class="mx-auto max-w-3xl text-xl text-gray-600">
-                    Sistema integral diseñado especificamente para conjuntos residenciales en Colombia. Desde finanzas hasta comunicación, todo en una plataforma segura.
+                    Sistema integral diseñado especificamente para conjuntos residenciales en Colombia. Desde finanzas hasta comunicación, todo en una
+                    plataforma segura.
                 </p>
             </div>
 
@@ -20,7 +19,7 @@
                     :key="index"
                     class="group rounded-2xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
                 >
-                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-[#F5F5F5] text-2xl border border-[#06D6A0]/20">
+                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-[#06D6A0]/20 bg-[#F5F5F5] text-2xl">
                         {{ feature.icon }}
                     </div>
                     <h3 class="mb-3 text-xl font-bold text-gray-900">{{ feature.title }}</h3>
@@ -46,7 +45,8 @@ const features = computed(() => [
     {
         icon: '💰',
         title: 'Finanzas Completas',
-        description: 'Contabilidad doble partida, facturación automatizada (opcional DIAN), presupuestos, reportes financieros y cumplimiento normativo.',
+        description:
+            'Contabilidad doble partida, facturación automatizada (opcional DIAN), presupuestos, reportes financieros y cumplimiento normativo.',
     },
     {
         icon: '📢',

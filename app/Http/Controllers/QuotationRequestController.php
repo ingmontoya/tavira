@@ -6,10 +6,15 @@ use App\Mail\QuotationRequestNotification;
 use App\Mail\QuotationResponseApproved;
 use App\Mail\QuotationResponseRejected;
 use App\Models\Central\Provider;
+use App\Models\ConjuntoConfig;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\ProviderCategory;
 use App\Models\QuotationRequest;
 use App\Models\QuotationResponse;
+use App\Services\ExpenseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -124,16 +129,40 @@ class QuotationRequestController extends Controller
      */
     public function show(QuotationRequest $quotationRequest)
     {
-        $quotationRequest->load(['createdBy', 'categories', 'responses']);
+        // Force fresh data from database
+        $quotationRequest = QuotationRequest::with(['createdBy', 'categories', 'responses'])
+            ->findOrFail($quotationRequest->id);
 
         // Manually attach provider data from central database
         // (cannot use eager loading due to cross-database relationship)
         $providerIds = $quotationRequest->responses->pluck('provider_id')->unique()->toArray();
         $providers = Provider::whereIn('id', $providerIds)->get()->keyBy('id');
 
-        $quotationRequest->responses->each(function ($response) use ($providers) {
-            $response->provider = $providers->get($response->provider_id);
+        // Transform responses to ensure fresh data and attach provider
+        $responsesData = $quotationRequest->responses->map(function ($response) use ($providers) {
+            // Force fresh from database with expense relationship
+            $freshResponse = QuotationResponse::with('expense')->find($response->id);
+
+            return [
+                'id' => $freshResponse->id,
+                'quotation_request_id' => $freshResponse->quotation_request_id,
+                'provider_id' => $freshResponse->provider_id,
+                'quoted_amount' => $freshResponse->quoted_amount,
+                'proposal' => $freshResponse->proposal,
+                'estimated_days' => $freshResponse->estimated_days,
+                'attachments' => $freshResponse->attachments,
+                'status' => $freshResponse->status,
+                'admin_notes' => $freshResponse->admin_notes,
+                'expense_id' => $freshResponse->expense_id,
+                'expense' => $freshResponse->expense,
+                'created_at' => $freshResponse->created_at,
+                'updated_at' => $freshResponse->updated_at,
+                'provider' => $providers->get($freshResponse->provider_id),
+            ];
         });
+
+        // Replace the responses collection with the transformed data
+        $quotationRequest->setRelation('responses', collect($responsesData));
 
         return Inertia::render('quotation-requests/Show', [
             'quotationRequest' => $quotationRequest,
@@ -311,6 +340,7 @@ class QuotationRequestController extends Controller
         }
 
         $quotationRequest->load(['createdBy', 'categories']);
+        $response->load('expense');
 
         // Get provider from central database
         $provider = Provider::find($response->provider_id);
@@ -373,56 +403,84 @@ class QuotationRequestController extends Controller
             return redirect()->back()->with('error', 'No se puede aprobar una cotización rechazada.');
         }
 
+        // Check if expense already exists
+        if ($response->expense_id) {
+            return redirect()->back()->with('warning', 'Ya existe un gasto asociado a esta cotización.');
+        }
+
         try {
-            // Accept the response
-            $response->accept();
+            DB::transaction(function () use ($quotationRequest, $response, &$expense, &$otherResponses, &$provider) {
+                // 1. Accept the response
+                $response->accept();
 
-            // Get the provider from central database
-            $provider = Provider::find($response->provider_id);
+                // 2. Create the expense automatically
+                $expense = $this->createExpenseFromQuotation($quotationRequest, $response);
 
-            if ($provider) {
-                // Send approval email to the selected provider
-                Mail::to($provider->email)->queue(
-                    new QuotationResponseApproved($quotationRequest, $response, $provider)
-                );
+                // 3. Link the response with the expense
+                $response->update(['expense_id' => $expense->id]);
 
-                // Get all other pending responses for this quotation request
-                $otherResponses = $quotationRequest->responses()
-                    ->where('id', '!=', $response->id)
-                    ->where('status', 'pending')
-                    ->get();
+                // 4. Close the quotation request since a proposal has been accepted
+                $quotationRequest->close();
 
-                // Send notification to other providers that they were not selected
-                foreach ($otherResponses as $otherResponse) {
-                    // Reject the other responses
-                    $otherResponse->reject('Se seleccionó otra propuesta');
+                // 5. Get the provider from central database
+                $provider = Provider::find($response->provider_id);
 
-                    // Get provider and send email
-                    $otherProvider = Provider::find($otherResponse->provider_id);
-                    if ($otherProvider) {
-                        Mail::to($otherProvider->email)->queue(
-                            new QuotationResponseRejected($quotationRequest, $otherResponse, $otherProvider)
-                        );
+                if ($provider) {
+                    // Send approval email to the selected provider
+                    Mail::to($provider->email)->queue(
+                        new QuotationResponseApproved($quotationRequest, $response, $provider)
+                    );
+
+                    // Get all other pending responses for this quotation request
+                    $otherResponses = $quotationRequest->responses()
+                        ->where('id', '!=', $response->id)
+                        ->where('status', 'pending')
+                        ->get();
+
+                    // Send notification to other providers that they were not selected
+                    foreach ($otherResponses as $otherResponse) {
+                        // Reject the other responses
+                        $otherResponse->reject('Se seleccionó otra propuesta');
+
+                        // Get provider and send email
+                        $otherProvider = Provider::find($otherResponse->provider_id);
+                        if ($otherProvider) {
+                            Mail::to($otherProvider->email)->queue(
+                                new QuotationResponseRejected($quotationRequest, $otherResponse, $otherProvider)
+                            );
+                        }
                     }
                 }
-            }
+            });
 
-            Log::info('Quotation response approved', [
+            Log::info('Quotation response approved and expense created', [
                 'quotation_request_id' => $quotationRequest->id,
                 'quotation_response_id' => $response->id,
+                'expense_id' => $expense->id,
+                'expense_status' => $expense->status,
                 'approved_by' => auth()->id(),
                 'notified_providers' => ($otherResponses ?? collect())->count() + 1,
+                'request_status' => 'closed',
             ]);
 
-            return redirect()->back()->with('success', 'Cotización aprobada exitosamente. Se han enviado notificaciones a todos los proveedores.');
+            $message = 'Cotización aprobada y gasto creado exitosamente. ';
+            $message .= $expense->status === 'pendiente_concejo'
+                ? 'El gasto requiere aprobación del concejo.'
+                : ($expense->status === 'aprobado'
+                    ? 'El gasto está listo para pago.'
+                    : 'El gasto está pendiente de aprobación.');
+
+            return redirect()->route('expenses.show', $expense)
+                ->with('success', $message);
         } catch (\Exception $e) {
             Log::error('Quotation response approval failed', [
                 'quotation_request_id' => $quotationRequest->id,
                 'quotation_response_id' => $response->id,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return redirect()->back()->with('error', 'Ocurrió un error al aprobar la cotización.');
+            return redirect()->back()->with('error', 'Ocurrió un error al aprobar la cotización: '.$e->getMessage());
         }
     }
 
@@ -497,5 +555,102 @@ class QuotationRequestController extends Controller
             'quotation_request_id' => $quotationRequest->id,
             'providers_notified' => $providers->count(),
         ]);
+    }
+
+    /**
+     * Create an expense from an approved quotation response.
+     */
+    protected function createExpenseFromQuotation(
+        QuotationRequest $quotationRequest,
+        QuotationResponse $response
+    ): Expense {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+        $centralProvider = Provider::find($response->provider_id);
+
+        if (! $centralProvider) {
+            throw new \Exception('Proveedor no encontrado en la base de datos central');
+        }
+
+        // Create or sync provider in tenant database
+        $tenantProvider = $this->syncProviderToTenant($centralProvider);
+
+        // Get the expense category for quotation-based expenses
+        $expenseCategory = $this->getExpenseCategoryForQuotation($conjunto);
+
+        if (! $expenseCategory) {
+            throw new \Exception('Categoría de gasto no encontrada. Por favor ejecute el seeder QuotationExpenseCategorySeeder.');
+        }
+
+        // Calculate tax (assuming IVA 19% if applicable)
+        // You can adjust this logic based on your needs
+        $subtotal = $response->quoted_amount / 1.19; // Assuming amount includes tax
+        $taxAmount = $response->quoted_amount - $subtotal;
+
+        $expenseData = [
+            'conjunto_config_id' => $conjunto->id,
+            'expense_category_id' => $expenseCategory->id,
+            'provider_id' => $tenantProvider->id,
+            'vendor_name' => $centralProvider->name,
+            'vendor_document' => $centralProvider->tax_id,
+            'vendor_email' => $centralProvider->email,
+            'vendor_phone' => $centralProvider->phone,
+            'description' => "Solicitud de cotización #{$quotationRequest->id}: {$quotationRequest->title}",
+            'expense_date' => now()->toDateString(),
+            'due_date' => now()->addDays($response->estimated_days ?? 30)->toDateString(),
+            'subtotal' => $subtotal,
+            'tax_amount' => $taxAmount,
+            'total_amount' => $response->quoted_amount,
+            'debit_account_id' => $expenseCategory->default_debit_account_id,
+            'credit_account_id' => $expenseCategory->default_credit_account_id,
+            'notes' => "Generado automáticamente desde solicitud de cotización #{$quotationRequest->id}\n".
+                       "Proveedor seleccionado: {$centralProvider->name}\n".
+                       "Propuesta: {$response->proposal}",
+            'created_by' => auth()->id(),
+        ];
+
+        // The ExpenseService handles:
+        // - Determining status based on threshold and configuration
+        // - Creating accounting transactions if applicable
+        // - Sending notifications
+        $expenseService = app(ExpenseService::class);
+
+        return $expenseService->create($expenseData);
+    }
+
+    /**
+     * Get or create the expense category for quotation-based expenses.
+     */
+    protected function getExpenseCategoryForQuotation(ConjuntoConfig $conjunto): ?ExpenseCategory
+    {
+        return ExpenseCategory::where('conjunto_config_id', $conjunto->id)
+            ->where('name', 'Servicios Contratados')
+            ->first();
+    }
+
+    /**
+     * Sync provider from central database to tenant database.
+     * Creates or updates the provider in the tenant database.
+     */
+    protected function syncProviderToTenant(Provider $centralProvider): \App\Models\Provider
+    {
+        // The tenant Provider model (different from central)
+        $tenantProviderModel = \App\Models\Provider::class;
+
+        // Find or create provider in tenant database using central provider ID as external reference
+        $tenantProvider = $tenantProviderModel::updateOrCreate(
+            ['email' => $centralProvider->email], // Match by email
+            [
+                'name' => $centralProvider->name,
+                'tax_id' => $centralProvider->tax_id,
+                'phone' => $centralProvider->phone,
+                'address' => $centralProvider->address,
+                'city' => $centralProvider->city,
+                'contact_name' => $centralProvider->contact_name,
+                'notes' => 'Sincronizado desde base de datos central (ID: '.$centralProvider->id.')',
+                'is_active' => true,
+            ]
+        );
+
+        return $tenantProvider;
     }
 }

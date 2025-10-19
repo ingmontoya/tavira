@@ -1,23 +1,11 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { 
-    Building2, 
-    CalendarDays, 
-    Clock, 
-    DollarSign, 
-    MapPin, 
-    Edit, 
-    ArrowLeft, 
-    User, 
-    CheckCircle, 
-    AlertTriangle,
-    Eye
-} from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { AlertTriangle, ArrowLeft, Building2, CalendarDays, CheckCircle, Clock, DollarSign, Edit, Eye, MapPin, User } from 'lucide-vue-next';
 
 interface ConjuntoConfig {
     id: number;
@@ -125,13 +113,13 @@ const getDayName = (dayNumber: number) => {
 };
 
 const assetTypeLabels: Record<string, string> = {
-    'common_area': 'Área Común',
-    'amenity': 'Amenidad',
-    'facility': 'Instalación',
-    'sports': 'Deportivo',
-    'recreation': 'Recreativo',
-    'meeting_room': 'Sala de Reuniones',
-    'event_space': 'Espacio para Eventos',
+    common_area: 'Área Común',
+    amenity: 'Amenidad',
+    facility: 'Instalación',
+    sports: 'Deportivo',
+    recreation: 'Recreativo',
+    meeting_room: 'Sala de Reuniones',
+    event_space: 'Espacio para Eventos',
 };
 </script>
 
@@ -140,50 +128,41 @@ const assetTypeLabels: Record<string, string> = {
 
     <AppLayout>
         <div class="py-6">
-            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
                 <div class="mb-6">
-                    <div class="flex items-center space-x-4 mb-4">
+                    <div class="mb-4 flex items-center space-x-4">
                         <Button variant="outline" size="sm" @click="router.visit(route('reservable-assets.index'))">
-                            <ArrowLeft class="h-4 w-4 mr-2" />
+                            <ArrowLeft class="mr-2 h-4 w-4" />
                             Volver a Activos
                         </Button>
                     </div>
-                    
+
                     <div class="flex items-center justify-between">
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
                                 {{ asset.name }}
                             </h1>
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 capitalize">
+                            <p class="mt-2 text-sm text-gray-600 capitalize dark:text-gray-400">
                                 {{ assetTypeLabels[asset.type] || asset.type.replace('_', ' ') }}
                             </p>
                         </div>
-                        
+
                         <div class="flex items-center space-x-3">
-                            <Badge 
+                            <Badge
                                 :variant="asset.is_active ? 'default' : 'secondary'"
                                 :class="asset.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''"
                             >
                                 {{ asset.is_active ? 'Activo' : 'Inactivo' }}
                             </Badge>
-                            
+
                             <div class="flex space-x-2">
-                                <Button 
-                                    size="sm"
-                                    :href="route('reservations.create', { asset_id: asset.id })"
-                                    as="link"
-                                >
-                                    <CalendarDays class="h-4 w-4 mr-1" />
+                                <Button size="sm" :href="route('reservations.create', { asset_id: asset.id })" as="link">
+                                    <CalendarDays class="mr-1 h-4 w-4" />
                                     Crear Reserva
                                 </Button>
-                                <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    :href="route('reservable-assets.edit', asset.id)"
-                                    as="link"
-                                >
-                                    <Edit class="h-4 w-4 mr-1" />
+                                <Button size="sm" variant="outline" :href="route('reservable-assets.edit', asset.id)" as="link">
+                                    <Edit class="mr-1 h-4 w-4" />
                                     Editar
                                 </Button>
                             </div>
@@ -191,9 +170,9 @@ const assetTypeLabels: Record<string, string> = {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Main Content -->
-                    <div class="lg:col-span-2 space-y-6">
+                    <div class="space-y-6 lg:col-span-2">
                         <!-- Asset Details -->
                         <Card>
                             <CardHeader>
@@ -201,11 +180,7 @@ const assetTypeLabels: Record<string, string> = {
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <div v-if="asset.image_path" class="mb-6">
-                                    <img 
-                                        :src="`/storage/${asset.image_path}`" 
-                                        :alt="asset.name"
-                                        class="w-full h-64 object-cover rounded-lg"
-                                    />
+                                    <img :src="`/storage/${asset.image_path}`" :alt="asset.name" class="h-64 w-full rounded-lg object-cover" />
                                 </div>
 
                                 <div v-if="asset.description" class="space-y-2">
@@ -216,7 +191,7 @@ const assetTypeLabels: Record<string, string> = {
                                 </div>
 
                                 <!-- Configuration -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div class="space-y-4">
                                         <div class="flex items-center space-x-3">
                                             <Clock class="h-5 w-5 text-gray-500" />
@@ -244,9 +219,7 @@ const assetTypeLabels: Record<string, string> = {
                                             <CalendarDays class="h-5 w-5 text-gray-500" />
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Anticipación máxima</p>
-                                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                                    {{ asset.advance_booking_days }} días
-                                                </p>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ asset.advance_booking_days }} días</p>
                                             </div>
                                         </div>
 
@@ -263,18 +236,41 @@ const assetTypeLabels: Record<string, string> = {
                                 </div>
 
                                 <!-- Approval Status -->
-                                <div class="flex items-center space-x-3 p-4 rounded-lg" :class="asset.requires_approval ? 'bg-yellow-50 dark:bg-yellow-900/10' : 'bg-green-50 dark:bg-green-900/10'">
-                                    <component :is="asset.requires_approval ? AlertTriangle : CheckCircle" 
-                                               :class="asset.requires_approval ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'" 
-                                               class="h-5 w-5" />
+                                <div
+                                    class="flex items-center space-x-3 rounded-lg p-4"
+                                    :class="asset.requires_approval ? 'bg-yellow-50 dark:bg-yellow-900/10' : 'bg-green-50 dark:bg-green-900/10'"
+                                >
+                                    <component
+                                        :is="asset.requires_approval ? AlertTriangle : CheckCircle"
+                                        :class="
+                                            asset.requires_approval ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'
+                                        "
+                                        class="h-5 w-5"
+                                    />
                                     <div>
-                                        <p class="text-sm font-medium" :class="asset.requires_approval ? 'text-yellow-800 dark:text-yellow-200' : 'text-green-800 dark:text-green-200'">
+                                        <p
+                                            class="text-sm font-medium"
+                                            :class="
+                                                asset.requires_approval
+                                                    ? 'text-yellow-800 dark:text-yellow-200'
+                                                    : 'text-green-800 dark:text-green-200'
+                                            "
+                                        >
                                             {{ asset.requires_approval ? 'Requiere Aprobación' : 'Aprobación Automática' }}
                                         </p>
-                                        <p class="text-xs" :class="asset.requires_approval ? 'text-yellow-700 dark:text-yellow-300' : 'text-green-700 dark:text-green-300'">
-                                            {{ asset.requires_approval 
-                                                ? 'Las reservas quedarán pendientes hasta ser aprobadas' 
-                                                : 'Las reservas son aprobadas automáticamente' }}
+                                        <p
+                                            class="text-xs"
+                                            :class="
+                                                asset.requires_approval
+                                                    ? 'text-yellow-700 dark:text-yellow-300'
+                                                    : 'text-green-700 dark:text-green-300'
+                                            "
+                                        >
+                                            {{
+                                                asset.requires_approval
+                                                    ? 'Las reservas quedarán pendientes hasta ser aprobadas'
+                                                    : 'Las reservas son aprobadas automáticamente'
+                                            }}
                                         </p>
                                     </div>
                                 </div>
@@ -282,7 +278,12 @@ const assetTypeLabels: Record<string, string> = {
                         </Card>
 
                         <!-- Availability Rules -->
-                        <Card v-if="asset.availability_rules && (asset.availability_rules.allowed_days?.length || asset.availability_rules.time_slots?.length)">
+                        <Card
+                            v-if="
+                                asset.availability_rules &&
+                                (asset.availability_rules.allowed_days?.length || asset.availability_rules.time_slots?.length)
+                            "
+                        >
                             <CardHeader>
                                 <CardTitle>Reglas de Disponibilidad</CardTitle>
                             </CardHeader>
@@ -291,11 +292,7 @@ const assetTypeLabels: Record<string, string> = {
                                 <div v-if="asset.availability_rules.allowed_days?.length" class="space-y-2">
                                     <h4 class="font-medium text-gray-900 dark:text-gray-100">Días Permitidos</h4>
                                     <div class="flex flex-wrap gap-2">
-                                        <Badge 
-                                            v-for="day in asset.availability_rules.allowed_days" 
-                                            :key="day" 
-                                            variant="secondary"
-                                        >
+                                        <Badge v-for="day in asset.availability_rules.allowed_days" :key="day" variant="secondary">
                                             {{ getDayName(day) }}
                                         </Badge>
                                     </div>
@@ -304,10 +301,10 @@ const assetTypeLabels: Record<string, string> = {
                                 <!-- Time Slots -->
                                 <div v-if="asset.availability_rules.time_slots?.length" class="space-y-2">
                                     <h4 class="font-medium text-gray-900 dark:text-gray-100">Horarios Permitidos</h4>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        <div 
-                                            v-for="(slot, index) in asset.availability_rules.time_slots" 
-                                            :key="index" 
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <div
+                                            v-for="(slot, index) in asset.availability_rules.time_slots"
+                                            :key="index"
                                             class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400"
                                         >
                                             <Clock class="h-4 w-4 text-gray-500" />
@@ -322,13 +319,11 @@ const assetTypeLabels: Record<string, string> = {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Reservas Recientes</CardTitle>
-                                <CardDescription>
-                                    Últimas reservas realizadas para este activo
-                                </CardDescription>
+                                <CardDescription> Últimas reservas realizadas para este activo </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div v-if="asset.reservations.length === 0" class="text-center py-8 text-gray-500">
-                                    <CalendarDays class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                <div v-if="asset.reservations.length === 0" class="py-8 text-center text-gray-500">
+                                    <CalendarDays class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                                     <p>No hay reservas registradas para este activo.</p>
                                 </div>
                                 <div v-else class="overflow-x-auto">
@@ -362,12 +357,7 @@ const assetTypeLabels: Record<string, string> = {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="sm"
-                                                        :href="route('reservations.show', reservation.id)"
-                                                        as="link"
-                                                    >
+                                                    <Button variant="ghost" size="sm" :href="route('reservations.show', reservation.id)" as="link">
                                                         <Eye class="h-4 w-4" />
                                                     </Button>
                                                 </TableCell>
@@ -388,28 +378,28 @@ const assetTypeLabels: Record<string, string> = {
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div class="rounded-lg bg-gray-50 p-3 text-center dark:bg-gray-800">
                                         <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                             {{ stats.total_reservations }}
                                         </p>
                                         <p class="text-xs text-gray-600 dark:text-gray-400">Total Reservas</p>
                                     </div>
-                                    
-                                    <div class="text-center p-3 bg-green-50 dark:bg-green-900/10 rounded-lg">
+
+                                    <div class="rounded-lg bg-green-50 p-3 text-center dark:bg-green-900/10">
                                         <p class="text-2xl font-bold text-green-700 dark:text-green-300">
                                             {{ stats.active_reservations }}
                                         </p>
                                         <p class="text-xs text-green-600 dark:text-green-400">Activas</p>
                                     </div>
-                                    
-                                    <div class="text-center p-3 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg">
+
+                                    <div class="rounded-lg bg-yellow-50 p-3 text-center dark:bg-yellow-900/10">
                                         <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
                                             {{ stats.pending_approval }}
                                         </p>
                                         <p class="text-xs text-yellow-600 dark:text-yellow-400">Pendientes</p>
                                     </div>
-                                    
-                                    <div class="text-center p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg">
+
+                                    <div class="rounded-lg bg-blue-50 p-3 text-center dark:bg-blue-900/10">
                                         <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">
                                             {{ stats.completed_reservations }}
                                         </p>
@@ -425,35 +415,30 @@ const assetTypeLabels: Record<string, string> = {
                                 <CardTitle>Acciones Rápidas</CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-3">
-                                <Button 
-                                    size="sm" 
-                                    class="w-full justify-start"
-                                    :href="route('reservations.create', { asset_id: asset.id })"
-                                    as="link"
-                                >
-                                    <CalendarDays class="h-4 w-4 mr-2" />
+                                <Button size="sm" class="w-full justify-start" :href="route('reservations.create', { asset_id: asset.id })" as="link">
+                                    <CalendarDays class="mr-2 h-4 w-4" />
                                     Crear Nueva Reserva
                                 </Button>
-                                
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     class="w-full justify-start"
                                     :href="route('reservable-assets.edit', asset.id)"
                                     as="link"
                                 >
-                                    <Edit class="h-4 w-4 mr-2" />
+                                    <Edit class="mr-2 h-4 w-4" />
                                     Editar Configuración
                                 </Button>
-                                
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     class="w-full justify-start"
                                     :href="route('reservations.index', { asset_id: asset.id })"
                                     as="link"
                                 >
-                                    <Eye class="h-4 w-4 mr-2" />
+                                    <Eye class="mr-2 h-4 w-4" />
                                     Ver Todas las Reservas
                                 </Button>
                             </CardContent>
@@ -471,9 +456,7 @@ const assetTypeLabels: Record<string, string> = {
                                         <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {{ asset.conjunto_config.name }}
                                         </p>
-                                        <p class="text-xs text-gray-600 dark:text-gray-400">
-                                            Conjunto residencial
-                                        </p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400">Conjunto residencial</p>
                                     </div>
                                 </div>
                             </CardContent>

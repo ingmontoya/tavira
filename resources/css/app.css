@@ -8,7 +8,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-sans: Inter, Instrument Sans, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        Inter, Instrument Sans, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-brand: Poppins, Inter, ui-sans-serif, system-ui, sans-serif;
 
     --radius-lg: var(--radius);
@@ -329,40 +330,40 @@
     body,
     html {
         --font-sans:
-            'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-        --font-brand:
-            'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
+            'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+            'Noto Color Emoji';
+        --font-brand: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
     }
-    
+
     .font-brand {
         font-family: var(--font-brand);
     }
-    
+
     /* Tavira custom utilities */
     .text-tavira-blue {
         color: hsl(208 88% 21%);
     }
-    
+
     .text-tavira-turquoise {
         color: hsl(165 91% 42%);
     }
-    
+
     .text-tavira-coral {
         color: hsl(0 80% 70%);
     }
-    
+
     .bg-tavira-blue {
         background-color: hsl(208 88% 21%);
     }
-    
+
     .bg-tavira-turquoise {
         background-color: hsl(165 91% 42%);
     }
-    
+
     .bg-tavira-gray {
         background-color: hsl(0 0% 96%);
     }
-    
+
     .bg-tavira-coral {
         background-color: hsl(0 80% 70%);
     }
@@ -370,36 +371,36 @@
 
 :root {
     /* Tavira Brand Colors */
-    --tavira-blue-deep: hsl(208 88% 21%);        /* #1D3557 - Azul profundo */
-    --tavira-turquoise: hsl(165 91% 42%);        /* #06D6A0 - Turquesa */
-    --tavira-gray-soft: hsl(0 0% 96%);           /* #F5F5F5 - Gris suave */
-    --tavira-coral: hsl(0 80% 70%);              /* #FF6B6B - Coral */
-    
+    --tavira-blue-deep: hsl(208 88% 21%); /* #1D3557 - Azul profundo */
+    --tavira-turquoise: hsl(165 91% 42%); /* #06D6A0 - Turquesa */
+    --tavira-gray-soft: hsl(0 0% 96%); /* #F5F5F5 - Gris suave */
+    --tavira-coral: hsl(0 80% 70%); /* #FF6B6B - Coral */
+
     /* Updated theme variables with Tavira colors */
     --background: hsl(0 0% 100%);
-    --foreground: hsl(208 88% 21%);               /* Tavira blue deep */
+    --foreground: hsl(208 88% 21%); /* Tavira blue deep */
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(208 88% 21%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(208 88% 21%);
-    --primary: hsl(208 88% 21%);                  /* Tavira blue deep */
+    --primary: hsl(208 88% 21%); /* Tavira blue deep */
     --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 96%);                   /* Tavira gray soft */
+    --secondary: hsl(0 0% 96%); /* Tavira gray soft */
     --secondary-foreground: hsl(208 88% 21%);
-    --muted: hsl(0 0% 96%);                       /* Tavira gray soft */
+    --muted: hsl(0 0% 96%); /* Tavira gray soft */
     --muted-foreground: hsl(208 45% 45%);
-    --accent: hsl(165 91% 42%);                   /* Tavira turquoise */
+    --accent: hsl(165 91% 42%); /* Tavira turquoise */
     --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 80% 70%);                /* Tavira coral */
+    --destructive: hsl(0 80% 70%); /* Tavira coral */
     --destructive-foreground: hsl(0 0% 98%);
     --border: hsl(0 0% 89%);
     --input: hsl(0 0% 94%);
-    --ring: hsl(165 91% 42%);                     /* Tavira turquoise */
-    --chart-1: hsl(165 91% 42%);                  /* Tavira turquoise */
-    --chart-2: hsl(208 88% 21%);                  /* Tavira blue deep */
-    --chart-3: hsl(0 80% 70%);                    /* Tavira coral */
-    --chart-4: hsl(165 91% 52%);                  /* Lighter turquoise */
-    --chart-5: hsl(208 88% 31%);                  /* Lighter blue */
+    --ring: hsl(165 91% 42%); /* Tavira turquoise */
+    --chart-1: hsl(165 91% 42%); /* Tavira turquoise */
+    --chart-2: hsl(208 88% 21%); /* Tavira blue deep */
+    --chart-3: hsl(0 80% 70%); /* Tavira coral */
+    --chart-4: hsl(165 91% 52%); /* Lighter turquoise */
+    --chart-5: hsl(208 88% 31%); /* Lighter blue */
     --radius: 0.5rem;
     --sidebar-background: hsl(0 0% 98%);
     --sidebar-foreground: hsl(208 88% 21%);

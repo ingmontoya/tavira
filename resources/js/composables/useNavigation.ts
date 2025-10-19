@@ -1,6 +1,6 @@
+import { useFeatures } from '@/composables/useFeatures';
 import type { NavItem } from '@/types';
 import { usePage } from '@inertiajs/vue3';
-import { useFeatures } from '@/composables/useFeatures';
 import {
     BarChart3,
     Bell,
@@ -131,11 +131,11 @@ export function useNavigation() {
                 {
                     title: 'Mantenimiento',
                     icon: Wrench,
-                    visible: isFeatureEnabled('maintenance_requests') && (
-                        hasPermission('view_maintenance_requests') ||
-                        hasPermission('view_maintenance_categories') ||
-                        hasPermission('view_maintenance_staff')
-                    ),
+                    visible:
+                        isFeatureEnabled('maintenance_requests') &&
+                        (hasPermission('view_maintenance_requests') ||
+                            hasPermission('view_maintenance_categories') ||
+                            hasPermission('view_maintenance_staff')),
                     items: [
                         {
                             title: 'Solicitudes',
@@ -247,7 +247,9 @@ export function useNavigation() {
                 {
                     title: 'Gastos',
                     icon: TrendingDown,
-                    visible: isFeatureEnabled('expense_approvals') && (hasPermission('view_expenses') || hasPermission('manage_expense_categories') || hasPermission('approve_expenses')),
+                    visible:
+                        isFeatureEnabled('expense_approvals') &&
+                        (hasPermission('view_expenses') || hasPermission('manage_expense_categories') || hasPermission('approve_expenses')),
                     items: [
                         {
                             title: 'Egresos',
@@ -398,7 +400,9 @@ export function useNavigation() {
                 {
                     title: 'Correo Electrónico',
                     icon: Mail,
-                    visible: isFeatureEnabled('institutional_email') && (hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates')),
+                    visible:
+                        isFeatureEnabled('institutional_email') &&
+                        (hasPermission('view_admin_email') || hasPermission('view_council_email') || hasPermission('manage_email_templates')),
                     items: [
                         {
                             title: 'Correo Administración',
@@ -505,7 +509,9 @@ export function useNavigation() {
         {
             title: 'Seguridad',
             icon: Shield,
-            visible: (isFeatureEnabled('security_scanner') || isFeatureEnabled('access_control')) && (hasPermission('manage_visitors') || hasPermission('view_access_logs')),
+            visible:
+                (isFeatureEnabled('security_scanner') || isFeatureEnabled('access_control')) &&
+                (hasPermission('manage_visitors') || hasPermission('view_access_logs')),
             items: [
                 {
                     title: 'Escáner de Visitas',

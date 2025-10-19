@@ -6,19 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { 
-    ArrowLeft, 
-    Calendar, 
-    CheckCircle, 
-    Clock, 
-    Download, 
-    Edit, 
-    Pause, 
-    Play, 
-    Users, 
-    Vote, 
-    X 
-} from 'lucide-vue-next';
+import { ArrowLeft, Calendar, CheckCircle, Clock, Download, Edit, Pause, Play, Users, Vote, X } from 'lucide-vue-next';
 
 interface Assembly {
     id: number;
@@ -241,14 +229,14 @@ const breadcrumbs = [
             <!-- Main content grid -->
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <!-- Main content -->
-                <div class="lg:col-span-2 space-y-8">
+                <div class="space-y-8 lg:col-span-2">
                     <!-- Description -->
                     <Card>
                         <CardHeader>
                             <CardTitle>Descripción</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ vote.description }}</p>
+                            <p class="leading-relaxed whitespace-pre-wrap text-gray-700">{{ vote.description }}</p>
                         </CardContent>
                     </Card>
 
@@ -265,39 +253,37 @@ const breadcrumbs = [
                         </CardHeader>
                         <CardContent class="space-y-6">
                             <!-- Overall Results -->
-                            <div v-if="vote.results" class="text-center p-6 rounded-lg bg-muted/50">
-                                <div class="text-4xl font-bold mb-2" 
-                                     :class="vote.results.approved ? 'text-green-600' : 'text-red-600'">
+                            <div v-if="vote.results" class="rounded-lg bg-muted/50 p-6 text-center">
+                                <div class="mb-2 text-4xl font-bold" :class="vote.results.approved ? 'text-green-600' : 'text-red-600'">
                                     {{ vote.results.approved ? 'APROBADA' : 'RECHAZADA' }}
                                 </div>
-                                <div class="text-lg text-muted-foreground">
-                                    {{ vote.results.percentage.toFixed(1) }}% de aprobación
-                                </div>
-                                <div class="text-sm text-muted-foreground mt-1">
-                                    {{ vote.results.total_participants }} de {{ vote.results.total_apartments }} apartamentos participaron
-                                    ({{ vote.results.quorum_percentage.toFixed(1) }}% de participación)
+                                <div class="text-lg text-muted-foreground">{{ vote.results.percentage.toFixed(1) }}% de aprobación</div>
+                                <div class="mt-1 text-sm text-muted-foreground">
+                                    {{ vote.results.total_participants }} de {{ vote.results.total_apartments }} apartamentos participaron ({{
+                                        vote.results.quorum_percentage.toFixed(1)
+                                    }}% de participación)
                                 </div>
                             </div>
 
                             <!-- Vote Breakdown -->
                             <div class="grid grid-cols-3 gap-4">
-                                <div class="text-center p-4 rounded-lg bg-green-50 border border-green-200">
+                                <div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
                                     <div class="text-3xl font-bold text-green-800">{{ vote.yes_votes }}</div>
                                     <div class="text-sm text-green-600">A Favor</div>
                                     <div class="text-xs text-green-500">
                                         {{ vote.total_votes > 0 ? ((vote.yes_votes / vote.total_votes) * 100).toFixed(1) : 0 }}%
                                     </div>
                                 </div>
-                                
-                                <div class="text-center p-4 rounded-lg bg-red-50 border border-red-200">
+
+                                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
                                     <div class="text-3xl font-bold text-red-800">{{ vote.no_votes }}</div>
                                     <div class="text-sm text-red-600">En Contra</div>
                                     <div class="text-xs text-red-500">
                                         {{ vote.total_votes > 0 ? ((vote.no_votes / vote.total_votes) * 100).toFixed(1) : 0 }}%
                                     </div>
                                 </div>
-                                
-                                <div class="text-center p-4 rounded-lg bg-gray-50 border border-gray-200">
+
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
                                     <div class="text-3xl font-bold text-gray-800">{{ vote.abstentions }}</div>
                                     <div class="text-sm text-gray-600">Abstenciones</div>
                                     <div class="text-xs text-gray-500">
@@ -312,10 +298,7 @@ const breadcrumbs = [
                                     <span>Aprobación</span>
                                     <span>{{ vote.total_votes > 0 ? ((vote.yes_votes / vote.total_votes) * 100).toFixed(1) : 0 }}%</span>
                                 </div>
-                                <Progress 
-                                    :value="vote.total_votes > 0 ? (vote.yes_votes / vote.total_votes) * 100 : 0" 
-                                    class="h-3"
-                                />
+                                <Progress :value="vote.total_votes > 0 ? (vote.yes_votes / vote.total_votes) * 100 : 0" class="h-3" />
                                 <div class="flex justify-between text-xs text-muted-foreground">
                                     <span>Requiere {{ vote.required_percentage }}% para aprobar</span>
                                     <span>{{ vote.total_votes }} votos totales</span>
@@ -331,16 +314,14 @@ const breadcrumbs = [
                                 <Users class="h-5 w-5" />
                                 Registro de Votos
                             </CardTitle>
-                            <CardDescription>
-                                Detalle de cada voto emitido
-                            </CardDescription>
+                            <CardDescription> Detalle de cada voto emitido </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div class="space-y-3 max-h-96 overflow-y-auto">
-                                <div 
-                                    v-for="record in vote.vote_records" 
+                            <div class="max-h-96 space-y-3 overflow-y-auto">
+                                <div
+                                    v-for="record in vote.vote_records"
                                     :key="record.id"
-                                    class="flex items-center justify-between p-3 rounded-lg border"
+                                    class="flex items-center justify-between rounded-lg border p-3"
                                 >
                                     <div class="flex items-center gap-3">
                                         <div class="font-medium">
@@ -389,9 +370,7 @@ const breadcrumbs = [
                                     <CheckCircle class="h-4 w-4 text-muted-foreground" />
                                     <div>
                                         <p class="text-sm font-medium">Requerimiento</p>
-                                        <p class="text-xs text-muted-foreground">
-                                            {{ vote.required_percentage }}% para aprobar
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">{{ vote.required_percentage }}% para aprobar</p>
                                     </div>
                                 </div>
 
@@ -438,17 +417,17 @@ const breadcrumbs = [
                                 <span class="text-sm">Total de Votos</span>
                                 <span class="font-medium">{{ vote.total_votes }}</span>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <span class="text-sm">A Favor</span>
                                 <span class="font-medium text-green-600">{{ vote.yes_votes }}</span>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <span class="text-sm">En Contra</span>
                                 <span class="font-medium text-red-600">{{ vote.no_votes }}</span>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <span class="text-sm">Abstenciones</span>
                                 <span class="font-medium text-gray-600">{{ vote.abstentions }}</span>
@@ -461,7 +440,7 @@ const breadcrumbs = [
                                     <span class="text-sm">Participación</span>
                                     <span class="font-medium">{{ vote.results.quorum_percentage.toFixed(1) }}%</span>
                                 </div>
-                                
+
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm">Aprobación</span>
                                     <span class="font-medium">{{ vote.results.percentage.toFixed(1) }}%</span>
@@ -483,7 +462,7 @@ const breadcrumbs = [
                                         Editar Votación
                                     </Button>
                                 </Link>
-                                
+
                                 <Button @click="deleteVote" variant="destructive" class="w-full justify-start gap-2">
                                     <X class="h-4 w-4" />
                                     Eliminar Votación

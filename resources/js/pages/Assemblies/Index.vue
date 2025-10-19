@@ -21,7 +21,7 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { Calendar, ChevronDown, ChevronsUpDown, Download, Plus, Search, Users, Vote, X } from 'lucide-vue-next';
+import { ChevronDown, ChevronsUpDown, Download, Plus, Search, Vote, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../utils';
 
@@ -212,10 +212,14 @@ const columns = [
             const date = new Date(scheduledAt);
             return h('div', { class: 'space-y-1' }, [
                 h('div', { class: 'text-sm' }, date.toLocaleDateString('es-CO')),
-                h('div', { class: 'text-xs text-muted-foreground' }, date.toLocaleTimeString('es-CO', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                })),
+                h(
+                    'div',
+                    { class: 'text-xs text-muted-foreground' },
+                    date.toLocaleTimeString('es-CO', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    }),
+                ),
             ]);
         },
     }),
@@ -227,12 +231,16 @@ const columns = [
             const quorum = assembly.quorum_status;
             const percentage = quorum.quorum_percentage;
             const hasQuorum = quorum.has_quorum;
-            
+
             return h('div', { class: 'space-y-1' }, [
                 h('div', { class: 'text-sm' }, `${percentage.toFixed(1)}%`),
-                h('div', { 
-                    class: `text-xs ${hasQuorum ? 'text-green-600' : 'text-red-600'}` 
-                }, `${quorum.participating_apartments}/${quorum.total_apartments}`),
+                h(
+                    'div',
+                    {
+                        class: `text-xs ${hasQuorum ? 'text-green-600' : 'text-red-600'}`,
+                    },
+                    `${quorum.participating_apartments}/${quorum.total_apartments}`,
+                ),
             ]);
         },
     }),
@@ -257,9 +265,7 @@ const columns = [
             }
             const hours = Math.floor(assembly.duration_minutes / 60);
             const minutes = assembly.duration_minutes % 60;
-            return h('div', { class: 'text-sm' }, 
-                hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
-            );
+            return h('div', { class: 'text-sm' }, hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`);
         },
     }),
     {

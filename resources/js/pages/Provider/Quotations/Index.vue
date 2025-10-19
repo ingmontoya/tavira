@@ -1,17 +1,11 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Calendar, Eye, FileText, Search } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -95,9 +89,7 @@ const formatCurrency = (value: number) => {
 
 const isExpiringSoon = (deadline: string | null): boolean => {
     if (!deadline) return false;
-    const daysUntilDeadline = Math.ceil(
-        (new Date(deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const daysUntilDeadline = Math.ceil((new Date(deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
     return daysUntilDeadline <= 3 && daysUntilDeadline >= 0;
 };
 
@@ -108,11 +100,7 @@ const isExpired = (deadline: string | null): boolean => {
 
 const handleStatusChange = (value: string) => {
     selectedStatus.value = value;
-    router.get(
-        route('provider.quotations.index'),
-        { status: value === 'all' ? undefined : value },
-        { preserveState: true }
-    );
+    router.get(route('provider.quotations.index'), { status: value === 'all' ? undefined : value }, { preserveState: true });
 };
 
 const breadcrumbs = [
@@ -121,9 +109,7 @@ const breadcrumbs = [
 ];
 
 const filteredRequests = props.requests.data.filter((request) => {
-    const matchesSearch = request.title
-        .toLowerCase()
-        .includes(searchQuery.value.toLowerCase());
+    const matchesSearch = request.title.toLowerCase().includes(searchQuery.value.toLowerCase());
     return matchesSearch;
 });
 </script>
@@ -137,9 +123,7 @@ const filteredRequests = props.requests.data.filter((request) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold">Solicitudes de Cotización</h1>
-                    <p class="text-muted-foreground">
-                        Revisa y responde a las solicitudes disponibles para tu categoría
-                    </p>
+                    <p class="text-muted-foreground">Revisa y responde a las solicitudes disponibles para tu categoría</p>
                 </div>
             </div>
 
@@ -152,12 +136,8 @@ const filteredRequests = props.requests.data.filter((request) => {
                     <div class="flex gap-4">
                         <div class="flex-1">
                             <div class="relative">
-                                <Search class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    v-model="searchQuery"
-                                    placeholder="Buscar por título..."
-                                    class="pl-10"
-                                />
+                                <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                <Input v-model="searchQuery" placeholder="Buscar por título..." class="pl-10" />
                             </div>
                         </div>
                         <Select :model-value="selectedStatus" @update:model-value="handleStatusChange">
@@ -176,22 +156,18 @@ const filteredRequests = props.requests.data.filter((request) => {
 
             <!-- Results Summary -->
             <div class="flex items-center justify-between">
-                <p class="text-sm text-muted-foreground">
-                    Mostrando {{ filteredRequests.length }} de {{ requests.total }} solicitudes
-                </p>
+                <p class="text-sm text-muted-foreground">Mostrando {{ filteredRequests.length }} de {{ requests.total }} solicitudes</p>
             </div>
 
             <!-- Requests List -->
             <div v-if="filteredRequests.length === 0" class="py-12 text-center">
                 <FileText class="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 class="mt-4 text-lg font-semibold">No hay solicitudes disponibles</h3>
-                <p class="text-muted-foreground">
-                    No se encontraron solicitudes que coincidan con tus criterios de búsqueda.
-                </p>
+                <p class="text-muted-foreground">No se encontraron solicitudes que coincidan con tus criterios de búsqueda.</p>
             </div>
 
             <div v-else class="space-y-4">
-                <Card v-for="request in filteredRequests" :key="request.id" class="hover:shadow-md transition-shadow">
+                <Card v-for="request in filteredRequests" :key="request.id" class="transition-shadow hover:shadow-md">
                     <CardHeader>
                         <div class="flex items-start justify-between">
                             <div class="space-y-1">
@@ -203,10 +179,11 @@ const filteredRequests = props.requests.data.filter((request) => {
                                     <Badge v-if="isExpiringSoon(request.deadline)" variant="outline" class="border-yellow-500 text-yellow-700">
                                         ⚠️ Vence pronto
                                     </Badge>
-                                    <Badge v-if="isExpired(request.deadline)" variant="destructive">
-                                        Expirada
-                                    </Badge>
-                                    <Badge v-if="request.has_response" :class="getResponseStatusBadge(request.my_response?.status || 'pending').class">
+                                    <Badge v-if="isExpired(request.deadline)" variant="destructive"> Expirada </Badge>
+                                    <Badge
+                                        v-if="request.has_response"
+                                        :class="getResponseStatusBadge(request.my_response?.status || 'pending').class"
+                                    >
                                         {{ getResponseStatusBadge(request.my_response?.status || 'pending').text }}
                                     </Badge>
                                 </div>
@@ -228,7 +205,7 @@ const filteredRequests = props.requests.data.filter((request) => {
                         </p>
 
                         <!-- Show response info if provider has responded -->
-                        <div v-if="request.has_response && request.my_response" class="mb-4 rounded-md bg-blue-50 p-3 border border-blue-200">
+                        <div v-if="request.has_response && request.my_response" class="mb-4 rounded-md border border-blue-200 bg-blue-50 p-3">
                             <p class="text-sm font-medium text-blue-900">Tu propuesta:</p>
                             <div class="mt-1 flex flex-wrap items-center gap-3 text-sm text-blue-800">
                                 <span class="font-semibold">{{ formatCurrency(request.my_response.quoted_amount) }}</span>
@@ -243,7 +220,7 @@ const filteredRequests = props.requests.data.filter((request) => {
                             </div>
                             <div class="flex items-center gap-1">
                                 <FileText class="h-4 w-4" />
-                                <span>Categorías: {{ request.categories.map(c => c.name).join(', ') }}</span>
+                                <span>Categorías: {{ request.categories.map((c) => c.name).join(', ') }}</span>
                             </div>
                         </div>
                     </CardContent>

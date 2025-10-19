@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -15,7 +10,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Building2, Calendar, CheckCircle, Clock, DollarSign, FileText, Mail, Phone, User, Download } from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ArrowLeft, Building2, Calendar, CheckCircle, Clock, DollarSign, Download, FileText, Mail, Phone } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface QuotationRequest {
@@ -87,21 +87,29 @@ const getStatusBadge = (status: string) => {
 };
 
 const approveResponse = () => {
-    router.post(route('quotation-requests.responses.approve', [props.quotationRequest.id, props.response.id]), {}, {
-        preserveState: false,
-        onSuccess: () => {
-            showApproveDialog.value = false;
+    router.post(
+        route('quotation-requests.responses.approve', [props.quotationRequest.id, props.response.id]),
+        {},
+        {
+            preserveState: false,
+            onSuccess: () => {
+                showApproveDialog.value = false;
+            },
         },
-    });
+    );
 };
 
 const rejectResponse = () => {
-    router.post(route('quotation-requests.responses.reject', [props.quotationRequest.id, props.response.id]), {}, {
-        preserveState: false,
-        onSuccess: () => {
-            showRejectDialog.value = false;
+    router.post(
+        route('quotation-requests.responses.reject', [props.quotationRequest.id, props.response.id]),
+        {},
+        {
+            preserveState: false,
+            onSuccess: () => {
+                showRejectDialog.value = false;
+            },
         },
-    });
+    );
 };
 
 const breadcrumbs = [
@@ -127,9 +135,7 @@ const breadcrumbs = [
                     </Link>
                     <div>
                         <h1 class="text-3xl font-bold">Propuesta de {{ provider.name }}</h1>
-                        <p class="text-muted-foreground">
-                            Para: {{ quotationRequest.title }}
-                        </p>
+                        <p class="text-muted-foreground">Para: {{ quotationRequest.title }}</p>
                     </div>
                 </div>
                 <Badge :class="getStatusBadge(response.status).class" class="text-sm">
@@ -139,14 +145,12 @@ const breadcrumbs = [
 
             <div class="grid gap-6 md:grid-cols-3">
                 <!-- Main Content -->
-                <div class="md:col-span-2 space-y-6">
+                <div class="space-y-6 md:col-span-2">
                     <!-- Proposal Details -->
                     <Card>
                         <CardHeader>
                             <CardTitle>Detalles de la Propuesta</CardTitle>
-                            <CardDescription>
-                                Información financiera y técnica de la cotización
-                            </CardDescription>
+                            <CardDescription> Información financiera y técnica de la cotización </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-6">
                             <!-- Price -->
@@ -172,7 +176,7 @@ const breadcrumbs = [
                             <!-- Proposal Notes -->
                             <div v-if="response.proposal">
                                 <h3 class="mb-2 text-sm font-medium text-muted-foreground">Notas de la Propuesta</h3>
-                                <div class="whitespace-pre-wrap rounded-lg border bg-muted/30 p-4">
+                                <div class="rounded-lg border bg-muted/30 p-4 whitespace-pre-wrap">
                                     {{ response.proposal }}
                                 </div>
                             </div>
@@ -196,10 +200,7 @@ const breadcrumbs = [
                                             target="_blank"
                                             download
                                         >
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                            >
+                                            <Button variant="ghost" size="sm">
                                                 <Download class="mr-2 h-4 w-4" />
                                                 Descargar
                                             </Button>
@@ -220,9 +221,7 @@ const breadcrumbs = [
                     <Card v-if="response.status === 'pending'">
                         <CardHeader>
                             <CardTitle>Acciones</CardTitle>
-                            <CardDescription>
-                                Aprobar o rechazar esta propuesta
-                            </CardDescription>
+                            <CardDescription> Aprobar o rechazar esta propuesta </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div class="flex gap-3">
@@ -237,9 +236,10 @@ const breadcrumbs = [
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Aprobar Propuesta</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                ¿Está seguro de que desea aprobar esta propuesta de <strong>{{ provider.name }}</strong>?
-                                                <br /><br />
-                                                El proveedor será notificado por correo electrónico y las demás propuestas serán rechazadas automáticamente.
+                                                ¿Está seguro de que desea aprobar esta propuesta de <strong>{{ provider.name }}</strong
+                                                >? <br /><br />
+                                                El proveedor será notificado por correo electrónico y las demás propuestas serán rechazadas
+                                                automáticamente.
                                                 <br /><br />
                                                 <strong>Monto:</strong> {{ formatCurrency(response.quoted_amount) }}
                                             </AlertDialogDescription>
@@ -255,9 +255,7 @@ const breadcrumbs = [
 
                                 <AlertDialog v-model:open="showRejectDialog">
                                     <AlertDialogTrigger as-child>
-                                        <Button variant="destructive" class="flex-1">
-                                            Rechazar Propuesta
-                                        </Button>
+                                        <Button variant="destructive" class="flex-1"> Rechazar Propuesta </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>

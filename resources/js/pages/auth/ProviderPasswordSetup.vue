@@ -31,7 +31,10 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Configura tu cuenta de proveedor" description="Bienvenido a Tavira. Configura tu contraseña para acceder a tu panel de proveedor.">
+    <AuthLayout
+        title="Configura tu cuenta de proveedor"
+        description="Bienvenido a Tavira. Configura tu contraseña para acceder a tu panel de proveedor."
+    >
         <Head title="Configurar Contraseña - Proveedor" />
 
         <div class="mb-6 flex items-center justify-center">
@@ -61,9 +64,7 @@ const submit = () => {
                         placeholder="Mínimo 8 caracteres"
                     />
                     <InputError :message="form.errors.password" />
-                    <p class="text-xs text-muted-foreground">
-                        Tu contraseña debe tener al menos 8 caracteres
-                    </p>
+                    <p class="text-xs text-muted-foreground">Tu contraseña debe tener al menos 8 caracteres</p>
                 </div>
 
                 <div class="grid gap-2">

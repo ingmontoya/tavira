@@ -85,11 +85,7 @@
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <Button
-                                @click="$inertia.visit(route('accounting.transactions.index'))"
-                                variant="outline"
-                                class="justify-start"
-                            >
+                            <Button @click="$inertia.visit(route('accounting.transactions.index'))" variant="outline" class="justify-start">
                                 <FileTextIcon class="mr-2 h-4 w-4" />
                                 Ver Transacciones Contables
                             </Button>

@@ -110,7 +110,6 @@ const submit = () => {
 </script>
 
 <template>
-
     <Head title="Nueva Visita" />
 
     <AppLayout>
@@ -118,7 +117,7 @@ const submit = () => {
             <div class="mb-8">
                 <div class="mb-4 flex items-center gap-4">
                     <Link :href="route('visits.index')" class="text-gray-500 hover:text-gray-700">
-                    <ArrowLeft class="h-5 w-5" />
+                        <ArrowLeft class="h-5 w-5" />
                     </Link>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Nueva Visita</h1>
@@ -147,8 +146,7 @@ const submit = () => {
                                     <SelectValue placeholder="Seleccionar apartamento" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="apartment in props.apartments" :key="apartment.id"
-                                        :value="apartment.id">
+                                    <SelectItem v-for="apartment in props.apartments" :key="apartment.id" :value="apartment.id">
                                         {{ apartment.tower }}-{{ apartment.number }} (Piso {{ apartment.floor }})
                                     </SelectItem>
                                 </SelectContent>
@@ -159,8 +157,7 @@ const submit = () => {
                             <p class="text-sm font-medium text-blue-900">
                                 Apartamento seleccionado: {{ selectedApartment.tower }}-{{ selectedApartment.number }}
                             </p>
-                            <p class="text-sm text-blue-700">Torre {{ selectedApartment.tower }}, Piso {{
-                                selectedApartment.floor }}</p>
+                            <p class="text-sm text-blue-700">Torre {{ selectedApartment.tower }}, Piso {{ selectedApartment.floor }}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -177,14 +174,12 @@ const submit = () => {
                     <CardContent class="space-y-4">
                         <div>
                             <Label for="visitor_name">Nombre completo <span class="text-red-500">*</span></Label>
-                            <Input id="visitor_name" v-model="form.visitor_name"
-                                placeholder="Nombre completo del visitante" required />
+                            <Input id="visitor_name" v-model="form.visitor_name" placeholder="Nombre completo del visitante" required />
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
-                                <Label for="visitor_document_type">Tipo de documento <span
-                                        class="text-red-500">*</span></Label>
+                                <Label for="visitor_document_type">Tipo de documento <span class="text-red-500">*</span></Label>
                                 <Select v-model="form.visitor_document_type" required>
                                     <SelectTrigger>
                                         <SelectValue />
@@ -199,23 +194,24 @@ const submit = () => {
                             </div>
 
                             <div>
-                                <Label for="visitor_document_number">Número de documento <span
-                                        class="text-red-500">*</span></Label>
-                                <Input id="visitor_document_number" v-model="form.visitor_document_number"
-                                    placeholder="123456789" required />
+                                <Label for="visitor_document_number">Número de documento <span class="text-red-500">*</span></Label>
+                                <Input id="visitor_document_number" v-model="form.visitor_document_number" placeholder="123456789" required />
                             </div>
                         </div>
 
                         <div>
                             <Label for="visitor_phone">Teléfono</Label>
-                            <Input id="visitor_phone" v-model="form.visitor_phone" placeholder="+ +44 7447 313219"
-                                type="tel" />
+                            <Input id="visitor_phone" v-model="form.visitor_phone" placeholder="+ +44 7447 313219" type="tel" />
                         </div>
 
                         <div>
                             <Label for="visit_reason">Motivo de la visita</Label>
-                            <Textarea id="visit_reason" v-model="form.visit_reason"
-                                placeholder="Describe brevemente el motivo de la visita..." rows="3" />
+                            <Textarea
+                                id="visit_reason"
+                                v-model="form.visit_reason"
+                                placeholder="Describe brevemente el motivo de la visita..."
+                                rows="3"
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -259,8 +255,7 @@ const submit = () => {
                                 <p class="text-sm font-medium">Importante</p>
                             </div>
                             <p class="mt-1 text-sm text-amber-700">
-                                El código QR solo será válido durante el período especificado. Una vez utilizado, el
-                                código no podrá ser reutilizado.
+                                El código QR solo será válido durante el período especificado. Una vez utilizado, el código no podrá ser reutilizado.
                             </p>
                         </div>
                     </CardContent>
@@ -269,10 +264,14 @@ const submit = () => {
                 <!-- Actions -->
                 <div class="flex justify-end gap-4 pt-6">
                     <Link :href="route('visits.index')">
-                    <Button type="button" variant="outline"> Cancelar </Button>
+                        <Button type="button" variant="outline"> Cancelar </Button>
                     </Link>
-                    <Button type="submit" :disabled="form.processing || !dateValidation.isValid" class="bg-primary"
-                        :class="{ 'cursor-not-allowed opacity-50': !dateValidation.isValid }">
+                    <Button
+                        type="submit"
+                        :disabled="form.processing || !dateValidation.isValid"
+                        class="bg-primary"
+                        :class="{ 'cursor-not-allowed opacity-50': !dateValidation.isValid }"
+                    >
                         <Save class="mr-2 h-4 w-4" />
                         {{ form.processing ? 'Creando...' : 'Crear Visita' }}
                     </Button>

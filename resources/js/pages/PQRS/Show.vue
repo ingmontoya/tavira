@@ -1,24 +1,4 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,16 +10,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-    MessageSquare,
-    User,
-    Home,
-    Calendar,
-    ArrowLeft,
-    Save,
-    Trash2,
-} from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, Home, MessageSquare, Save, Trash2, User } from 'lucide-vue-next';
 
 interface Pqrs {
     id: number;
@@ -132,7 +111,6 @@ const priorityLabels: Record<string, string> = {
 </script>
 
 <template>
-
     <Head :title="`PQRS - ${pqrs.ticket_number}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -172,8 +150,7 @@ const priorityLabels: Record<string, string> = {
                         <AlertDialogHeader>
                             <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Esta acción no se puede deshacer. La PQRS será eliminada
-                                permanentemente.
+                                Esta acción no se puede deshacer. La PQRS será eliminada permanentemente.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -215,9 +192,7 @@ const priorityLabels: Record<string, string> = {
                     <Card>
                         <CardHeader>
                             <CardTitle>Gestionar PQRS</CardTitle>
-                            <CardDescription>
-                                Actualice el estado, prioridad y respuesta de la PQRS
-                            </CardDescription>
+                            <CardDescription> Actualice el estado, prioridad y respuesta de la PQRS </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form @submit.prevent="updatePqrs" class="space-y-4">
@@ -273,8 +248,12 @@ const priorityLabels: Record<string, string> = {
                                 <!-- Admin Response -->
                                 <div class="space-y-2">
                                     <Label for="admin_response">Respuesta de Administración</Label>
-                                    <Textarea id="admin_response" v-model="form.admin_response"
-                                        placeholder="Escriba la respuesta a esta PQRS..." rows="6" />
+                                    <Textarea
+                                        id="admin_response"
+                                        v-model="form.admin_response"
+                                        placeholder="Escriba la respuesta a esta PQRS..."
+                                        rows="6"
+                                    />
                                     <p v-if="pqrs.responded_at" class="text-sm text-gray-600">
                                         Última respuesta:
                                         {{ new Date(pqrs.responded_at).toLocaleString('es-CO') }}
@@ -375,9 +354,7 @@ const priorityLabels: Record<string, string> = {
                                     <div v-if="pqrs.resolved_at" class="h-full w-px bg-gray-200"></div>
                                 </div>
                                 <div :class="{ 'pb-4': pqrs.resolved_at }">
-                                    <p class="text-sm font-medium text-gray-900">
-                                        Respuesta Enviada
-                                    </p>
+                                    <p class="text-sm font-medium text-gray-900">Respuesta Enviada</p>
                                     <p class="text-xs text-gray-600">
                                         {{ new Date(pqrs.responded_at).toLocaleString('es-CO') }}
                                     </p>

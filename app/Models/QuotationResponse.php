@@ -24,6 +24,7 @@ class QuotationResponse extends Model
         'estimated_days',
         'status',
         'admin_notes',
+        'expense_id',
     ];
 
     /**
@@ -43,6 +44,11 @@ class QuotationResponse extends Model
     public function quotationRequest(): BelongsTo
     {
         return $this->belongsTo(QuotationRequest::class);
+    }
+
+    public function expense(): BelongsTo
+    {
+        return $this->belongsTo(Expense::class);
     }
 
     /**

@@ -76,22 +76,42 @@
         "residents": {
             "title": "Residentes & Propietarios",
             "description": "Portal completo con acceso 24/7 a toda la información y servicios digitales del conjunto",
-            "features": ["Estados de cuenta en tiempo real", "Gestión digital de visitantes", "Recepción de comunicados oficiales", "Correspondencia y notificaciones"]
+            "features": [
+                "Estados de cuenta en tiempo real",
+                "Gestión digital de visitantes",
+                "Recepción de comunicados oficiales",
+                "Correspondencia y notificaciones"
+            ]
         },
         "apartments": {
             "title": "Inventario de Unidades",
             "description": "Catálogo inteligente con configuraciones flexibles, estados en tiempo real y seguimiento",
-            "features": ["Configuración por pisos personalizable", "Estados de ocupación dinámicos", "Historial de mantenimientos", "Valorizaciones y proyecciones"]
+            "features": [
+                "Configuración por pisos personalizable",
+                "Estados de ocupación dinámicos",
+                "Historial de mantenimientos",
+                "Valorizaciones y proyecciones"
+            ]
         },
         "payments": {
             "title": "Finanzas & Facturación DIAN",
             "description": "Sistema financiero profesional con facturación electrónica oficial y conciliación bancaria inteligente",
-            "features": ["Facturación electrónica DIAN oficial", "Integración Jelpit para conciliación", "Contabilidad doble partida automatizada", "Flujos de aprobación de gastos"]
+            "features": [
+                "Facturación electrónica DIAN oficial",
+                "Integración Jelpit para conciliación",
+                "Contabilidad doble partida automatizada",
+                "Flujos de aprobación de gastos"
+            ]
         },
         "reports": {
             "title": "Business Intelligence",
             "description": "Dashboards ejecutivos con KPIs en tiempo real y reportes financieros profesionales",
-            "features": ["Dashboard ejecutivo en tiempo real", "Estados financieros automatizados", "Análisis predictivo de cartera", "Exportación para contadores"]
+            "features": [
+                "Dashboard ejecutivo en tiempo real",
+                "Estados financieros automatizados",
+                "Análisis predictivo de cartera",
+                "Exportación para contadores"
+            ]
         },
         "communication": {
             "title": "Comunicación 360°",
@@ -101,7 +121,12 @@
         "access": {
             "title": "Comunicación & Control de Acceso",
             "description": "Sistema integral de comunicación, gestión de visitantes y correspondencia oficial",
-            "features": ["Gestión inteligente de visitantes", "Correspondencia oficial digital", "Comunicados con confirmación", "Llamados de atención y notificaciones"]
+            "features": [
+                "Gestión inteligente de visitantes",
+                "Correspondencia oficial digital",
+                "Comunicados con confirmación",
+                "Llamados de atención y notificaciones"
+            ]
         }
     },
     "testimonials": {

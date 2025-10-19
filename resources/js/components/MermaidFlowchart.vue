@@ -85,6 +85,7 @@ const applyCustomStyles = () => {
     }
 };
 
+
 const containerStyle = computed(() => ({
     height: typeof props.height === 'number' ? `${props.height}px` : props.height,
     width: typeof props.width === 'number' ? `${props.width}px` : props.width,
@@ -108,21 +109,23 @@ const containerStyle = computed(() => ({
 
 :global(.mermaid-container .node.active rect) {
     fill: #3b82f6 !important;
-    stroke: #1d4ed8 !important;
-    stroke-width: 4px !important;
-    filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.4)) !important;
-    animation: pulse-active 2s ease-in-out infinite !important;
+    stroke: #f59e0b !important;
+    stroke-width: 6px !important;
+    filter: drop-shadow(0 6px 16px rgba(245, 158, 11, 0.6)) !important;
+    animation: pulse-active 1.5s ease-in-out infinite !important;
 }
 
 @keyframes pulse-active {
     0%,
     100% {
-        stroke-width: 4px;
-        filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.4));
+        stroke-width: 6px;
+        stroke: #f59e0b;
+        filter: drop-shadow(0 6px 16px rgba(245, 158, 11, 0.6));
     }
     50% {
-        stroke-width: 6px;
-        filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.6));
+        stroke-width: 8px;
+        stroke: #fb923c;
+        filter: drop-shadow(0 8px 24px rgba(251, 146, 60, 0.8));
     }
 }
 

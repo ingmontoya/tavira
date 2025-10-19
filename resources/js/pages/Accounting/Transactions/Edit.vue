@@ -116,9 +116,7 @@ const canSubmit = computed(() => {
     }
 
     // Check all entries have account and amount
-    const hasBasicValidation = form.entries.every(
-        (entry) => entry.account_id && (entry.debit_amount > 0 || entry.credit_amount > 0)
-    );
+    const hasBasicValidation = form.entries.every((entry) => entry.account_id && (entry.debit_amount > 0 || entry.credit_amount > 0));
 
     if (!hasBasicValidation) {
         return false;
@@ -334,9 +332,7 @@ const breadcrumbs = [
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p class="text-xs text-muted-foreground">
-                                El estado "Contabilizado" confirma y bloquea la transacción permanentemente
-                            </p>
+                            <p class="text-xs text-muted-foreground">El estado "Contabilizado" confirma y bloquea la transacción permanentemente</p>
                             <p v-if="form.errors.status" class="text-sm text-red-600">
                                 {{ form.errors.status }}
                             </p>
@@ -433,7 +429,11 @@ const breadcrumbs = [
                                                 v-model="entry.third_party_id"
                                                 :disabled="!canEdit"
                                             >
-                                                <SelectTrigger :class="{ 'border-red-500': getAccountRequiresThirdParty(entry.account_id) && !entry.third_party_id }">
+                                                <SelectTrigger
+                                                    :class="{
+                                                        'border-red-500': getAccountRequiresThirdParty(entry.account_id) && !entry.third_party_id,
+                                                    }"
+                                                >
                                                     <SelectValue placeholder="Apto..." />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -512,13 +512,7 @@ const breadcrumbs = [
 
                         <Button type="submit" :disabled="form.processing || !canSubmit" class="gap-2">
                             <Save class="h-4 w-4" />
-                            {{
-                                form.processing
-                                    ? 'Guardando...'
-                                    : form.status === 'contabilizado'
-                                        ? 'Guardar y Contabilizar'
-                                        : 'Guardar Cambios'
-                            }}
+                            {{ form.processing ? 'Guardando...' : form.status === 'contabilizado' ? 'Guardar y Contabilizar' : 'Guardar Cambios' }}
                         </Button>
                     </div>
                 </div>

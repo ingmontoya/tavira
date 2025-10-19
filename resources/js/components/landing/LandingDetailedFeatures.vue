@@ -2,26 +2,24 @@
     <section id="detailed-features" class="bg-white px-6 py-16 md:py-20">
         <div class="mx-auto max-w-7xl">
             <div class="mb-16 text-center">
-                <h2 class="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold text-[#1D3557]">
+                <h2 class="mb-6 text-3xl font-bold text-[#1D3557] md:text-4xl lg:text-5xl">
                     Funcionalidades
-                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent">
-                        Detalladas
-                    </span>
+                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#1D3557] bg-clip-text text-transparent"> Detalladas </span>
                     para cada Usuario
                 </h2>
-                <p class="mx-auto max-w-3xl text-lg md:text-xl text-gray-700">
+                <p class="mx-auto max-w-3xl text-lg text-gray-700 md:text-xl">
                     Desde aplicaciones móviles nativas hasta gestión avanzada, cada usuario tiene herramientas específicas para sus necesidades.
                 </p>
             </div>
 
-            <div class="grid gap-6 md:gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
                 <div
                     v-for="(feature, index) in features"
                     :key="index"
-                    class="rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#06D6A0]/30"
+                    class="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[#06D6A0]/30 hover:shadow-xl md:p-8"
                 >
                     <div class="mb-6 text-4xl">{{ feature.icon }}</div>
-                    <h3 class="mb-3 text-xl md:text-2xl font-bold text-[#1D3557]">{{ feature.title }}</h3>
+                    <h3 class="mb-3 text-xl font-bold text-[#1D3557] md:text-2xl">{{ feature.title }}</h3>
                     <p class="mb-6 text-gray-600">{{ feature.description }}</p>
                     <ul class="space-y-2">
                         <li v-for="(item, idx) in feature.features" :key="idx" class="flex items-center space-x-3">
@@ -58,7 +56,7 @@ const features = computed(() => [
             'Enviar pases QR a visitas',
             'Marketplace comunitario',
             'Reservar espacios comunes',
-            'Recibir comunicados instantáneos'
+            'Recibir comunicados instantáneos',
         ],
     },
     {
@@ -71,7 +69,7 @@ const features = computed(() => [
             'Gestión de paquetes con fotos',
             'Registro de visitas y proveedores',
             'Control de acceso vehicular',
-            'Historial completo de accesos'
+            'Historial completo de accesos',
         ],
     },
     {
@@ -84,7 +82,7 @@ const features = computed(() => [
             'Conciliación bancaria automática',
             'Reportes ejecutivos completos',
             'Control de morosidad',
-            'Presupuestos anuales'
+            'Presupuestos anuales',
         ],
     },
     {
@@ -97,7 +95,7 @@ const features = computed(() => [
             'Notificaciones automáticas',
             'Control presupuestal integrado',
             'Historial permanente',
-            'Aprobaciones por niveles'
+            'Aprobaciones por niveles',
         ],
     },
     {
@@ -110,7 +108,7 @@ const features = computed(() => [
             'Independiente de administraciones',
             'Templates oficiales',
             'Historial completo conservado',
-            'Comunicación profesional'
+            'Comunicación profesional',
         ],
     },
     {
@@ -123,7 +121,7 @@ const features = computed(() => [
             'Servicios profesionales',
             'Solo residentes verificados',
             'Categorías variadas',
-            'Ambiente de confianza mutua'
+            'Ambiente de confianza mutua',
         ],
     },
 ]);

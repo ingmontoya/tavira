@@ -9,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { useToast } from '@/composables/useToast';
 import type { ColumnFiltersState, ExpandedState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import {
     createColumnHelper,
@@ -99,36 +99,44 @@ const clearCustomFilters = () => {
 
 // Create default accounts
 const createDefaultAccounts = () => {
-    router.post('/accounting/chart-of-accounts/create-defaults', {}, {
-        onSuccess: () => {
-            success('Plan de cuentas creado exitosamente');
-            // Use setTimeout to ensure toast shows first, then reload
-            setTimeout(() => {
-                router.reload();
-            }, 100);
+    router.post(
+        '/accounting/chart-of-accounts/create-defaults',
+        {},
+        {
+            onSuccess: () => {
+                success('Plan de cuentas creado exitosamente');
+                // Use setTimeout to ensure toast shows first, then reload
+                setTimeout(() => {
+                    router.reload();
+                }, 100);
+            },
+            onError: (errors) => {
+                const errorMessage = errors?.create_defaults || 'Error al crear el plan de cuentas';
+                error(errorMessage);
+            },
         },
-        onError: (errors) => {
-            const errorMessage = errors?.create_defaults || 'Error al crear el plan de cuentas';
-            error(errorMessage);
-        }
-    });
+    );
 };
 
 // Sync accounts
 const syncAccounts = () => {
-    router.post('/accounting/chart-of-accounts/sync', {}, {
-        onSuccess: () => {
-            success('Plan de cuentas sincronizado exitosamente');
-            // Use setTimeout to ensure toast shows first, then reload
-            setTimeout(() => {
-                router.reload();
-            }, 100);
+    router.post(
+        '/accounting/chart-of-accounts/sync',
+        {},
+        {
+            onSuccess: () => {
+                success('Plan de cuentas sincronizado exitosamente');
+                // Use setTimeout to ensure toast shows first, then reload
+                setTimeout(() => {
+                    router.reload();
+                }, 100);
+            },
+            onError: (errors) => {
+                const errorMessage = errors?.sync || 'Error al sincronizar el plan de cuentas';
+                error(errorMessage);
+            },
         },
-        onError: (errors) => {
-            const errorMessage = errors?.sync || 'Error al sincronizar el plan de cuentas';
-            error(errorMessage);
-        }
-    });
+    );
 };
 
 // Apply custom filters to data
@@ -352,12 +360,14 @@ const exportAccounts = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Alert for no accounts -->
-            <Alert v-if="!has_accounts" class="bg-blue-50 border-blue-200">
+            <Alert v-if="!has_accounts" class="border-blue-200 bg-blue-50">
                 <Database class="h-4 w-4 text-blue-600" />
                 <AlertDescription>
                     <div class="space-y-2">
                         <p class="font-medium text-blue-800">Plan de cuentas no configurado</p>
-                        <p class="text-blue-700">Para comenzar a usar el sistema contable, debe inicializar el plan de cuentas con las cuentas estándar colombianas.</p>
+                        <p class="text-blue-700">
+                            Para comenzar a usar el sistema contable, debe inicializar el plan de cuentas con las cuentas estándar colombianas.
+                        </p>
                         <Button @click="createDefaultAccounts" variant="default" size="sm" class="mt-3">
                             <Settings class="mr-2 h-4 w-4" />
                             Crear Plan de Cuentas por Defecto
@@ -366,12 +376,15 @@ const exportAccounts = () => {
                 </AlertDescription>
             </Alert>
 
-            <Alert v-if="needs_sync" class="bg-amber-50 border-amber-200">
+            <Alert v-if="needs_sync" class="border-amber-200 bg-amber-50">
                 <Database class="h-4 w-4 text-amber-600" />
                 <AlertDescription>
                     <div class="space-y-2">
                         <p class="font-medium text-amber-800">Plan de cuentas incompleto</p>
-                        <p class="text-amber-700">Tienes {{ accounts_count }} cuentas de 350 esperadas. Sincroniza el plan de cuentas para agregar las cuentas faltantes del PUC colombiano para propiedad horizontal.</p>
+                        <p class="text-amber-700">
+                            Tienes {{ accounts_count }} cuentas de 350 esperadas. Sincroniza el plan de cuentas para agregar las cuentas faltantes del
+                            PUC colombiano para propiedad horizontal.
+                        </p>
                         <Button @click="syncAccounts" variant="default" size="sm" class="mt-3">
                             <Settings class="mr-2 h-4 w-4" />
                             Sincronizar Plan de Cuentas
@@ -542,20 +555,10 @@ const exportAccounts = () => {
                     Mostrando {{ accounts.from }} a {{ accounts.to }} de {{ accounts.total }} cuentas
                 </div>
                 <div class="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!accounts.prev_page_url"
-                        @click="router.visit(accounts.prev_page_url)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="!accounts.prev_page_url" @click="router.visit(accounts.prev_page_url)">
                         Anterior
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!accounts.next_page_url"
-                        @click="router.visit(accounts.next_page_url)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="!accounts.next_page_url" @click="router.visit(accounts.next_page_url)">
                         Siguiente
                     </Button>
                 </div>

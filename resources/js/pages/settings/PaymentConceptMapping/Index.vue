@@ -154,36 +154,48 @@ const toggleActive = (mapping: PaymentConceptMapping) => {
 };
 
 const createDefaultMappings = () => {
-    router.post(route('settings.payment-concept-mapping.create-defaults'), {}, {
-        onSuccess: () => {
-            // Refresh data to show new mappings
-            setTimeout(() => {
-                router.reload();
-            }, 100);
-        }
-    });
+    router.post(
+        route('settings.payment-concept-mapping.create-defaults'),
+        {},
+        {
+            onSuccess: () => {
+                // Refresh data to show new mappings
+                setTimeout(() => {
+                    router.reload();
+                }, 100);
+            },
+        },
+    );
 };
 
 const seedPaymentConcepts = () => {
-    router.post(route('settings.payment-concept-mapping.seed-concepts'), {}, {
-        onSuccess: () => {
-            // Refresh data to show new concepts
-            setTimeout(() => {
-                router.reload();
-            }, 100);
-        }
-    });
+    router.post(
+        route('settings.payment-concept-mapping.seed-concepts'),
+        {},
+        {
+            onSuccess: () => {
+                // Refresh data to show new concepts
+                setTimeout(() => {
+                    router.reload();
+                }, 100);
+            },
+        },
+    );
 };
 
 const seedPaymentConceptMappings = () => {
-    router.post(route('settings.payment-concept-mapping.seed-mappings'), {}, {
-        onSuccess: () => {
-            // Refresh data to show new mappings
-            setTimeout(() => {
-                router.reload();
-            }, 100);
-        }
-    });
+    router.post(
+        route('settings.payment-concept-mapping.seed-mappings'),
+        {},
+        {
+            onSuccess: () => {
+                // Refresh data to show new mappings
+                setTimeout(() => {
+                    router.reload();
+                }, 100);
+            },
+        },
+    );
 };
 
 const getTypeColor = (type: string) => {
@@ -295,7 +307,10 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                 </div>
 
                 <!-- Alert for no mappings at all -->
-                <div v-else-if="mappings.length === 0 && has_payment_concepts && has_chart_of_accounts" class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                <div
+                    v-else-if="mappings.length === 0 && has_payment_concepts && has_chart_of_accounts"
+                    class="rounded-lg border border-orange-200 bg-orange-50 p-4"
+                >
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <Settings class="h-5 w-5 text-orange-400" />
@@ -303,7 +318,10 @@ const hasUnmappedConcepts = computed(() => props.concepts_without_mapping.length
                         <div class="ml-3 flex-1">
                             <h3 class="text-sm font-medium text-orange-800">Mapeo contable no configurado</h3>
                             <div class="mt-2 text-sm text-orange-700">
-                                <p>No hay mapeos contables configurados. Para que las facturas generen transacciones contables automáticas, debe configurar los mapeos entre conceptos de pago y cuentas contables.</p>
+                                <p>
+                                    No hay mapeos contables configurados. Para que las facturas generen transacciones contables automáticas, debe
+                                    configurar los mapeos entre conceptos de pago y cuentas contables.
+                                </p>
                                 <Button
                                     @click="seedPaymentConceptMappings"
                                     variant="outline"

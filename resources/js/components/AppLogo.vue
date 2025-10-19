@@ -7,7 +7,8 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
         <AppLogoIcon type="iso" class="size-9 fill-current text-[var(--foreground)] dark:text-white" />
     </div>
     <div class="ml-1 grid flex-1 text-left text-xl">
-        <span class="mb-0.5 truncate bg-gradient-to-r from-[#1D3557] to-[#06D6A0] bg-clip-text leading-tight font-extrabold text-transparent font-brand tracking-tight"
+        <span
+            class="mb-0.5 truncate bg-gradient-to-r from-[#1D3557] to-[#06D6A0] bg-clip-text font-brand leading-tight font-extrabold tracking-tight text-transparent"
             >Tavira</span
         >
     </div>

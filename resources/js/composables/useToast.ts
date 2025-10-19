@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/vue3';
-import { computed, watch, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Toast {
     id: string;
@@ -49,7 +49,7 @@ export function useToast() {
                 });
             }
         },
-        { immediate: true, deep: true }
+        { immediate: true, deep: true },
     );
 
     function addToast(toast: Omit<Toast, 'id'>) {
@@ -73,7 +73,7 @@ export function useToast() {
     }
 
     function removeToast(id: string) {
-        const index = toasts.value.findIndex(toast => toast.id === id);
+        const index = toasts.value.findIndex((toast) => toast.id === id);
         if (index > -1) {
             toasts.value.splice(index, 1);
         }

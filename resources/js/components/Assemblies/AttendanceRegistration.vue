@@ -2,23 +2,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/composables/useToast';
 import { router } from '@inertiajs/vue3';
-import { 
-    Check, 
-    Clock, 
-    Eye, 
-    Home, 
-    RefreshCw, 
-    Users, 
-    UserCheck, 
-    UserX,
-    Wifi,
-    WifiOff
-} from 'lucide-vue-next';
+import { Check, Eye, Home, RefreshCw, UserCheck, Users, UserX, Wifi, WifiOff } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface Resident {
@@ -83,14 +71,14 @@ const sortedResidents = computed(() => {
             return b.is_online ? 1 : -1;
         }
         if (a.attendance_status !== b.attendance_status) {
-            const statusOrder = { 'present': 0, 'delegated': 1, 'not_registered': 2, 'absent': 3 };
+            const statusOrder = { present: 0, delegated: 1, not_registered: 2, absent: 3 };
             return statusOrder[a.attendance_status] - statusOrder[b.attendance_status];
         }
         return a.apartment.number.localeCompare(b.apartment.number, undefined, { numeric: true });
     });
 });
 
-const onlineCount = computed(() => onlineResidents.value.filter(r => r.is_online).length);
+const onlineCount = computed(() => onlineResidents.value.filter((r) => r.is_online).length);
 
 // Methods
 const refreshAttendance = async () => {
@@ -100,31 +88,30 @@ const refreshAttendance = async () => {
             method: 'GET',
             credentials: 'same-origin', // Include cookies for Sanctum auth
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
         });
-        
+
         if (!response.ok) {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.error) {
             throw new Error(data.message || 'Error desconocido al obtener el estado de asistencia');
         }
-        
+
         onlineResidents.value = data.residents;
         emit('attendanceUpdated', data.stats);
-        
     } catch (error) {
         console.error('Error refreshing attendance:', error);
-        
+
         showError(
-            error instanceof Error ? error.message : "No se pudo obtener el estado actual de asistencia. Por favor, inténtelo nuevamente.",
-            "Error al actualizar asistencia"
+            error instanceof Error ? error.message : 'No se pudo obtener el estado actual de asistencia. Por favor, inténtelo nuevamente.',
+            'Error al actualizar asistencia',
         );
     } finally {
         isRefreshing.value = false;
@@ -133,56 +120,46 @@ const refreshAttendance = async () => {
 
 const markAttendance = async (residentId: number, status: 'present' | 'absent') => {
     try {
-        await router.post(`/assemblies/${props.assemblyId}/attendance`, {
-            resident_id: residentId,
-            status: status,
-        }, {
-            onError: (errors) => {
-                showError(
-                    "No se pudo registrar la asistencia. Por favor, inténtelo nuevamente.",
-                    "Error al marcar asistencia"
-                );
+        await router.post(
+            `/assemblies/${props.assemblyId}/attendance`,
+            {
+                resident_id: residentId,
+                status: status,
             },
-            onSuccess: () => {
-                success(
-                    `El residente ha sido marcado como ${status === 'present' ? 'presente' : 'ausente'}.`,
-                    "Asistencia registrada"
-                );
-            }
-        });
+            {
+                onError: (errors) => {
+                    showError('No se pudo registrar la asistencia. Por favor, inténtelo nuevamente.', 'Error al marcar asistencia');
+                },
+                onSuccess: () => {
+                    success(`El residente ha sido marcado como ${status === 'present' ? 'presente' : 'ausente'}.`, 'Asistencia registrada');
+                },
+            },
+        );
         await refreshAttendance();
     } catch (error) {
         console.error('Error marking attendance:', error);
-        showError(
-            "Ocurrió un error inesperado. Por favor, inténtelo nuevamente.",
-            "Error al marcar asistencia"
-        );
+        showError('Ocurrió un error inesperado. Por favor, inténtelo nuevamente.', 'Error al marcar asistencia');
     }
 };
 
 const registerSelfAttendance = async () => {
     try {
-        await router.post(`/assemblies/${props.assemblyId}/attendance`, {}, {
-            onError: (errors) => {
-                showError(
-                    "No se pudo registrar la asistencia. Por favor, inténtelo nuevamente.",
-                    "Error al registrar asistencia"
-                );
+        await router.post(
+            `/assemblies/${props.assemblyId}/attendance`,
+            {},
+            {
+                onError: (errors) => {
+                    showError('No se pudo registrar la asistencia. Por favor, inténtelo nuevamente.', 'Error al registrar asistencia');
+                },
+                onSuccess: () => {
+                    showSuccess('Tu asistencia ha sido registrada exitosamente.', 'Asistencia Registrada');
+                    refreshAttendanceData();
+                },
             },
-            onSuccess: () => {
-                showSuccess(
-                    "Tu asistencia ha sido registrada exitosamente.",
-                    "Asistencia Registrada"
-                );
-                refreshAttendanceData();
-            }
-        });
+        );
     } catch (error) {
         console.error('Error registering self-attendance:', error);
-        showError(
-            "No se pudo registrar tu asistencia. Por favor, inténtelo nuevamente.",
-            "Error al Registrar Asistencia"
-        );
+        showError('No se pudo registrar tu asistencia. Por favor, inténtelo nuevamente.', 'Error al Registrar Asistencia');
     }
 };
 
@@ -191,7 +168,10 @@ const getStatusBadge = (status: string, isOnline: boolean) => {
         present: { text: 'Presente', class: 'bg-green-100 text-green-800' },
         absent: { text: 'Ausente', class: 'bg-red-100 text-red-800' },
         delegated: { text: 'Delegado', class: 'bg-blue-100 text-blue-800' },
-        not_registered: { text: isOnline ? 'En línea' : 'Sin registrar', class: isOnline ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800' },
+        not_registered: {
+            text: isOnline ? 'En línea' : 'Sin registrar',
+            class: isOnline ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800',
+        },
     };
     return badges[status] || badges.not_registered;
 };
@@ -233,7 +213,7 @@ onUnmounted(() => {
                     </div>
                 </CardContent>
             </Card>
-            
+
             <Card>
                 <CardContent class="p-4">
                     <div class="flex items-center">
@@ -245,7 +225,7 @@ onUnmounted(() => {
                     </div>
                 </CardContent>
             </Card>
-            
+
             <Card>
                 <CardContent class="p-4">
                     <div class="flex items-center">
@@ -257,7 +237,7 @@ onUnmounted(() => {
                     </div>
                 </CardContent>
             </Card>
-            
+
             <Card>
                 <CardContent class="p-4">
                     <div class="flex items-center">
@@ -278,16 +258,12 @@ onUnmounted(() => {
                     <Users class="h-5 w-5" />
                     Estado del Quórum
                 </CardTitle>
-                <CardDescription>
-                    Seguimiento en tiempo real de la asistencia para verificar quórum
-                </CardDescription>
+                <CardDescription> Seguimiento en tiempo real de la asistencia para verificar quórum </CardDescription>
             </CardHeader>
             <CardContent class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <div class="text-3xl font-bold">
-                            {{ stats.quorum_percentage.toFixed(1) }}%
-                        </div>
+                        <div class="text-3xl font-bold">{{ stats.quorum_percentage.toFixed(1) }}%</div>
                         <div class="text-sm text-muted-foreground">
                             {{ stats.present_apartments }} de {{ stats.total_apartments }} apartamentos presentes
                         </div>
@@ -299,17 +275,13 @@ onUnmounted(() => {
                         {{ stats.has_quorum ? 'Quórum Alcanzado' : 'Sin Quórum' }}
                     </Badge>
                 </div>
-                
+
                 <div class="space-y-2">
                     <div class="flex justify-between text-sm">
                         <span>{{ stats.quorum_percentage.toFixed(1) }}%</span>
                         <span>Mínimo: {{ stats.required_quorum_percentage }}%</span>
                     </div>
-                    <Progress 
-                        :value="stats.quorum_percentage" 
-                        :class="stats.has_quorum ? 'text-green-600' : 'text-red-600'"
-                        class="h-3"
-                    />
+                    <Progress :value="stats.quorum_percentage" :class="stats.has_quorum ? 'text-green-600' : 'text-red-600'" class="h-3" />
                     <div class="flex justify-between text-xs text-muted-foreground">
                         <span>{{ stats.has_quorum ? 'Asamblea válida' : 'Falta quórum' }}</span>
                     </div>
@@ -330,13 +302,7 @@ onUnmounted(() => {
                             {{ onlineCount }} residentes están conectados y pueden registrar su asistencia automáticamente.
                         </p>
                     </div>
-                    <Button 
-                        @click="registerSelfAttendance" 
-                        size="sm"
-                        class="bg-blue-600 hover:bg-blue-700"
-                    >
-                        Registrar Mi Asistencia
-                    </Button>
+                    <Button @click="registerSelfAttendance" size="sm" class="bg-blue-600 hover:bg-blue-700"> Registrar Mi Asistencia </Button>
                 </div>
             </CardContent>
         </Card>
@@ -350,17 +316,9 @@ onUnmounted(() => {
                             <UserCheck class="h-5 w-5" />
                             Registro de Asistencia
                         </CardTitle>
-                        <CardDescription>
-                            Gestión de asistencia por apartamento
-                        </CardDescription>
+                        <CardDescription> Gestión de asistencia por apartamento </CardDescription>
                     </div>
-                    <Button 
-                        @click="refreshAttendance" 
-                        :disabled="isRefreshing"
-                        variant="outline" 
-                        size="sm"
-                        class="gap-2"
-                    >
+                    <Button @click="refreshAttendance" :disabled="isRefreshing" variant="outline" size="sm" class="gap-2">
                         <RefreshCw :class="isRefreshing ? 'h-4 w-4 animate-spin' : 'h-4 w-4'" />
                         {{ isRefreshing ? 'Actualizando...' : 'Actualizar' }}
                     </Button>
@@ -380,15 +338,15 @@ onUnmounted(() => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow 
-                                v-for="resident in sortedResidents" 
+                            <TableRow
+                                v-for="resident in sortedResidents"
                                 :key="resident.id"
                                 :class="{
                                     'bg-green-50': resident.attendance_status === 'present',
                                     'bg-red-50': resident.attendance_status === 'absent',
                                     'bg-blue-50': resident.attendance_status === 'delegated',
                                     'bg-yellow-50': resident.attendance_status === 'not_registered' && resident.is_online,
-                                    'bg-gray-50': resident.attendance_status === 'not_registered' && !resident.is_online
+                                    'bg-gray-50': resident.attendance_status === 'not_registered' && !resident.is_online,
                                 }"
                             >
                                 <TableCell>
@@ -398,60 +356,58 @@ onUnmounted(() => {
                                         <span class="text-xs text-gray-500">{{ resident.apartment.type }}</span>
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <div>
                                         <div class="font-medium">{{ resident.name }}</div>
                                         <div class="text-sm text-gray-500">{{ resident.email }}</div>
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <Badge :class="getStatusBadge(resident.attendance_status, resident.is_online).class">
                                         {{ getStatusBadge(resident.attendance_status, resident.is_online).text }}
                                     </Badge>
-                                    <div v-if="resident.delegate_to" class="text-xs text-gray-500 mt-1">
+                                    <div v-if="resident.delegate_to" class="mt-1 text-xs text-gray-500">
                                         Delegado a: {{ resident.delegate_to.name }} ({{ resident.delegate_to.apartment }})
                                     </div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <div class="flex items-center gap-1">
-                                        <component 
-                                            :is="resident.is_online ? Wifi : WifiOff" 
+                                        <component
+                                            :is="resident.is_online ? Wifi : WifiOff"
                                             :class="resident.is_online ? 'h-4 w-4 text-green-500' : 'h-4 w-4 text-gray-400'"
                                         />
                                         <span :class="resident.is_online ? 'text-green-600' : 'text-gray-500'" class="text-sm">
                                             {{ resident.is_online ? 'En línea' : 'Desconectado' }}
                                         </span>
                                     </div>
-                                    <div v-if="resident.last_seen" class="text-xs text-gray-400">
-                                        Último: {{ formatTime(resident.last_seen) }}
-                                    </div>
+                                    <div v-if="resident.last_seen" class="text-xs text-gray-400">Último: {{ formatTime(resident.last_seen) }}</div>
                                 </TableCell>
-                                
+
                                 <TableCell>
                                     <span class="text-sm">
                                         {{ formatTime(resident.registered_at) }}
                                     </span>
                                 </TableCell>
-                                
+
                                 <TableCell v-if="canManageAttendance">
                                     <div class="flex items-center gap-1">
-                                        <Button 
+                                        <Button
                                             @click="markAttendance(resident.id, 'present')"
                                             :disabled="resident.attendance_status === 'present'"
-                                            size="sm" 
+                                            size="sm"
                                             variant="outline"
                                             class="gap-1"
                                         >
                                             <UserCheck class="h-3 w-3" />
                                             Presente
                                         </Button>
-                                        <Button 
+                                        <Button
                                             @click="markAttendance(resident.id, 'absent')"
                                             :disabled="resident.attendance_status === 'absent'"
-                                            size="sm" 
+                                            size="sm"
                                             variant="outline"
                                             class="gap-1"
                                         >
@@ -464,10 +420,10 @@ onUnmounted(() => {
                         </TableBody>
                     </Table>
                 </div>
-                
-                <div v-if="sortedResidents.length === 0" class="text-center py-8">
-                    <Users class="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No hay residentes</h3>
+
+                <div v-if="sortedResidents.length === 0" class="py-8 text-center">
+                    <Users class="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                    <h3 class="mb-2 text-lg font-medium text-gray-900">No hay residentes</h3>
                     <p class="text-gray-500">No se encontraron residentes para esta asamblea.</p>
                 </div>
             </CardContent>

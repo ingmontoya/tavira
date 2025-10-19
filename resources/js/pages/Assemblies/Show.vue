@@ -1,30 +1,13 @@
 <script setup lang="ts">
+import AttendanceRegistration from '@/components/Assemblies/AttendanceRegistration.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
-import AttendanceRegistration from '@/components/Assemblies/AttendanceRegistration.vue';
+import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { 
-    ArrowLeft, 
-    Building, 
-    Calendar, 
-    Clock, 
-    Download, 
-    Edit, 
-    Eye, 
-    FileText, 
-    MapPin, 
-    Play, 
-    Square, 
-    StopCircle, 
-    User, 
-    Users, 
-    Vote, 
-    X 
-} from 'lucide-vue-next';
+import { ArrowLeft, Calendar, Clock, Download, Edit, Eye, FileText, MapPin, Play, StopCircle, User, Users, Vote, X } from 'lucide-vue-next';
 
 interface Assembly {
     id: number;
@@ -249,14 +232,14 @@ const breadcrumbs = [
             <!-- Main content grid -->
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <!-- Main content -->
-                <div class="lg:col-span-2 space-y-8">
+                <div class="space-y-8 lg:col-span-2">
                     <!-- Description -->
                     <Card>
                         <CardHeader>
                             <CardTitle>Descripción</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p class="text-gray-700 leading-relaxed">{{ assembly.description }}</p>
+                            <p class="leading-relaxed text-gray-700">{{ assembly.description }}</p>
                         </CardContent>
                     </Card>
 
@@ -278,35 +261,32 @@ const breadcrumbs = [
                                 <Users class="h-5 w-5" />
                                 Estado del Quórum
                             </CardTitle>
-                            <CardDescription>
-                                Participación actual de apartamentos en la asamblea
-                            </CardDescription>
+                            <CardDescription> Participación actual de apartamentos en la asamblea </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <div class="space-y-1">
-                                    <p class="text-2xl font-bold">
-                                        {{ assembly.quorum_status.quorum_percentage.toFixed(1) }}%
-                                    </p>
+                                    <p class="text-2xl font-bold">{{ assembly.quorum_status.quorum_percentage.toFixed(1) }}%</p>
                                     <p class="text-sm text-muted-foreground">
-                                        {{ assembly.quorum_status.participating_apartments }} de {{ assembly.quorum_status.total_apartments }} apartamentos
+                                        {{ assembly.quorum_status.participating_apartments }} de
+                                        {{ assembly.quorum_status.total_apartments }} apartamentos
                                     </p>
                                 </div>
-                                <Badge 
+                                <Badge
                                     :variant="assembly.quorum_status.has_quorum ? 'default' : 'secondary'"
                                     :class="assembly.quorum_status.has_quorum ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                                 >
                                     {{ assembly.quorum_status.has_quorum ? 'Quórum Alcanzado' : 'Sin Quórum' }}
                                 </Badge>
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <div class="flex justify-between text-sm">
                                     <span>Participación</span>
                                     <span>{{ assembly.quorum_status.quorum_percentage.toFixed(1) }}%</span>
                                 </div>
-                                <Progress 
-                                    :value="assembly.quorum_status.quorum_percentage" 
+                                <Progress
+                                    :value="assembly.quorum_status.quorum_percentage"
                                     :class="assembly.quorum_status.has_quorum ? 'text-green-600' : 'text-red-600'"
                                 />
                                 <div class="flex justify-between text-sm text-muted-foreground">
@@ -314,13 +294,13 @@ const breadcrumbs = [
                                     <span>{{ assembly.quorum_status.has_quorum ? 'Válida' : 'Falta quórum' }}</span>
                                 </div>
                             </div>
-                            
+
                             <!-- Notification about enhanced attendance feature -->
-                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
                                 <p class="text-sm text-blue-800">
-                                    💡 <strong>Funcionalidad de Asistencia Mejorada:</strong> Para usar el registro automático de asistencia 
-                                    y detección de usuarios conectados, asegúrate de que el backend esté configurado para proporcionar 
-                                    datos de residentes y estadísticas de asistencia.
+                                    💡 <strong>Funcionalidad de Asistencia Mejorada:</strong> Para usar el registro automático de asistencia y
+                                    detección de usuarios conectados, asegúrate de que el backend esté configurado para proporcionar datos de
+                                    residentes y estadísticas de asistencia.
                                 </p>
                             </div>
                         </CardContent>
@@ -336,12 +316,10 @@ const breadcrumbs = [
                         </CardHeader>
                         <CardContent>
                             <ol class="space-y-3">
-                                <li 
-                                    v-for="(item, index) in assembly.metadata.agenda" 
-                                    :key="index"
-                                    class="flex gap-3 p-3 rounded-lg bg-muted/50"
-                                >
-                                    <span class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
+                                <li v-for="(item, index) in assembly.metadata.agenda" :key="index" class="flex gap-3 rounded-lg bg-muted/50 p-3">
+                                    <span
+                                        class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground"
+                                    >
                                         {{ index + 1 }}
                                     </span>
                                     <span class="flex-1 text-sm">{{ item }}</span>
@@ -358,24 +336,15 @@ const breadcrumbs = [
                                     <Vote class="h-5 w-5" />
                                     Votaciones
                                 </CardTitle>
-                                <Link 
-                                    :href="`/assemblies/${assembly.id}/votes/create`"
-                                    v-if="assembly.status === 'in_progress'"
-                                >
+                                <Link :href="`/assemblies/${assembly.id}/votes/create`" v-if="assembly.status === 'in_progress'">
                                     <Button size="sm">Nueva Votación</Button>
                                 </Link>
                             </div>
-                            <CardDescription>
-                                Temas sujetos a votación en esta asamblea
-                            </CardDescription>
+                            <CardDescription> Temas sujetos a votación en esta asamblea </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div v-if="assembly.votes && assembly.votes.length > 0" class="space-y-4">
-                                <div 
-                                    v-for="vote in assembly.votes" 
-                                    :key="vote.id"
-                                    class="flex items-center justify-between p-4 border rounded-lg"
-                                >
+                                <div v-for="vote in assembly.votes" :key="vote.id" class="flex items-center justify-between rounded-lg border p-4">
                                     <div>
                                         <h4 class="font-medium">{{ vote.title }}</h4>
                                         <p class="text-sm text-muted-foreground">{{ vote.description }}</p>
@@ -392,13 +361,10 @@ const breadcrumbs = [
                                     </div>
                                 </div>
                             </div>
-                            <div v-else class="text-center py-8 text-muted-foreground">
-                                <Vote class="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <div v-else class="py-8 text-center text-muted-foreground">
+                                <Vote class="mx-auto mb-4 h-12 w-12 opacity-50" />
                                 <p>No hay votaciones programadas aún</p>
-                                <Link 
-                                    :href="`/assemblies/${assembly.id}/votes/create`"
-                                    v-if="assembly.status === 'in_progress'"
-                                >
+                                <Link :href="`/assemblies/${assembly.id}/votes/create`" v-if="assembly.status === 'in_progress'">
                                     <Button class="mt-2" size="sm">Crear Primera Votación</Button>
                                 </Link>
                             </div>
@@ -427,15 +393,15 @@ const breadcrumbs = [
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-3">
-                                <div 
-                                    v-for="document in assembly.documents" 
+                                <div
+                                    v-for="document in assembly.documents"
                                     :key="document.id"
-                                    class="flex items-center justify-between p-3 border rounded-lg"
+                                    class="flex items-center justify-between rounded-lg border p-3"
                                 >
                                     <div class="flex items-center gap-3">
                                         <FileText class="h-5 w-5 text-muted-foreground" />
                                         <div>
-                                            <p class="font-medium text-sm">{{ document.name }}</p>
+                                            <p class="text-sm font-medium">{{ document.name }}</p>
                                             <p class="text-xs text-muted-foreground">{{ document.size }}</p>
                                         </div>
                                     </div>
@@ -530,17 +496,17 @@ const breadcrumbs = [
                                 <span class="text-sm">Total Apartamentos</span>
                                 <span class="font-medium">{{ assembly.quorum_status.total_apartments }}</span>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <span class="text-sm">Participando</span>
                                 <span class="font-medium">{{ assembly.quorum_status.participating_apartments }}</span>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <span class="text-sm">Votaciones</span>
                                 <span class="font-medium">{{ assembly.votes?.length || 0 }}</span>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <span class="text-sm">Delegados</span>
                                 <span class="font-medium">{{ assembly.delegates?.length || 0 }}</span>
@@ -560,14 +526,14 @@ const breadcrumbs = [
                                     Ver Votaciones
                                 </Button>
                             </Link>
-                            
+
                             <Link :href="`/assemblies/${assembly.id}/delegates`" class="block">
                                 <Button variant="outline" class="w-full justify-start gap-2">
                                     <Users class="h-4 w-4" />
                                     Gestionar Delegados
                                 </Button>
                             </Link>
-                            
+
                             <Button variant="outline" class="w-full justify-start gap-2">
                                 <Download class="h-4 w-4" />
                                 Exportar Datos

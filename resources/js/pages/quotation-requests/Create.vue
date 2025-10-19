@@ -89,12 +89,7 @@ const submit = () => {
                         <CardContent class="space-y-4">
                             <div class="space-y-2">
                                 <Label for="title">Título *</Label>
-                                <Input
-                                    id="title"
-                                    v-model="form.title"
-                                    placeholder="Ej: Mantenimiento de ascensores"
-                                    required
-                                />
+                                <Input id="title" v-model="form.title" placeholder="Ej: Mantenimiento de ascensores" required />
                                 <p v-if="form.errors.title" class="text-sm text-red-600">{{ form.errors.title }}</p>
                             </div>
 
@@ -112,11 +107,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="deadline">Fecha Límite</Label>
-                                <Input
-                                    id="deadline"
-                                    v-model="form.deadline"
-                                    type="date"
-                                />
+                                <Input id="deadline" v-model="form.deadline" type="date" />
                                 <p v-if="form.errors.deadline" class="text-sm text-red-600">{{ form.errors.deadline }}</p>
                             </div>
 
@@ -141,11 +132,7 @@ const submit = () => {
                         </CardHeader>
                         <CardContent>
                             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                <div
-                                    v-for="category in categories"
-                                    :key="category.id"
-                                    class="flex items-start space-x-3 rounded-lg border p-3"
-                                >
+                                <div v-for="category in categories" :key="category.id" class="flex items-start space-x-3 rounded-lg border p-3">
                                     <input
                                         :id="`category-${category.id}`"
                                         type="checkbox"
@@ -155,10 +142,7 @@ const submit = () => {
                                         class="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
                                     />
                                     <div class="flex-1">
-                                        <Label
-                                            :for="`category-${category.id}`"
-                                            class="cursor-pointer font-medium"
-                                        >
+                                        <Label :for="`category-${category.id}`" class="cursor-pointer font-medium">
                                             {{ category.name }}
                                         </Label>
                                         <p v-if="category.description" class="text-sm text-muted-foreground">
@@ -185,9 +169,7 @@ const submit = () => {
                                     type="checkbox"
                                     class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-2 focus:ring-primary"
                                 />
-                                <Label for="publish_now" class="cursor-pointer">
-                                    Publicar inmediatamente y notificar a proveedores
-                                </Label>
+                                <Label for="publish_now" class="cursor-pointer"> Publicar inmediatamente y notificar a proveedores </Label>
                             </div>
                             <p class="mt-2 text-sm text-muted-foreground">
                                 Si no se marca, la solicitud se guardará como borrador y podrás publicarla más tarde.
@@ -197,9 +179,7 @@ const submit = () => {
 
                     <!-- Actions -->
                     <div class="flex justify-end space-x-2">
-                        <Button type="button" variant="outline" @click="router.visit('/quotation-requests')">
-                            Cancelar
-                        </Button>
+                        <Button type="button" variant="outline" @click="router.visit('/quotation-requests')"> Cancelar </Button>
                         <Button type="submit" :disabled="form.processing">
                             {{ form.processing ? 'Guardando...' : form.publish_now ? 'Crear y Publicar' : 'Guardar Borrador' }}
                         </Button>

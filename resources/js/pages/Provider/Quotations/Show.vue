@@ -1,12 +1,4 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -18,7 +10,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Calendar, FileText, User, Send, ArrowLeft, CheckCircle, Upload, X } from 'lucide-vue-next';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Calendar, CheckCircle, FileText, Send, User, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Category {
@@ -149,9 +149,7 @@ const breadcrumbs = [
                     </Link>
                     <div>
                         <h1 class="text-3xl font-bold">{{ request.title }}</h1>
-                        <p class="text-muted-foreground">
-                            Solicitud de cotización
-                        </p>
+                        <p class="text-muted-foreground">Solicitud de cotización</p>
                     </div>
                 </div>
                 <Badge :variant="getStatusBadge(request.status).variant" class="text-sm">
@@ -168,17 +166,11 @@ const breadcrumbs = [
                     </div>
                 </CardHeader>
                 <CardContent class="text-green-800">
-                    <p class="text-sm">
-                        Enviaste tu propuesta el {{ formatDate(existingResponse.created_at) }}
-                    </p>
+                    <p class="text-sm">Enviaste tu propuesta el {{ formatDate(existingResponse.created_at) }}</p>
                     <div class="mt-4 space-y-2">
                         <p><strong>Precio ofrecido:</strong> {{ formatCurrency(existingResponse.quoted_amount) }}</p>
-                        <p v-if="existingResponse.estimated_days">
-                            <strong>Tiempo estimado:</strong> {{ existingResponse.estimated_days }} días
-                        </p>
-                        <p v-if="existingResponse.proposal">
-                            <strong>Notas:</strong> {{ existingResponse.proposal }}
-                        </p>
+                        <p v-if="existingResponse.estimated_days"><strong>Tiempo estimado:</strong> {{ existingResponse.estimated_days }} días</p>
+                        <p v-if="existingResponse.proposal"><strong>Notas:</strong> {{ existingResponse.proposal }}</p>
                         <Badge :variant="getStatusBadge(existingResponse.status).variant" class="mt-2">
                             Estado: {{ getStatusBadge(existingResponse.status).text }}
                         </Badge>
@@ -188,7 +180,7 @@ const breadcrumbs = [
 
             <!-- Request Details -->
             <div class="grid gap-6 md:grid-cols-3">
-                <div class="md:col-span-2 space-y-6">
+                <div class="space-y-6 md:col-span-2">
                     <!-- Description -->
                     <Card>
                         <CardHeader>
@@ -213,9 +205,7 @@ const breadcrumbs = [
                     <Card v-if="canRespond && !existingResponse">
                         <CardHeader>
                             <CardTitle>Enviar Propuesta</CardTitle>
-                            <CardDescription>
-                                Completa el formulario para enviar tu cotización
-                            </CardDescription>
+                            <CardDescription> Completa el formulario para enviar tu cotización </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <form @submit.prevent="showResponseDialog = true" class="space-y-4">
@@ -240,13 +230,7 @@ const breadcrumbs = [
 
                                 <div class="space-y-2">
                                     <Label for="estimated_days">Tiempo Estimado de Entrega (días)</Label>
-                                    <Input
-                                        id="estimated_days"
-                                        v-model.number="form.estimated_days"
-                                        type="number"
-                                        min="0"
-                                        placeholder="Ej: 15"
-                                    />
+                                    <Input id="estimated_days" v-model.number="form.estimated_days" type="number" min="0" placeholder="Ej: 15" />
                                     <p v-if="form.errors.estimated_days" class="text-sm text-destructive">
                                         {{ form.errors.estimated_days }}
                                     </p>
@@ -283,9 +267,7 @@ const breadcrumbs = [
                                                 <FileText class="h-5 w-5 text-blue-600" />
                                                 <div>
                                                     <p class="text-sm font-medium">{{ selectedFile.name }}</p>
-                                                    <p class="text-xs text-muted-foreground">
-                                                        {{ (selectedFile.size / 1024).toFixed(2) }} KB
-                                                    </p>
+                                                    <p class="text-xs text-muted-foreground">{{ (selectedFile.size / 1024).toFixed(2) }} KB</p>
                                                 </div>
                                             </div>
                                             <Button variant="ghost" size="sm" @click="removeFile">
@@ -322,9 +304,7 @@ const breadcrumbs = [
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction @click="submitResponse">
-                                                Confirmar y Enviar
-                                            </AlertDialogAction>
+                                            <AlertDialogAction @click="submitResponse"> Confirmar y Enviar </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
@@ -336,12 +316,8 @@ const breadcrumbs = [
                         <CardContent class="pt-6">
                             <p class="text-yellow-900">
                                 <strong>Esta solicitud ya no acepta respuestas.</strong>
-                                <span v-if="isExpired(request.deadline)">
-                                    La fecha límite ha expirado.
-                                </span>
-                                <span v-else>
-                                    La solicitud ha sido cerrada.
-                                </span>
+                                <span v-if="isExpired(request.deadline)"> La fecha límite ha expirado. </span>
+                                <span v-else> La solicitud ha sido cerrada. </span>
                             </p>
                         </CardContent>
                     </Card>
@@ -362,9 +338,7 @@ const breadcrumbs = [
                                     <p class="text-sm text-muted-foreground">
                                         {{ request.deadline ? formatDate(request.deadline) : 'No especificada' }}
                                     </p>
-                                    <Badge v-if="isExpired(request.deadline)" variant="destructive" class="mt-1">
-                                        Expirada
-                                    </Badge>
+                                    <Badge v-if="isExpired(request.deadline)" variant="destructive" class="mt-1"> Expirada </Badge>
                                 </div>
                             </div>
 

@@ -16,16 +16,15 @@
                         <span class="text-sm font-medium">🔒 Seguridad Bancaria - Base de Datos Exclusiva</span>
                     </div>
 
-                    <h1 class="text-4xl md:text-5xl lg:text-7xl leading-tight font-bold text-white font-brand">
+                    <h1 class="font-brand text-4xl leading-tight font-bold text-white md:text-5xl lg:text-7xl">
                         Transforma la
-                        <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
-                            Administración
-                        </span>
+                        <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent"> Administración </span>
                         <br />de tu Conjunto
                     </h1>
 
-                    <p class="max-w-lg text-lg md:text-xl leading-relaxed text-white/85">
-                        Plataforma integral para conjuntos residenciales en Colombia. Gestión financiera, comunicación, mantenimiento y más. Con seguridad bancaria y base de datos exclusiva para tu conjunto.
+                    <p class="max-w-lg text-lg leading-relaxed text-white/85 md:text-xl">
+                        Plataforma integral para conjuntos residenciales en Colombia. Gestión financiera, comunicación, mantenimiento y más. Con
+                        seguridad bancaria y base de datos exclusiva para tu conjunto.
                     </p>
                 </div>
 
@@ -33,7 +32,7 @@
                     <Link
                         v-if="!$page.props.auth.user"
                         :href="route('register')"
-                        class="group flex-shrink-0 transform rounded-xl bg-[#FF6B6B] px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#ff5555] hover:shadow-[#FF6B6B]/40"
+                        class="group flex-shrink-0 transform rounded-xl bg-[#FF6B6B] px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#ff5555] hover:shadow-[#FF6B6B]/40 md:px-8 md:py-4 md:text-lg"
                     >
                         <span class="flex items-center justify-center space-x-2">
                             <span class="sm:hidden">Prueba Gratis</span>
@@ -45,7 +44,7 @@
                     </Link>
 
                     <button
-                        class="flex-shrink-0 rounded-xl border-2 border-[#06D6A0]/50 px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#06D6A0]/20 hover:border-[#06D6A0]/70"
+                        class="flex-shrink-0 rounded-xl border-2 border-[#06D6A0]/50 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-[#06D6A0]/70 hover:bg-[#06D6A0]/20 md:px-8 md:py-4 md:text-lg"
                     >
                         <span class="sm:hidden">Ver Demo</span>
                         <span class="hidden sm:inline">Ver Demostración</span>

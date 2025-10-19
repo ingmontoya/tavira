@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Search, Package, Clock, CheckCircle2, XCircle } from 'lucide-vue-next';
+import { Head, useForm } from '@inertiajs/vue3';
+import { CheckCircle2, Clock, Package, Search, XCircle } from 'lucide-vue-next';
 
 interface Pqrs {
     id: number;
@@ -84,30 +84,20 @@ const statusIcons: Record<string, any> = {
                     </div>
                 </div>
                 <h1 class="mb-2 text-3xl font-bold text-gray-900">Rastrear PQRS</h1>
-                <p class="text-lg text-gray-600">
-                    Consulte el estado de su petición, queja, reclamo o sugerencia
-                </p>
+                <p class="text-lg text-gray-600">Consulte el estado de su petición, queja, reclamo o sugerencia</p>
             </div>
 
             <!-- Search Form -->
             <Card class="mb-6">
                 <CardHeader>
                     <CardTitle>Buscar por Número de Ticket</CardTitle>
-                    <CardDescription>
-                        Ingrese el número de ticket que recibió al enviar su PQRS
-                    </CardDescription>
+                    <CardDescription> Ingrese el número de ticket que recibió al enviar su PQRS </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form @submit.prevent="search" class="flex gap-4">
                         <div class="flex-1 space-y-2">
                             <Label for="ticket" class="sr-only">Número de Ticket</Label>
-                            <Input
-                                id="ticket"
-                                v-model="form.ticket"
-                                type="text"
-                                placeholder="Ej: PQRS-2025-00123"
-                                required
-                            />
+                            <Input id="ticket" v-model="form.ticket" type="text" placeholder="Ej: PQRS-2025-00123" required />
                         </div>
                         <Button type="submit" :disabled="form.processing">
                             <Search class="mr-2 h-4 w-4" />
@@ -155,10 +145,7 @@ const statusIcons: Record<string, any> = {
                         </div>
 
                         <!-- Admin Response -->
-                        <div
-                            v-if="pqrs.admin_response"
-                            class="rounded-lg border border-green-200 bg-green-50 p-4"
-                        >
+                        <div v-if="pqrs.admin_response" class="rounded-lg border border-green-200 bg-green-50 p-4">
                             <div class="mb-2 flex items-center gap-2">
                                 <CheckCircle2 class="h-5 w-5 text-green-600" />
                                 <p class="font-semibold text-green-900">Respuesta de Administración</p>
@@ -171,13 +158,9 @@ const statusIcons: Record<string, any> = {
                         </div>
 
                         <!-- No Response Yet -->
-                        <div
-                            v-else-if="pqrs.status !== 'cerrada'"
-                            class="rounded-lg border border-blue-200 bg-blue-50 p-4"
-                        >
+                        <div v-else-if="pqrs.status !== 'cerrada'" class="rounded-lg border border-blue-200 bg-blue-50 p-4">
                             <p class="text-sm text-blue-800">
-                                Su PQRS está siendo procesada. Recibirá una notificación por correo
-                                cuando la administración responda.
+                                Su PQRS está siendo procesada. Recibirá una notificación por correo cuando la administración responda.
                             </p>
                         </div>
                     </CardContent>
@@ -191,8 +174,7 @@ const statusIcons: Record<string, any> = {
                         <XCircle class="mx-auto mb-4 h-12 w-12 text-red-600" />
                         <h3 class="mb-2 text-lg font-semibold text-red-900">PQRS No Encontrada</h3>
                         <p class="text-sm text-red-800">
-                            No se encontró ninguna PQRS con el número de ticket proporcionado. Por
-                            favor, verifique el número e intente nuevamente.
+                            No se encontró ninguna PQRS con el número de ticket proporcionado. Por favor, verifique el número e intente nuevamente.
                         </p>
                     </div>
                 </CardContent>
@@ -205,10 +187,7 @@ const statusIcons: Record<string, any> = {
                     <ul class="space-y-2 text-sm text-purple-800">
                         <li>• El número de ticket fue enviado a su correo electrónico.</li>
                         <li>• Asegúrese de ingresar el número completo (Ej: PQRS-2025-00123).</li>
-                        <li>
-                            • Si no encuentra su PQRS, puede enviar una nueva desde el formulario
-                            público.
-                        </li>
+                        <li>• Si no encuentra su PQRS, puede enviar una nueva desde el formulario público.</li>
                     </ul>
                     <div class="mt-4">
                         <Button variant="outline" as-child>

@@ -270,9 +270,7 @@ const transactionSummary = computed(() => {
                     <CardTitle class="flex items-center gap-2 text-xl">
                         <BookText class="h-5 w-5" />
                         Transacciones Contables
-                        <span class="ml-2 text-sm font-normal text-muted-foreground">
-                            ({{ report.transactions.length }} registros)
-                        </span>
+                        <span class="ml-2 text-sm font-normal text-muted-foreground"> ({{ report.transactions.length }} registros) </span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -286,7 +284,7 @@ const transactionSummary = computed(() => {
                         <div
                             v-for="transaction in report.transactions"
                             :key="transaction.id"
-                            class="rounded-lg border bg-card p-4 hover:shadow-md transition-shadow cursor-pointer"
+                            class="cursor-pointer rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
                             @click="viewTransaction(transaction.id)"
                         >
                             <!-- Transaction Header -->

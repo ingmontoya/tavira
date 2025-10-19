@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import NotificationBell from '@/components/NotificationBell.vue';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
 import Icon from '@/components/Icon.vue';
+import NotificationBell from '@/components/NotificationBell.vue';
+import { Button } from '@/components/ui/button';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
 
 withDefaults(
@@ -28,14 +28,14 @@ withDefaults(
         </div>
         <div class="flex items-center gap-2">
             <!-- Impersonation Banner -->
-            <div v-if="$page.props.auth?.is_impersonating" class="flex items-center gap-2 px-3 py-1 bg-orange-100 text-orange-800 rounded-md text-sm">
+            <div v-if="$page.props.auth?.is_impersonating" class="flex items-center gap-2 rounded-md bg-orange-100 px-3 py-1 text-sm text-orange-800">
                 <Icon name="user-check" class="h-4 w-4" />
                 <span class="font-medium">Super Admin en {{ $page.props.auth?.tenant_name }}</span>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
+                <Button
+                    variant="ghost"
+                    size="sm"
                     @click="$inertia.post(route('stop-impersonation'))"
-                    class="h-6 px-2 ml-2 text-orange-800 hover:bg-orange-200"
+                    class="ml-2 h-6 px-2 text-orange-800 hover:bg-orange-200"
                 >
                     Salir
                 </Button>

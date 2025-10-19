@@ -77,7 +77,7 @@ const applyFilters = () => {
         {
             preserveState: true,
             preserveScroll: true,
-        }
+        },
     );
 };
 
@@ -94,19 +94,27 @@ const hasActiveFilters = computed(() => {
 const publishRequest = (id: number) => {
     if (!confirm('¿Está seguro de publicar esta solicitud? Se notificará a los proveedores.')) return;
 
-    router.post(`/quotation-requests/${id}/publish`, {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.post(
+        `/quotation-requests/${id}/publish`,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const closeRequest = (id: number) => {
     if (!confirm('¿Está seguro de cerrar esta solicitud? No se aceptarán más cotizaciones.')) return;
 
-    router.post(`/quotation-requests/${id}/close`, {}, {
-        preserveState: true,
-        preserveScroll: true,
-    });
+    router.post(
+        `/quotation-requests/${id}/close`,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+        },
+    );
 };
 
 const deleteRequest = (id: number) => {
@@ -258,12 +266,7 @@ const formatDate = (dateString: string | null) => {
                                         <TableCell class="font-medium">{{ request.title }}</TableCell>
                                         <TableCell>
                                             <div class="flex flex-wrap gap-1">
-                                                <Badge
-                                                    v-for="category in request.categories"
-                                                    :key="category.id"
-                                                    variant="outline"
-                                                    class="text-xs"
-                                                >
+                                                <Badge v-for="category in request.categories" :key="category.id" variant="outline" class="text-xs">
                                                     {{ category.name }}
                                                 </Badge>
                                             </div>
@@ -278,11 +281,7 @@ const formatDate = (dateString: string | null) => {
                                         <TableCell>{{ formatDate(request.created_at) }}</TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex justify-end space-x-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    @click="router.visit(`/quotation-requests/${request.id}`)"
-                                                >
+                                                <Button size="sm" variant="outline" @click="router.visit(`/quotation-requests/${request.id}`)">
                                                     <Eye class="h-4 w-4" />
                                                 </Button>
                                                 <Button
@@ -322,9 +321,7 @@ const formatDate = (dateString: string | null) => {
                                     </TableRow>
                                 </template>
                                 <TableRow v-else>
-                                    <TableCell colspan="7" class="h-24 text-center text-muted-foreground">
-                                        No se encontraron solicitudes
-                                    </TableCell>
+                                    <TableCell colspan="7" class="h-24 text-center text-muted-foreground"> No se encontraron solicitudes </TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>

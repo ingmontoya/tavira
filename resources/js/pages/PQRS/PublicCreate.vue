@@ -1,17 +1,11 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Head, useForm } from '@inertiajs/vue3';
 import { MessageSquare } from 'lucide-vue-next';
 
 interface Apartment {
@@ -53,17 +47,14 @@ const submit = () => {
                     </div>
                 </div>
                 <h1 class="mb-2 text-3xl font-bold text-gray-900">Enviar PQRS</h1>
-                <p class="text-lg text-gray-600">
-                    Peticiones, Quejas, Reclamos y Sugerencias
-                </p>
+                <p class="text-lg text-gray-600">Peticiones, Quejas, Reclamos y Sugerencias</p>
             </div>
 
             <Card>
                 <CardHeader>
                     <CardTitle>Formulario de PQRS</CardTitle>
                     <CardDescription>
-                        Complete el siguiente formulario para enviar su petición, queja, reclamo o
-                        sugerencia a la administración del conjunto.
+                        Complete el siguiente formulario para enviar su petición, queja, reclamo o sugerencia a la administración del conjunto.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -90,13 +81,7 @@ const submit = () => {
                         <!-- Subject -->
                         <div class="space-y-2">
                             <Label for="subject">Asunto *</Label>
-                            <Input
-                                id="subject"
-                                v-model="form.subject"
-                                type="text"
-                                placeholder="Ingrese el asunto de su PQRS"
-                                required
-                            />
+                            <Input id="subject" v-model="form.subject" type="text" placeholder="Ingrese el asunto de su PQRS" required />
                             <p v-if="form.errors.subject" class="text-sm text-red-600">
                                 {{ form.errors.subject }}
                             </p>
@@ -119,21 +104,13 @@ const submit = () => {
 
                         <!-- Divider -->
                         <div class="border-t pt-6">
-                            <h3 class="mb-4 text-lg font-semibold text-gray-900">
-                                Información de Contacto
-                            </h3>
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900">Información de Contacto</h3>
                         </div>
 
                         <!-- Submitter Name -->
                         <div class="space-y-2">
                             <Label for="submitter_name">Nombre Completo *</Label>
-                            <Input
-                                id="submitter_name"
-                                v-model="form.submitter_name"
-                                type="text"
-                                placeholder="Ingrese su nombre completo"
-                                required
-                            />
+                            <Input id="submitter_name" v-model="form.submitter_name" type="text" placeholder="Ingrese su nombre completo" required />
                             <p v-if="form.errors.submitter_name" class="text-sm text-red-600">
                                 {{ form.errors.submitter_name }}
                             </p>
@@ -142,13 +119,7 @@ const submit = () => {
                         <!-- Submitter Email -->
                         <div class="space-y-2">
                             <Label for="submitter_email">Correo Electrónico *</Label>
-                            <Input
-                                id="submitter_email"
-                                v-model="form.submitter_email"
-                                type="email"
-                                placeholder="correo@ejemplo.com"
-                                required
-                            />
+                            <Input id="submitter_email" v-model="form.submitter_email" type="email" placeholder="correo@ejemplo.com" required />
                             <p v-if="form.errors.submitter_email" class="text-sm text-red-600">
                                 {{ form.errors.submitter_email }}
                             </p>
@@ -157,12 +128,7 @@ const submit = () => {
                         <!-- Submitter Phone -->
                         <div class="space-y-2">
                             <Label for="submitter_phone">Teléfono (Opcional)</Label>
-                            <Input
-                                id="submitter_phone"
-                                v-model="form.submitter_phone"
-                                type="tel"
-                                placeholder="3001234567"
-                            />
+                            <Input id="submitter_phone" v-model="form.submitter_phone" type="tel" placeholder="3001234567" />
                             <p v-if="form.errors.submitter_phone" class="text-sm text-red-600">
                                 {{ form.errors.submitter_phone }}
                             </p>
@@ -176,11 +142,7 @@ const submit = () => {
                                     <SelectValue placeholder="Seleccione su apartamento" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem
-                                        v-for="apartment in apartments"
-                                        :key="apartment.id"
-                                        :value="apartment.id"
-                                    >
+                                    <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id">
                                         {{ apartment.number }} - {{ apartment.type }}
                                     </SelectItem>
                                 </SelectContent>
@@ -205,21 +167,10 @@ const submit = () => {
                 <CardContent class="pt-6">
                     <h3 class="mb-2 font-semibold text-blue-900">¿Qué es una PQRS?</h3>
                     <ul class="space-y-2 text-sm text-blue-800">
-                        <li>
-                            <strong>Petición:</strong> Solicitud de información, documentos o
-                            actuaciones.
-                        </li>
-                        <li>
-                            <strong>Queja:</strong> Manifestación de inconformidad con un servicio
-                            o comportamiento.
-                        </li>
-                        <li>
-                            <strong>Reclamo:</strong> Solicitud de corrección o solución a una
-                            situación.
-                        </li>
-                        <li>
-                            <strong>Sugerencia:</strong> Propuesta de mejora para el conjunto.
-                        </li>
+                        <li><strong>Petición:</strong> Solicitud de información, documentos o actuaciones.</li>
+                        <li><strong>Queja:</strong> Manifestación de inconformidad con un servicio o comportamiento.</li>
+                        <li><strong>Reclamo:</strong> Solicitud de corrección o solución a una situación.</li>
+                        <li><strong>Sugerencia:</strong> Propuesta de mejora para el conjunto.</li>
                     </ul>
                 </CardContent>
             </Card>

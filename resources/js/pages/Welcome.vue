@@ -7,7 +7,6 @@ import LandingFooter from '../components/landing/LandingFooter.vue';
 import LandingHero from '../components/landing/LandingHero.vue';
 import LandingHowItWorks from '../components/landing/LandingHowItWorks.vue';
 import LandingNavigation from '../components/landing/LandingNavigation.vue';
-import LandingPricing from '../components/landing/LandingPricing.vue';
 import LandingSEO from '../components/landing/LandingSEO.vue';
 import LandingTestimonials from '../components/landing/LandingTestimonials.vue';
 </script>

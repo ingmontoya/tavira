@@ -140,11 +140,9 @@ const formProgress = computed(() => {
                 if (field.includes('reminder') || field.includes('notification')) {
                     return true; // These are boolean/number fields with defaults
                 }
-                
-                const value = field.includes('_') ? 
-                    form.metadata[field.split('_')[0]] || form[field] : 
-                    form[field] || form.metadata[field];
-                
+
+                const value = field.includes('_') ? form.metadata[field.split('_')[0]] || form[field] : form[field] || form.metadata[field];
+
                 if (typeof value === 'boolean') return true;
                 if (Array.isArray(value)) return value.length > 0;
                 if (typeof value === 'number') return value > 0;
@@ -292,9 +290,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?
-                                </AlertDialogDescription>
+                                <AlertDialogDescription> Tienes cambios sin guardar. ¿Estás seguro de que deseas salir? </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Continuar editando</AlertDialogCancel>
@@ -314,9 +310,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle class="text-lg">Progreso del Formulario</CardTitle>
-                            <CardDescription>
-                                Completa todos los campos requeridos para programar la asamblea
-                            </CardDescription>
+                            <CardDescription> Completa todos los campos requeridos para programar la asamblea </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-muted-foreground">{{ formProgress }}% completado</span>
@@ -379,7 +373,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                     <div>
                                         <p class="text-sm font-medium">{{ form.title || 'Título de la asamblea' }}</p>
                                         <p class="text-xs text-muted-foreground">
-                                            {{ assemblyTypes.find(t => t.value === form.type)?.label || 'Tipo' }}
+                                            {{ assemblyTypes.find((t) => t.value === form.type)?.label || 'Tipo' }}
                                         </p>
                                     </div>
                                 </div>
@@ -543,14 +537,8 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="location">Ubicación</Label>
-                                        <Input
-                                            id="location"
-                                            v-model="form.metadata.location"
-                                            placeholder="Salón comunal del conjunto"
-                                        />
-                                        <p class="text-xs text-muted-foreground">
-                                            Lugar donde se realizará la asamblea
-                                        </p>
+                                        <Input id="location" v-model="form.metadata.location" placeholder="Salón comunal del conjunto" />
+                                        <p class="text-xs text-muted-foreground">Lugar donde se realizará la asamblea</p>
                                     </div>
 
                                     <div class="space-y-2">
@@ -563,23 +551,15 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                             max="12"
                                             placeholder="4"
                                         />
-                                        <p class="text-xs text-muted-foreground">
-                                            Duración estimada de la asamblea
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Duración estimada de la asamblea</p>
                                     </div>
                                 </div>
 
                                 <!-- Organizer -->
                                 <div class="space-y-2">
                                     <Label for="organizer">Organizador/Responsable</Label>
-                                    <Input
-                                        id="organizer"
-                                        v-model="form.metadata.organizer"
-                                        placeholder="Administración del conjunto"
-                                    />
-                                    <p class="text-xs text-muted-foreground">
-                                        Persona o entidad responsable de organizar la asamblea
-                                    </p>
+                                    <Input id="organizer" v-model="form.metadata.organizer" placeholder="Administración del conjunto" />
+                                    <p class="text-xs text-muted-foreground">Persona o entidad responsable de organizar la asamblea</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -597,16 +577,10 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                 <!-- Agenda -->
                                 <div class="space-y-4">
                                     <Label>Agenda / Orden del Día</Label>
-                                    
+
                                     <div class="flex gap-2">
-                                        <Input
-                                            v-model="agendaItem"
-                                            placeholder="Agregar punto de agenda..."
-                                            @keyup.enter="addAgendaItem"
-                                        />
-                                        <Button type="button" @click="addAgendaItem" :disabled="!agendaItem.trim()">
-                                            Agregar
-                                        </Button>
+                                        <Input v-model="agendaItem" placeholder="Agregar punto de agenda..." @keyup.enter="addAgendaItem" />
+                                        <Button type="button" @click="addAgendaItem" :disabled="!agendaItem.trim()"> Agregar </Button>
                                     </div>
 
                                     <div v-if="form.metadata.agenda?.length" class="space-y-2">
@@ -636,9 +610,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                         <Upload class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                                         <div class="space-y-2">
                                             <Label for="documents" class="cursor-pointer">
-                                                <span class="font-medium text-primary hover:text-primary/80">
-                                                    Haz clic para subir archivos
-                                                </span>
+                                                <span class="font-medium text-primary hover:text-primary/80"> Haz clic para subir archivos </span>
                                                 <input
                                                     id="documents"
                                                     type="file"
@@ -667,9 +639,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                                     <FileText class="h-5 w-5 text-muted-foreground" />
                                                     <div>
                                                         <p class="text-sm font-medium">{{ file.name }}</p>
-                                                        <p class="text-xs text-muted-foreground">
-                                                            {{ (file.size / 1024 / 1024).toFixed(2) }} MB
-                                                        </p>
+                                                        <p class="text-xs text-muted-foreground">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</p>
                                                     </div>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="sm" @click="removeFile(index)">
@@ -723,9 +693,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                         <Users class="h-5 w-5 text-muted-foreground" />
                                         <div>
                                             <p class="font-medium">Recordatorio por WhatsApp</p>
-                                            <p class="text-sm text-muted-foreground">
-                                                Enviar recordatorios por WhatsApp (requiere integración)
-                                            </p>
+                                            <p class="text-sm text-muted-foreground">Enviar recordatorios por WhatsApp (requiere integración)</p>
                                         </div>
                                     </div>
                                     <Switch v-model:checked="form.metadata.notification_settings.whatsapp_reminder" />
@@ -747,9 +715,7 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                                             <SelectItem :value="168">1 semana antes</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <p class="text-xs text-muted-foreground">
-                                        Tiempo antes del inicio de la asamblea para enviar el recordatorio
-                                    </p>
+                                    <p class="text-xs text-muted-foreground">Tiempo antes del inicio de la asamblea para enviar el recordatorio</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -762,23 +728,12 @@ const minDateTime = new Date().toISOString().slice(0, 16);
                             </Button>
 
                             <div class="flex items-center gap-3">
-                                <Button
-                                    v-if="!isLastStep"
-                                    type="button"
-                                    :disabled="!canProceedToNext"
-                                    @click="nextStep"
-                                    class="gap-2"
-                                >
+                                <Button v-if="!isLastStep" type="button" :disabled="!canProceedToNext" @click="nextStep" class="gap-2">
                                     Siguiente
                                     <ArrowLeft class="h-4 w-4 rotate-180" />
                                 </Button>
 
-                                <Button
-                                    v-if="isLastStep"
-                                    type="submit"
-                                    :disabled="form.processing || !canProceedToNext"
-                                    class="gap-2"
-                                >
+                                <Button v-if="isLastStep" type="submit" :disabled="form.processing || !canProceedToNext" class="gap-2">
                                     <Save class="h-4 w-4" />
                                     {{ form.processing ? 'Guardando...' : 'Crear Asamblea' }}
                                 </Button>

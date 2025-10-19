@@ -19,7 +19,6 @@ defineProps<{
                         </div>
                         <span class="sr-only">{{ title }}</span>
                     </Link>
-
                 </div>
                 <slot />
             </div>

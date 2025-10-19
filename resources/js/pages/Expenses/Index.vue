@@ -618,7 +618,7 @@ const deleteExpense = (expenseId: number) => {
                                     :key="row.id"
                                     :data-state="row.getIsSelected() ? 'selected' : undefined"
                                     class="cursor-pointer hover:bg-muted/50"
-                                    @click="router.visit(`/expenses/${row.original.id}/edit`)"
+                                    @click="router.visit(`/expenses/${row.original.id}`)"
                                 >
                                     <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
                                         <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />

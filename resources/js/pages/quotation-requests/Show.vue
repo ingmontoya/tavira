@@ -1,10 +1,21 @@
 <script setup lang="ts">
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, FileText, Pencil, Send, User, XCircle, CheckCircle, Ban, Eye } from 'lucide-vue-next';
+import { ArrowLeft, Ban, Calendar, CheckCircle, Eye, FileCheck, FileText, Pencil, Send, User, XCircle } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface ProviderCategory {
     id: number;
@@ -21,6 +32,13 @@ interface QuotationResponse {
     attachments: string | null;
     status: 'pending' | 'accepted' | 'rejected';
     created_at: string;
+    expense_id: number | null;
+    expense: {
+        id: number;
+        expense_number: string;
+        status: string;
+        total_amount: number;
+    } | null;
     provider: {
         id: number;
         name: string;
@@ -65,20 +83,33 @@ const breadcrumbs = [
     },
 ];
 
+// Dialog states
+const selectedResponseId = ref<number | null>(null);
+const showApproveDialog = ref(false);
+const showRejectDialog = ref(false);
+
 const publishRequest = () => {
     if (!confirm('¿Está seguro de publicar esta solicitud? Se notificará a los proveedores.')) return;
 
-    router.post(`/quotation-requests/${props.quotationRequest.id}/publish`, {}, {
-        preserveState: false,
-    });
+    router.post(
+        `/quotation-requests/${props.quotationRequest.id}/publish`,
+        {},
+        {
+            preserveState: false,
+        },
+    );
 };
 
 const closeRequest = () => {
     if (!confirm('¿Está seguro de cerrar esta solicitud? No se aceptarán más cotizaciones.')) return;
 
-    router.post(`/quotation-requests/${props.quotationRequest.id}/close`, {}, {
-        preserveState: false,
-    });
+    router.post(
+        `/quotation-requests/${props.quotationRequest.id}/close`,
+        {},
+        {
+            preserveState: false,
+        },
+    );
 };
 
 const deleteRequest = () => {
@@ -115,20 +146,46 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
-const approveResponse = (responseId: number) => {
-    if (!confirm('¿Está seguro de aprobar esta cotización?')) return;
-
-    router.post(`/quotation-requests/${props.quotationRequest.id}/responses/${responseId}/approve`, {}, {
-        preserveState: false,
-    });
+const openApproveDialog = (responseId: number) => {
+    selectedResponseId.value = responseId;
+    showApproveDialog.value = true;
 };
 
-const rejectResponse = (responseId: number) => {
-    if (!confirm('¿Está seguro de rechazar esta cotización?')) return;
+const openRejectDialog = (responseId: number) => {
+    selectedResponseId.value = responseId;
+    showRejectDialog.value = true;
+};
 
-    router.post(`/quotation-requests/${props.quotationRequest.id}/responses/${responseId}/reject`, {}, {
-        preserveState: false,
-    });
+const approveResponse = () => {
+    if (!selectedResponseId.value) return;
+
+    router.post(
+        `/quotation-requests/${props.quotationRequest.id}/responses/${selectedResponseId.value}/approve`,
+        {},
+        {
+            preserveState: false,
+            onSuccess: () => {
+                showApproveDialog.value = false;
+                selectedResponseId.value = null;
+            },
+        },
+    );
+};
+
+const rejectResponse = () => {
+    if (!selectedResponseId.value) return;
+
+    router.post(
+        `/quotation-requests/${props.quotationRequest.id}/responses/${selectedResponseId.value}/reject`,
+        {},
+        {
+            preserveState: false,
+            onSuccess: () => {
+                showRejectDialog.value = false;
+                selectedResponseId.value = null;
+            },
+        },
+    );
 };
 
 const getResponseStatusBadge = (status: string) => {
@@ -138,6 +195,10 @@ const getResponseStatusBadge = (status: string) => {
         rejected: { text: 'Rechazada', class: 'bg-red-100 text-red-800' },
     };
     return badges[status] || badges.pending;
+};
+
+const getSelectedResponse = () => {
+    return props.quotationRequest.responses.find((r) => r.id === selectedResponseId.value);
 };
 </script>
 
@@ -170,25 +231,15 @@ const getResponseStatusBadge = (status: string) => {
                         <Pencil class="mr-2 h-4 w-4" />
                         Editar
                     </Button>
-                    <Button
-                        v-if="quotationRequest.status === 'draft'"
-                        @click="publishRequest"
-                    >
+                    <Button v-if="quotationRequest.status === 'draft'" @click="publishRequest">
                         <Send class="mr-2 h-4 w-4" />
                         Publicar
                     </Button>
-                    <Button
-                        v-if="quotationRequest.status === 'published'"
-                        @click="closeRequest"
-                    >
+                    <Button v-if="quotationRequest.status === 'published'" @click="closeRequest">
                         <FileText class="mr-2 h-4 w-4" />
                         Cerrar
                     </Button>
-                    <Button
-                        v-if="quotationRequest.status === 'draft'"
-                        variant="destructive"
-                        @click="deleteRequest"
-                    >
+                    <Button v-if="quotationRequest.status === 'draft'" variant="destructive" @click="deleteRequest">
                         <XCircle class="mr-2 h-4 w-4" />
                         Eliminar
                     </Button>
@@ -229,7 +280,7 @@ const getResponseStatusBadge = (status: string) => {
                                 <div
                                     v-for="response in quotationRequest.responses"
                                     :key="response.id"
-                                    class="rounded-lg border p-4 hover:bg-muted/30 transition-colors"
+                                    class="rounded-lg border p-4 transition-colors hover:bg-muted/30"
                                 >
                                     <div class="flex items-start justify-between gap-4">
                                         <div class="flex-1 space-y-3">
@@ -267,6 +318,47 @@ const getResponseStatusBadge = (status: string) => {
                                         </div>
                                     </div>
 
+                                    <!-- Expense Link (if created) -->
+                                    <div
+                                        v-if="response.expense"
+                                        class="mt-3 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-2"
+                                    >
+                                        <FileCheck class="h-4 w-4 text-green-600" />
+                                        <span class="text-sm font-medium text-green-900">Gasto creado:</span>
+                                        <Button
+                                            size="sm"
+                                            variant="link"
+                                            class="h-auto p-0 text-green-700 hover:text-green-900"
+                                            @click="router.visit(route('expenses.show', response.expense.id))"
+                                        >
+                                            {{ response.expense.expense_number }}
+                                        </Button>
+                                        <Badge
+                                            class="ml-auto"
+                                            :class="
+                                                response.expense.status === 'aprobado'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : response.expense.status === 'pendiente_concejo'
+                                                      ? 'bg-orange-100 text-orange-800'
+                                                      : response.expense.status === 'pagado'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                            "
+                                        >
+                                            {{
+                                                response.expense.status === 'aprobado'
+                                                    ? 'Aprobado'
+                                                    : response.expense.status === 'pendiente_concejo'
+                                                      ? 'Pendiente Concejo'
+                                                      : response.expense.status === 'pagado'
+                                                        ? 'Pagado'
+                                                        : response.expense.status === 'pendiente'
+                                                          ? 'Pendiente'
+                                                          : response.expense.status
+                                            }}
+                                        </Badge>
+                                    </div>
+
                                     <!-- Actions -->
                                     <div class="mt-3 flex flex-wrap gap-2 border-t pt-3">
                                         <Button
@@ -281,7 +373,7 @@ const getResponseStatusBadge = (status: string) => {
                                             v-if="response.status === 'pending'"
                                             size="sm"
                                             class="bg-green-600 hover:bg-green-700"
-                                            @click="approveResponse(response.id)"
+                                            @click="openApproveDialog(response.id)"
                                         >
                                             <CheckCircle class="mr-1 h-4 w-4" />
                                             Aprobar
@@ -290,7 +382,7 @@ const getResponseStatusBadge = (status: string) => {
                                             v-if="response.status === 'pending'"
                                             size="sm"
                                             variant="destructive"
-                                            @click="rejectResponse(response.id)"
+                                            @click="openRejectDialog(response.id)"
                                         >
                                             <Ban class="mr-1 h-4 w-4" />
                                             Rechazar
@@ -365,11 +457,7 @@ const getResponseStatusBadge = (status: string) => {
                         </CardHeader>
                         <CardContent>
                             <div class="flex flex-wrap gap-2">
-                                <Badge
-                                    v-for="category in quotationRequest.categories"
-                                    :key="category.id"
-                                    variant="outline"
-                                >
+                                <Badge v-for="category in quotationRequest.categories" :key="category.id" variant="outline">
                                     {{ category.name }}
                                 </Badge>
                             </div>
@@ -378,5 +466,49 @@ const getResponseStatusBadge = (status: string) => {
                 </div>
             </div>
         </div>
+
+        <!-- Approve Dialog -->
+        <AlertDialog v-model:open="showApproveDialog">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Aprobar Propuesta y Crear Gasto</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        ¿Está seguro de que desea aprobar esta propuesta de <strong>{{ getSelectedResponse()?.provider.name }}</strong
+                        >? <br /><br />
+                        <strong>Esta acción:</strong>
+                        <ul class="mt-2 ml-4 list-disc text-sm">
+                            <li>Creará automáticamente un gasto en el sistema</li>
+                            <li>El gasto seguirá el flujo de aprobación correspondiente</li>
+                            <li>Notificará al proveedor seleccionado</li>
+                            <li>Rechazará automáticamente las demás propuestas</li>
+                        </ul>
+                        <br />
+                        <strong>Monto:</strong> {{ getSelectedResponse() ? formatCurrency(getSelectedResponse()!.quoted_amount) : '' }}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction @click="approveResponse" class="bg-green-600 hover:bg-green-700"> Aprobar y Crear Gasto </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <!-- Reject Dialog -->
+        <AlertDialog v-model:open="showRejectDialog">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Rechazar Propuesta</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        ¿Está seguro de que desea rechazar esta propuesta de <strong>{{ getSelectedResponse()?.provider.name }}</strong
+                        >? <br /><br />
+                        Esta acción no se puede deshacer.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction @click="rejectResponse" class="bg-red-600 hover:bg-red-700"> Confirmar Rechazo </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </AppLayout>
 </template>

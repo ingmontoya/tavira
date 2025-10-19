@@ -197,12 +197,7 @@ const formatDate = (dateString: string) => {
 
             <!-- Actions -->
             <div v-if="registration.status === 'pending'" class="flex justify-end gap-2">
-                <Button
-                    variant="outline"
-                    @click="router.visit(`/admin/provider-registrations/${registration.id}/edit`)"
-                >
-                    Editar
-                </Button>
+                <Button variant="outline" @click="router.visit(`/admin/provider-registrations/${registration.id}/edit`)"> Editar </Button>
             </div>
         </div>
     </AppLayout>

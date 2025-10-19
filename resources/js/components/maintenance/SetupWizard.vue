@@ -44,8 +44,7 @@ const steps = computed<SetupStep[]>(() => {
         baseSteps.push({
             id: 'staff',
             title: 'Configurar Personal de Mantenimiento (Opcional)',
-            description:
-                'Configure el personal de mantenimiento disponible para asignar solicitudes. Este paso es opcional pero recomendado.',
+            description: 'Configure el personal de mantenimiento disponible para asignar solicitudes. Este paso es opcional pero recomendado.',
             icon: Wrench,
             completed: props.hasStaffConfigured ?? false,
             action: () => router.visit(route('maintenance-staff.index')),
@@ -82,9 +81,8 @@ const canProceed = computed(() => {
                     <div class="flex-1">
                         <h3 class="text-lg font-semibold text-yellow-900">Configuración Inicial Requerida</h3>
                         <p class="mt-2 text-sm text-yellow-800">
-                            Antes de crear su primera solicitud de mantenimiento, necesita completar algunos pasos de
-                            configuración. Esta es una configuración única que facilitará la gestión de todas las
-                            solicitudes futuras.
+                            Antes de crear su primera solicitud de mantenimiento, necesita completar algunos pasos de configuración. Esta es una
+                            configuración única que facilitará la gestión de todas las solicitudes futuras.
                         </p>
                     </div>
                 </div>
@@ -93,7 +91,7 @@ const canProceed = computed(() => {
 
         <!-- Setup Steps -->
         <div class="space-y-4">
-            <div class="flex items-center space-x-2 mb-4">
+            <div class="mb-4 flex items-center space-x-2">
                 <Lightbulb class="h-5 w-5 text-blue-600" />
                 <h3 class="text-lg font-semibold text-gray-900">Pasos de Configuración</h3>
             </div>
@@ -170,14 +168,9 @@ const canProceed = computed(() => {
                     <div class="flex-1">
                         <h4 class="font-semibold text-blue-900">¿Necesita ayuda para comenzar?</h4>
                         <p class="mt-1 text-sm text-blue-800">
-                            Puede crear categorías predeterminadas comunes (Plomería, Electricidad, Pintura, etc.) con un
-                            solo clic.
+                            Puede crear categorías predeterminadas comunes (Plomería, Electricidad, Pintura, etc.) con un solo clic.
                         </p>
-                        <Button
-                            @click="router.post(route('maintenance-categories.seed'))"
-                            variant="outline"
-                            class="mt-4"
-                        >
+                        <Button @click="router.post(route('maintenance-categories.seed'))" variant="outline" class="mt-4">
                             Crear Categorías Predeterminadas
                             <ArrowRight class="ml-2 h-4 w-4" />
                         </Button>
@@ -190,7 +183,7 @@ const canProceed = computed(() => {
         <Card v-if="canProceed" class="border-green-300 bg-green-50">
             <CardContent class="p-6">
                 <div class="flex items-center space-x-4">
-                    <CheckCircle class="h-8 w-8 text-green-600 flex-shrink-0" />
+                    <CheckCircle class="h-8 w-8 flex-shrink-0 text-green-600" />
                     <div class="flex-1">
                         <h3 class="text-lg font-semibold text-green-900">¡Listo para crear solicitudes!</h3>
                         <p class="mt-1 text-sm text-green-800">

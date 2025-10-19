@@ -1,18 +1,10 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-    Package,
-    FileText,
-    Clock,
-    TrendingUp,
-    Plus,
-    Eye,
-    Calendar
-} from 'lucide-vue-next';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { Calendar, Clock, Eye, FileText, Package, Plus, TrendingUp } from 'lucide-vue-next';
 
 interface Provider {
     id: number;
@@ -63,9 +55,7 @@ interface Props {
 
 defineProps<Props>();
 
-const breadcrumbs = [
-    { title: 'Dashboard', href: '/provider/dashboard' },
-];
+const breadcrumbs = [{ title: 'Dashboard', href: '/provider/dashboard' }];
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -103,9 +93,7 @@ const getStatusBadge = (status: string) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold">Bienvenido, {{ provider.name }}</h1>
-                    <p class="text-muted-foreground">
-                        Panel de gestión de servicios y cotizaciones
-                    </p>
+                    <p class="text-muted-foreground">Panel de gestión de servicios y cotizaciones</p>
                 </div>
                 <Link :href="route('provider.services.create')">
                     <Button>
@@ -119,61 +107,45 @@ const getStatusBadge = (status: string) => {
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">
-                            Servicios Activos
-                        </CardTitle>
+                        <CardTitle class="text-sm font-medium"> Servicios Activos </CardTitle>
                         <Package class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.active_services }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            de {{ stats.total_services }} totales
-                        </p>
+                        <p class="text-xs text-muted-foreground">de {{ stats.total_services }} totales</p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">
-                            Propuestas Enviadas
-                        </CardTitle>
+                        <CardTitle class="text-sm font-medium"> Propuestas Enviadas </CardTitle>
                         <FileText class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.total_proposals }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Total histórico
-                        </p>
+                        <p class="text-xs text-muted-foreground">Total histórico</p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">
-                            Sin Responder
-                        </CardTitle>
+                        <CardTitle class="text-sm font-medium"> Sin Responder </CardTitle>
                         <Clock class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.pending_requests }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Requieren tu atención
-                        </p>
+                        <p class="text-xs text-muted-foreground">Requieren tu atención</p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">
-                            Categorías
-                        </CardTitle>
+                        <CardTitle class="text-sm font-medium"> Categorías </CardTitle>
                         <TrendingUp class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ provider.categories.length }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Servicios ofrecidos
-                        </p>
+                        <p class="text-xs text-muted-foreground">Servicios ofrecidos</p>
                     </CardContent>
                 </Card>
             </div>
@@ -184,14 +156,10 @@ const getStatusBadge = (status: string) => {
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle>Solicitudes Sin Responder</CardTitle>
-                            <CardDescription>
-                                Últimas solicitudes disponibles a las que aún no has respondido
-                            </CardDescription>
+                            <CardDescription> Últimas solicitudes disponibles a las que aún no has respondido </CardDescription>
                         </div>
                         <Link :href="route('provider.quotations.index')">
-                            <Button variant="outline" size="sm">
-                                Ver todas
-                            </Button>
+                            <Button variant="outline" size="sm"> Ver todas </Button>
                         </Link>
                     </div>
                 </CardHeader>
@@ -200,11 +168,7 @@ const getStatusBadge = (status: string) => {
                         No hay solicitudes disponibles en este momento
                     </div>
                     <div v-else class="space-y-4">
-                        <div
-                            v-for="request in recentRequests"
-                            :key="request.id"
-                            class="flex items-center justify-between rounded-lg border p-4"
-                        >
+                        <div v-for="request in recentRequests" :key="request.id" class="flex items-center justify-between rounded-lg border p-4">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
                                     <p class="font-medium">{{ request.title }}</p>
@@ -221,7 +185,7 @@ const getStatusBadge = (status: string) => {
                                         Vence: {{ formatDate(request.deadline) }}
                                     </span>
                                     <span>
-                                        {{ request.categories.map(c => c.name).join(', ') }}
+                                        {{ request.categories.map((c) => c.name).join(', ') }}
                                     </span>
                                 </div>
                             </div>
@@ -242,27 +206,17 @@ const getStatusBadge = (status: string) => {
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle>Mis Propuestas Recientes</CardTitle>
-                            <CardDescription>
-                                Últimas propuestas enviadas
-                            </CardDescription>
+                            <CardDescription> Últimas propuestas enviadas </CardDescription>
                         </div>
                         <Link :href="route('provider.quotations.proposals')">
-                            <Button variant="outline" size="sm">
-                                Ver historial
-                            </Button>
+                            <Button variant="outline" size="sm"> Ver historial </Button>
                         </Link>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div v-if="recentProposals.length === 0" class="py-8 text-center text-muted-foreground">
-                        No has enviado propuestas aún
-                    </div>
+                    <div v-if="recentProposals.length === 0" class="py-8 text-center text-muted-foreground">No has enviado propuestas aún</div>
                     <div v-else class="space-y-4">
-                        <div
-                            v-for="proposal in recentProposals"
-                            :key="proposal.id"
-                            class="flex items-center justify-between rounded-lg border p-4"
-                        >
+                        <div v-for="proposal in recentProposals" :key="proposal.id" class="flex items-center justify-between rounded-lg border p-4">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
                                     <p class="font-medium">{{ proposal.quotation_request.title }}</p>
@@ -280,9 +234,7 @@ const getStatusBadge = (status: string) => {
                                     <span>
                                         {{ formatDate(proposal.created_at) }}
                                     </span>
-                                    <span v-if="proposal.estimated_days">
-                                        {{ proposal.estimated_days }} días
-                                    </span>
+                                    <span v-if="proposal.estimated_days"> {{ proposal.estimated_days }} días </span>
                                 </div>
                             </div>
                         </div>

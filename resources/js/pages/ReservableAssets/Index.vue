@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import DropdownAction from '@/components/DataTableDropDown.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Building2, Plus, Search, Eye, Edit, Trash2, CalendarDays, Clock, DollarSign } from 'lucide-vue-next';
+import { Building2, CalendarDays, Clock, DollarSign, Edit, Eye, Plus, Search, Trash2 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface ReservableAsset {
@@ -93,7 +93,7 @@ const deleteAsset = (assetId: number, assetName: string) => {
             preserveScroll: true,
             onSuccess: () => {
                 // Handle success
-            }
+            },
         });
     }
 };
@@ -104,18 +104,16 @@ const deleteAsset = (assetId: number, assetName: string) => {
 
     <AppLayout>
         <div class="py-6">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mb-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Activos Reservables</h1>
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                Gestiona los activos que los residentes pueden reservar
-                            </p>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Gestiona los activos que los residentes pueden reservar</p>
                         </div>
                         <div class="flex space-x-3">
                             <Button @click="() => router.visit(route('reservable-assets.create'))" class="inline-flex items-center">
-                                <Plus class="h-4 w-4 mr-2" />
+                                <Plus class="mr-2 h-4 w-4" />
                                 Nuevo Activo
                             </Button>
                         </div>
@@ -125,26 +123,17 @@ const deleteAsset = (assetId: number, assetName: string) => {
                 <!-- Filters -->
                 <Card class="mb-6">
                     <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Buscar
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Buscar </label>
                                 <div class="relative">
-                                    <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        v-model="search"
-                                        placeholder="Buscar activos..."
-                                        class="pl-10"
-                                        @keydown.enter="applyFilters"
-                                    />
+                                    <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                                    <Input v-model="search" placeholder="Buscar activos..." class="pl-10" @keydown.enter="applyFilters" />
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Tipo
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Tipo </label>
                                 <Select v-model="selectedType">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Todos los tipos" />
@@ -159,9 +148,7 @@ const deleteAsset = (assetId: number, assetName: string) => {
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Estado
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Estado </label>
                                 <Select v-model="activeFilter">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Todos los estados" />
@@ -177,12 +164,10 @@ const deleteAsset = (assetId: number, assetName: string) => {
 
                         <div class="mt-4 flex justify-between">
                             <Button @click="applyFilters" class="inline-flex items-center">
-                                <Search class="h-4 w-4 mr-2" />
+                                <Search class="mr-2 h-4 w-4" />
                                 Filtrar
                             </Button>
-                            <Button variant="outline" @click="clearFilters">
-                                Limpiar filtros
-                            </Button>
+                            <Button variant="outline" @click="clearFilters"> Limpiar filtros </Button>
                         </div>
                     </div>
                 </Card>
@@ -204,12 +189,12 @@ const deleteAsset = (assetId: number, assetName: string) => {
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-if="assets.data.length === 0">
-                                    <TableCell colspan="7" class="text-center py-8 text-gray-500">
-                                        <Building2 class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                    <TableCell colspan="7" class="py-8 text-center text-gray-500">
+                                        <Building2 class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                                         <p>No hay activos que coincidan con los filtros.</p>
-                                        <Link 
-                                            :href="route('reservable-assets.create')" 
-                                            class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block"
+                                        <Link
+                                            :href="route('reservable-assets.create')"
+                                            class="mt-2 inline-block text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                                         >
                                             Crear el primer activo reservable
                                         </Link>
@@ -219,20 +204,20 @@ const deleteAsset = (assetId: number, assetName: string) => {
                                     <TableCell>
                                         <div class="flex items-center space-x-3">
                                             <div v-if="asset.image_path" class="flex-shrink-0">
-                                                <img 
-                                                    :src="`/storage/${asset.image_path}`" 
+                                                <img
+                                                    :src="`/storage/${asset.image_path}`"
                                                     :alt="asset.name"
                                                     class="h-10 w-10 rounded-lg object-cover"
                                                 />
                                             </div>
                                             <div v-else class="flex-shrink-0">
-                                                <div class="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
                                                     <Building2 class="h-5 w-5 text-gray-500" />
                                                 </div>
                                             </div>
                                             <div>
                                                 <p class="font-medium text-gray-900 dark:text-gray-100">{{ asset.name }}</p>
-                                                <p v-if="asset.description" class="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
+                                                <p v-if="asset.description" class="max-w-xs truncate text-sm text-gray-500 dark:text-gray-400">
                                                     {{ asset.description }}
                                                 </p>
                                             </div>
@@ -245,13 +230,13 @@ const deleteAsset = (assetId: number, assetName: string) => {
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex items-center text-sm">
-                                            <Clock class="h-4 w-4 mr-1 text-gray-500" />
+                                            <Clock class="mr-1 h-4 w-4 text-gray-500" />
                                             {{ formatDuration(asset.reservation_duration_minutes) }}
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex items-center text-sm">
-                                            <DollarSign class="h-4 w-4 mr-1 text-gray-500" />
+                                            <DollarSign class="mr-1 h-4 w-4 text-gray-500" />
                                             {{ asset.reservation_cost > 0 ? formatCurrency(asset.reservation_cost) : 'Gratis' }}
                                         </div>
                                     </TableCell>
@@ -263,15 +248,13 @@ const deleteAsset = (assetId: number, assetName: string) => {
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex items-center space-x-2">
-                                            <Badge 
+                                            <Badge
                                                 :variant="asset.is_active ? 'default' : 'secondary'"
                                                 :class="asset.is_active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : ''"
                                             >
                                                 {{ asset.is_active ? 'Activo' : 'Inactivo' }}
                                             </Badge>
-                                            <Badge v-if="asset.requires_approval" variant="outline" class="text-xs">
-                                                Requiere aprobación
-                                            </Badge>
+                                            <Badge v-if="asset.requires_approval" variant="outline" class="text-xs"> Requiere aprobación </Badge>
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -280,31 +263,31 @@ const deleteAsset = (assetId: number, assetName: string) => {
                                                 :href="route('reservable-assets.show', asset.id)"
                                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                             >
-                                                <Eye class="h-4 w-4 mr-2" />
+                                                <Eye class="mr-2 h-4 w-4" />
                                                 Ver detalles
                                             </Link>
-                                            
+
                                             <Link
                                                 :href="route('reservations.create', { asset_id: asset.id })"
                                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                             >
-                                                <CalendarDays class="h-4 w-4 mr-2" />
+                                                <CalendarDays class="mr-2 h-4 w-4" />
                                                 Crear reserva
                                             </Link>
-                                            
+
                                             <Link
                                                 :href="route('reservable-assets.edit', asset.id)"
                                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                             >
-                                                <Edit class="h-4 w-4 mr-2" />
+                                                <Edit class="mr-2 h-4 w-4" />
                                                 Editar
                                             </Link>
 
                                             <button
                                                 @click="deleteAsset(asset.id, asset.name)"
-                                                class="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600 w-full text-left"
+                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600"
                                             >
-                                                <Trash2 class="h-4 w-4 mr-2" />
+                                                <Trash2 class="mr-2 h-4 w-4" />
                                                 Eliminar
                                             </button>
                                         </DropdownAction>
@@ -315,26 +298,16 @@ const deleteAsset = (assetId: number, assetName: string) => {
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="assets.total > 0" class="px-6 py-4 border-t">
+                    <div v-if="assets.total > 0" class="border-t px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div class="text-sm text-gray-700 dark:text-gray-300">
                                 Mostrando {{ assets.from }} a {{ assets.to }} de {{ assets.total }} activos
                             </div>
                             <div class="flex space-x-2">
-                                <Button
-                                    v-if="assets.prev_page_url"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="router.visit(assets.prev_page_url)"
-                                >
+                                <Button v-if="assets.prev_page_url" variant="outline" size="sm" @click="router.visit(assets.prev_page_url)">
                                     Anterior
                                 </Button>
-                                <Button
-                                    v-if="assets.next_page_url"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="router.visit(assets.next_page_url)"
-                                >
+                                <Button v-if="assets.next_page_url" variant="outline" size="sm" @click="router.visit(assets.next_page_url)">
                                     Siguiente
                                 </Button>
                             </div>

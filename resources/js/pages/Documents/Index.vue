@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +13,6 @@ import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, g
 import { FileText, Search, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../utils';
-import { Button } from '@/components/ui/button';
 
 export interface Document {
     id: number;
@@ -54,14 +54,16 @@ const columns = [
         header: 'Fecha de Subida',
         cell: ({ row }) => {
             const date = new Date(row.getValue('created_at'));
-            return h('div', { class: 'text-sm' }, 
+            return h(
+                'div',
+                { class: 'text-sm' },
                 date.toLocaleDateString('es-CO', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
-                    minute: '2-digit'
-                })
+                    minute: '2-digit',
+                }),
             );
         },
     }),
@@ -70,10 +72,10 @@ const columns = [
         cell: ({ row }) => {
             const module = row.getValue('module') as string;
             const moduleColors: Record<string, string> = {
-                'Mantenimiento': 'bg-blue-100 text-blue-800',
-                'Correspondencia': 'bg-green-100 text-green-800',
-                'Finanzas': 'bg-purple-100 text-purple-800',
-                'Anuncios': 'bg-orange-100 text-orange-800',
+                Mantenimiento: 'bg-blue-100 text-blue-800',
+                Correspondencia: 'bg-green-100 text-green-800',
+                Finanzas: 'bg-purple-100 text-purple-800',
+                Anuncios: 'bg-orange-100 text-orange-800',
             };
             return h(
                 Badge,
@@ -129,14 +131,15 @@ const filteredData = computed(() => {
     let filtered = props.documents;
 
     if (searchQuery.value) {
-        filtered = filtered.filter(doc =>
-            doc.filename.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-            doc.uploader.toLowerCase().includes(searchQuery.value.toLowerCase())
+        filtered = filtered.filter(
+            (doc) =>
+                doc.filename.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                doc.uploader.toLowerCase().includes(searchQuery.value.toLowerCase()),
         );
     }
 
     if (selectedModule.value !== 'all') {
-        filtered = filtered.filter(doc => doc.module === selectedModule.value);
+        filtered = filtered.filter((doc) => doc.module === selectedModule.value);
     }
 
     return filtered;
@@ -158,7 +161,7 @@ const hasActiveFilters = computed(() => {
 });
 
 const uniqueModules = computed(() => {
-    const modules = [...new Set(props.documents.map(doc => doc.module))];
+    const modules = [...new Set(props.documents.map((doc) => doc.module))];
     return modules.sort();
 });
 
@@ -194,9 +197,7 @@ const breadcrumbs = [
                     <FileText class="h-6 w-6 text-blue-600" />
                     <h1 class="text-2xl font-semibold text-gray-900">Documentos del Sistema</h1>
                 </div>
-                <div class="text-sm text-gray-500">
-                    {{ filteredData.length }} documentos encontrados
-                </div>
+                <div class="text-sm text-gray-500">{{ filteredData.length }} documentos encontrados</div>
             </div>
 
             <!-- Filters -->
@@ -279,9 +280,7 @@ const breadcrumbs = [
                                 </template>
                                 <template v-else>
                                     <TableRow>
-                                        <TableCell :colspan="columns.length" class="h-24 text-center">
-                                            No se encontraron documentos.
-                                        </TableCell>
+                                        <TableCell :colspan="columns.length" class="h-24 text-center"> No se encontraron documentos. </TableCell>
                                     </TableRow>
                                 </template>
                             </TableBody>

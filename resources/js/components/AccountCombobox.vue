@@ -85,18 +85,10 @@ const handleOpenChange = (open: boolean) => {
             </SelectValue>
         </SelectTrigger>
         <SelectContent>
-            <div class="sticky top-0 z-10 bg-background p-2 border-b">
-                <Input
-                    v-model="searchQuery"
-                    placeholder="Buscar por código o nombre..."
-                    class="h-8"
-                    @click.stop
-                    @keydown.stop
-                />
+            <div class="sticky top-0 z-10 border-b bg-background p-2">
+                <Input v-model="searchQuery" placeholder="Buscar por código o nombre..." class="h-8" @click.stop @keydown.stop />
             </div>
-            <div v-if="filteredAccounts.length === 0" class="py-6 text-center text-sm text-muted-foreground">
-                No se encontraron cuentas.
-            </div>
+            <div v-if="filteredAccounts.length === 0" class="py-6 text-center text-sm text-muted-foreground">No se encontraron cuentas.</div>
             <SelectItem v-for="account in filteredAccounts" :key="account.id" :value="account.id">
                 <div class="flex flex-col">
                     <div class="flex items-center gap-2">
@@ -110,7 +102,7 @@ const handleOpenChange = (open: boolean) => {
             </SelectItem>
             <div
                 v-if="!searchQuery && filteredAccounts.length >= 15"
-                class="sticky bottom-0 bg-muted/50 px-2 py-1 text-xs text-center text-muted-foreground border-t"
+                class="sticky bottom-0 border-t bg-muted/50 px-2 py-1 text-center text-xs text-muted-foreground"
             >
                 Escribe para buscar más cuentas...
             </div>

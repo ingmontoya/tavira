@@ -8,7 +8,9 @@
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
                         <h1 class="text-3xl font-bold tracking-tight">Panel Central Tavira</h1>
-                        <p class="text-muted-foreground">Bienvenido al panel central. Aquí podrás crear tu conjunto residencial y gestionar tu suscripción.</p>
+                        <p class="text-muted-foreground">
+                            Bienvenido al panel central. Aquí podrás crear tu conjunto residencial y gestionar tu suscripción.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -22,17 +24,18 @@
                             ¡Bienvenido a Tavira!
                         </CardTitle>
                         <CardDescription class="text-blue-700">
-                            Parece que es tu primera vez aquí. Te guiaremos para crear tu primer conjunto residencial y comenzar a gestionar tu propiedad de manera eficiente.
+                            Parece que es tu primera vez aquí. Te guiaremos para crear tu primer conjunto residencial y comenzar a gestionar tu
+                            propiedad de manera eficiente.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex flex-col gap-4 sm:flex-row">
                             <Button @click="router.visit('/tenants/create')" class="bg-blue-600 hover:bg-blue-700">
-                                <Icon name="plus-circle" class="h-4 w-4 mr-2" />
+                                <Icon name="plus-circle" class="mr-2 h-4 w-4" />
                                 Crear Mi Primer Conjunto
                             </Button>
                             <Button variant="outline">
-                                <Icon name="play-circle" class="h-4 w-4 mr-2" />
+                                <Icon name="play-circle" class="mr-2 h-4 w-4" />
                                 Ver Tutorial
                             </Button>
                         </div>
@@ -43,22 +46,19 @@
             <!-- Emergency Panic Alerts Section -->
             <div v-if="activePanicAlerts.length > 0" class="mb-6">
                 <Card class="border-red-500 bg-red-50 shadow-lg">
-                    <CardHeader class="bg-red-600 text-white rounded-t-lg">
+                    <CardHeader class="rounded-t-lg bg-red-600 text-white">
                         <CardTitle class="flex items-center gap-2">
                             <Icon name="alert-triangle" class="h-6 w-6 animate-pulse" />
                             🚨 ALERTAS DE PÁNICO ACTIVAS ({{ activePanicAlerts.length }})
                         </CardTitle>
-                        <CardDescription class="text-red-100">
-                            EMERGENCIAS QUE REQUIEREN ATENCIÓN INMEDIATA
-                        </CardDescription>
+                        <CardDescription class="text-red-100"> EMERGENCIAS QUE REQUIEREN ATENCIÓN INMEDIATA </CardDescription>
                     </CardHeader>
                     <CardContent class="p-0">
-                        <div v-for="alert in activePanicAlerts" :key="alert.id"
-                             class="border-b border-red-200 p-4 bg-white">
+                        <div v-for="alert in activePanicAlerts" :key="alert.id" class="border-b border-red-200 bg-white p-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                                        <Icon name="alert-triangle" class="h-6 w-6 text-red-600 animate-pulse" />
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                                        <Icon name="alert-triangle" class="h-6 w-6 animate-pulse text-red-600" />
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-red-900">
@@ -67,21 +67,15 @@
                                         <p class="text-sm text-red-700">
                                             {{ alert.apartment || 'Apartamento no especificado' }}
                                         </p>
-                                        <p class="text-xs text-red-600">
-                                            Activada: {{ alert.time_elapsed }} | ID: {{ alert.id }}
-                                        </p>
-                                        <p v-if="alert.location" class="text-xs text-red-600">
-                                            📍 {{ alert.location }}
-                                        </p>
+                                        <p class="text-xs text-red-600">Activada: {{ alert.time_elapsed }} | ID: {{ alert.id }}</p>
+                                        <p v-if="alert.location" class="text-xs text-red-600">📍 {{ alert.location }}</p>
                                     </div>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <Badge variant="destructive" class="animate-pulse">
                                         {{ alert.status?.toUpperCase() }}
                                     </Badge>
-                                    <Button size="sm" variant="outline" @click="resolveAlert(alert.id)">
-                                        Marcar como Atendida
-                                    </Button>
+                                    <Button size="sm" variant="outline" @click="resolveAlert(alert.id)"> Marcar como Atendida </Button>
                                 </div>
                             </div>
                         </div>
@@ -130,22 +124,18 @@
                 <CardHeader>
                     <CardTitle>Mis Conjuntos Residenciales</CardTitle>
                     <CardDescription>
-                        <span v-if="recentTenants.length === 0">
-                            Aquí aparecerán los conjuntos que hayas creado
-                        </span>
-                        <span v-else>
-                            Tus conjuntos registrados en la plataforma
-                        </span>
+                        <span v-if="recentTenants.length === 0"> Aquí aparecerán los conjuntos que hayas creado </span>
+                        <span v-else> Tus conjuntos registrados en la plataforma </span>
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
-                        <div v-if="recentTenants.length === 0" class="text-center py-8">
-                            <Icon name="building" class="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
-                            <h3 class="text-lg font-medium text-muted-foreground mb-2">Aún no tienes conjuntos</h3>
-                            <p class="text-sm text-muted-foreground mb-4">Crea tu primer conjunto residencial para comenzar</p>
+                        <div v-if="recentTenants.length === 0" class="py-8 text-center">
+                            <Icon name="building" class="mx-auto mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+                            <h3 class="mb-2 text-lg font-medium text-muted-foreground">Aún no tienes conjuntos</h3>
+                            <p class="mb-4 text-sm text-muted-foreground">Crea tu primer conjunto residencial para comenzar</p>
                             <Button @click="router.visit('/tenants/create')" variant="outline">
-                                <Icon name="plus-circle" class="h-4 w-4 mr-2" />
+                                <Icon name="plus-circle" class="mr-2 h-4 w-4" />
                                 Crear Conjunto
                             </Button>
                         </div>
@@ -153,11 +143,11 @@
                             <div
                                 v-for="tenant in recentTenants"
                                 :key="tenant.id"
-                                class="flex items-center justify-between p-4 border rounded-lg transition-colors hover:bg-muted/50 cursor-pointer"
+                                class="flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                                 @click="router.visit(`/tenants/${tenant.id}`)"
                             >
                                 <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                                         <Icon name="building" class="h-5 w-5 text-blue-600" />
                                     </div>
                                     <div>
@@ -169,20 +159,12 @@
                                     <Badge :variant="tenant.status === 'active' ? 'default' : 'secondary'">
                                         {{ tenant.status === 'active' ? 'Activo' : 'Pendiente' }}
                                     </Badge>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        @click.stop="router.visit(`/tenants/${tenant.id}`)"
-                                    >
-                                        <Icon name="settings" class="h-4 w-4 mr-1" />
+                                    <Button variant="outline" size="sm" @click.stop="router.visit(`/tenants/${tenant.id}`)">
+                                        <Icon name="settings" class="mr-1 h-4 w-4" />
                                         Gestionar
                                     </Button>
-                                    <Button
-                                        v-if="tenant.status === 'active'"
-                                        size="sm"
-                                        @click.stop="loginToTenant(tenant.id)"
-                                    >
-                                        <Icon name="log-in" class="h-4 w-4 mr-1" />
+                                    <Button v-if="tenant.status === 'active'" size="sm" @click.stop="loginToTenant(tenant.id)">
+                                        <Icon name="log-in" class="mr-1 h-4 w-4" />
                                         Acceder
                                     </Button>
                                 </div>
@@ -200,26 +182,19 @@
                 </CardHeader>
                 <CardContent>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <Button 
-                            @click="router.visit('/tenants/create')"
-                            class="h-auto p-4 flex flex-col items-center space-y-2"
-                        >
+                        <Button @click="router.visit('/tenants/create')" class="flex h-auto flex-col items-center space-y-2 p-4">
                             <Icon name="plus-circle" class="h-8 w-8" />
                             <span>Crear Conjunto</span>
                         </Button>
-                        <Button 
-                            @click="router.visit('/tenants')"
-                            variant="outline" 
-                            class="h-auto p-4 flex flex-col items-center space-y-2"
-                        >
+                        <Button @click="router.visit('/tenants')" variant="outline" class="flex h-auto flex-col items-center space-y-2 p-4">
                             <Icon name="building" class="h-8 w-8" />
                             <span>Mis Conjuntos</span>
                         </Button>
-                        <Button variant="outline" class="h-auto p-4 flex flex-col items-center space-y-2">
+                        <Button variant="outline" class="flex h-auto flex-col items-center space-y-2 p-4">
                             <Icon name="credit-card" class="h-8 w-8" />
                             <span>Mi Suscripción</span>
                         </Button>
-                        <Button variant="outline" class="h-auto p-4 flex flex-col items-center space-y-2">
+                        <Button variant="outline" class="flex h-auto flex-col items-center space-y-2 p-4">
                             <Icon name="user-cog" class="h-8 w-8" />
                             <span>Mi Perfil</span>
                         </Button>
@@ -231,84 +206,84 @@
 </template>
 
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import Icon from '@/components/Icon.vue'
-import { Head, router } from '@inertiajs/vue3'
-import { ref, onMounted, onUnmounted } from 'vue'
+import Icon from '@/components/Icon.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 interface PanicAlert {
-    id: string
-    alert_id: string
+    id: string;
+    alert_id: string;
     user?: {
-        id: number
-        name: string
-    }
+        id: number;
+        name: string;
+    };
     apartment?: {
-        id: number
-        address: string
-    }
+        id: number;
+        address: string;
+    };
     location?: {
-        lat: number
-        lng: number
-        string: string
-    }
-    status: string
-    timestamp: string
-    time_ago: string
+        lat: number;
+        lng: number;
+        string: string;
+    };
+    status: string;
+    timestamp: string;
+    time_ago: string;
 }
 
 interface Props {
     stats: {
-        totalTenants: number
-        activeTenants: number
-        pendingTenants: number
-    }
+        totalTenants: number;
+        activeTenants: number;
+        pendingTenants: number;
+    };
     recentTenants: Array<{
-        id: string
-        name: string
-        status: string
-        created_at: string
-    }>
-    user: any
+        id: string;
+        name: string;
+        status: string;
+        created_at: string;
+    }>;
+    user: any;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 // Panic alerts state
-const activePanicAlerts = ref<PanicAlert[]>([])
+const activePanicAlerts = ref<PanicAlert[]>([]);
 
 const breadcrumbs = [
     {
         title: 'Panel Central',
         href: '/dashboard',
     },
-]
+];
 
 const loginToTenant = (tenantId: string) => {
-    router.post(`/tenants/${tenantId}/impersonate`)
-}
+    router.post(`/tenants/${tenantId}/impersonate`);
+};
 
 // Handle panic alert resolution
 const resolveAlert = (alertId: string) => {
-    console.log('Resolving panic alert:', alertId)
+    console.log('Resolving panic alert:', alertId);
 
     // Remove from active alerts
-    activePanicAlerts.value = activePanicAlerts.value.filter(alert => alert.id !== alertId)
+    activePanicAlerts.value = activePanicAlerts.value.filter((alert) => alert.id !== alertId);
 
     // Show success notification with toast
     // TODO: Import and use toast from shadcn/vue
-    console.log(`Alerta ${alertId} marcada como atendida`)
-}
+    console.log(`Alerta ${alertId} marcada como atendida`);
+};
 
 // Listen for panic alerts
 const setupPanicAlertListener = () => {
     const checkForNewAlerts = () => {
         try {
-            const alertsKey = 'panic_alerts_demo'
-            const storedAlerts = JSON.parse(localStorage.getItem(alertsKey) || '[]')
+            const alertsKey = 'panic_alerts_demo';
+            const storedAlerts = JSON.parse(localStorage.getItem(alertsKey) || '[]');
 
             // Convert stored alerts to the format we need
             const newAlerts = storedAlerts.map((alert: any) => ({
@@ -316,23 +291,23 @@ const setupPanicAlertListener = () => {
                 alert_id: alert.alertId,
                 user: {
                     id: 1,
-                    name: 'Usuario Demo'
+                    name: 'Usuario Demo',
                 },
                 apartment: {
                     id: 1,
-                    address: 'Apartamento Demo'
+                    address: 'Apartamento Demo',
                 },
                 location: alert.location,
                 status: alert.status || 'triggered',
                 timestamp: alert.timestamp,
-                time_ago: new Date(alert.timestamp).toLocaleString()
-            }))
+                time_ago: new Date(alert.timestamp).toLocaleString(),
+            }));
 
             // Only add new alerts that aren't already in our active list
             newAlerts.forEach((newAlert: PanicAlert) => {
-                const exists = activePanicAlerts.value.some(existing => existing.alert_id === newAlert.alert_id)
+                const exists = activePanicAlerts.value.some((existing) => existing.alert_id === newAlert.alert_id);
                 if (!exists) {
-                    activePanicAlerts.value.push(newAlert)
+                    activePanicAlerts.value.push(newAlert);
 
                     // Show browser notification
                     if (Notification.permission === 'granted') {
@@ -340,31 +315,30 @@ const setupPanicAlertListener = () => {
                             body: `Emergencia activada por ${newAlert.user?.name}`,
                             icon: '/favicon.ico',
                             tag: 'panic-alert',
-                            requireInteraction: true
-                        })
+                            requireInteraction: true,
+                        });
                     }
                 }
-            })
-
+            });
         } catch (error) {
-            console.error('Error checking for panic alerts:', error)
+            console.error('Error checking for panic alerts:', error);
         }
-    }
+    };
 
     // Check every 2 seconds for new alerts
-    const interval = setInterval(checkForNewAlerts, 2000)
-    return () => clearInterval(interval)
-}
+    const interval = setInterval(checkForNewAlerts, 2000);
+    return () => clearInterval(interval);
+};
 
 // Setup on mount
 onMounted(() => {
     // Request notification permission
     if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission()
+        Notification.requestPermission();
     }
 
     // Setup panic alert listener
-    const cleanup = setupPanicAlertListener()
-    onUnmounted(cleanup)
-})
+    const cleanup = setupPanicAlertListener();
+    onUnmounted(cleanup);
+});
 </script>

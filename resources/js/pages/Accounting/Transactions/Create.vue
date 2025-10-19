@@ -313,26 +313,15 @@ const breadcrumbs = [
                                 </SelectTrigger>
                                 <SelectContent>
                                     <div class="p-2">
-                                        <Input
-                                            v-model="apartmentSearchQuery"
-                                            placeholder="Buscar apartamento..."
-                                            class="mb-2"
-                                            @click.stop
-                                        />
+                                        <Input v-model="apartmentSearchQuery" placeholder="Buscar apartamento..." class="mb-2" @click.stop />
                                     </div>
                                     <SelectItem :value="null">Ninguno</SelectItem>
-                                    <SelectItem
-                                        v-for="apartment in filteredApartments"
-                                        :key="apartment.id"
-                                        :value="apartment.id"
-                                    >
+                                    <SelectItem v-for="apartment in filteredApartments" :key="apartment.id" :value="apartment.id">
                                         {{ apartment.number }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p class="text-xs text-muted-foreground">
-                                Asocia esta transacción con un apartamento específico
-                            </p>
+                            <p class="text-xs text-muted-foreground">Asocia esta transacción con un apartamento específico</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -404,11 +393,12 @@ const breadcrumbs = [
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Select
-                                                v-if="getAccountRequiresThirdParty(entry.account_id)"
-                                                v-model="entry.third_party_id"
-                                            >
-                                                <SelectTrigger :class="{ 'border-red-500': getAccountRequiresThirdParty(entry.account_id) && !entry.third_party_id }">
+                                            <Select v-if="getAccountRequiresThirdParty(entry.account_id)" v-model="entry.third_party_id">
+                                                <SelectTrigger
+                                                    :class="{
+                                                        'border-red-500': getAccountRequiresThirdParty(entry.account_id) && !entry.third_party_id,
+                                                    }"
+                                                >
                                                     <SelectValue placeholder="Apto..." />
                                                 </SelectTrigger>
                                                 <SelectContent>

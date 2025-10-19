@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { useToast } from '@/composables/useToast';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import {
     createColumnHelper,
@@ -23,7 +23,22 @@ import {
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { AlertTriangle, ChevronDown, ChevronsUpDown, Database, Edit, Eye, Filter, Plus, Search, Settings, ToggleLeft, ToggleRight, Trash2, X } from 'lucide-vue-next';
+import {
+    AlertTriangle,
+    ChevronDown,
+    ChevronsUpDown,
+    Database,
+    Edit,
+    Eye,
+    Filter,
+    Plus,
+    Search,
+    Settings,
+    ToggleLeft,
+    ToggleRight,
+    Trash2,
+    X,
+} from 'lucide-vue-next';
 import { computed, h, ref, toRefs, watch } from 'vue';
 import { valueUpdater } from '../../../utils';
 
@@ -352,17 +367,21 @@ const statusOptions = [
 
 // Create default mappings
 const createDefaultMappings = () => {
-    router.post('/payment-method-account-mappings/create-defaults', {}, {
-        onSuccess: () => {
-            success('Mapeos por defecto creados exitosamente');
-            // Reload the page to show the new mappings
-            router.reload();
+    router.post(
+        '/payment-method-account-mappings/create-defaults',
+        {},
+        {
+            onSuccess: () => {
+                success('Mapeos por defecto creados exitosamente');
+                // Reload the page to show the new mappings
+                router.reload();
+            },
+            onError: (errors) => {
+                const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';
+                error(errorMessage);
+            },
         },
-        onError: (errors) => {
-            const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';
-            error(errorMessage);
-        }
-    });
+    );
 };
 
 const breadcrumbs = [
@@ -423,12 +442,14 @@ const breadcrumbs = [
                 </Alert>
 
                 <!-- No Mappings Alert -->
-                <Alert v-else-if="!has_mappings" class="bg-blue-50 border-blue-200">
+                <Alert v-else-if="!has_mappings" class="border-blue-200 bg-blue-50">
                     <Database class="h-4 w-4 text-blue-600" />
                     <AlertDescription>
                         <div class="space-y-2">
                             <p class="font-medium text-blue-800">Mapeos de métodos de pago no configurados</p>
-                            <p class="text-blue-700">Configure qué cuenta contable se usa para cada método de pago (efectivo, transferencia, etc.).</p>
+                            <p class="text-blue-700">
+                                Configure qué cuenta contable se usa para cada método de pago (efectivo, transferencia, etc.).
+                            </p>
                             <Button @click="createDefaultMappings" variant="default" size="sm" class="mt-3">
                                 <Settings class="mr-2 h-4 w-4" />
                                 Crear Mapeos por Defecto

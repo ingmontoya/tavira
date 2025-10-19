@@ -1,15 +1,13 @@
 <template>
     <section id="cta" class="bg-gradient-to-br from-[#1D3557] via-[#1D3557] to-[#06D6A0] px-6 py-16 md:py-20">
         <div class="mx-auto max-w-4xl text-center">
-            <div class="rounded-3xl border border-white/20 bg-gradient-to-r from-white/10 to-white/5 p-8 md:p-12 backdrop-blur-lg">
-                <h2 class="mb-6 text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+            <div class="rounded-3xl border border-white/20 bg-gradient-to-r from-white/10 to-white/5 p-8 backdrop-blur-lg md:p-12">
+                <h2 class="mb-6 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
                     ¿Listo para
-                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent">
-                        Transformar
-                    </span>
+                    <span class="bg-gradient-to-r from-[#06D6A0] to-[#FF6B6B] bg-clip-text text-transparent"> Transformar </span>
                     tu Conjunto?
                 </h2>
-                <p class="mx-auto mb-8 max-w-2xl text-lg md:text-xl text-white/85">
+                <p class="mx-auto mb-8 max-w-2xl text-lg text-white/85 md:text-xl">
                     Únete a más de 500 conjuntos en Colombia que ya confían en Tavira. Comienza hoy mismo con nuestra prueba gratuita de 30 días.
                 </p>
 
@@ -17,13 +15,13 @@
                     <Link
                         v-if="!$page.props.auth.user"
                         :href="route('register')"
-                        class="flex-shrink-0 transform rounded-xl bg-gradient-to-r from-[#FF6B6B] to-[#FF6B6B] px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-[#ff5555] hover:to-[#ff5555] hover:shadow-[#FF6B6B]/25"
+                        class="flex-shrink-0 transform rounded-xl bg-gradient-to-r from-[#FF6B6B] to-[#FF6B6B] px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-[#ff5555] hover:to-[#ff5555] hover:shadow-[#FF6B6B]/25 md:px-8 md:py-4 md:text-lg"
                     >
                         <span class="sm:hidden">Prueba Gratis</span>
                         <span class="hidden sm:inline">Comenzar Prueba Gratuita de 30 Días</span>
                     </Link>
                     <button
-                        class="flex-shrink-0 rounded-xl border-2 border-white/30 px-4 py-3 md:px-8 md:py-4 text-sm md:text-lg font-semibold text-white transition-all duration-200 hover:bg-white/15 hover:border-white/50"
+                        class="flex-shrink-0 rounded-xl border-2 border-white/30 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:border-white/50 hover:bg-white/15 md:px-8 md:py-4 md:text-lg"
                     >
                         <span class="sm:hidden">Ver Demo</span>
                         <span class="hidden sm:inline">Solicitar Demostración Personalizada</span>

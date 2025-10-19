@@ -3,17 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/composables/useToast';
-import { router } from '@inertiajs/vue3';
-import { 
-    Check, 
-    Clock, 
-    Users, 
-    UserCheck, 
-    UserX,
-    Wifi,
-    AlertCircle
-} from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { AlertCircle, Check, Clock, UserCheck, Users, UserX, Wifi } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 interface Assembly {
     id: number;
@@ -52,9 +43,7 @@ const isSubmitting = ref(false);
 const { success, error: showError } = useToast();
 
 const canRegisterAttendance = computed(() => {
-    return props.assembly.status === 'in_progress' && 
-           props.attendanceStatus.can_register &&
-           props.attendanceStatus.status === 'not_registered';
+    return props.assembly.status === 'in_progress' && props.attendanceStatus.can_register && props.attendanceStatus.status === 'not_registered';
 });
 
 const statusConfig = computed(() => {
@@ -63,26 +52,26 @@ const statusConfig = computed(() => {
             text: 'Sin registrar',
             class: 'bg-yellow-100 text-yellow-800',
             icon: Clock,
-            description: 'Tu asistencia no ha sido registrada'
+            description: 'Tu asistencia no ha sido registrada',
         },
         present: {
             text: 'Presente',
             class: 'bg-green-100 text-green-800',
             icon: UserCheck,
-            description: 'Asistencia confirmada'
+            description: 'Asistencia confirmada',
         },
         absent: {
             text: 'Ausente',
             class: 'bg-red-100 text-red-800',
             icon: UserX,
-            description: 'Marcado como ausente'
+            description: 'Marcado como ausente',
         },
         delegated: {
             text: 'Delegado',
             class: 'bg-blue-100 text-blue-800',
             icon: Users,
-            description: 'Voto delegado a otro residente'
-        }
+            description: 'Voto delegado a otro residente',
+        },
     };
     return configs[props.attendanceStatus.status] || configs.not_registered;
 });
@@ -94,36 +83,34 @@ const registerAttendance = async () => {
             method: 'POST',
             credentials: 'same-origin', // Include cookies for Sanctum auth
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
         });
-        
+
         if (!response.ok) {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.error) {
             throw new Error(data.message || 'Error desconocido al registrar asistencia');
         }
-        
-        success(
-            "Su asistencia ha sido confirmada exitosamente.",
-            "¡Asistencia registrada!"
-        );
-        
+
+        success('Su asistencia ha sido confirmada exitosamente.', '¡Asistencia registrada!');
+
         emit('attendanceRegistered', 'present');
-        
     } catch (error) {
         console.error('Error registering attendance:', error);
-        
+
         showError(
-            error instanceof Error ? error.message : "No se pudo registrar su asistencia. Por favor, inténtelo nuevamente o contacte al administrador.",
-            "Error al registrar asistencia"
+            error instanceof Error
+                ? error.message
+                : 'No se pudo registrar su asistencia. Por favor, inténtelo nuevamente o contacte al administrador.',
+            'Error al registrar asistencia',
         );
     } finally {
         isSubmitting.value = false;
@@ -140,13 +127,16 @@ const formatTime = (dateString?: string) => {
 </script>
 
 <template>
-    <Card class="border-2" :class="{
-        'border-green-200 bg-green-50': attendanceStatus.status === 'present',
-        'border-yellow-200 bg-yellow-50': attendanceStatus.status === 'not_registered' && assembly.status === 'in_progress',
-        'border-red-200 bg-red-50': attendanceStatus.status === 'absent',
-        'border-blue-200 bg-blue-50': attendanceStatus.status === 'delegated',
-        'border-gray-200': assembly.status !== 'in_progress'
-    }">
+    <Card
+        class="border-2"
+        :class="{
+            'border-green-200 bg-green-50': attendanceStatus.status === 'present',
+            'border-yellow-200 bg-yellow-50': attendanceStatus.status === 'not_registered' && assembly.status === 'in_progress',
+            'border-red-200 bg-red-50': attendanceStatus.status === 'absent',
+            'border-blue-200 bg-blue-50': attendanceStatus.status === 'delegated',
+            'border-gray-200': assembly.status !== 'in_progress',
+        }"
+    >
         <CardHeader class="pb-3">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -156,18 +146,12 @@ const formatTime = (dateString?: string) => {
                 <div class="flex items-center gap-2">
                     <!-- Online Status -->
                     <div class="flex items-center gap-1">
-                        <Wifi 
-                            v-if="attendanceStatus.is_online" 
-                            class="h-4 w-4 text-green-500" 
-                        />
-                        <span 
-                            class="text-xs"
-                            :class="attendanceStatus.is_online ? 'text-green-600' : 'text-gray-500'"
-                        >
+                        <Wifi v-if="attendanceStatus.is_online" class="h-4 w-4 text-green-500" />
+                        <span class="text-xs" :class="attendanceStatus.is_online ? 'text-green-600' : 'text-gray-500'">
                             {{ attendanceStatus.is_online ? 'En línea' : 'Desconectado' }}
                         </span>
                     </div>
-                    
+
                     <!-- Status Badge -->
                     <Badge :class="statusConfig.class">
                         {{ statusConfig.text }}
@@ -176,7 +160,7 @@ const formatTime = (dateString?: string) => {
             </div>
             <CardDescription>
                 {{ statusConfig.description }}
-                <span v-if="attendanceStatus.registered_at" class="block text-xs mt-1">
+                <span v-if="attendanceStatus.registered_at" class="mt-1 block text-xs">
                     Registrado: {{ formatTime(attendanceStatus.registered_at) }}
                 </span>
             </CardDescription>
@@ -184,15 +168,18 @@ const formatTime = (dateString?: string) => {
 
         <CardContent class="space-y-4">
             <!-- Delegate Information -->
-            <div v-if="attendanceStatus.status === 'delegated' && attendanceStatus.delegate_info" 
-                 class="p-3 bg-blue-100 rounded-lg border border-blue-200">
+            <div
+                v-if="attendanceStatus.status === 'delegated' && attendanceStatus.delegate_info"
+                class="rounded-lg border border-blue-200 bg-blue-100 p-3"
+            >
                 <div class="flex items-center gap-2 text-blue-800">
                     <Users class="h-4 w-4" />
                     <span class="font-medium">Voto Delegado</span>
                 </div>
-                <p class="text-sm text-blue-700 mt-1">
-                    Tu voto ha sido delegado a <strong>{{ attendanceStatus.delegate_info.name }}</strong> 
-                    ({{ attendanceStatus.delegate_info.apartment }})
+                <p class="mt-1 text-sm text-blue-700">
+                    Tu voto ha sido delegado a <strong>{{ attendanceStatus.delegate_info.name }}</strong> ({{
+                        attendanceStatus.delegate_info.apartment
+                    }})
                 </p>
             </div>
 
@@ -200,78 +187,69 @@ const formatTime = (dateString?: string) => {
             <div v-if="assembly.status === 'in_progress'">
                 <!-- Can Register -->
                 <div v-if="canRegisterAttendance" class="space-y-3">
-                    <div class="p-3 bg-green-100 rounded-lg border border-green-200">
-                        <div class="flex items-center gap-2 text-green-800 mb-2">
+                    <div class="rounded-lg border border-green-200 bg-green-100 p-3">
+                        <div class="mb-2 flex items-center gap-2 text-green-800">
                             <Check class="h-4 w-4" />
                             <span class="font-medium">Asamblea en Progreso</span>
                         </div>
-                        <p class="text-sm text-green-700">
-                            La asamblea está activa y puedes registrar tu asistencia ahora.
-                        </p>
-                        <div v-if="attendanceStatus.is_online" class="text-xs text-green-600 mt-1">
+                        <p class="text-sm text-green-700">La asamblea está activa y puedes registrar tu asistencia ahora.</p>
+                        <div v-if="attendanceStatus.is_online" class="mt-1 text-xs text-green-600">
                             ✓ Detectado como conectado - Registro automático disponible
                         </div>
                     </div>
 
-                    <Button 
-                        @click="registerAttendance"
-                        :disabled="isSubmitting"
-                        class="w-full gap-2 bg-green-600 hover:bg-green-700"
-                        size="lg"
-                    >
+                    <Button @click="registerAttendance" :disabled="isSubmitting" class="w-full gap-2 bg-green-600 hover:bg-green-700" size="lg">
                         <UserCheck class="h-5 w-5" />
                         {{ isSubmitting ? 'Registrando...' : 'Confirmar Mi Asistencia' }}
                     </Button>
                 </div>
 
                 <!-- Already Registered -->
-                <div v-else-if="attendanceStatus.status !== 'not_registered'" class="text-center p-4">
-                    <component :is="statusConfig.icon" class="h-8 w-8 mx-auto mb-2" :class="{
-                        'text-green-500': attendanceStatus.status === 'present',
-                        'text-red-500': attendanceStatus.status === 'absent',
-                        'text-blue-500': attendanceStatus.status === 'delegated'
-                    }" />
+                <div v-else-if="attendanceStatus.status !== 'not_registered'" class="p-4 text-center">
+                    <component
+                        :is="statusConfig.icon"
+                        class="mx-auto mb-2 h-8 w-8"
+                        :class="{
+                            'text-green-500': attendanceStatus.status === 'present',
+                            'text-red-500': attendanceStatus.status === 'absent',
+                            'text-blue-500': attendanceStatus.status === 'delegated',
+                        }"
+                    />
                     <p class="font-medium">{{ statusConfig.text }}</p>
-                    <p class="text-sm text-gray-600 mt-1">{{ statusConfig.description }}</p>
+                    <p class="mt-1 text-sm text-gray-600">{{ statusConfig.description }}</p>
                 </div>
 
                 <!-- Cannot Register -->
-                <div v-else class="p-3 bg-amber-100 rounded-lg border border-amber-200">
+                <div v-else class="rounded-lg border border-amber-200 bg-amber-100 p-3">
                     <div class="flex items-center gap-2 text-amber-800">
                         <AlertCircle class="h-4 w-4" />
                         <span class="font-medium">No Habilitado para Registrar</span>
                     </div>
-                    <p class="text-sm text-amber-700 mt-1">
-                        El registro de asistencia no está disponible para tu apartamento en este momento.
-                        Contacta a la administración si necesitas asistencia.
+                    <p class="mt-1 text-sm text-amber-700">
+                        El registro de asistencia no está disponible para tu apartamento en este momento. Contacta a la administración si necesitas
+                        asistencia.
                     </p>
                 </div>
             </div>
 
             <!-- Assembly Not Active -->
-            <div v-else class="text-center p-4 text-gray-600">
-                <Clock class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+            <div v-else class="p-4 text-center text-gray-600">
+                <Clock class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                 <p class="font-medium">Asamblea No Activa</p>
-                <p class="text-sm mt-1">
-                    <span v-if="assembly.status === 'scheduled'">
-                        La asamblea aún no ha comenzado
-                    </span>
-                    <span v-else-if="assembly.status === 'closed'">
-                        La asamblea ha finalizado
-                    </span>
-                    <span v-else-if="assembly.status === 'cancelled'">
-                        La asamblea fue cancelada
-                    </span>
+                <p class="mt-1 text-sm">
+                    <span v-if="assembly.status === 'scheduled'"> La asamblea aún no ha comenzado </span>
+                    <span v-else-if="assembly.status === 'closed'"> La asamblea ha finalizado </span>
+                    <span v-else-if="assembly.status === 'cancelled'"> La asamblea fue cancelada </span>
                 </p>
             </div>
 
             <!-- Quorum Status Info -->
-            <div class="pt-3 border-t border-gray-200">
+            <div class="border-t border-gray-200 pt-3">
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-600">Estado del Quórum:</span>
                     <div class="flex items-center gap-2">
                         <span class="font-medium">{{ assembly.quorum_status.quorum_percentage.toFixed(1) }}%</span>
-                        <Badge 
+                        <Badge
                             size="sm"
                             :variant="assembly.quorum_status.has_quorum ? 'default' : 'secondary'"
                             :class="assembly.quorum_status.has_quorum ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
@@ -280,9 +258,7 @@ const formatTime = (dateString?: string) => {
                         </Badge>
                     </div>
                 </div>
-                <div class="text-xs text-gray-500 mt-1">
-                    Mínimo requerido: {{ assembly.required_quorum_percentage }}%
-                </div>
+                <div class="mt-1 text-xs text-gray-500">Mínimo requerido: {{ assembly.required_quorum_percentage }}%</div>
             </div>
         </CardContent>
     </Card>

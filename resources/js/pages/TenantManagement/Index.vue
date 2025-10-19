@@ -1,5 +1,4 @@
 <template>
-
     <Head title="Gestión de Tenants" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -26,11 +25,14 @@
                         <div>
                             <Label for="search">Búsqueda General</Label>
                             <div class="relative mt-3">
-                                <Icon name="search"
-                                    class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                                <Input id="search" v-model="searchForm.search"
-                                    placeholder="Buscar por nombre, email o ID..." @input="debouncedSearch"
-                                    class="max-w-md pl-10" />
+                                <Icon name="search" class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                                <Input
+                                    id="search"
+                                    v-model="searchForm.search"
+                                    placeholder="Buscar por nombre, email o ID..."
+                                    @input="debouncedSearch"
+                                    class="max-w-md pl-10"
+                                />
                             </div>
                         </div>
 
@@ -57,8 +59,7 @@
                                 <Icon name="x" class="h-4 w-4" />
                                 Limpiar filtros
                             </Button>
-                            <div class="text-sm text-muted-foreground">Mostrando {{ filteredCount }} de {{ tenants.total
-                                }} tenants</div>
+                            <div class="text-sm text-muted-foreground">Mostrando {{ filteredCount }} de {{ tenants.total }} tenants</div>
                         </div>
                     </div>
                 </CardContent>
@@ -86,9 +87,12 @@
                                 </div>
                             </TableCell>
                         </TableRow>
-                        <TableRow v-for="tenant in tenants.data" :key="tenant.id"
+                        <TableRow
+                            v-for="tenant in tenants.data"
+                            :key="tenant.id"
                             class="cursor-pointer transition-colors hover:bg-muted/50"
-                            @click="router.visit(`/tenants/${tenant.id}`)">
+                            @click="router.visit(`/tenants/${tenant.id}`)"
+                        >
                             <TableCell>
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
@@ -96,8 +100,7 @@
                                     </div>
                                     <div>
                                         <p class="font-medium">{{ tenant.name }}</p>
-                                        <p class="text-sm text-muted-foreground">ID: {{ tenant.id.substring(0, 8) }}...
-                                        </p>
+                                        <p class="text-sm text-muted-foreground">ID: {{ tenant.id.substring(0, 8) }}...</p>
                                     </div>
                                 </div>
                             </TableCell>
@@ -106,12 +109,10 @@
                             </TableCell>
                             <TableCell>
                                 <div class="flex flex-wrap gap-1">
-                                    <Badge v-for="domain in tenant.domains" :key="domain" variant="secondary"
-                                        class="text-xs">
+                                    <Badge v-for="domain in tenant.domains" :key="domain" variant="secondary" class="text-xs">
                                         {{ domain }}
                                     </Badge>
-                                    <span v-if="tenant.domains.length === 0" class="text-sm text-muted-foreground">Sin
-                                        dominios</span>
+                                    <span v-if="tenant.domains.length === 0" class="text-sm text-muted-foreground">Sin dominios</span>
                                 </div>
                             </TableCell>
                             <TableCell>
@@ -125,8 +126,13 @@
                             <TableCell class="text-right">
                                 <div class="flex items-center justify-end gap-2" @click.stop>
                                     <!-- Impersonate only for superadmin and active tenants -->
-                                    <Button v-if="isSuperAdmin && tenant.status === 'active'" variant="outline" size="sm"
-                                        @click="impersonateTenant(tenant.id)" class="gap-1">
+                                    <Button
+                                        v-if="isSuperAdmin && tenant.status === 'active'"
+                                        variant="outline"
+                                        size="sm"
+                                        @click="impersonateTenant(tenant.id)"
+                                        class="gap-1"
+                                    >
                                         <Icon name="log-in" class="h-4 w-4" />
                                         Ingresar
                                     </Button>
@@ -138,30 +144,36 @@
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem @click="router.visit(`/tenants/${tenant.id}`)">
-                                                <Icon name="eye" class="h-4 w-4 mr-2" />
+                                                <Icon name="eye" class="mr-2 h-4 w-4" />
                                                 Ver detalles
                                             </DropdownMenuItem>
                                             <DropdownMenuItem @click="router.visit(`/tenants/${tenant.id}/edit`)">
-                                                <Icon name="edit" class="h-4 w-4 mr-2" />
+                                                <Icon name="edit" class="mr-2 h-4 w-4" />
                                                 Editar
                                             </DropdownMenuItem>
                                             <!-- Superadmin-only actions -->
                                             <template v-if="isSuperAdmin">
                                                 <DropdownMenuSeparator />
                                                 <!-- Suspension actions -->
-                                                <DropdownMenuItem v-if="tenant.status === 'active'"
-                                                    @click="suspendTenant(tenant.id)" class="text-orange-600">
-                                                    <Icon name="pause" class="h-4 w-4 mr-2" />
+                                                <DropdownMenuItem
+                                                    v-if="tenant.status === 'active'"
+                                                    @click="suspendTenant(tenant.id)"
+                                                    class="text-orange-600"
+                                                >
+                                                    <Icon name="pause" class="mr-2 h-4 w-4" />
                                                     Suspender
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem v-if="tenant.status === 'suspended'"
-                                                    @click="activateTenant(tenant.id)" class="text-green-600">
-                                                    <Icon name="play" class="h-4 w-4 mr-2" />
+                                                <DropdownMenuItem
+                                                    v-if="tenant.status === 'suspended'"
+                                                    @click="activateTenant(tenant.id)"
+                                                    class="text-green-600"
+                                                >
+                                                    <Icon name="play" class="mr-2 h-4 w-4" />
                                                     Reactivar
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem @click="deleteTenant(tenant.id)" class="text-red-600">
-                                                    <Icon name="trash" class="h-4 w-4 mr-2" />
+                                                    <Icon name="trash" class="mr-2 h-4 w-4" />
                                                     Eliminar
                                                 </DropdownMenuItem>
                                             </template>
@@ -176,16 +188,12 @@
 
             <!-- Pagination -->
             <div v-if="tenants.last_page > 1" class="flex items-center justify-end space-x-2 py-4">
-                <div class="flex-1 text-sm text-muted-foreground">
-                    Mostrando {{ tenants.from }} a {{ tenants.to }} de {{ tenants.total }} tenants
-                </div>
+                <div class="flex-1 text-sm text-muted-foreground">Mostrando {{ tenants.from }} a {{ tenants.to }} de {{ tenants.total }} tenants</div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm" :disabled="!tenants.prev_page_url"
-                        @click="router.visit(tenants.prev_page_url)">
+                    <Button variant="outline" size="sm" :disabled="!tenants.prev_page_url" @click="router.visit(tenants.prev_page_url)">
                         Anterior
                     </Button>
-                    <Button variant="outline" size="sm" :disabled="!tenants.next_page_url"
-                        @click="router.visit(tenants.next_page_url)">
+                    <Button variant="outline" size="sm" :disabled="!tenants.next_page_url" @click="router.visit(tenants.next_page_url)">
                         Siguiente
                     </Button>
                 </div>
@@ -195,65 +203,53 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
-import { debounce } from 'lodash'
-import { Head, router, usePage } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import Icon from '@/components/Icon.vue'
+import Icon from '@/components/Icon.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { debounce } from 'lodash';
+import { computed, reactive } from 'vue';
 
 interface Tenant {
-    id: string
-    name: string
-    email: string | null
-    status: string
-    created_at: string
-    updated_at: string
-    domains: string[]
+    id: string;
+    name: string;
+    email: string | null;
+    status: string;
+    created_at: string;
+    updated_at: string;
+    domains: string[];
 }
 
 interface Props {
     tenants: {
-        data: Tenant[]
-        links: any[]
-        from: number
-        to: number
-        total: number
-        last_page: number
-        prev_page_url: string | null
-        next_page_url: string | null
-    }
+        data: Tenant[];
+        links: any[];
+        from: number;
+        to: number;
+        total: number;
+        last_page: number;
+        prev_page_url: string | null;
+        next_page_url: string | null;
+    };
     filters: {
-        search?: string
-        status?: string
-    }
+        search?: string;
+        status?: string;
+    };
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Access current user data
-const page = usePage()
-const user = computed(() => page.props.auth?.user)
-const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'))
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
+const isSuperAdmin = computed(() => user.value?.roles?.some((role: any) => role.name === 'superadmin'));
 
 const breadcrumbs = [
     {
@@ -264,86 +260,92 @@ const breadcrumbs = [
         title: 'Gestión de Tenants',
         href: '/tenants',
     },
-]
+];
 
 const searchForm = reactive({
     search: props.filters.search || '',
     status: props.filters.status || 'all',
-})
+});
 
 // Check if custom filters are active
 const hasActiveFilters = computed(() => {
     return Object.values(searchForm).some((value) => value !== '' && value !== 'all');
-})
+});
 
 // Compute filtered count (use the data length for now)
 const filteredCount = computed(() => {
     return props.tenants.data.length;
-})
+});
 
 const search = () => {
     router.get(route('tenant-management.index'), searchForm, {
         preserveState: true,
         replace: true,
-    })
-}
+    });
+};
 
-const debouncedSearch = debounce(search, 300)
+const debouncedSearch = debounce(search, 300);
 
 const clearFilters = () => {
-    searchForm.search = ''
-    searchForm.status = 'all'
-    search()
-}
+    searchForm.search = '';
+    searchForm.status = 'all';
+    search();
+};
 
 const getStatusVariant = (status: string) => {
     switch (status) {
-        case 'active': return 'default'
-        case 'suspended': return 'destructive'
-        default: return 'secondary'
+        case 'active':
+            return 'default';
+        case 'suspended':
+            return 'destructive';
+        default:
+            return 'secondary';
     }
-}
+};
 
 const getStatusText = (status: string) => {
     switch (status) {
-        case 'active': return 'Activo'
-        case 'suspended': return 'Suspendido'
-        default: return status
+        case 'active':
+            return 'Activo';
+        case 'suspended':
+            return 'Suspendido';
+        default:
+            return status;
     }
-}
+};
 
 const impersonateTenant = (tenantId: string) => {
-    router.post(route('tenant-management.impersonate', tenantId))
-}
+    router.post(route('tenant-management.impersonate', tenantId));
+};
 
 const suspendTenant = (tenantId: string) => {
     if (confirm('¿Estás seguro de que quieres suspender este tenant?')) {
-        router.post(route('tenant-management.suspend', tenantId))
+        router.post(route('tenant-management.suspend', tenantId));
     }
-}
+};
 
 const activateTenant = (tenantId: string) => {
-    router.post(route('tenant-management.activate', tenantId))
-}
+    router.post(route('tenant-management.activate', tenantId));
+};
 
 const approveTenant = (tenantId: string) => {
     if (confirm('¿Estás seguro de que quieres aprobar este tenant?')) {
-        router.post(route('tenant-management.approve', tenantId))
+        router.post(route('tenant-management.approve', tenantId));
     }
-}
+};
 
 const rejectTenant = (tenantId: string) => {
-    const reason = prompt('Razón del rechazo (opcional):')
+    const reason = prompt('Razón del rechazo (opcional):');
     if (confirm('¿Estás seguro de que quieres rechazar este tenant?')) {
         router.post(route('tenant-management.reject', tenantId), {
-            reason: reason || null
-        })
+            reason: reason || null,
+        });
     }
-}
+};
 
 const deleteTenant = (tenantId: string) => {
     if (confirm('¿Estás seguro de que quieres eliminar este tenant? Esta acción no se puede deshacer.')) {
-        router.delete(route('tenant-management.destroy', tenantId))
+        router.delete(route('tenant-management.destroy', tenantId));
     }
-}
+};
 </script>

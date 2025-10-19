@@ -4,14 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Building2, Search, Users, UserX } from 'lucide-vue-next';
@@ -102,7 +95,7 @@ const updateFilters = () => {
         {
             preserveState: true,
             preserveScroll: true,
-        }
+        },
     );
 };
 
@@ -185,12 +178,8 @@ const hasActiveFilters = computed(() => {
                         <div class="flex-1 space-y-2">
                             <label class="text-sm font-medium">Buscar</label>
                             <div class="relative">
-                                <Search class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    v-model="searchQuery"
-                                    placeholder="Buscar por nombre, email, contacto..."
-                                    class="pl-10"
-                                />
+                                <Search class="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
+                                <Input v-model="searchQuery" placeholder="Buscar por nombre, email, contacto..." class="pl-10" />
                             </div>
                         </div>
 
@@ -216,24 +205,14 @@ const hasActiveFilters = computed(() => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todas las categorías</SelectItem>
-                                    <SelectItem
-                                        v-for="category in categories"
-                                        :key="category.id"
-                                        :value="category.id.toString()"
-                                    >
+                                    <SelectItem v-for="category in categories" :key="category.id" :value="category.id.toString()">
                                         {{ category.name }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        <Button
-                            v-if="hasActiveFilters"
-                            variant="outline"
-                            @click="clearFilters"
-                        >
-                            Limpiar Filtros
-                        </Button>
+                        <Button v-if="hasActiveFilters" variant="outline" @click="clearFilters"> Limpiar Filtros </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -242,9 +221,7 @@ const hasActiveFilters = computed(() => {
             <Card>
                 <CardHeader>
                     <CardTitle>Lista de Proveedores</CardTitle>
-                    <CardDescription>
-                        Mostrando {{ providers.data.length }} de {{ providers.total }} proveedores
-                    </CardDescription>
+                    <CardDescription> Mostrando {{ providers.data.length }} de {{ providers.total }} proveedores </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="rounded-md border">
@@ -261,9 +238,7 @@ const hasActiveFilters = computed(() => {
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-if="providers.data.length === 0">
-                                    <TableCell colspan="6" class="text-center text-muted-foreground">
-                                        No se encontraron proveedores
-                                    </TableCell>
+                                    <TableCell colspan="6" class="text-center text-muted-foreground"> No se encontraron proveedores </TableCell>
                                 </TableRow>
                                 <TableRow
                                     v-for="provider in providers.data"
@@ -292,12 +267,7 @@ const hasActiveFilters = computed(() => {
                                     </TableCell>
                                     <TableCell>
                                         <div class="flex flex-wrap gap-1">
-                                            <Badge
-                                                v-for="category in provider.categories"
-                                                :key="category.id"
-                                                variant="outline"
-                                                class="text-xs"
-                                            >
+                                            <Badge v-for="category in provider.categories" :key="category.id" variant="outline" class="text-xs">
                                                 {{ category.name }}
                                             </Badge>
                                             <span v-if="provider.categories.length === 0" class="text-sm text-muted-foreground">
@@ -317,15 +287,8 @@ const hasActiveFilters = computed(() => {
                                         </Badge>
                                     </TableCell>
                                     <TableCell class="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            as-child
-                                            @click.stop
-                                        >
-                                            <Link :href="`/admin/providers/${provider.id}`">
-                                                Ver Detalles
-                                            </Link>
+                                        <Button variant="ghost" size="sm" as-child @click.stop>
+                                            <Link :href="`/admin/providers/${provider.id}`"> Ver Detalles </Link>
                                         </Button>
                                     </TableCell>
                                 </TableRow>
@@ -335,9 +298,7 @@ const hasActiveFilters = computed(() => {
 
                     <!-- Pagination -->
                     <div v-if="providers.last_page > 1" class="mt-4 flex items-center justify-between">
-                        <div class="text-sm text-muted-foreground">
-                            Página {{ providers.current_page }} de {{ providers.last_page }}
-                        </div>
+                        <div class="text-sm text-muted-foreground">Página {{ providers.current_page }} de {{ providers.last_page }}</div>
                         <div class="flex gap-2">
                             <Button
                                 v-for="link in providers.links"

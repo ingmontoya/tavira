@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
-import { MessageSquare, ArrowLeft, Send, RefreshCw, Clock, User, Calendar, Tag, AlertCircle } from 'lucide-vue-next';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { AlertCircle, ArrowLeft, Calendar, Clock, MessageSquare, RefreshCw, Send, Tag, User } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface SupportMessage {
@@ -75,36 +75,45 @@ const priorityOptions = [
 ];
 
 const categoryLabels = {
-    'technical': 'Técnico',
-    'billing': 'Facturación',
-    'general': 'General',
-    'feature_request': 'Solicitud de función',
-    'bug_report': 'Reporte de error',
+    technical: 'Técnico',
+    billing: 'Facturación',
+    general: 'General',
+    feature_request: 'Solicitud de función',
+    bug_report: 'Reporte de error',
 };
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-        case 'open': return 'default';
-        case 'in_progress': return 'secondary';
-        case 'resolved': return 'outline';
-        case 'closed': return 'destructive';
-        default: return 'default';
+        case 'open':
+            return 'default';
+        case 'in_progress':
+            return 'secondary';
+        case 'resolved':
+            return 'outline';
+        case 'closed':
+            return 'destructive';
+        default:
+            return 'default';
     }
 };
 
 const getPriorityBadgeVariant = (priority: string) => {
     switch (priority) {
-        case 'low': return 'secondary';
-        case 'medium': return 'default';
-        case 'high': return 'outline';
-        case 'urgent': return 'destructive';
-        default: return 'default';
+        case 'low':
+            return 'secondary';
+        case 'medium':
+            return 'default';
+        case 'high':
+            return 'outline';
+        case 'urgent':
+            return 'destructive';
+        default:
+            return 'default';
     }
 };
 
-const canReopen = computed(() => 
-    (props.ticket.status === 'resolved' || props.ticket.status === 'closed') &&
-    (!props.canManage || props.ticket.user.id === 1) // Assuming current user ID is available
+const canReopen = computed(
+    () => (props.ticket.status === 'resolved' || props.ticket.status === 'closed') && (!props.canManage || props.ticket.user.id === 1), // Assuming current user ID is available
 );
 
 const submitMessage = () => {
@@ -129,7 +138,11 @@ const reopenTicket = () => {
 };
 
 const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase();
 };
 
 const formatDate = (date: string) => {
@@ -138,71 +151,69 @@ const formatDate = (date: string) => {
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 </script>
 
 <template>
     <Head :title="`Ticket #${ticket.id} - ${ticket.title}`" />
-    
+
     <AppLayout>
-        <div class="container mx-auto px-4 py-8 max-w-5xl">
-            <div class="flex items-center gap-4 mb-6">
+        <div class="container mx-auto max-w-5xl px-4 py-8">
+            <div class="mb-6 flex items-center gap-4">
                 <Button variant="ghost" size="sm" @click="router.visit('/support')" class="p-2">
-                    <ArrowLeft class="w-4 h-4" />
+                    <ArrowLeft class="h-4 w-4" />
                 </Button>
                 <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-2">
-                        <h1 class="text-2xl font-semibold text-gray-900">
-                            Ticket #{{ ticket.id }}
-                        </h1>
+                    <div class="mb-2 flex items-center gap-3">
+                        <h1 class="text-2xl font-semibold text-gray-900">Ticket #{{ ticket.id }}</h1>
                         <Badge :variant="getStatusBadgeVariant(ticket.status)">
-                            {{ statusOptions.find(s => s.value === ticket.status)?.label }}
+                            {{ statusOptions.find((s) => s.value === ticket.status)?.label }}
                         </Badge>
                         <Badge :variant="getPriorityBadgeVariant(ticket.priority)">
-                            {{ priorityOptions.find(p => p.value === ticket.priority)?.label }}
+                            {{ priorityOptions.find((p) => p.value === ticket.priority)?.label }}
                         </Badge>
                     </div>
                     <h2 class="text-lg text-gray-700">{{ ticket.title }}</h2>
                 </div>
                 <div v-if="canReopen" class="flex gap-2">
                     <Button @click="reopenTicket" variant="outline" size="sm">
-                        <RefreshCw class="w-4 h-4 mr-2" />
+                        <RefreshCw class="mr-2 h-4 w-4" />
                         Reabrir
                     </Button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Información del ticket -->
-                <div class="lg:col-span-1 space-y-6">
+                <div class="space-y-6 lg:col-span-1">
                     <Card>
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2 text-lg">
-                                <Tag class="w-4 h-4" />
+                                <Tag class="h-4 w-4" />
                                 Detalles
                             </CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div class="flex items-center gap-3">
-                                <User class="w-4 h-4 text-gray-500" />
+                                <User class="h-4 w-4 text-gray-500" />
                                 <div>
                                     <p class="text-sm font-medium">Creado por</p>
                                     <p class="text-sm text-gray-600">{{ ticket.user.name }}</p>
                                 </div>
                             </div>
-                            
+
                             <div class="flex items-center gap-3">
-                                <Calendar class="w-4 h-4 text-gray-500" />
+                                <Calendar class="h-4 w-4 text-gray-500" />
                                 <div>
                                     <p class="text-sm font-medium">Fecha de creación</p>
                                     <p class="text-sm text-gray-600">{{ formatDate(ticket.created_at) }}</p>
                                 </div>
                             </div>
-                            
+
                             <div class="flex items-center gap-3">
-                                <Tag class="w-4 h-4 text-gray-500" />
+                                <Tag class="h-4 w-4 text-gray-500" />
                                 <div>
                                     <p class="text-sm font-medium">Categoría</p>
                                     <p class="text-sm text-gray-600">{{ categoryLabels[ticket.category] }}</p>
@@ -210,7 +221,7 @@ const formatDate = (date: string) => {
                             </div>
 
                             <div v-if="ticket.assigned_to" class="flex items-center gap-3">
-                                <User class="w-4 h-4 text-gray-500" />
+                                <User class="h-4 w-4 text-gray-500" />
                                 <div>
                                     <p class="text-sm font-medium">Asignado a</p>
                                     <p class="text-sm text-gray-600">{{ ticket.assigned_to.name }}</p>
@@ -218,7 +229,7 @@ const formatDate = (date: string) => {
                             </div>
 
                             <div v-if="ticket.resolved_at" class="flex items-center gap-3">
-                                <Clock class="w-4 h-4 text-gray-500" />
+                                <Clock class="h-4 w-4 text-gray-500" />
                                 <div>
                                     <p class="text-sm font-medium">Fecha de resolución</p>
                                     <p class="text-sm text-gray-600">{{ formatDate(ticket.resolved_at) }}</p>
@@ -231,7 +242,7 @@ const formatDate = (date: string) => {
                     <Card v-if="canManage">
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2 text-lg">
-                                <AlertCircle class="w-4 h-4" />
+                                <AlertCircle class="h-4 w-4" />
                                 Gestión
                             </CardTitle>
                         </CardHeader>
@@ -244,11 +255,7 @@ const formatDate = (date: string) => {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem 
-                                                v-for="option in statusOptions" 
-                                                :key="option.value" 
-                                                :value="option.value"
-                                            >
+                                            <SelectItem v-for="option in statusOptions" :key="option.value" :value="option.value">
                                                 {{ option.label }}
                                             </SelectItem>
                                         </SelectContent>
@@ -262,23 +269,14 @@ const formatDate = (date: string) => {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem 
-                                                v-for="option in priorityOptions" 
-                                                :key="option.value" 
-                                                :value="option.value"
-                                            >
+                                            <SelectItem v-for="option in priorityOptions" :key="option.value" :value="option.value">
                                                 {{ option.label }}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
-                                <Button 
-                                    type="submit" 
-                                    :disabled="statusForm.processing"
-                                    size="sm"
-                                    class="w-full"
-                                >
+                                <Button type="submit" :disabled="statusForm.processing" size="sm" class="w-full">
                                     {{ statusForm.processing ? 'Actualizando...' : 'Actualizar' }}
                                 </Button>
                             </form>
@@ -287,29 +285,29 @@ const formatDate = (date: string) => {
                 </div>
 
                 <!-- Conversación -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="space-y-6 lg:col-span-2">
                     <Card>
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
-                                <MessageSquare class="w-5 h-5" />
+                                <MessageSquare class="h-5 w-5" />
                                 Conversación
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-4">
                                 <!-- Mensaje inicial -->
-                                <div class="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                                    <Avatar class="w-8 h-8">
+                                <div class="flex gap-3 rounded-lg bg-gray-50 p-4">
+                                    <Avatar class="h-8 w-8">
                                         <AvatarFallback class="text-xs">
                                             {{ getInitials(ticket.user.name) }}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div class="flex-1">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-medium text-sm">{{ ticket.user.name }}</span>
+                                        <div class="mb-1 flex items-center gap-2">
+                                            <span class="text-sm font-medium">{{ ticket.user.name }}</span>
                                             <span class="text-xs text-gray-500">{{ formatDate(ticket.created_at) }}</span>
                                         </div>
-                                        <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ ticket.description }}</p>
+                                        <p class="text-sm whitespace-pre-wrap text-gray-700">{{ ticket.description }}</p>
                                     </div>
                                 </div>
 
@@ -317,24 +315,21 @@ const formatDate = (date: string) => {
 
                                 <!-- Mensajes adicionales -->
                                 <div v-for="message in ticket.messages.slice(1)" :key="message.id" class="flex gap-3">
-                                    <Avatar class="w-8 h-8">
+                                    <Avatar class="h-8 w-8">
                                         <AvatarFallback class="text-xs">
                                             {{ getInitials(message.user.name) }}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div class="flex-1">
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="font-medium text-sm">{{ message.user.name }}</span>
-                                            <Badge v-if="message.is_admin_reply" variant="outline" class="text-xs px-1 py-0">
-                                                Soporte
-                                            </Badge>
+                                        <div class="mb-1 flex items-center gap-2">
+                                            <span class="text-sm font-medium">{{ message.user.name }}</span>
+                                            <Badge v-if="message.is_admin_reply" variant="outline" class="px-1 py-0 text-xs"> Soporte </Badge>
                                             <span class="text-xs text-gray-500">{{ formatDate(message.created_at) }}</span>
                                         </div>
-                                        <div 
-                                            class="p-3 rounded-lg text-sm"
-                                            :class="message.is_admin_reply 
-                                                ? 'bg-blue-50 border border-blue-200' 
-                                                : 'bg-gray-50 border border-gray-200'
+                                        <div
+                                            class="rounded-lg p-3 text-sm"
+                                            :class="
+                                                message.is_admin_reply ? 'border border-blue-200 bg-blue-50' : 'border border-gray-200 bg-gray-50'
                                             "
                                         >
                                             <p class="whitespace-pre-wrap">{{ message.message }}</p>
@@ -343,7 +338,7 @@ const formatDate = (date: string) => {
                                 </div>
 
                                 <!-- Formulario para nuevo mensaje -->
-                                <div v-if="ticket.status !== 'closed'" class="border-t pt-4 mt-6">
+                                <div v-if="ticket.status !== 'closed'" class="mt-6 border-t pt-4">
                                     <form @submit.prevent="submitMessage" class="space-y-3">
                                         <Label class="text-sm font-medium">Agregar respuesta</Label>
                                         <Textarea
@@ -357,24 +352,22 @@ const formatDate = (date: string) => {
                                             {{ messageForm.errors.message }}
                                         </p>
                                         <div class="flex justify-end">
-                                            <Button 
-                                                type="submit" 
+                                            <Button
+                                                type="submit"
                                                 :disabled="messageForm.processing || !messageForm.message.trim()"
                                                 class="flex items-center gap-2"
                                             >
-                                                <Send class="w-4 h-4" />
+                                                <Send class="h-4 w-4" />
                                                 {{ messageForm.processing ? 'Enviando...' : 'Enviar respuesta' }}
                                             </Button>
                                         </div>
                                     </form>
                                 </div>
 
-                                <div v-else class="border-t pt-4 mt-6">
-                                    <div class="text-center py-4 text-gray-500">
+                                <div v-else class="mt-6 border-t pt-4">
+                                    <div class="py-4 text-center text-gray-500">
                                         <p class="text-sm">Este ticket está cerrado. No se pueden agregar más mensajes.</p>
-                                        <p v-if="canReopen" class="text-xs mt-1">
-                                            Puedes reabrirlo si necesitas continuar la conversación.
-                                        </p>
+                                        <p v-if="canReopen" class="mt-1 text-xs">Puedes reabrirlo si necesitas continuar la conversación.</p>
                                     </div>
                                 </div>
                             </div>

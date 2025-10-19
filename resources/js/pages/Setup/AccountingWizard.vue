@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { CheckCircle, Home, Settings, FileText, Calculator, Zap } from 'lucide-vue-next';
+import { Calculator, CheckCircle, FileText, Home, Settings, Zap } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface SetupStatus {
@@ -66,7 +66,7 @@ const steps = computed(() => [
     },
 ]);
 
-const completedSteps = computed(() => steps.value.filter(step => step.completed).length);
+const completedSteps = computed(() => steps.value.filter((step) => step.completed).length);
 const totalSteps = computed(() => steps.value.length);
 const progressPercentage = computed(() => (completedSteps.value / totalSteps.value) * 100);
 const isComplete = computed(() => completedSteps.value === totalSteps.value);
@@ -83,21 +83,24 @@ const breadcrumbs = [
 ];
 
 const quickSetup = () => {
-    router.post('/setup/accounting-wizard/quick-setup', {}, {
-        onSuccess: () => {
-            // Refresh data without full page reload to update progress
-            router.visit(route('setup.accounting-wizard.index'), {
-                preserveState: true,
-                preserveScroll: true,
-                only: ['setup_status']
-            });
-        }
-    });
+    router.post(
+        '/setup/accounting-wizard/quick-setup',
+        {},
+        {
+            onSuccess: () => {
+                // Refresh data without full page reload to update progress
+                router.visit(route('setup.accounting-wizard.index'), {
+                    preserveState: true,
+                    preserveScroll: true,
+                    only: ['setup_status'],
+                });
+            },
+        },
+    );
 };
 </script>
 
 <template>
-
     <Head title="Configuración Contable" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -105,9 +108,7 @@ const quickSetup = () => {
             <!-- Header -->
             <div class="text-center">
                 <h1 class="text-3xl font-bold text-gray-900">Configuración del Sistema Contable</h1>
-                <p class="mt-2 text-lg text-gray-600">
-                    Complete estos pasos para configurar completamente el módulo contable de Tavira
-                </p>
+                <p class="mt-2 text-lg text-gray-600">Complete estos pasos para configurar completamente el módulo contable de Tavira</p>
             </div>
 
             <!-- Progress Overview -->
@@ -121,9 +122,7 @@ const quickSetup = () => {
                 </CardHeader>
                 <CardContent class="space-y-4">
                     <Progress :value="progressPercentage" class="h-3" />
-                    <div class="text-center text-sm text-gray-600">
-                        {{ Math.round(progressPercentage) }}% completado
-                    </div>
+                    <div class="text-center text-sm text-gray-600">{{ Math.round(progressPercentage) }}% completado</div>
 
                     <!-- Quick Setup Button -->
                     <div v-if="!isComplete" class="text-center">
@@ -131,13 +130,11 @@ const quickSetup = () => {
                             <Zap class="mr-2 h-4 w-4" />
                             Configuración Rápida
                         </Button>
-                        <p class="mt-2 text-xs text-gray-500">
-                            Configura automáticamente todos los elementos básicos
-                        </p>
+                        <p class="mt-2 text-xs text-gray-500">Configura automáticamente todos los elementos básicos</p>
                     </div>
 
                     <!-- Success Message -->
-                    <Alert v-if="isComplete" class="bg-green-50 border-green-200">
+                    <Alert v-if="isComplete" class="border-green-200 bg-green-50">
                         <CheckCircle class="h-4 w-4 text-green-600" />
                         <AlertDescription class="text-green-800">
                             ¡Configuración completada! Su sistema contable está listo para facturar.
@@ -152,12 +149,12 @@ const quickSetup = () => {
                     <CardHeader>
                         <div class="flex items-start justify-between">
                             <div class="flex items-center space-x-3">
-                                <div :class="[
-                                    'flex h-10 w-10 items-center justify-center rounded-full',
-                                    step.completed
-                                        ? 'bg-green-100 text-green-600'
-                                        : 'bg-gray-100 text-gray-600'
-                                ]">
+                                <div
+                                    :class="[
+                                        'flex h-10 w-10 items-center justify-center rounded-full',
+                                        step.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600',
+                                    ]"
+                                >
                                     <CheckCircle v-if="step.completed" class="h-6 w-6" />
                                     <component v-else :is="step.icon" class="h-6 w-6" />
                                 </div>
@@ -166,12 +163,12 @@ const quickSetup = () => {
                                     <CardDescription class="text-sm">{{ step.description }}</CardDescription>
                                 </div>
                             </div>
-                            <div :class="[
-                                'rounded-full px-2 py-1 text-xs font-medium',
-                                step.completed
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                            ]">
+                            <div
+                                :class="[
+                                    'rounded-full px-2 py-1 text-xs font-medium',
+                                    step.completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800',
+                                ]"
+                            >
                                 {{ step.completed ? 'Completado' : 'Pendiente' }}
                             </div>
                         </div>
@@ -183,7 +180,7 @@ const quickSetup = () => {
                             </div>
                             <Button asChild :variant="step.completed ? 'outline' : 'default'" class="w-full">
                                 <Link :href="step.route">
-                                {{ step.completed ? 'Revisar Configuración' : step.action }}
+                                    {{ step.completed ? 'Revisar Configuración' : step.action }}
                                 </Link>
                             </Button>
                         </div>
@@ -195,26 +192,21 @@ const quickSetup = () => {
             <Card v-if="isComplete" class="mx-auto w-full max-w-2xl bg-gradient-to-r from-blue-50 to-indigo-50">
                 <CardHeader class="text-center">
                     <CardTitle class="text-blue-900">¡Listo para Facturar!</CardTitle>
-                    <CardDescription class="text-blue-700">
-                        Su sistema contable está completamente configurado
-                    </CardDescription>
+                    <CardDescription class="text-blue-700"> Su sistema contable está completamente configurado </CardDescription>
                 </CardHeader>
-                <CardContent class="text-center space-y-4">
+                <CardContent class="space-y-4 text-center">
                     <p class="text-blue-800">
-                        Ahora puede crear facturas que generarán automáticamente las transacciones contables
-                        correspondientes.
+                        Ahora puede crear facturas que generarán automáticamente las transacciones contables correspondientes.
                     </p>
-                    <div class="flex gap-3 justify-center">
+                    <div class="flex justify-center gap-3">
                         <Button asChild variant="default">
                             <Link href="/invoices/create">
-                            <FileText class="mr-2 h-4 w-4" />
-                            Crear Primera Factura
+                                <FileText class="mr-2 h-4 w-4" />
+                                Crear Primera Factura
                             </Link>
                         </Button>
                         <Button asChild variant="outline">
-                            <Link href="/invoices">
-                            Ver Facturas
-                            </Link>
+                            <Link href="/invoices"> Ver Facturas </Link>
                         </Button>
                     </div>
                 </CardContent>

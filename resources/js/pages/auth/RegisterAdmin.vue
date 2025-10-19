@@ -36,7 +36,8 @@ const submit = () => {
                         Registro de Administrador
                     </CardTitle>
                     <CardDescription class="text-amber-700">
-                        Como administrador central, podrás crear y gestionar conjuntos residenciales. Después del registro podrás escoger un plan y crear tu primer conjunto.
+                        Como administrador central, podrás crear y gestionar conjuntos residenciales. Después del registro podrás escoger un plan y
+                        crear tu primer conjunto.
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -46,7 +47,7 @@ const submit = () => {
                     <!-- Administrator Information -->
                     <div class="space-y-4 rounded-lg border border-gray-200 p-4">
                         <h3 class="font-medium text-gray-900">Información del Administrador Central</h3>
-                        
+
                         <div class="grid gap-2">
                             <Label for="name">Nombre completo</Label>
                             <Input

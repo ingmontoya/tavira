@@ -75,7 +75,7 @@ const form = useForm({
     tax_regime: props.provider.tax_regime ?? null,
     notes: props.provider.notes ?? null,
     is_active: props.provider.is_active,
-    category_ids: props.provider.categories?.map(c => c.id) ?? [],
+    category_ids: props.provider.categories?.map((c) => c.id) ?? [],
 });
 
 const toggleCategory = (categoryId: number) => {
@@ -129,13 +129,7 @@ const submit = () => {
                         <CardContent class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2 md:col-span-2">
                                 <Label for="name">Nombre de la Empresa *</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    required
-                                    placeholder="Ej: Constructora ABC"
-                                />
+                                <Input id="name" v-model="form.name" type="text" required placeholder="Ej: Constructora ABC" />
                                 <p v-if="form.errors.name" class="text-sm text-red-600">
                                     {{ form.errors.name }}
                                 </p>
@@ -164,12 +158,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="document_number">Número de Documento</Label>
-                                <Input
-                                    id="document_number"
-                                    v-model="form.document_number"
-                                    type="text"
-                                    placeholder="123456789"
-                                />
+                                <Input id="document_number" v-model="form.document_number" type="text" placeholder="123456789" />
                                 <p v-if="form.errors.document_number" class="text-sm text-red-600">
                                     {{ form.errors.document_number }}
                                 </p>
@@ -177,12 +166,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    v-model="form.email"
-                                    type="email"
-                                    placeholder="contacto@empresa.com"
-                                />
+                                <Input id="email" v-model="form.email" type="email" placeholder="contacto@empresa.com" />
                                 <p v-if="form.errors.email" class="text-sm text-red-600">
                                     {{ form.errors.email }}
                                 </p>
@@ -190,12 +174,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="phone">Teléfono</Label>
-                                <Input
-                                    id="phone"
-                                    v-model="form.phone"
-                                    type="tel"
-                                    placeholder="3001234567"
-                                />
+                                <Input id="phone" v-model="form.phone" type="tel" placeholder="3001234567" />
                                 <p v-if="form.errors.phone" class="text-sm text-red-600">
                                     {{ form.errors.phone }}
                                 </p>
@@ -203,12 +182,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="tax_regime">Régimen Tributario</Label>
-                                <Input
-                                    id="tax_regime"
-                                    v-model="form.tax_regime"
-                                    type="text"
-                                    placeholder="Ej: Régimen Común"
-                                />
+                                <Input id="tax_regime" v-model="form.tax_regime" type="text" placeholder="Ej: Régimen Común" />
                                 <p v-if="form.errors.tax_regime" class="text-sm text-red-600">
                                     {{ form.errors.tax_regime }}
                                 </p>
@@ -225,12 +199,7 @@ const submit = () => {
                         <CardContent class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2 md:col-span-2">
                                 <Label for="address">Dirección</Label>
-                                <Input
-                                    id="address"
-                                    v-model="form.address"
-                                    type="text"
-                                    placeholder="Calle 123 # 45-67"
-                                />
+                                <Input id="address" v-model="form.address" type="text" placeholder="Calle 123 # 45-67" />
                                 <p v-if="form.errors.address" class="text-sm text-red-600">
                                     {{ form.errors.address }}
                                 </p>
@@ -238,12 +207,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="city">Ciudad</Label>
-                                <Input
-                                    id="city"
-                                    v-model="form.city"
-                                    type="text"
-                                    placeholder="Bogotá"
-                                />
+                                <Input id="city" v-model="form.city" type="text" placeholder="Bogotá" />
                                 <p v-if="form.errors.city" class="text-sm text-red-600">
                                     {{ form.errors.city }}
                                 </p>
@@ -251,12 +215,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="country">País</Label>
-                                <Input
-                                    id="country"
-                                    v-model="form.country"
-                                    type="text"
-                                    placeholder="Colombia"
-                                />
+                                <Input id="country" v-model="form.country" type="text" placeholder="Colombia" />
                                 <p v-if="form.errors.country" class="text-sm text-red-600">
                                     {{ form.errors.country }}
                                 </p>
@@ -273,12 +232,7 @@ const submit = () => {
                         <CardContent class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2 md:col-span-2">
                                 <Label for="contact_name">Nombre de Contacto</Label>
-                                <Input
-                                    id="contact_name"
-                                    v-model="form.contact_name"
-                                    type="text"
-                                    placeholder="Juan Pérez"
-                                />
+                                <Input id="contact_name" v-model="form.contact_name" type="text" placeholder="Juan Pérez" />
                                 <p v-if="form.errors.contact_name" class="text-sm text-red-600">
                                     {{ form.errors.contact_name }}
                                 </p>
@@ -286,12 +240,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="contact_email">Email de Contacto</Label>
-                                <Input
-                                    id="contact_email"
-                                    v-model="form.contact_email"
-                                    type="email"
-                                    placeholder="juan.perez@empresa.com"
-                                />
+                                <Input id="contact_email" v-model="form.contact_email" type="email" placeholder="juan.perez@empresa.com" />
                                 <p v-if="form.errors.contact_email" class="text-sm text-red-600">
                                     {{ form.errors.contact_email }}
                                 </p>
@@ -299,12 +248,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="contact_phone">Teléfono de Contacto</Label>
-                                <Input
-                                    id="contact_phone"
-                                    v-model="form.contact_phone"
-                                    type="tel"
-                                    placeholder="3001234567"
-                                />
+                                <Input id="contact_phone" v-model="form.contact_phone" type="tel" placeholder="3001234567" />
                                 <p v-if="form.errors.contact_phone" class="text-sm text-red-600">
                                     {{ form.errors.contact_phone }}
                                 </p>
@@ -320,28 +264,25 @@ const submit = () => {
                         </CardHeader>
                         <CardContent>
                             <div class="space-y-3">
-                                <div class="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto p-4 border rounded-lg bg-muted/30">
+                                <div class="grid max-h-64 grid-cols-1 gap-3 overflow-y-auto rounded-lg border bg-muted/30 p-4">
                                     <div
                                         v-for="category in categories"
                                         :key="category.id"
-                                        class="flex items-start space-x-3 p-2 rounded hover:bg-muted/50 transition-colors"
+                                        class="flex items-start space-x-3 rounded p-2 transition-colors hover:bg-muted/50"
                                     >
                                         <input
                                             :id="`category-${category.id}`"
                                             type="checkbox"
                                             :value="category.id"
                                             :checked="isCategorySelected(category.id)"
-                                            class="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                            class="mt-1 h-4 w-4 cursor-pointer rounded border-gray-300 text-primary focus:ring-primary"
                                             @change="toggleCategory(category.id)"
                                         />
                                         <div class="flex-1">
-                                            <label
-                                                :for="`category-${category.id}`"
-                                                class="font-medium cursor-pointer"
-                                            >
+                                            <label :for="`category-${category.id}`" class="cursor-pointer font-medium">
                                                 {{ category.name }}
                                             </label>
-                                            <p v-if="category.description" class="text-xs text-muted-foreground mt-0.5">
+                                            <p v-if="category.description" class="mt-0.5 text-xs text-muted-foreground">
                                                 {{ category.description }}
                                             </p>
                                         </div>
@@ -387,28 +328,18 @@ const submit = () => {
                                     id="is_active"
                                     type="checkbox"
                                     v-model="form.is_active"
-                                    class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                                    class="h-4 w-4 cursor-pointer rounded border-gray-300 text-primary focus:ring-primary"
                                 />
-                                <label for="is_active" class="cursor-pointer font-medium">
-                                    Proveedor activo
-                                </label>
+                                <label for="is_active" class="cursor-pointer font-medium"> Proveedor activo </label>
                             </div>
-                            <p class="text-xs text-muted-foreground mt-2">
-                                Los proveedores inactivos no aparecerán en las listas de selección
-                            </p>
+                            <p class="mt-2 text-xs text-muted-foreground">Los proveedores inactivos no aparecerán en las listas de selección</p>
                         </CardContent>
                     </Card>
                 </div>
 
                 <!-- Actions -->
                 <div class="mt-4 flex justify-end gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        @click="router.visit(`/admin/providers/${provider.id}`)"
-                    >
-                        Cancelar
-                    </Button>
+                    <Button type="button" variant="outline" @click="router.visit(`/admin/providers/${provider.id}`)"> Cancelar </Button>
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Guardando...' : 'Guardar Cambios' }}
                     </Button>

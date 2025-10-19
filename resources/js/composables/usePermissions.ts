@@ -1,5 +1,5 @@
-import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 export function usePermissions() {
     const page = usePage();
@@ -25,14 +25,14 @@ export function usePermissions() {
      * Check if user has any of the specified permissions
      */
     const hasAnyPermission = (permissionList: string[]): boolean => {
-        return permissionList.some(permission => hasPermission(permission));
+        return permissionList.some((permission) => hasPermission(permission));
     };
 
     /**
      * Check if user has all of the specified permissions
      */
     const hasAllPermissions = (permissionList: string[]): boolean => {
-        return permissionList.every(permission => hasPermission(permission));
+        return permissionList.every((permission) => hasPermission(permission));
     };
 
     /**
@@ -46,14 +46,14 @@ export function usePermissions() {
      * Check if user has any of the specified roles
      */
     const hasAnyRole = (roleList: string[]): boolean => {
-        return roleList.some(role => hasRole(role));
+        return roleList.some((role) => hasRole(role));
     };
 
     /**
      * Check if user has all of the specified roles
      */
     const hasAllRoles = (roleList: string[]): boolean => {
-        return roleList.every(role => hasRole(role));
+        return roleList.every((role) => hasRole(role));
     };
 
     /**
@@ -89,33 +89,26 @@ export function usePermissions() {
     /**
      * Check if user can view security alerts
      */
-    const canViewSecurityAlerts = computed(() =>
-        hasAnyPermission([
-            'view_security_alerts',
-            'view_panic_alerts',
-            'manage_security_alerts'
-        ]) || hasAnyRole(['superadmin', 'admin_conjunto', 'consejo', 'porteria'])
+    const canViewSecurityAlerts = computed(
+        () =>
+            hasAnyPermission(['view_security_alerts', 'view_panic_alerts', 'manage_security_alerts']) ||
+            hasAnyRole(['superadmin', 'admin_conjunto', 'consejo', 'porteria']),
     );
 
     /**
      * Check if user can manage security alerts
      */
-    const canManageSecurityAlerts = computed(() =>
-        hasAnyPermission([
-            'manage_security_alerts',
-            'respond_to_panic_alerts',
-            'resolve_panic_alerts'
-        ]) || hasAnyRole(['superadmin', 'admin_conjunto', 'porteria'])
+    const canManageSecurityAlerts = computed(
+        () =>
+            hasAnyPermission(['manage_security_alerts', 'respond_to_panic_alerts', 'resolve_panic_alerts']) ||
+            hasAnyRole(['superadmin', 'admin_conjunto', 'porteria']),
     );
 
     /**
      * Check if user can resolve security incidents
      */
-    const canResolveSecurityIncidents = computed(() =>
-        hasAnyPermission([
-            'resolve_security_incidents',
-            'resolve_panic_alerts'
-        ]) || hasAnyRole(['superadmin', 'admin_conjunto', 'porteria'])
+    const canResolveSecurityIncidents = computed(
+        () => hasAnyPermission(['resolve_security_incidents', 'resolve_panic_alerts']) || hasAnyRole(['superadmin', 'admin_conjunto', 'porteria']),
     );
 
     return {

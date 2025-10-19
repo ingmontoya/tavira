@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import DropdownAction from '@/components/DataTableDropDown.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { CalendarDays, Plus, Search, Eye, Edit, Trash2, Check, X } from 'lucide-vue-next';
+import { CalendarDays, Check, Edit, Eye, Plus, Search, Trash2, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface ReservableAsset {
@@ -130,21 +130,29 @@ const formatCurrency = (amount: number) => {
 };
 
 const approveReservation = (reservationId: number) => {
-    router.post(route('reservations.approve', reservationId), {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            // Handle success
-        }
-    });
+    router.post(
+        route('reservations.approve', reservationId),
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Handle success
+            },
+        },
+    );
 };
 
 const rejectReservation = (reservationId: number) => {
-    router.post(route('reservations.reject', reservationId), {}, {
-        preserveScroll: true,
-        onSuccess: () => {
-            // Handle success
-        }
-    });
+    router.post(
+        route('reservations.reject', reservationId),
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Handle success
+            },
+        },
+    );
 };
 
 const cancelReservation = (reservationId: number) => {
@@ -153,7 +161,7 @@ const cancelReservation = (reservationId: number) => {
             preserveScroll: true,
             onSuccess: () => {
                 // Handle success
-            }
+            },
         });
     }
 };
@@ -164,7 +172,7 @@ const cancelReservation = (reservationId: number) => {
 
     <AppLayout>
         <div class="py-6">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mb-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -177,7 +185,7 @@ const cancelReservation = (reservationId: number) => {
                         </div>
                         <div class="flex space-x-3">
                             <Button @click="() => router.visit(route('reservations.create'))" class="inline-flex items-center">
-                                <Plus class="h-4 w-4 mr-2" />
+                                <Plus class="mr-2 h-4 w-4" />
                                 Nueva Reserva
                             </Button>
                         </div>
@@ -187,26 +195,17 @@ const cancelReservation = (reservationId: number) => {
                 <!-- Filters -->
                 <Card class="mb-6">
                     <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Buscar
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Buscar </label>
                                 <div class="relative">
-                                    <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input
-                                        v-model="search"
-                                        placeholder="Buscar reservas..."
-                                        class="pl-10"
-                                        @keydown.enter="applyFilters"
-                                    />
+                                    <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                                    <Input v-model="search" placeholder="Buscar reservas..." class="pl-10" @keydown.enter="applyFilters" />
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Estado
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Estado </label>
                                 <Select v-model="selectedStatus">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Todos los estados" />
@@ -221,9 +220,7 @@ const cancelReservation = (reservationId: number) => {
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Activo
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Activo </label>
                                 <Select v-model="selectedAsset">
                                     <SelectTrigger>
                                         <SelectValue placeholder="Todos los activos" />
@@ -238,28 +235,22 @@ const cancelReservation = (reservationId: number) => {
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Desde
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Desde </label>
                                 <Input v-model="dateFrom" type="date" />
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Hasta
-                                </label>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Hasta </label>
                                 <Input v-model="dateTo" type="date" />
                             </div>
                         </div>
 
                         <div class="mt-4 flex justify-between">
                             <Button @click="applyFilters" class="inline-flex items-center">
-                                <Search class="h-4 w-4 mr-2" />
+                                <Search class="mr-2 h-4 w-4" />
                                 Filtrar
                             </Button>
-                            <Button variant="outline" @click="clearFilters">
-                                Limpiar filtros
-                            </Button>
+                            <Button variant="outline" @click="clearFilters"> Limpiar filtros </Button>
                         </div>
                     </div>
                 </Card>
@@ -281,8 +272,8 @@ const cancelReservation = (reservationId: number) => {
                             </TableHeader>
                             <TableBody>
                                 <TableRow v-if="reservations.data.length === 0">
-                                    <TableCell :colspan="isAdmin ? 7 : 5" class="text-center py-8 text-gray-500">
-                                        <CalendarDays class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                    <TableCell :colspan="isAdmin ? 7 : 5" class="py-8 text-center text-gray-500">
+                                        <CalendarDays class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                                         <p>No hay reservas que coincidan con los filtros.</p>
                                     </TableCell>
                                 </TableRow>
@@ -324,43 +315,43 @@ const cancelReservation = (reservationId: number) => {
                                                 :href="route('reservations.show', reservation.id)"
                                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                             >
-                                                <Eye class="h-4 w-4 mr-2" />
+                                                <Eye class="mr-2 h-4 w-4" />
                                                 Ver detalles
                                             </Link>
-                                            
+
                                             <Link
                                                 v-if="reservation.can_be_cancelled && !isAdmin"
                                                 :href="route('reservations.edit', reservation.id)"
                                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                                             >
-                                                <Edit class="h-4 w-4 mr-2" />
+                                                <Edit class="mr-2 h-4 w-4" />
                                                 Editar
                                             </Link>
 
                                             <button
                                                 v-if="isAdmin && reservation.status === 'pending'"
                                                 @click="approveReservation(reservation.id)"
-                                                class="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 dark:text-green-300 dark:hover:bg-green-600 w-full text-left"
+                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50 dark:text-green-300 dark:hover:bg-green-600"
                                             >
-                                                <Check class="h-4 w-4 mr-2" />
+                                                <Check class="mr-2 h-4 w-4" />
                                                 Aprobar
                                             </button>
 
                                             <button
                                                 v-if="isAdmin && reservation.status === 'pending'"
                                                 @click="rejectReservation(reservation.id)"
-                                                class="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600 w-full text-left"
+                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600"
                                             >
-                                                <X class="h-4 w-4 mr-2" />
+                                                <X class="mr-2 h-4 w-4" />
                                                 Rechazar
                                             </button>
 
                                             <button
                                                 v-if="reservation.can_be_cancelled"
                                                 @click="cancelReservation(reservation.id)"
-                                                class="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600 w-full text-left"
+                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600"
                                             >
-                                                <Trash2 class="h-4 w-4 mr-2" />
+                                                <Trash2 class="mr-2 h-4 w-4" />
                                                 Cancelar
                                             </button>
                                         </DropdownAction>
@@ -371,7 +362,7 @@ const cancelReservation = (reservationId: number) => {
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="reservations.total > 0" class="px-6 py-4 border-t">
+                    <div v-if="reservations.total > 0" class="border-t px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div class="text-sm text-gray-700 dark:text-gray-300">
                                 Mostrando {{ reservations.from }} a {{ reservations.to }} de {{ reservations.total }} reservas

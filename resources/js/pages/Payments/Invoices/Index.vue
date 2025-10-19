@@ -15,7 +15,23 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { AlertTriangle, CheckCircle, ChevronDown, ChevronsUpDown, Edit, Eye, Filter, Mail, Plus, Receipt, Search, Settings, Trash2, X, XCircle } from 'lucide-vue-next';
+import {
+    AlertTriangle,
+    CheckCircle,
+    ChevronDown,
+    ChevronsUpDown,
+    Edit,
+    Eye,
+    Filter,
+    Mail,
+    Plus,
+    Receipt,
+    Search,
+    Settings,
+    Trash2,
+    X,
+    XCircle,
+} from 'lucide-vue-next';
 import { computed, h, ref, watch } from 'vue';
 import { cn, valueUpdater } from '../../../utils';
 
@@ -464,7 +480,7 @@ const typeOptions = [
                         <div class="space-y-2">
                             <p class="font-medium">Mapeo contable no configurado</p>
                             <p>Los conceptos de pago deben estar mapeados a cuentas contables para generar transacciones automáticas.</p>
-                            <div class="flex gap-2 mt-2">
+                            <div class="mt-2 flex gap-2">
                                 <Button asChild variant="outline" size="sm">
                                     <Link href="/setup/accounting-wizard">
                                         <Settings class="mr-2 h-4 w-4" />
@@ -472,9 +488,7 @@ const typeOptions = [
                                     </Link>
                                 </Button>
                                 <Button asChild variant="ghost" size="sm">
-                                    <Link href="/settings/payment-concept-mapping">
-                                        Mapeo Manual
-                                    </Link>
+                                    <Link href="/settings/payment-concept-mapping"> Mapeo Manual </Link>
                                 </Button>
                             </div>
                         </div>
@@ -723,7 +737,11 @@ const typeOptions = [
                     </Link>
                 </Button>
 
-                <Button asChild :disabled="!system_readiness.is_ready" :title="!system_readiness.is_ready ? 'Complete la configuración del sistema para crear facturas' : ''">
+                <Button
+                    asChild
+                    :disabled="!system_readiness.is_ready"
+                    :title="!system_readiness.is_ready ? 'Complete la configuración del sistema para crear facturas' : ''"
+                >
                     <Link href="/invoices/create">
                         <Plus class="mr-2 h-4 w-4" />
                         Nueva Factura

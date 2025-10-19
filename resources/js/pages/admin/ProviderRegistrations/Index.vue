@@ -2,19 +2,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { CheckCircle, Eye, Pencil, Search, X, XCircle } from 'lucide-vue-next';
@@ -98,7 +91,7 @@ const applyFilters = () => {
         {
             preserveState: true,
             preserveScroll: true,
-        }
+        },
     );
 };
 
@@ -316,9 +309,7 @@ const formatDate = (dateString: string) => {
                                     </TableRow>
                                 </template>
                                 <TableRow v-else>
-                                    <TableCell colspan="6" class="h-24 text-center text-muted-foreground">
-                                        No se encontraron solicitudes
-                                    </TableCell>
+                                    <TableCell colspan="6" class="h-24 text-center text-muted-foreground"> No se encontraron solicitudes </TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
@@ -332,20 +323,10 @@ const formatDate = (dateString: string) => {
                     Mostrando {{ registrations.from }} a {{ registrations.to }} de {{ registrations.total }} resultados
                 </div>
                 <div class="space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!registrations.prev_page_url"
-                        @click="router.visit(registrations.prev_page_url)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="!registrations.prev_page_url" @click="router.visit(registrations.prev_page_url)">
                         Anterior
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!registrations.next_page_url"
-                        @click="router.visit(registrations.next_page_url)"
-                    >
+                    <Button variant="outline" size="sm" :disabled="!registrations.next_page_url" @click="router.visit(registrations.next_page_url)">
                         Siguiente
                     </Button>
                 </div>
@@ -371,12 +352,7 @@ const formatDate = (dateString: string) => {
 
                     <div class="space-y-2">
                         <Label for="approve_notes">Notas del Administrador (opcional)</Label>
-                        <Textarea
-                            id="approve_notes"
-                            v-model="approveForm.admin_notes"
-                            placeholder="Agrega notas sobre esta aprobación..."
-                            rows="3"
-                        />
+                        <Textarea id="approve_notes" v-model="approveForm.admin_notes" placeholder="Agrega notas sobre esta aprobación..." rows="3" />
                     </div>
                 </div>
 
@@ -394,9 +370,7 @@ const formatDate = (dateString: string) => {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Rechazar Solicitud</DialogTitle>
-                    <DialogDescription>
-                        ¿Estás seguro de que deseas rechazar esta solicitud? Esta acción no se puede deshacer.
-                    </DialogDescription>
+                    <DialogDescription> ¿Estás seguro de que deseas rechazar esta solicitud? Esta acción no se puede deshacer. </DialogDescription>
                 </DialogHeader>
 
                 <div v-if="selectedRegistration" class="space-y-4">

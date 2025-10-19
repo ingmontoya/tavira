@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -218,7 +218,7 @@ watch(
                         <div class="space-y-2">
                             <p class="font-medium">Mapeo contable no configurado</p>
                             <p>Los conceptos de pago deben estar mapeados a cuentas contables para generar transacciones automáticas.</p>
-                            <div class="flex gap-2 mt-2">
+                            <div class="mt-2 flex gap-2">
                                 <Button asChild variant="outline" size="sm">
                                     <Link href="/setup/accounting-wizard">
                                         <Settings class="mr-2 h-4 w-4" />
@@ -226,9 +226,7 @@ watch(
                                     </Link>
                                 </Button>
                                 <Button asChild variant="ghost" size="sm">
-                                    <Link href="/settings/payment-concept-mapping">
-                                        Mapeo Manual
-                                    </Link>
+                                    <Link href="/settings/payment-concept-mapping"> Mapeo Manual </Link>
                                 </Button>
                             </div>
                         </div>
@@ -446,15 +444,13 @@ watch(
                                 <!-- Observation -->
                                 <div>
                                     <Label for="dian_observation">Observación DIAN</Label>
-                                    <Textarea 
-                                        id="dian_observation" 
-                                        v-model="form.dian_observation" 
+                                    <Textarea
+                                        id="dian_observation"
+                                        v-model="form.dian_observation"
                                         placeholder="Observación personalizada para la factura electrónica (opcional)"
                                         rows="3"
                                     />
-                                    <p class="text-xs text-muted-foreground">
-                                        Si no se especifica, se usará la observación por defecto
-                                    </p>
+                                    <p class="text-xs text-muted-foreground">Si no se especifica, se usará la observación por defecto</p>
                                     <div v-if="form.errors.dian_observation" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.dian_observation }}
                                     </div>
@@ -475,9 +471,7 @@ watch(
                                             <SelectItem :value="47">Tarjeta Débito</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <p class="text-xs text-muted-foreground">
-                                        Por defecto: Efectivo (código 1)
-                                    </p>
+                                    <p class="text-xs text-muted-foreground">Por defecto: Efectivo (código 1)</p>
                                     <div v-if="form.errors.dian_payment_method" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.dian_payment_method }}
                                     </div>
@@ -496,9 +490,7 @@ watch(
                                             <SelectItem value="EUR">Euro (EUR)</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <p class="text-xs text-muted-foreground">
-                                        Por defecto: Peso Colombiano (COP)
-                                    </p>
+                                    <p class="text-xs text-muted-foreground">Por defecto: Peso Colombiano (COP)</p>
                                     <div v-if="form.errors.dian_currency" class="mt-1 text-sm text-red-600">
                                         {{ form.errors.dian_currency }}
                                     </div>

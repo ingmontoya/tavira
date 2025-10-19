@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Plus, Users, UserCheck, UserX } from 'lucide-vue-next';
+import { ArrowLeft, Plus, UserCheck, Users, UserX } from 'lucide-vue-next';
 
 interface Assembly {
     id: number;
@@ -67,10 +67,7 @@ const breadcrumbs = [
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-2">
                     <div class="flex items-center gap-3">
-                        <Link 
-                            :href="`/assemblies/${assembly.id}`"
-                            class="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                        >
+                        <Link :href="`/assemblies/${assembly.id}`" class="flex items-center gap-2 text-muted-foreground hover:text-foreground">
                             <ArrowLeft class="h-4 w-4" />
                             Volver a la Asamblea
                         </Link>
@@ -84,10 +81,7 @@ const breadcrumbs = [
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <Button
-                        v-if="assembly.status === 'scheduled'"
-                        asChild
-                    >
+                    <Button v-if="assembly.status === 'scheduled'" asChild>
                         <Link :href="`/assemblies/${assembly.id}/delegates/create`">
                             <Plus class="mr-2 h-4 w-4" />
                             Nuevo Delegado
@@ -103,9 +97,7 @@ const breadcrumbs = [
                         <Users class="h-5 w-5" />
                         Lista de Delegados
                     </CardTitle>
-                    <CardDescription>
-                        Gestión de delegaciones para la asamblea
-                    </CardDescription>
+                    <CardDescription> Gestión de delegaciones para la asamblea </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div v-if="delegates.length > 0" class="overflow-x-auto">
@@ -161,15 +153,12 @@ const breadcrumbs = [
                             </TableBody>
                         </Table>
                     </div>
-                    
-                    <div v-else class="text-center py-12">
-                        <Users class="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay delegados</h3>
-                        <p class="text-gray-500 mb-4">Aún no se han registrado delegaciones para esta asamblea.</p>
-                        <Button
-                            v-if="assembly.status === 'scheduled'"
-                            asChild
-                        >
+
+                    <div v-else class="py-12 text-center">
+                        <Users class="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                        <h3 class="mb-2 text-lg font-medium text-gray-900">No hay delegados</h3>
+                        <p class="mb-4 text-gray-500">Aún no se han registrado delegaciones para esta asamblea.</p>
+                        <Button v-if="assembly.status === 'scheduled'" asChild>
                             <Link :href="`/assemblies/${assembly.id}/delegates/create`">
                                 <Plus class="mr-2 h-4 w-4" />
                                 Crear Primera Delegación

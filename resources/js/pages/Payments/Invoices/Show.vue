@@ -120,8 +120,6 @@ const props = defineProps<{
 
 const { success, error } = useToast();
 
-
-
 const deleteInvoice = () => {
     if (confirm('¿Estás seguro de que deseas eliminar esta factura?')) {
         router.delete(`/invoices/${props.invoice.id}`, {
@@ -367,16 +365,16 @@ const viewElectronicInvoice = () => {
                         </div>
                     </div>
                     <div v-if="localElectronicUuid || invoice.electronic_invoice_uuid" class="text-right">
-                        <p class="text-xs font-mono text-muted-foreground">UUID</p>
-                        <p class="text-xs font-mono">{{ localElectronicUuid || invoice.electronic_invoice_uuid }}</p>
+                        <p class="font-mono text-xs text-muted-foreground">UUID</p>
+                        <p class="font-mono text-xs">{{ localElectronicUuid || invoice.electronic_invoice_uuid }}</p>
                     </div>
                 </div>
 
-                <div v-if="localElectronicCufe || invoice.electronic_invoice_cufe" class="mt-2 p-2 bg-gray-50 rounded text-xs font-mono">
+                <div v-if="localElectronicCufe || invoice.electronic_invoice_cufe" class="mt-2 rounded bg-gray-50 p-2 font-mono text-xs">
                     <strong>CUFE:</strong> {{ localElectronicCufe || invoice.electronic_invoice_cufe }}
                 </div>
 
-                <div v-if="electronInvoiceError" class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                <div v-if="electronInvoiceError" class="mt-2 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
                     <strong>Error:</strong> {{ electronInvoiceError }}
                 </div>
 

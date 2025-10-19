@@ -9,7 +9,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import { createColumnHelper, FlexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useVueTable } from '@tanstack/vue-table';
-import { MessageSquare, Plus, Search, Eye, X } from 'lucide-vue-next';
+import { Eye, MessageSquare, Plus, Search, X } from 'lucide-vue-next';
 import { computed, h, ref } from 'vue';
 import { cn, valueUpdater } from '../../utils';
 
@@ -85,26 +85,36 @@ const categoryOptions = [
 
 const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-        case 'open': return 'default';
-        case 'in_progress': return 'secondary';
-        case 'resolved': return 'outline';
-        case 'closed': return 'destructive';
-        default: return 'default';
+        case 'open':
+            return 'default';
+        case 'in_progress':
+            return 'secondary';
+        case 'resolved':
+            return 'outline';
+        case 'closed':
+            return 'destructive';
+        default:
+            return 'default';
     }
 };
 
 const getPriorityBadgeVariant = (priority: string) => {
     switch (priority) {
-        case 'low': return 'secondary';
-        case 'medium': return 'default';
-        case 'high': return 'outline';
-        case 'urgent': return 'destructive';
-        default: return 'default';
+        case 'low':
+            return 'secondary';
+        case 'medium':
+            return 'default';
+        case 'high':
+            return 'outline';
+        case 'urgent':
+            return 'destructive';
+        default:
+            return 'default';
     }
 };
 
 const getCategoryLabel = (category: string) => {
-    const option = categoryOptions.find(o => o.value === category);
+    const option = categoryOptions.find((o) => o.value === category);
     return option?.label || category;
 };
 
@@ -113,54 +123,71 @@ const columnHelper = createColumnHelper<SupportTicket>();
 const columns = [
     columnHelper.accessor('id', {
         header: '#',
-        cell: info => info.getValue(),
+        cell: (info) => info.getValue(),
         size: 80,
     }),
     columnHelper.accessor('title', {
         header: 'Título',
-        cell: info => h(Link, {
-            href: `/support/${info.row.original.id}`,
-            class: 'hover:underline font-medium'
-        }, info.getValue()),
+        cell: (info) =>
+            h(
+                Link,
+                {
+                    href: `/support/${info.row.original.id}`,
+                    class: 'hover:underline font-medium',
+                },
+                info.getValue(),
+            ),
         size: 300,
     }),
     columnHelper.accessor('status', {
         header: 'Estado',
-        cell: info => h(Badge, {
-            variant: getStatusBadgeVariant(info.getValue())
-        }, {
-            default: () => info.getValue() === 'open' ? 'Abierto' 
-                : info.getValue() === 'in_progress' ? 'En progreso'
-                : info.getValue() === 'resolved' ? 'Resuelto'
-                : 'Cerrado'
-        }),
+        cell: (info) =>
+            h(
+                Badge,
+                {
+                    variant: getStatusBadgeVariant(info.getValue()),
+                },
+                {
+                    default: () =>
+                        info.getValue() === 'open'
+                            ? 'Abierto'
+                            : info.getValue() === 'in_progress'
+                              ? 'En progreso'
+                              : info.getValue() === 'resolved'
+                                ? 'Resuelto'
+                                : 'Cerrado',
+                },
+            ),
         size: 120,
     }),
     columnHelper.accessor('priority', {
         header: 'Prioridad',
-        cell: info => h(Badge, {
-            variant: getPriorityBadgeVariant(info.getValue())
-        }, {
-            default: () => info.getValue() === 'low' ? 'Baja'
-                : info.getValue() === 'medium' ? 'Media'
-                : info.getValue() === 'high' ? 'Alta'
-                : 'Urgente'
-        }),
+        cell: (info) =>
+            h(
+                Badge,
+                {
+                    variant: getPriorityBadgeVariant(info.getValue()),
+                },
+                {
+                    default: () =>
+                        info.getValue() === 'low' ? 'Baja' : info.getValue() === 'medium' ? 'Media' : info.getValue() === 'high' ? 'Alta' : 'Urgente',
+                },
+            ),
         size: 100,
     }),
     columnHelper.accessor('category', {
         header: 'Categoría',
-        cell: info => getCategoryLabel(info.getValue()),
+        cell: (info) => getCategoryLabel(info.getValue()),
         size: 150,
     }),
     columnHelper.accessor('user.name', {
         header: 'Usuario',
-        cell: info => info.getValue(),
+        cell: (info) => info.getValue(),
         size: 150,
     }),
     columnHelper.accessor('created_at', {
         header: 'Creado',
-        cell: info => new Date(info.getValue()).toLocaleDateString('es-CO'),
+        cell: (info) => new Date(info.getValue()).toLocaleDateString('es-CO'),
         size: 120,
     }),
     columnHelper.display({
@@ -169,13 +196,17 @@ const columns = [
         cell: ({ row }) => {
             const ticket = row.original;
             return h('div', { class: 'flex gap-2' }, [
-                h(Button, {
-                    variant: 'ghost',
-                    size: 'sm',
-                    onClick: () => navigateTo(`/support/${ticket.id}`)
-                }, {
-                    default: () => [h(Eye, { class: 'w-4 h-4' })]
-                })
+                h(
+                    Button,
+                    {
+                        variant: 'ghost',
+                        size: 'sm',
+                        onClick: () => navigateTo(`/support/${ticket.id}`),
+                    },
+                    {
+                        default: () => [h(Eye, { class: 'w-4 h-4' })],
+                    },
+                ),
             ]);
         },
         size: 100,
@@ -187,7 +218,9 @@ const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
 
 const table = useVueTable({
-    get data() { return props.tickets.data; },
+    get data() {
+        return props.tickets.data;
+    },
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -196,9 +229,15 @@ const table = useVueTable({
     onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
     onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
     state: {
-        get sorting() { return sorting.value; },
-        get columnFilters() { return columnFilters.value; },
-        get columnVisibility() { return columnVisibility.value; },
+        get sorting() {
+            return sorting.value;
+        },
+        get columnFilters() {
+            return columnFilters.value;
+        },
+        get columnVisibility() {
+            return columnVisibility.value;
+        },
     },
 });
 
@@ -211,7 +250,7 @@ const applyFilters = () => {
     if (selectedStatus.value !== 'all') params.append('status', selectedStatus.value);
     if (selectedPriority.value !== 'all') params.append('priority', selectedPriority.value);
     if (selectedCategory.value !== 'all') params.append('category', selectedCategory.value);
-    
+
     router.get(route('support.index'), Object.fromEntries(params));
 };
 
@@ -222,32 +261,28 @@ const clearFilters = () => {
     router.get(route('support.index'));
 };
 
-const hasActiveFilters = computed(() => 
-    selectedStatus.value !== 'all' || 
-    selectedPriority.value !== 'all' || 
-    selectedCategory.value !== 'all'
-);
+const hasActiveFilters = computed(() => selectedStatus.value !== 'all' || selectedPriority.value !== 'all' || selectedCategory.value !== 'all');
 </script>
 
 <template>
     <Head title="Tickets de Soporte" />
-    
+
     <AppLayout>
         <div class="container mx-auto px-4 py-8">
-            <div class="flex justify-between items-center mb-6">
+            <div class="mb-6 flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold text-gray-900">Tickets de Soporte</h1>
-                    <p class="text-sm text-gray-600 mt-1">Gestiona y realiza seguimiento de tickets de soporte</p>
+                    <p class="mt-1 text-sm text-gray-600">Gestiona y realiza seguimiento de tickets de soporte</p>
                 </div>
                 <Button @click="navigateTo('/support/create')" class="flex items-center gap-2">
-                    <Plus class="w-4 h-4" />
+                    <Plus class="h-4 w-4" />
                     Crear Ticket
                 </Button>
             </div>
 
             <!-- Filtros -->
             <Card class="mb-6 p-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                     <div>
                         <Label for="status" class="text-sm font-medium">Estado</Label>
                         <Select v-model="selectedStatus">
@@ -255,17 +290,13 @@ const hasActiveFilters = computed(() =>
                                 <SelectValue placeholder="Seleccionar estado" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem 
-                                    v-for="option in statusOptions" 
-                                    :key="option.value" 
-                                    :value="option.value"
-                                >
+                                <SelectItem v-for="option in statusOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                    
+
                     <div>
                         <Label for="priority" class="text-sm font-medium">Prioridad</Label>
                         <Select v-model="selectedPriority">
@@ -273,17 +304,13 @@ const hasActiveFilters = computed(() =>
                                 <SelectValue placeholder="Seleccionar prioridad" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem 
-                                    v-for="option in priorityOptions" 
-                                    :key="option.value" 
-                                    :value="option.value"
-                                >
+                                <SelectItem v-for="option in priorityOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                    
+
                     <div>
                         <Label for="category" class="text-sm font-medium">Categoría</Label>
                         <Select v-model="selectedCategory">
@@ -291,29 +318,20 @@ const hasActiveFilters = computed(() =>
                                 <SelectValue placeholder="Seleccionar categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem 
-                                    v-for="option in categoryOptions" 
-                                    :key="option.value" 
-                                    :value="option.value"
-                                >
+                                <SelectItem v-for="option in categoryOptions" :key="option.value" :value="option.value">
                                     {{ option.label }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                    
+
                     <div class="flex items-end gap-2">
                         <Button @click="applyFilters" class="flex-1">
-                            <Search class="w-4 h-4 mr-2" />
+                            <Search class="mr-2 h-4 w-4" />
                             Filtrar
                         </Button>
-                        <Button 
-                            v-if="hasActiveFilters" 
-                            variant="outline" 
-                            @click="clearFilters"
-                            class="px-3"
-                        >
-                            <X class="w-4 h-4" />
+                        <Button v-if="hasActiveFilters" variant="outline" @click="clearFilters" class="px-3">
+                            <X class="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
@@ -324,21 +342,14 @@ const hasActiveFilters = computed(() =>
                 <div class="rounded-md border">
                     <Table>
                         <TableHeader>
-                            <TableRow 
-                                v-for="headerGroup in table.getHeaderGroups()" 
-                                :key="headerGroup.id"
-                            >
-                                <TableHead 
-                                    v-for="header in headerGroup.headers" 
+                            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                                <TableHead
+                                    v-for="header in headerGroup.headers"
                                     :key="header.id"
                                     :class="cn('px-4 py-3', header.column.getCanSort() && 'cursor-pointer select-none')"
                                     @click="header.column.getCanSort() ? header.column.getToggleSortingHandler()?.() : undefined"
                                 >
-                                    <FlexRender
-                                        v-if="!header.isPlaceholder"
-                                        :render="header.column.columnDef.header"
-                                        :props="header.getContext()"
-                                    />
+                                    <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
@@ -350,15 +361,8 @@ const hasActiveFilters = computed(() =>
                                     :data-state="row.getIsSelected() && 'selected'"
                                     class="hover:bg-muted/50"
                                 >
-                                    <TableCell 
-                                        v-for="cell in row.getVisibleCells()" 
-                                        :key="cell.id"
-                                        class="px-4 py-3"
-                                    >
-                                        <FlexRender 
-                                            :render="cell.column.columnDef.cell" 
-                                            :props="cell.getContext()" 
-                                        />
+                                    <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-4 py-3">
+                                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                     </TableCell>
                                 </TableRow>
                             </template>
@@ -366,9 +370,9 @@ const hasActiveFilters = computed(() =>
                                 <TableRow>
                                     <TableCell :colspan="columns.length" class="h-24 text-center">
                                         <div class="flex flex-col items-center justify-center text-muted-foreground">
-                                            <MessageSquare class="w-8 h-8 mb-2" />
+                                            <MessageSquare class="mb-2 h-8 w-8" />
                                             <p class="text-sm">No se encontraron tickets de soporte</p>
-                                            <p class="text-xs mt-1">Crea tu primer ticket para comenzar</p>
+                                            <p class="mt-1 text-xs">Crea tu primer ticket para comenzar</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -378,10 +382,8 @@ const hasActiveFilters = computed(() =>
                 </div>
 
                 <!-- Paginación -->
-                <div class="flex items-center justify-between space-x-2 py-4 px-4" v-if="props.tickets.last_page > 1">
-                    <div class="text-sm text-muted-foreground">
-                        Mostrando {{ props.tickets.data.length }} de {{ props.tickets.total }} resultados
-                    </div>
+                <div class="flex items-center justify-between space-x-2 px-4 py-4" v-if="props.tickets.last_page > 1">
+                    <div class="text-sm text-muted-foreground">Mostrando {{ props.tickets.data.length }} de {{ props.tickets.total }} resultados</div>
                     <div class="flex items-center space-x-2">
                         <Button
                             variant="outline"

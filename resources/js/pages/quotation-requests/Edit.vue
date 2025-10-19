@@ -99,12 +99,7 @@ const submit = () => {
                         <CardContent class="space-y-4">
                             <div class="space-y-2">
                                 <Label for="title">Título *</Label>
-                                <Input
-                                    id="title"
-                                    v-model="form.title"
-                                    placeholder="Ej: Mantenimiento de ascensores"
-                                    required
-                                />
+                                <Input id="title" v-model="form.title" placeholder="Ej: Mantenimiento de ascensores" required />
                                 <p v-if="form.errors.title" class="text-sm text-red-600">{{ form.errors.title }}</p>
                             </div>
 
@@ -122,11 +117,7 @@ const submit = () => {
 
                             <div class="space-y-2">
                                 <Label for="deadline">Fecha Límite</Label>
-                                <Input
-                                    id="deadline"
-                                    v-model="form.deadline"
-                                    type="date"
-                                />
+                                <Input id="deadline" v-model="form.deadline" type="date" />
                                 <p v-if="form.errors.deadline" class="text-sm text-red-600">{{ form.errors.deadline }}</p>
                             </div>
 
@@ -151,21 +142,14 @@ const submit = () => {
                         </CardHeader>
                         <CardContent>
                             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                <div
-                                    v-for="category in categories"
-                                    :key="category.id"
-                                    class="flex items-start space-x-3 rounded-lg border p-3"
-                                >
+                                <div v-for="category in categories" :key="category.id" class="flex items-start space-x-3 rounded-lg border p-3">
                                     <Checkbox
                                         :id="`category-${category.id}`"
                                         :checked="form.category_ids.includes(category.id)"
                                         @update:checked="toggleCategory(category.id)"
                                     />
                                     <div class="flex-1">
-                                        <Label
-                                            :for="`category-${category.id}`"
-                                            class="cursor-pointer font-medium"
-                                        >
+                                        <Label :for="`category-${category.id}`" class="cursor-pointer font-medium">
                                             {{ category.name }}
                                         </Label>
                                         <p v-if="category.description" class="text-sm text-muted-foreground">

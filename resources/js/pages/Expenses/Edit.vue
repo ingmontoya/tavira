@@ -168,8 +168,7 @@ const requiresApproval = computed(() => {
     let needsApproval = false;
 
     // Check if amount exceeds threshold (4 salarios mínimos)
-    if (props.approvalSettings.council_approval_required &&
-        form.total_amount >= props.approvalSettings.approval_threshold_amount) {
+    if (props.approvalSettings.council_approval_required && form.total_amount >= props.approvalSettings.approval_threshold_amount) {
         needsApproval = true;
     }
 
@@ -472,11 +471,13 @@ const cancel = () => {
                                             <p class="mt-1 text-sm text-amber-700">
                                                 Este gasto requiere aprobación
                                                 <template v-if="form.total_amount >= approvalSettings.approval_threshold_amount">
-                                                    del concejo debido a que el monto ({{ formatCurrency(form.total_amount) }}) supera el límite de {{ formatCurrency(approvalSettings.approval_threshold_amount) }} (4 salarios mínimos)
+                                                    del concejo debido a que el monto ({{ formatCurrency(form.total_amount) }}) supera el límite de
+                                                    {{ formatCurrency(approvalSettings.approval_threshold_amount) }} (4 salarios mínimos)
                                                 </template>
                                                 <template v-else-if="selectedCategory?.requires_approval">
                                                     debido a la categoría seleccionada
-                                                </template> al guardar los cambios.
+                                                </template>
+                                                al guardar los cambios.
                                             </p>
                                         </div>
                                         <div v-else class="rounded-lg border border-green-200 bg-green-50 p-3">
@@ -485,7 +486,9 @@ const cancel = () => {
                                                 <span class="text-sm font-medium">Aprobación Automática</span>
                                             </div>
                                             <p class="mt-1 text-sm text-green-700">
-                                                Este gasto será aprobado automáticamente al guardar los cambios porque el monto está por debajo del límite de {{ formatCurrency(approvalSettings.approval_threshold_amount) }} y no requiere aprobación de categoría.
+                                                Este gasto será aprobado automáticamente al guardar los cambios porque el monto está por debajo del
+                                                límite de {{ formatCurrency(approvalSettings.approval_threshold_amount) }} y no requiere aprobación de
+                                                categoría.
                                             </p>
                                         </div>
                                     </div>

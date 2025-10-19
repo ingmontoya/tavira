@@ -107,6 +107,11 @@ class Expense extends Model
         return $this->morphMany(AccountingTransaction::class, 'reference');
     }
 
+    public function quotationResponse(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(QuotationResponse::class);
+    }
+
     // Scopes
     public function scopeForConjunto($query, int $conjuntoConfigId)
     {

@@ -1,5 +1,4 @@
 <template>
-
     <Head title="Crear Tenant" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -34,31 +33,46 @@
                                 <div class="grid gap-4">
                                     <div class="grid gap-2">
                                         <Label for="name">Nombre del Conjunto *</Label>
-                                        <Input id="name" v-model="form.name" type="text"
+                                        <Input
+                                            id="name"
+                                            v-model="form.name"
+                                            type="text"
                                             placeholder="Ej: Conjunto Villa Hermosa"
-                                            :class="{ 'border-red-500': errors.name }" required />
+                                            :class="{ 'border-red-500': errors.name }"
+                                            required
+                                        />
                                         <p v-if="errors.name" class="text-sm text-red-600">{{ errors.name }}</p>
                                     </div>
 
                                     <div class="grid gap-2">
                                         <Label for="email">Email del Conjunto *</Label>
-                                        <Input id="email" v-model="form.email" type="email"
+                                        <Input
+                                            id="email"
+                                            v-model="form.email"
+                                            type="email"
                                             placeholder="administracion@villa-hermosa.com"
-                                            :class="{ 'border-red-500': errors.email }" required />
+                                            :class="{ 'border-red-500': errors.email }"
+                                            required
+                                        />
                                         <p v-if="errors.email" class="text-sm text-red-600">{{ errors.email }}</p>
-                                        <p class="text-sm text-muted-foreground">
-                                            Este email se usará para comunicaciones oficiales del conjunto
-                                        </p>
+                                        <p class="text-sm text-muted-foreground">Este email se usará para comunicaciones oficiales del conjunto</p>
                                     </div>
 
                                     <div class="grid gap-2">
                                         <Label for="subdomain">Subdominio *</Label>
                                         <div class="flex items-center">
-                                            <Input id="subdomain" v-model="form.subdomain" type="text"
-                                                placeholder="villa-hermosa" :class="{ 'border-red-500': errors.domain }"
-                                                class="rounded-r-none" required />
+                                            <Input
+                                                id="subdomain"
+                                                v-model="form.subdomain"
+                                                type="text"
+                                                placeholder="villa-hermosa"
+                                                :class="{ 'border-red-500': errors.domain }"
+                                                class="rounded-r-none"
+                                                required
+                                            />
                                             <span
-                                                class="rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground">
+                                                class="rounded-r-md border border-l-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-muted-foreground"
+                                            >
                                                 .tavira.com.co
                                             </span>
                                         </div>
@@ -74,9 +88,7 @@
                                         <Icon v-if="processing" name="loader-2" class="h-4 w-4 animate-spin" />
                                         {{ processing ? 'Creando...' : 'Crear Tenant' }}
                                     </Button>
-                                    <Button type="button" variant="outline" @click="router.visit('/tenants')">
-                                        Cancelar
-                                    </Button>
+                                    <Button type="button" variant="outline" @click="router.visit('/tenants')"> Cancelar </Button>
                                 </div>
                             </form>
                         </CardContent>
@@ -125,23 +137,23 @@
                 <CardContent>
                     <div class="space-y-3 text-sm">
                         <div class="flex items-start gap-2">
-                            <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <Icon name="check" class="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
                             <p>El tenant se creará automáticamente en estado "Activo" y estará listo para usar</p>
                         </div>
                         <div class="flex items-start gap-2">
-                            <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <Icon name="check" class="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
                             <p>Se creará automáticamente una base de datos independiente con configuración inicial</p>
                         </div>
                         <div class="flex items-start gap-2">
-                            <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <Icon name="check" class="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
                             <p>Tu usuario actual será replicado como administrador del nuevo tenant</p>
                         </div>
                         <div class="flex items-start gap-2">
-                            <Icon name="check" class="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <Icon name="check" class="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
                             <p>El dominio debe ser único en toda la plataforma</p>
                         </div>
                         <div class="flex items-start gap-2">
-                            <Icon name="alert-circle" class="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                            <Icon name="alert-circle" class="mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600" />
                             <p>La contraseña por defecto será "password123" - cámbiala después del primer acceso</p>
                         </div>
                     </div>
@@ -152,50 +164,50 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { router, Head } from '@inertiajs/vue3'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import Icon from '@/components/Icon.vue'
+import Icon from '@/components/Icon.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { reactive, ref } from 'vue';
 
 interface Props {
-    errors?: Record<string, string>
+    errors?: Record<string, string>;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 // Breadcrumbs
 const breadcrumbs = [
     { title: 'Panel Central', href: '/dashboard' },
     { title: 'Gestión de Tenants', href: '/tenants' },
     { title: 'Crear Tenant', href: '/tenants/create' },
-]
+];
 
 const form = reactive({
     name: '',
     email: '',
     subdomain: '',
-})
+});
 
-const processing = ref(false)
+const processing = ref(false);
 
 const submit = () => {
-    processing.value = true
+    processing.value = true;
 
     // Construir dominio completo
     const formData = {
         name: form.name,
         email: form.email,
-        domain: form.subdomain + '.tavira.com.co'
-    }
+        domain: form.subdomain + '.tavira.com.co',
+    };
 
     router.post(route('tenant-management.store'), formData, {
         onFinish: () => {
-            processing.value = false
+            processing.value = false;
         },
-    })
-}
+    });
+};
 </script>

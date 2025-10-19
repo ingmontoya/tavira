@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/composables/useToast';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Save, Settings } from 'lucide-vue-next';
-import { useToast } from '@/composables/useToast';
 
 interface ChartOfAccount {
     id: number;
@@ -35,17 +35,21 @@ const submit = () => {
 };
 
 const createDefaultMappings = () => {
-    router.post('/payment-method-account-mappings/create-defaults', {}, {
-        onSuccess: () => {
-            success('Mapeos por defecto creados exitosamente');
-            // Redirect to index page to see the new mappings
-            router.visit('/payment-method-account-mappings');
+    router.post(
+        '/payment-method-account-mappings/create-defaults',
+        {},
+        {
+            onSuccess: () => {
+                success('Mapeos por defecto creados exitosamente');
+                // Redirect to index page to see the new mappings
+                router.visit('/payment-method-account-mappings');
+            },
+            onError: (errors) => {
+                const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';
+                error(errorMessage);
+            },
         },
-        onError: (errors) => {
-            const errorMessage = errors?.create_defaults || 'Error al crear mapeos por defecto';
-            error(errorMessage);
-        }
-    });
+    );
 };
 
 const breadcrumbs = [
@@ -189,7 +193,8 @@ const breadcrumbs = [
                         <CardContent>
                             <div class="space-y-4">
                                 <p class="text-sm text-muted-foreground">
-                                    ¿Prefieres crear todos los mapeos básicos de una vez? Esto configurará automáticamente los métodos de pago más comunes.
+                                    ¿Prefieres crear todos los mapeos básicos de una vez? Esto configurará automáticamente los métodos de pago más
+                                    comunes.
                                 </p>
                                 <Button @click="createDefaultMappings" variant="default" size="sm" class="w-full">
                                     <Settings class="mr-2 h-4 w-4" />

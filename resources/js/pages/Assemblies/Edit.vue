@@ -167,11 +167,9 @@ const formProgress = computed(() => {
                 if (field.includes('reminder') || field.includes('notification')) {
                     return true; // These are boolean/number fields with defaults
                 }
-                
-                const value = field.includes('_') ? 
-                    form.metadata[field.split('_')[0]] || form[field] : 
-                    form[field] || form.metadata[field];
-                
+
+                const value = field.includes('_') ? form.metadata[field.split('_')[0]] || form[field] : form[field] || form.metadata[field];
+
                 if (typeof value === 'boolean') return true;
                 if (Array.isArray(value)) return value.length > 0;
                 if (typeof value === 'number') return value > 0;
@@ -345,9 +343,7 @@ const minDateTime = computed(() => {
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>¿Descartar cambios?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?
-                                </AlertDialogDescription>
+                                <AlertDialogDescription> Tienes cambios sin guardar. ¿Estás seguro de que deseas salir? </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Continuar editando</AlertDialogCancel>
@@ -368,8 +364,8 @@ const minDateTime = computed(() => {
                         <div>
                             <h3 class="font-medium text-amber-800">Edición limitada</h3>
                             <p class="text-sm text-amber-600">
-                                Esta asamblea está en estado "{{ statusBadge.text }}" y solo permite ediciones limitadas.
-                                Algunos campos pueden estar bloqueados.
+                                Esta asamblea está en estado "{{ statusBadge.text }}" y solo permite ediciones limitadas. Algunos campos pueden estar
+                                bloqueados.
                             </p>
                         </div>
                     </div>
@@ -385,9 +381,7 @@ const minDateTime = computed(() => {
                     <div class="flex items-center justify-between">
                         <div>
                             <CardTitle class="text-lg">Progreso del Formulario</CardTitle>
-                            <CardDescription>
-                                Completa todos los campos requeridos para actualizar la asamblea
-                            </CardDescription>
+                            <CardDescription> Completa todos los campos requeridos para actualizar la asamblea </CardDescription>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm text-muted-foreground">{{ formProgress }}% completado</span>
@@ -450,7 +444,7 @@ const minDateTime = computed(() => {
                                     <div>
                                         <p class="text-sm font-medium">{{ form.title || 'Título de la asamblea' }}</p>
                                         <p class="text-xs text-muted-foreground">
-                                            {{ assemblyTypes.find(t => t.value === form.type)?.label || 'Tipo' }}
+                                            {{ assemblyTypes.find((t) => t.value === form.type)?.label || 'Tipo' }}
                                         </p>
                                     </div>
                                 </div>
@@ -617,14 +611,8 @@ const minDateTime = computed(() => {
                                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div class="space-y-2">
                                         <Label for="location">Ubicación</Label>
-                                        <Input
-                                            id="location"
-                                            v-model="form.metadata.location"
-                                            placeholder="Salón comunal del conjunto"
-                                        />
-                                        <p class="text-xs text-muted-foreground">
-                                            Lugar donde se realizará la asamblea
-                                        </p>
+                                        <Input id="location" v-model="form.metadata.location" placeholder="Salón comunal del conjunto" />
+                                        <p class="text-xs text-muted-foreground">Lugar donde se realizará la asamblea</p>
                                     </div>
 
                                     <div class="space-y-2">
@@ -637,23 +625,15 @@ const minDateTime = computed(() => {
                                             max="12"
                                             placeholder="4"
                                         />
-                                        <p class="text-xs text-muted-foreground">
-                                            Duración estimada de la asamblea
-                                        </p>
+                                        <p class="text-xs text-muted-foreground">Duración estimada de la asamblea</p>
                                     </div>
                                 </div>
 
                                 <!-- Organizer -->
                                 <div class="space-y-2">
                                     <Label for="organizer">Organizador/Responsable</Label>
-                                    <Input
-                                        id="organizer"
-                                        v-model="form.metadata.organizer"
-                                        placeholder="Administración del conjunto"
-                                    />
-                                    <p class="text-xs text-muted-foreground">
-                                        Persona o entidad responsable de organizar la asamblea
-                                    </p>
+                                    <Input id="organizer" v-model="form.metadata.organizer" placeholder="Administración del conjunto" />
+                                    <p class="text-xs text-muted-foreground">Persona o entidad responsable de organizar la asamblea</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -671,16 +651,10 @@ const minDateTime = computed(() => {
                                 <!-- Agenda -->
                                 <div class="space-y-4">
                                     <Label>Agenda / Orden del Día</Label>
-                                    
+
                                     <div class="flex gap-2">
-                                        <Input
-                                            v-model="agendaItem"
-                                            placeholder="Agregar punto de agenda..."
-                                            @keyup.enter="addAgendaItem"
-                                        />
-                                        <Button type="button" @click="addAgendaItem" :disabled="!agendaItem.trim()">
-                                            Agregar
-                                        </Button>
+                                        <Input v-model="agendaItem" placeholder="Agregar punto de agenda..." @keyup.enter="addAgendaItem" />
+                                        <Button type="button" @click="addAgendaItem" :disabled="!agendaItem.trim()"> Agregar </Button>
                                     </div>
 
                                     <div v-if="form.metadata.agenda?.length" class="space-y-2">
@@ -741,9 +715,7 @@ const minDateTime = computed(() => {
                                                     <FileText class="h-5 w-5 text-muted-foreground" />
                                                     <div>
                                                         <p class="text-sm font-medium">{{ file.name }}</p>
-                                                        <p class="text-xs text-muted-foreground">
-                                                            {{ (file.size / 1024 / 1024).toFixed(2) }} MB
-                                                        </p>
+                                                        <p class="text-xs text-muted-foreground">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</p>
                                                     </div>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="sm" @click="removeFile(index)">
@@ -797,9 +769,7 @@ const minDateTime = computed(() => {
                                         <Users class="h-5 w-5 text-muted-foreground" />
                                         <div>
                                             <p class="font-medium">Recordatorio por WhatsApp</p>
-                                            <p class="text-sm text-muted-foreground">
-                                                Enviar recordatorios por WhatsApp (requiere integración)
-                                            </p>
+                                            <p class="text-sm text-muted-foreground">Enviar recordatorios por WhatsApp (requiere integración)</p>
                                         </div>
                                     </div>
                                     <Switch v-model:checked="form.metadata.notification_settings.whatsapp_reminder" />
@@ -821,9 +791,7 @@ const minDateTime = computed(() => {
                                             <SelectItem :value="168">1 semana antes</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <p class="text-xs text-muted-foreground">
-                                        Tiempo antes del inicio de la asamblea para enviar el recordatorio
-                                    </p>
+                                    <p class="text-xs text-muted-foreground">Tiempo antes del inicio de la asamblea para enviar el recordatorio</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -836,23 +804,12 @@ const minDateTime = computed(() => {
                             </Button>
 
                             <div class="flex items-center gap-3">
-                                <Button
-                                    v-if="!isLastStep"
-                                    type="button"
-                                    :disabled="!canProceedToNext"
-                                    @click="nextStep"
-                                    class="gap-2"
-                                >
+                                <Button v-if="!isLastStep" type="button" :disabled="!canProceedToNext" @click="nextStep" class="gap-2">
                                     Siguiente
                                     <ArrowLeft class="h-4 w-4 rotate-180" />
                                 </Button>
 
-                                <Button
-                                    v-if="isLastStep"
-                                    type="submit"
-                                    :disabled="form.processing || !canProceedToNext"
-                                    class="gap-2"
-                                >
+                                <Button v-if="isLastStep" type="submit" :disabled="form.processing || !canProceedToNext" class="gap-2">
                                     <Save class="h-4 w-4" />
                                     {{ form.processing ? 'Guardando...' : 'Actualizar Asamblea' }}
                                 </Button>

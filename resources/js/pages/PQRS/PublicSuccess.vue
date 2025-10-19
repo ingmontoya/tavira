@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Head } from '@inertiajs/vue3';
 import { CheckCircle2, Copy } from 'lucide-vue-next';
 import { ref } from 'vue';
 
@@ -51,8 +51,7 @@ const typeLabels: Record<string, string> = {
 
                 <h1 class="mb-4 text-3xl font-bold text-gray-900">¡PQRS Enviada Exitosamente!</h1>
                 <p class="mb-8 text-lg text-gray-600">
-                    Su {{ typeLabels[pqrs.type].toLowerCase() }} ha sido recibida y será procesada por
-                    la administración.
+                    Su {{ typeLabels[pqrs.type].toLowerCase() }} ha sido recibida y será procesada por la administración.
                 </p>
             </div>
 
@@ -67,12 +66,7 @@ const typeLabels: Record<string, string> = {
                             <p class="text-2xl font-bold text-gray-900">
                                 {{ pqrs.ticket_number }}
                             </p>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                @click="copyTicket"
-                                class="h-8 w-8 p-0"
-                            >
+                            <Button variant="ghost" size="sm" @click="copyTicket" class="h-8 w-8 p-0">
                                 <Copy class="h-4 w-4" />
                             </Button>
                         </div>
@@ -100,20 +94,10 @@ const typeLabels: Record<string, string> = {
                 <CardContent class="pt-6">
                     <h3 class="mb-3 font-semibold text-blue-900">Información Importante</h3>
                     <ul class="space-y-2 text-sm text-blue-800">
-                        <li>
-                            • Guarde su <strong>número de ticket</strong> para consultar el estado de
-                            su PQRS.
-                        </li>
-                        <li>
-                            • Recibirá una notificación por correo electrónico cuando la
-                            administración responda.
-                        </li>
-                        <li>
-                            • El tiempo de respuesta puede variar según la complejidad del caso.
-                        </li>
-                        <li>
-                            • Puede rastrear el estado de su PQRS usando el número de ticket.
-                        </li>
+                        <li>• Guarde su <strong>número de ticket</strong> para consultar el estado de su PQRS.</li>
+                        <li>• Recibirá una notificación por correo electrónico cuando la administración responda.</li>
+                        <li>• El tiempo de respuesta puede variar según la complejidad del caso.</li>
+                        <li>• Puede rastrear el estado de su PQRS usando el número de ticket.</li>
                     </ul>
                 </CardContent>
             </Card>

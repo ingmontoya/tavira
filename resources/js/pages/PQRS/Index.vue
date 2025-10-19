@@ -1,32 +1,13 @@
 <script setup lang="ts">
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Search, Eye, ExternalLink } from 'lucide-vue-next';
+import { ExternalLink, Eye, Search } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface Pqrs {
@@ -127,7 +108,6 @@ watch(
 </script>
 
 <template>
-
     <Head title="Gestión de PQRS" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -136,9 +116,7 @@ watch(
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Gestión de PQRS</h1>
-                    <p class="mt-1 text-sm text-gray-600">
-                        Administre las peticiones, quejas, reclamos y sugerencias del conjunto
-                    </p>
+                    <p class="mt-1 text-sm text-gray-600">Administre las peticiones, quejas, reclamos y sugerencias del conjunto</p>
                 </div>
                 <div class="flex gap-2">
                     <Button variant="outline" as-child>
@@ -197,9 +175,8 @@ watch(
                     <div class="flex flex-col gap-4 sm:flex-row">
                         <div class="flex-1">
                             <div class="relative">
-                                <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                                <Input v-model="filters.search" type="text"
-                                    placeholder="Buscar por ticket, asunto, nombre..." class="pl-10" />
+                                <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <Input v-model="filters.search" type="text" placeholder="Buscar por ticket, asunto, nombre..." class="pl-10" />
                             </div>
                         </div>
                         <div class="w-full sm:w-48">
@@ -253,9 +230,7 @@ watch(
                         </TableHeader>
                         <TableBody>
                             <TableRow v-if="pqrs.data.length === 0">
-                                <TableCell colspan="8" class="h-24 text-center">
-                                    No se encontraron PQRS
-                                </TableCell>
+                                <TableCell colspan="8" class="h-24 text-center"> No se encontraron PQRS </TableCell>
                             </TableRow>
                             <TableRow v-for="item in pqrs.data" :key="item.id">
                                 <TableCell class="font-mono text-sm">
@@ -291,7 +266,7 @@ watch(
                                 <TableCell class="text-right">
                                     <Button variant="ghost" size="sm" as-child>
                                         <Link :href="route('pqrs.show', item.id)">
-                                        <Eye class="h-4 w-4" />
+                                            <Eye class="h-4 w-4" />
                                         </Link>
                                     </Button>
                                 </TableCell>

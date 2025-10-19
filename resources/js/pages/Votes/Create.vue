@@ -43,29 +43,29 @@ const submit = () => {
 
 // Vote types
 const voteTypes = [
-    { 
-        value: 'simple', 
-        label: 'Mayoría Simple', 
+    {
+        value: 'simple',
+        label: 'Mayoría Simple',
         description: 'Más del 50% de votos a favor',
-        percentage: 50
+        percentage: 50,
     },
-    { 
-        value: 'qualified', 
-        label: 'Mayoría Calificada', 
+    {
+        value: 'qualified',
+        label: 'Mayoría Calificada',
         description: 'Requiere 2/3 o más de los votos',
-        percentage: 67
+        percentage: 67,
     },
-    { 
-        value: 'unanimous', 
-        label: 'Unanimidad', 
+    {
+        value: 'unanimous',
+        label: 'Unanimidad',
         description: 'Requiere 100% de votos a favor',
-        percentage: 100
+        percentage: 100,
     },
 ];
 
 // Update percentage when type changes
 const updatePercentage = (type: string) => {
-    const voteType = voteTypes.find(vt => vt.value === type);
+    const voteType = voteTypes.find((vt) => vt.value === type);
     if (voteType) {
         form.required_percentage = voteType.percentage;
     }
@@ -112,9 +112,7 @@ const breadcrumbs = [
                             <Vote class="h-5 w-5" />
                             Información Básica
                         </CardTitle>
-                        <CardDescription>
-                            Define los detalles principales de la votación
-                        </CardDescription>
+                        <CardDescription> Define los detalles principales de la votación </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Title -->
@@ -152,27 +150,18 @@ const breadcrumbs = [
                 <Card>
                     <CardHeader>
                         <CardTitle>Configuración de Votación</CardTitle>
-                        <CardDescription>
-                            Define el tipo de votación y los requisitos de aprobación
-                        </CardDescription>
+                        <CardDescription> Define el tipo de votación y los requisitos de aprobación </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-6">
                         <!-- Vote Type -->
                         <div class="space-y-3">
                             <Label for="type">Tipo de Votación *</Label>
-                            <Select 
-                                v-model="form.type" 
-                                @update:model-value="updatePercentage"
-                            >
+                            <Select v-model="form.type" @update:model-value="updatePercentage">
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona el tipo de votación" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem 
-                                        v-for="type in voteTypes" 
-                                        :key="type.value" 
-                                        :value="type.value"
-                                    >
+                                    <SelectItem v-for="type in voteTypes" :key="type.value" :value="type.value">
                                         <div class="flex flex-col">
                                             <span class="font-medium">{{ type.label }}</span>
                                             <span class="text-xs text-muted-foreground">
@@ -199,9 +188,7 @@ const breadcrumbs = [
                                 :class="{ 'border-red-500': form.errors.required_percentage }"
                                 :disabled="form.type === 'unanimous'"
                             />
-                            <p class="text-xs text-muted-foreground">
-                                Porcentaje de votos afirmativos necesarios para aprobar la propuesta
-                            </p>
+                            <p class="text-xs text-muted-foreground">Porcentaje de votos afirmativos necesarios para aprobar la propuesta</p>
                             <p v-if="form.errors.required_percentage" class="text-sm text-red-600">
                                 {{ form.errors.required_percentage }}
                             </p>
@@ -213,27 +200,25 @@ const breadcrumbs = [
                 <Card>
                     <CardHeader>
                         <CardTitle>Opciones de Votación</CardTitle>
-                        <CardDescription>
-                            Las opciones que estarán disponibles para los residentes
-                        </CardDescription>
+                        <CardDescription> Las opciones que estarán disponibles para los residentes </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-3">
                             <div class="grid grid-cols-3 gap-4">
-                                <div class="rounded-lg border p-4 text-center bg-green-50 border-green-200">
+                                <div class="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
                                     <div class="text-lg font-semibold text-green-800">A Favor</div>
                                     <div class="text-sm text-green-600">Voto positivo</div>
                                 </div>
-                                <div class="rounded-lg border p-4 text-center bg-red-50 border-red-200">
+                                <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
                                     <div class="text-lg font-semibold text-red-800">En Contra</div>
                                     <div class="text-sm text-red-600">Voto negativo</div>
                                 </div>
-                                <div class="rounded-lg border p-4 text-center bg-gray-50 border-gray-200">
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
                                     <div class="text-lg font-semibold text-gray-800">Abstención</div>
                                     <div class="text-sm text-gray-600">No participa</div>
                                 </div>
                             </div>
-                            <p class="text-xs text-muted-foreground text-center">
+                            <p class="text-center text-xs text-muted-foreground">
                                 Los residentes podrán elegir entre estas tres opciones durante la votación
                             </p>
                         </div>
@@ -244,23 +229,19 @@ const breadcrumbs = [
                 <Card v-if="form.title">
                     <CardHeader>
                         <CardTitle>Resumen de la Votación</CardTitle>
-                        <CardDescription>
-                            Vista previa de cómo aparecerá la votación
-                        </CardDescription>
+                        <CardDescription> Vista previa de cómo aparecerá la votación </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-4">
                         <div class="rounded-lg border bg-muted/50 p-4">
                             <h3 class="font-semibold">{{ form.title }}</h3>
-                            <p v-if="form.description" class="text-sm text-muted-foreground mt-1">
+                            <p v-if="form.description" class="mt-1 text-sm text-muted-foreground">
                                 {{ form.description }}
                             </p>
                             <div class="mt-3 flex items-center gap-4 text-xs">
                                 <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-blue-800">
-                                    {{ voteTypes.find(t => t.value === form.type)?.label }}
+                                    {{ voteTypes.find((t) => t.value === form.type)?.label }}
                                 </span>
-                                <span class="text-muted-foreground">
-                                    Requiere {{ form.required_percentage }}% para aprobar
-                                </span>
+                                <span class="text-muted-foreground"> Requiere {{ form.required_percentage }}% para aprobar </span>
                             </div>
                         </div>
                     </CardContent>

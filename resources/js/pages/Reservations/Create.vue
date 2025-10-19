@@ -1,16 +1,15 @@
 <script setup lang="ts">
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
-import { CalendarDays, Clock, MapPin, DollarSign, AlertTriangle, CheckCircle } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
+import { AlertTriangle, CalendarDays, CheckCircle, Clock, DollarSign, MapPin } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 interface ReservableAsset {
     id: number;
@@ -66,7 +65,7 @@ const selectedAssetData = ref<ReservableAsset | null>(props.selectedAsset || nul
 
 const selectedAsset = computed(() => {
     if (!form.reservable_asset_id) return null;
-    return props.assets.find(asset => asset.id === Number(form.reservable_asset_id)) || null;
+    return props.assets.find((asset) => asset.id === Number(form.reservable_asset_id)) || null;
 });
 
 const minDate = computed(() => {
@@ -100,16 +99,19 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
-watch(() => form.reservable_asset_id, async (newValue) => {
-    if (newValue) {
-        selectedAssetData.value = props.assets.find(asset => asset.id === Number(newValue)) || null;
-        selectedDate.value = '';
-        availableSlots.value = [];
-        selectedSlot.value = null;
-        form.start_time = '';
-        form.end_time = '';
-    }
-});
+watch(
+    () => form.reservable_asset_id,
+    async (newValue) => {
+        if (newValue) {
+            selectedAssetData.value = props.assets.find((asset) => asset.id === Number(newValue)) || null;
+            selectedDate.value = '';
+            availableSlots.value = [];
+            selectedSlot.value = null;
+            form.start_time = '';
+            form.end_time = '';
+        }
+    },
+);
 
 watch(selectedDate, async (newDate) => {
     if (newDate && selectedAsset.value) {
@@ -119,7 +121,7 @@ watch(selectedDate, async (newDate) => {
 
 const loadAvailableSlots = async (date: string) => {
     if (!selectedAsset.value) return;
-    
+
     isLoadingSlots.value = true;
     try {
         const response = await fetch(route('reservations.availability') + `?asset_id=${selectedAsset.value.id}&date=${date}`);
@@ -138,7 +140,7 @@ const loadAvailableSlots = async (date: string) => {
 
 const selectSlot = (slot: TimeSlot) => {
     if (!slot.available) return;
-    
+
     selectedSlot.value = slot;
     form.start_time = slot.start_datetime;
     form.end_time = slot.end_datetime;
@@ -148,7 +150,7 @@ const submit = () => {
     form.post(route('reservations.store'), {
         onSuccess: () => {
             router.visit(route('reservations.index'));
-        }
+        },
     });
 };
 
@@ -162,23 +164,19 @@ const goBack = () => {
 
     <AppLayout>
         <div class="py-6">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                 <div class="mb-6">
                     <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Nueva Reserva</h1>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Selecciona un activo y horario para crear tu reserva
-                    </p>
+                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Selecciona un activo y horario para crear tu reserva</p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Main Form -->
                     <div class="lg:col-span-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle>Información de la Reserva</CardTitle>
-                                <CardDescription>
-                                    Completa los datos necesarios para tu reserva
-                                </CardDescription>
+                                <CardDescription> Completa los datos necesarios para tu reserva </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-6">
                                 <form @submit.prevent="submit">
@@ -190,17 +188,15 @@ const goBack = () => {
                                                 <SelectValue placeholder="Selecciona un activo" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem 
-                                                    v-for="asset in assets" 
-                                                    :key="asset.id" 
+                                                <SelectItem
+                                                    v-for="asset in assets"
+                                                    :key="asset.id"
                                                     :value="asset.id.toString()"
                                                     :disabled="!asset.can_user_reserve"
                                                 >
-                                                    <div class="flex items-center justify-between w-full">
+                                                    <div class="flex w-full items-center justify-between">
                                                         <span>{{ asset.name }}</span>
-                                                        <span v-if="!asset.can_user_reserve" class="text-xs text-red-500">
-                                                            Límite alcanzado
-                                                        </span>
+                                                        <span v-if="!asset.can_user_reserve" class="text-xs text-red-500"> Límite alcanzado </span>
                                                     </div>
                                                 </SelectItem>
                                             </SelectContent>
@@ -218,11 +214,7 @@ const goBack = () => {
                                                 <SelectValue placeholder="Selecciona un apartamento" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem 
-                                                    v-for="apartment in apartments" 
-                                                    :key="apartment.id" 
-                                                    :value="apartment.id.toString()"
-                                                >
+                                                <SelectItem v-for="apartment in apartments" :key="apartment.id" :value="apartment.id.toString()">
                                                     {{ apartment.number }} - Torre {{ apartment.tower }}
                                                 </SelectItem>
                                             </SelectContent>
@@ -232,13 +224,7 @@ const goBack = () => {
                                     <!-- Date Selection -->
                                     <div v-if="selectedAsset" class="space-y-2">
                                         <Label for="date">Fecha de la Reserva *</Label>
-                                        <Input 
-                                            v-model="selectedDate"
-                                            type="date" 
-                                            :min="minDate"
-                                            :max="maxDate"
-                                            required
-                                        />
+                                        <Input v-model="selectedDate" type="date" :min="minDate" :max="maxDate" required />
                                         <p class="text-sm text-gray-500">
                                             Puedes reservar hasta {{ selectedAsset.advance_booking_days }} días de anticipación
                                         </p>
@@ -248,13 +234,13 @@ const goBack = () => {
                                     <div v-if="selectedDate && selectedAsset" class="space-y-2">
                                         <Label>Horarios Disponibles *</Label>
                                         <div v-if="isLoadingSlots" class="flex items-center justify-center p-8">
-                                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                            <div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
                                         </div>
-                                        <div v-else-if="availableSlots.length === 0" class="text-center p-8 text-gray-500">
-                                            <Clock class="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                        <div v-else-if="availableSlots.length === 0" class="p-8 text-center text-gray-500">
+                                            <Clock class="mx-auto mb-2 h-8 w-8 text-gray-400" />
                                             <p>No hay horarios disponibles para esta fecha</p>
                                         </div>
-                                        <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        <div v-else class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                                             <button
                                                 v-for="slot in availableSlots"
                                                 :key="slot.start_time"
@@ -262,17 +248,17 @@ const goBack = () => {
                                                 @click="selectSlot(slot)"
                                                 :disabled="!slot.available"
                                                 :class="[
-                                                    'p-3 text-sm font-medium rounded-lg border-2 transition-colors',
-                                                    slot.available 
+                                                    'rounded-lg border-2 p-3 text-sm font-medium transition-colors',
+                                                    slot.available
                                                         ? selectedSlot?.start_time === slot.start_time
-                                                            ? 'bg-blue-50 border-blue-500 text-blue-700 dark:bg-blue-900 dark:border-blue-400 dark:text-blue-300'
-                                                            : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700'
-                                                        : 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:border-gray-600 dark:text-gray-500'
+                                                            ? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900 dark:text-blue-300'
+                                                            : 'border-gray-200 bg-white text-gray-900 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700'
+                                                        : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-500',
                                                 ]"
                                             >
                                                 <div class="text-center">
                                                     <div>{{ slot.start_time }} - {{ slot.end_time }}</div>
-                                                    <div v-if="!slot.available" class="text-xs mt-1">No disponible</div>
+                                                    <div v-if="!slot.available" class="mt-1 text-xs">No disponible</div>
                                                 </div>
                                             </button>
                                         </div>
@@ -284,11 +270,7 @@ const goBack = () => {
                                     <!-- Notes -->
                                     <div class="space-y-2">
                                         <Label for="notes">Notas (Opcional)</Label>
-                                        <Textarea 
-                                            v-model="form.notes"
-                                            placeholder="Información adicional sobre tu reserva..."
-                                            rows="3"
-                                        />
+                                        <Textarea v-model="form.notes" placeholder="Información adicional sobre tu reserva..." rows="3" />
                                         <div v-if="form.errors.notes" class="text-sm text-red-600">
                                             {{ form.errors.notes }}
                                         </div>
@@ -296,15 +278,9 @@ const goBack = () => {
 
                                     <!-- Form Actions -->
                                     <div class="flex justify-end space-x-3 pt-6">
-                                        <Button type="button" variant="outline" @click="goBack">
-                                            Cancelar
-                                        </Button>
-                                        <Button 
-                                            type="submit" 
-                                            :disabled="form.processing || !selectedSlot"
-                                            class="inline-flex items-center"
-                                        >
-                                            <CalendarDays class="h-4 w-4 mr-2" />
+                                        <Button type="button" variant="outline" @click="goBack"> Cancelar </Button>
+                                        <Button type="submit" :disabled="form.processing || !selectedSlot" class="inline-flex items-center">
+                                            <CalendarDays class="mr-2 h-4 w-4" />
                                             {{ form.processing ? 'Creando...' : 'Crear Reserva' }}
                                         </Button>
                                     </div>
@@ -323,12 +299,8 @@ const goBack = () => {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <div v-if="selectedAsset.image_url" class="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                                    <img 
-                                        :src="selectedAsset.image_url" 
-                                        :alt="selectedAsset.name"
-                                        class="w-full h-full object-cover"
-                                    />
+                                <div v-if="selectedAsset.image_url" class="aspect-video overflow-hidden rounded-lg bg-gray-100">
+                                    <img :src="selectedAsset.image_url" :alt="selectedAsset.name" class="h-full w-full object-cover" />
                                 </div>
 
                                 <div v-if="selectedAsset.description" class="text-sm text-gray-600 dark:text-gray-400">
@@ -337,14 +309,14 @@ const goBack = () => {
 
                                 <div class="space-y-3">
                                     <div class="flex items-center text-sm">
-                                        <Clock class="h-4 w-4 mr-2 text-gray-500" />
+                                        <Clock class="mr-2 h-4 w-4 text-gray-500" />
                                         <span>Duración: {{ formatDuration(selectedAsset.reservation_duration_minutes) }}</span>
                                     </div>
 
                                     <div class="flex items-center text-sm">
-                                        <DollarSign class="h-4 w-4 mr-2 text-gray-500" />
+                                        <DollarSign class="mr-2 h-4 w-4 text-gray-500" />
                                         <span>
-                                            Costo: 
+                                            Costo:
                                             <span class="font-medium">
                                                 {{ selectedAsset.reservation_cost > 0 ? formatCurrency(selectedAsset.reservation_cost) : 'Gratis' }}
                                             </span>
@@ -352,12 +324,12 @@ const goBack = () => {
                                     </div>
 
                                     <div class="flex items-center text-sm">
-                                        <CalendarDays class="h-4 w-4 mr-2 text-gray-500" />
+                                        <CalendarDays class="mr-2 h-4 w-4 text-gray-500" />
                                         <span>Máximo {{ selectedAsset.advance_booking_days }} días anticipación</span>
                                     </div>
 
                                     <div class="flex items-center text-sm">
-                                        <MapPin class="h-4 w-4 mr-2 text-gray-500" />
+                                        <MapPin class="mr-2 h-4 w-4 text-gray-500" />
                                         <span>Máximo {{ selectedAsset.max_reservations_per_user }} reserva(s) activa(s)</span>
                                     </div>
                                 </div>
@@ -391,12 +363,14 @@ const goBack = () => {
                                 <div class="text-sm">
                                     <span class="text-gray-600 dark:text-gray-400">Fecha:</span>
                                     <span class="ml-2 font-medium">
-                                        {{ new Date(selectedDate).toLocaleDateString('es-CO', { 
-                                            weekday: 'long', 
-                                            year: 'numeric', 
-                                            month: 'long', 
-                                            day: 'numeric' 
-                                        }) }}
+                                        {{
+                                            new Date(selectedDate).toLocaleDateString('es-CO', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })
+                                        }}
                                     </span>
                                 </div>
                                 <div class="text-sm">

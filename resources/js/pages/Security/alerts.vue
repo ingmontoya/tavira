@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Clock, MapPin, User, CheckCircle, X } from 'lucide-vue-next';
 import { usePermissions } from '@/composables/usePermissions';
 import { useToast } from '@/composables/useToast';
+import { Head } from '@inertiajs/vue3';
+import { AlertTriangle, CheckCircle, Clock, MapPin, User } from 'lucide-vue-next';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface SecurityAlert {
     id: string;
@@ -42,7 +42,7 @@ const currentAlerts = computed(() => {
 });
 
 const criticalAlertsCount = computed(() => {
-    return activeAlerts.value.filter(alert => alert.severity === 'critical').length;
+    return activeAlerts.value.filter((alert) => alert.severity === 'critical').length;
 });
 
 // Methods
@@ -54,7 +54,7 @@ const fetchActiveAlerts = async () => {
         const response = await fetch('/api/security/alerts/active', {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
         });
@@ -83,7 +83,7 @@ const fetchAllAlerts = async () => {
         const response = await fetch('/api/panic-alerts', {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
         });
@@ -112,7 +112,7 @@ const acknowledgeAlert = async (alertId: string) => {
         const response = await fetch(`/api/panic-alerts/${alertId}/acknowledge`, {
             method: 'PATCH',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
@@ -154,7 +154,7 @@ const resolveAlert = async (alertId: string) => {
         const response = await fetch(`/api/panic-alerts/${alertId}/resolve`, {
             method: 'PATCH',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
@@ -219,7 +219,7 @@ const getSeverityBadgeVariant = (severity: string) => {
         critical: 'destructive',
         high: 'destructive',
         medium: 'secondary',
-        low: 'outline'
+        low: 'outline',
     };
     return variants[severity] || 'outline';
 };
@@ -229,7 +229,7 @@ const getSeverityText = (severity: string) => {
         critical: 'Crítica',
         high: 'Alta',
         medium: 'Media',
-        low: 'Baja'
+        low: 'Baja',
     };
     return texts[severity] || severity;
 };
@@ -239,7 +239,7 @@ const getStatusText = (status: string) => {
         triggered: 'Activada',
         acknowledged: 'Reconocida',
         resolved: 'Resuelta',
-        cancelled: 'Cancelada'
+        cancelled: 'Cancelada',
     };
     return texts[status] || status;
 };
@@ -292,12 +292,8 @@ onUnmounted(() => {
         <div class="mb-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Alertas de Seguridad
-                    </h1>
-                    <p class="text-gray-600 dark:text-gray-400">
-                        Monitoreo y gestión de alertas de pánico y seguridad
-                    </p>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Alertas de Seguridad</h1>
+                    <p class="text-gray-600 dark:text-gray-400">Monitoreo y gestión de alertas de pánico y seguridad</p>
                 </div>
 
                 <!-- Critical Alert Count -->
@@ -311,27 +307,23 @@ onUnmounted(() => {
         </div>
 
         <!-- Unauthorized Access -->
-        <div v-if="!canViewSecurityAlerts" class="text-center py-12">
-            <AlertTriangle class="mx-auto h-12 w-12 text-red-600 mb-4" />
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                Acceso No Autorizado
-            </h3>
-            <p class="text-gray-600 dark:text-gray-400">
-                No tienes permisos para ver las alertas de seguridad.
-            </p>
+        <div v-if="!canViewSecurityAlerts" class="py-12 text-center">
+            <AlertTriangle class="mx-auto mb-4 h-12 w-12 text-red-600" />
+            <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">Acceso No Autorizado</h3>
+            <p class="text-gray-600 dark:text-gray-400">No tienes permisos para ver las alertas de seguridad.</p>
         </div>
 
         <!-- Main Content -->
         <div v-else>
             <!-- Tab Navigation -->
-            <div class="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg mb-6">
+            <div class="mb-6 flex space-x-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
                 <button
                     @click="switchTab('active')"
                     :class="[
-                        'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                        'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
                         selectedTab === 'active'
-                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                            : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white',
                     ]"
                 >
                     Alertas Activas ({{ activeAlerts.length }})
@@ -339,10 +331,10 @@ onUnmounted(() => {
                 <button
                     @click="switchTab('all')"
                     :class="[
-                        'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+                        'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors',
                         selectedTab === 'all'
-                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white'
+                            : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white',
                     ]"
                 >
                     Todas las Alertas
@@ -354,17 +346,17 @@ onUnmounted(() => {
                 <div v-for="i in 3" :key="i" class="animate-pulse">
                     <Card>
                         <CardHeader>
-                            <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                            <div class="mb-2 h-4 w-3/4 rounded bg-gray-300"></div>
+                            <div class="h-3 w-1/2 rounded bg-gray-200"></div>
                         </CardHeader>
                     </Card>
                 </div>
             </div>
 
             <!-- No Alerts -->
-            <div v-else-if="currentAlerts.length === 0" class="text-center py-12">
-                <CheckCircle class="mx-auto h-12 w-12 text-green-600 mb-4" />
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <div v-else-if="currentAlerts.length === 0" class="py-12 text-center">
+                <CheckCircle class="mx-auto mb-4 h-12 w-12 text-green-600" />
+                <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                     {{ selectedTab === 'active' ? 'No hay alertas activas' : 'No hay alertas registradas' }}
                 </h3>
                 <p class="text-gray-600 dark:text-gray-400">
@@ -374,20 +366,25 @@ onUnmounted(() => {
 
             <!-- Alerts List -->
             <div v-else class="space-y-4">
-                <Card v-for="alert in currentAlerts" :key="alert.id" :class="[
-                    'border-l-4',
-                    alert.severity === 'critical' ? 'border-l-red-600' :
-                    alert.severity === 'high' ? 'border-l-orange-500' :
-                    alert.severity === 'medium' ? 'border-l-yellow-500' :
-                    'border-l-blue-500'
-                ]">
+                <Card
+                    v-for="alert in currentAlerts"
+                    :key="alert.id"
+                    :class="[
+                        'border-l-4',
+                        alert.severity === 'critical'
+                            ? 'border-l-red-600'
+                            : alert.severity === 'high'
+                              ? 'border-l-orange-500'
+                              : alert.severity === 'medium'
+                                ? 'border-l-yellow-500'
+                                : 'border-l-blue-500',
+                    ]"
+                >
                     <CardHeader>
                         <div class="flex items-start justify-between">
                             <div class="space-y-2">
                                 <div class="flex items-center space-x-2">
-                                    <CardTitle class="text-lg">
-                                        🚨 {{ alert.message }}
-                                    </CardTitle>
+                                    <CardTitle class="text-lg"> 🚨 {{ alert.message }} </CardTitle>
                                     <Badge :variant="getSeverityBadgeVariant(alert.severity)">
                                         {{ getSeverityText(alert.severity) }}
                                     </Badge>
@@ -395,9 +392,7 @@ onUnmounted(() => {
                                         {{ getStatusText(alert.status) }}
                                     </Badge>
                                 </div>
-                                <CardDescription>
-                                    Activada {{ getTimeElapsed(alert.created_at) }}
-                                </CardDescription>
+                                <CardDescription> Activada {{ getTimeElapsed(alert.created_at) }} </CardDescription>
                             </div>
 
                             <!-- Action Buttons -->
@@ -425,7 +420,7 @@ onUnmounted(() => {
                     </CardHeader>
 
                     <CardContent>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <!-- User Info -->
                             <div class="flex items-center space-x-2">
                                 <User class="h-4 w-4 text-gray-500" />

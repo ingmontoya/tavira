@@ -2,18 +2,22 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/composables/useToast';
-import { CheckCircle, X, AlertTriangle, Info, XCircle } from 'lucide-vue-next';
-import { Transition, TransitionGroup } from 'vue';
+import { AlertTriangle, CheckCircle, Info, X, XCircle } from 'lucide-vue-next';
 
 const { toasts, removeToast } = useToast();
 
 const getToastIcon = (type: string) => {
     switch (type) {
-        case 'success': return CheckCircle;
-        case 'error': return XCircle;
-        case 'warning': return AlertTriangle;
-        case 'info': return Info;
-        default: return Info;
+        case 'success':
+            return CheckCircle;
+        case 'error':
+            return XCircle;
+        case 'warning':
+            return AlertTriangle;
+        case 'info':
+            return Info;
+        default:
+            return Info;
     }
 };
 
@@ -34,44 +38,32 @@ const getToastClasses = (type: string) => {
 
 const getIconClasses = (type: string) => {
     switch (type) {
-        case 'success': return 'text-green-600';
-        case 'error': return 'text-red-600';
-        case 'warning': return 'text-yellow-600';
-        case 'info': return 'text-blue-600';
-        default: return 'text-gray-600';
+        case 'success':
+            return 'text-green-600';
+        case 'error':
+            return 'text-red-600';
+        case 'warning':
+            return 'text-yellow-600';
+        case 'info':
+            return 'text-blue-600';
+        default:
+            return 'text-gray-600';
     }
 };
 </script>
 
 <template>
-    <div class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full">
-        <TransitionGroup
-            name="toast"
-            tag="div"
-        >
-            <Alert
-                v-for="toast in toasts"
-                :key="toast.id"
-                :class="getToastClasses(toast.type)"
-                class="relative shadow-lg border"
-            >
-                <component
-                    :is="getToastIcon(toast.type)"
-                    class="h-4 w-4"
-                    :class="getIconClasses(toast.type)"
-                />
+    <div class="fixed top-4 right-4 z-50 w-full max-w-sm space-y-2">
+        <TransitionGroup name="toast" tag="div">
+            <Alert v-for="toast in toasts" :key="toast.id" :class="getToastClasses(toast.type)" class="relative border shadow-lg">
+                <component :is="getToastIcon(toast.type)" class="h-4 w-4" :class="getIconClasses(toast.type)" />
                 <AlertDescription class="pr-8">
                     <div class="font-medium" v-if="toast.title">{{ toast.title }}</div>
                     <div class="text-sm" :class="toast.title ? 'mt-1' : ''">{{ toast.message }}</div>
                 </AlertDescription>
 
                 <!-- Close button -->
-                <Button
-                    @click="removeToast(toast.id)"
-                    variant="ghost"
-                    size="sm"
-                    class="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-black/10"
-                >
+                <Button @click="removeToast(toast.id)" variant="ghost" size="sm" class="absolute top-2 right-2 h-6 w-6 p-0 hover:bg-black/10">
                     <X class="h-3 w-3" />
                 </Button>
             </Alert>
