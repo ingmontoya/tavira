@@ -49,10 +49,13 @@ class QuotationResponse extends Model
      * Get the provider from the central database.
      * Note: Providers are stored in the central database, not the tenant database,
      * so this relationship crosses database boundaries.
+     *
+     * IMPORTANT: Due to cross-database limitations, do not use eager loading.
+     * Instead, manually load providers in the controller.
      */
-    public function provider(): BelongsTo
+    public function getProvider()
     {
-        return $this->belongsTo(\App\Models\Central\Provider::class, 'provider_id');
+        return \App\Models\Central\Provider::find($this->provider_id);
     }
 
     /**
@@ -81,7 +84,7 @@ class QuotationResponse extends Model
         $this->update(['status' => 'accepted']);
     }
 
-    public function reject(string $notes = null): void
+    public function reject(?string $notes = null): void
     {
         $this->update([
             'status' => 'rejected',

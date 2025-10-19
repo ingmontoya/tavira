@@ -122,7 +122,16 @@ class QuotationRequestController extends Controller
      */
     public function show(QuotationRequest $quotationRequest)
     {
-        $quotationRequest->load(['createdBy', 'categories', 'responses.provider']);
+        $quotationRequest->load(['createdBy', 'categories', 'responses']);
+
+        // Manually attach provider data from central database
+        // (cannot use eager loading due to cross-database relationship)
+        $providerIds = $quotationRequest->responses->pluck('provider_id')->unique()->toArray();
+        $providers = Provider::whereIn('id', $providerIds)->get()->keyBy('id');
+
+        $quotationRequest->responses->each(function ($response) use ($providers) {
+            $response->provider = $providers->get($response->provider_id);
+        });
 
         return Inertia::render('quotation-requests/Show', [
             'quotationRequest' => $quotationRequest,
