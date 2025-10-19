@@ -63,6 +63,10 @@ interface Props {
 
 defineProps<Props>();
 
+const breadcrumbs = [
+    { title: 'Dashboard', href: '/provider/dashboard' },
+];
+
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
         style: 'currency',
@@ -91,7 +95,7 @@ const getStatusBadge = (status: string) => {
 </script>
 
 <template>
-    <AppLayout title="Dashboard de Proveedor">
+    <AppLayout title="Dashboard de Proveedor" :breadcrumbs="breadcrumbs">
         <Head title="Dashboard - Proveedor" />
 
         <div class="container mx-auto space-y-6 p-6">
@@ -146,14 +150,14 @@ const getStatusBadge = (status: string) => {
                 <Card>
                     <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle class="text-sm font-medium">
-                            Solicitudes Disponibles
+                            Sin Responder
                         </CardTitle>
                         <Clock class="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ stats.pending_requests }}</div>
                         <p class="text-xs text-muted-foreground">
-                            Abiertas ahora
+                            Requieren tu atención
                         </p>
                     </CardContent>
                 </Card>
@@ -179,9 +183,9 @@ const getStatusBadge = (status: string) => {
                 <CardHeader>
                     <div class="flex items-center justify-between">
                         <div>
-                            <CardTitle>Solicitudes de Cotización Recientes</CardTitle>
+                            <CardTitle>Solicitudes Sin Responder</CardTitle>
                             <CardDescription>
-                                Últimas solicitudes disponibles para ti
+                                Últimas solicitudes disponibles a las que aún no has respondido
                             </CardDescription>
                         </div>
                         <Link :href="route('provider.quotations.index')">

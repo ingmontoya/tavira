@@ -44,14 +44,14 @@ export function useNavigation() {
     const permissions = computed(() => page.props.auth?.permissions || []);
     const roles = computed(() => page.props.auth?.roles || []);
     const conjuntoConfigured = computed(() => page.props.conjuntoConfigured || { exists: false, isActive: false });
-    
+
     // Check if we're in the central dashboard context
     const isCentralDashboard = computed(() => {
         // Check if we're on a central domain (not a subdomain tenant)
         const currentHost = window.location.hostname;
         const centralDomains = ['127.0.0.1', 'localhost', 'tavira.com.co'];
         const isOnCentralDomain = centralDomains.includes(currentHost);
-        
+
         // Must be superadmin and on central domain
         return isOnCentralDomain && roles.value.includes('superadmin');
     });
@@ -299,13 +299,6 @@ export function useNavigation() {
                     icon: FileText,
                     tourId: 'nav-quotation-requests',
                     visible: hasPermission('view_payments'),
-                },
-                {
-                    title: 'Propuestas',
-                    href: '/provider-proposals',
-                    icon: Truck,
-                    tourId: 'nav-provider-proposals',
-                    visible: hasPermission('review_provider_proposals'),
                 },
             ],
         },

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Provider;
 
 use App\Http\Controllers\Controller;
+use App\Mail\QuotationResponseReceived;
 use App\Models\Central\Provider;
 use App\Models\QuotationRequest;
 use App\Models\QuotationResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class ProviderQuotationController extends Controller
@@ -15,9 +17,10 @@ class ProviderQuotationController extends Controller
     private function getProvider(Request $request): Provider
     {
         $provider = Provider::find($request->user()->provider_id);
-        if (!$provider) {
+        if (! $provider) {
             abort(403, 'No tienes un perfil de proveedor asociado.');
         }
+
         return $provider;
     }
 
@@ -34,23 +37,35 @@ class ProviderQuotationController extends Controller
         $tenants = \App\Models\Tenant::all();
 
         foreach ($tenants as $tenant) {
-            $tenant->run(function () use ($categoryIds, &$allRequests, $request, $tenant) {
+            $tenant->run(function () use ($categoryIds, &$allRequests, $request, $tenant, $provider) {
                 $query = QuotationRequest::published()
                     ->whereHas('categories', function ($q) use ($categoryIds) {
                         $q->whereIn('provider_category_id', $categoryIds);
                     })
-                    ->with(['categories', 'createdBy']);
+                    ->with(['categories', 'createdBy', 'responses' => function ($q) use ($provider) {
+                        $q->where('provider_id', $provider->id);
+                    }]);
 
                 // Filter by status if provided
                 if ($request->status && $request->status !== 'all') {
-                    if ($request->status === 'open') {
-                        $query->where('deadline', '>=', now());
+                    if ($request->status === 'pending') {
+                        // Show only requests without response from this provider
+                        $query->whereDoesntHave('responses', function ($q) use ($provider) {
+                            $q->where('provider_id', $provider->id);
+                        });
+                    } elseif ($request->status === 'responded') {
+                        // Show only requests with response from this provider
+                        $query->whereHas('responses', function ($q) use ($provider) {
+                            $q->where('provider_id', $provider->id);
+                        });
                     }
                 }
 
                 $requests = $query->latest()->get();
 
                 foreach ($requests as $req) {
+                    $myResponse = $req->responses->first();
+
                     $allRequests[] = [
                         'id' => $req->id,
                         'title' => $req->title,
@@ -58,9 +73,16 @@ class ProviderQuotationController extends Controller
                         'deadline' => $req->deadline?->format('Y-m-d'),
                         'status' => $req->status,
                         'created_at' => $req->created_at->toISOString(),
-                        'categories' => $req->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]),
+                        'categories' => $req->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name]),
                         'tenant_id' => $tenant->id,
                         'tenant_name' => $tenant->name ?? $tenant->id,
+                        'has_response' => $myResponse !== null,
+                        'my_response' => $myResponse ? [
+                            'id' => $myResponse->id,
+                            'status' => $myResponse->status,
+                            'quoted_amount' => $myResponse->quoted_amount,
+                            'created_at' => $myResponse->created_at->toISOString(),
+                        ] : null,
                     ];
                 }
             });
@@ -99,7 +121,7 @@ class ProviderQuotationController extends Controller
         // Find the tenant and run query in its context
         $tenant = \App\Models\Tenant::find($tenantId);
 
-        if (!$tenant) {
+        if (! $tenant) {
             abort(404, 'Conjunto no encontrado.');
         }
 
@@ -118,8 +140,8 @@ class ProviderQuotationController extends Controller
             }
 
             $canRespond = $quotationRequest->status === 'published' &&
-                         (!$quotationRequest->deadline || $quotationRequest->deadline >= now()) &&
-                         !$existingResponse;
+                         (! $quotationRequest->deadline || $quotationRequest->deadline >= now()) &&
+                         ! $existingResponse;
 
             return [
                 'request' => [
@@ -130,7 +152,7 @@ class ProviderQuotationController extends Controller
                     'requirements' => $quotationRequest->requirements,
                     'status' => $quotationRequest->status,
                     'created_at' => $quotationRequest->created_at->toISOString(),
-                    'categories' => $quotationRequest->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]),
+                    'categories' => $quotationRequest->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name]),
                     'created_by' => [
                         'name' => $quotationRequest->createdBy->name,
                         'email' => $quotationRequest->createdBy->email,
@@ -159,22 +181,34 @@ class ProviderQuotationController extends Controller
     {
         $provider = $this->getProvider($request);
 
+        // Find the tenant to get max file size configuration
+        $tenant = \App\Models\Tenant::find($tenantId);
+
+        if (! $tenant) {
+            abort(404, 'Conjunto no encontrado.');
+        }
+
+        // Get max file size in KB from tenant configuration (default 5MB = 5120KB)
+        $maxFileSize = $tenant->quotation_attachment_max_size ?? 5120;
+
         $validated = $request->validate([
             'quoted_amount' => 'required|numeric|min:0',
             'proposal' => 'nullable|string|max:2000',
             'estimated_days' => 'nullable|integer|min:0',
-            'attachments' => 'nullable|array',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png|max:'.$maxFileSize,
         ]);
 
         // Find the tenant and run query in its context
         $tenant = \App\Models\Tenant::find($tenantId);
 
-        if (!$tenant) {
+        if (! $tenant) {
             abort(404, 'Conjunto no encontrado.');
         }
 
         try {
-            $tenant->run(function () use ($quotationRequestId, $provider, $validated) {
+            $attachmentPath = null;
+
+            $tenant->run(function () use ($request, $quotationRequestId, $provider, $validated, &$attachmentPath) {
                 $quotationRequest = QuotationRequest::findOrFail($quotationRequestId);
 
                 if ($quotationRequest->status !== 'published') {
@@ -183,6 +217,13 @@ class ProviderQuotationController extends Controller
 
                 if ($quotationRequest->deadline && $quotationRequest->deadline < now()) {
                     throw new \Exception('El plazo para responder ha expirado.');
+                }
+
+                // Handle file upload if provided
+                if ($request->hasFile('attachment')) {
+                    $file = $request->file('attachment');
+                    $filename = time().'_'.$provider->id.'_'.$file->getClientOriginalName();
+                    $attachmentPath = $file->storeAs('quotation-responses', $filename, 'public');
                 }
 
                 // Use withTrashed to handle soft-deleted responses
@@ -195,7 +236,7 @@ class ProviderQuotationController extends Controller
                         'quoted_amount' => $validated['quoted_amount'],
                         'proposal' => $validated['proposal'] ?? null,
                         'estimated_days' => $validated['estimated_days'] ?? null,
-                        'attachments' => $validated['attachments'] ?? null,
+                        'attachments' => $attachmentPath,
                         'status' => 'pending',
                         'deleted_at' => null, // Restore if it was soft deleted
                     ]
@@ -206,7 +247,28 @@ class ProviderQuotationController extends Controller
                     'provider_id' => $provider->id,
                     'quotation_request_id' => $quotationRequest->id,
                     'tenant_id' => tenancy()->tenant->id,
+                    'has_attachment' => $attachmentPath !== null,
                 ]);
+
+                // Send email notification to tenant admin about the new response
+                $tenantAdminEmail = $quotationRequest->createdBy->email ?? null;
+
+                if ($tenantAdminEmail) {
+                    Mail::to($tenantAdminEmail)->queue(
+                        new QuotationResponseReceived(
+                            $quotationRequest,
+                            $response,
+                            $provider,
+                            tenancy()->tenant->id,
+                            tenancy()->tenant->name ?? tenancy()->tenant->id
+                        )
+                    );
+
+                    Log::info('Quotation response notification sent to tenant', [
+                        'response_id' => $response->id,
+                        'tenant_admin_email' => $tenantAdminEmail,
+                    ]);
+                }
             });
 
             return redirect()->route('provider.quotations.index')

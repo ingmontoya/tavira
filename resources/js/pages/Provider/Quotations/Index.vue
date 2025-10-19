@@ -30,6 +30,13 @@ interface QuotationRequest {
     categories: Category[];
     tenant_id: string;
     tenant_name: string;
+    has_response: boolean;
+    my_response: {
+        id: number;
+        status: 'pending' | 'accepted' | 'rejected';
+        quoted_amount: number;
+        created_at: string;
+    } | null;
 }
 
 interface PaginationData {
@@ -69,6 +76,23 @@ const getStatusBadge = (status: string) => {
     return badges[status as keyof typeof badges] || badges.published;
 };
 
+const getResponseStatusBadge = (status: string) => {
+    const badges = {
+        pending: { text: 'Pendiente', variant: 'secondary' as const, class: 'bg-blue-100 text-blue-800' },
+        accepted: { text: 'Aprobada', variant: 'default' as const, class: 'bg-green-100 text-green-800' },
+        rejected: { text: 'No seleccionada', variant: 'outline' as const, class: 'bg-gray-100 text-gray-800' },
+    };
+    return badges[status as keyof typeof badges] || badges.pending;
+};
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+    }).format(value);
+};
+
 const isExpiringSoon = (deadline: string | null): boolean => {
     if (!deadline) return false;
     const daysUntilDeadline = Math.ceil(
@@ -91,6 +115,11 @@ const handleStatusChange = (value: string) => {
     );
 };
 
+const breadcrumbs = [
+    { title: 'Dashboard', href: '/provider/dashboard' },
+    { title: 'Solicitudes de Cotización', href: '/provider/quotations' },
+];
+
 const filteredRequests = props.requests.data.filter((request) => {
     const matchesSearch = request.title
         .toLowerCase()
@@ -100,7 +129,7 @@ const filteredRequests = props.requests.data.filter((request) => {
 </script>
 
 <template>
-    <AppLayout title="Solicitudes de Cotización">
+    <AppLayout title="Solicitudes de Cotización" :breadcrumbs="breadcrumbs">
         <Head title="Solicitudes de Cotización" />
 
         <div class="container mx-auto space-y-6 p-6">
@@ -133,12 +162,12 @@ const filteredRequests = props.requests.data.filter((request) => {
                         </div>
                         <Select :model-value="selectedStatus" @update:model-value="handleStatusChange">
                             <SelectTrigger class="w-[200px]">
-                                <SelectValue placeholder="Estado" />
+                                <SelectValue placeholder="Filtrar..." />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Todas</SelectItem>
-                                <SelectItem value="published">Publicadas</SelectItem>
-                                <SelectItem value="closed">Cerradas</SelectItem>
+                                <SelectItem value="pending">Sin Responder</SelectItem>
+                                <SelectItem value="responded">Ya Respondidas</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -177,6 +206,9 @@ const filteredRequests = props.requests.data.filter((request) => {
                                     <Badge v-if="isExpired(request.deadline)" variant="destructive">
                                         Expirada
                                     </Badge>
+                                    <Badge v-if="request.has_response" :class="getResponseStatusBadge(request.my_response?.status || 'pending').class">
+                                        {{ getResponseStatusBadge(request.my_response?.status || 'pending').text }}
+                                    </Badge>
                                 </div>
                                 <CardDescription>
                                     {{ request.tenant_name }}
@@ -194,6 +226,15 @@ const filteredRequests = props.requests.data.filter((request) => {
                         <p class="mb-4 text-sm text-muted-foreground">
                             {{ request.description }}
                         </p>
+
+                        <!-- Show response info if provider has responded -->
+                        <div v-if="request.has_response && request.my_response" class="mb-4 rounded-md bg-blue-50 p-3 border border-blue-200">
+                            <p class="text-sm font-medium text-blue-900">Tu propuesta:</p>
+                            <div class="mt-1 flex flex-wrap items-center gap-3 text-sm text-blue-800">
+                                <span class="font-semibold">{{ formatCurrency(request.my_response.quoted_amount) }}</span>
+                                <span class="text-xs text-blue-600">Enviada el {{ formatDate(request.my_response.created_at) }}</span>
+                            </div>
+                        </div>
 
                         <div class="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                             <div v-if="request.deadline" class="flex items-center gap-1">

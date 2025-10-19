@@ -33,6 +33,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'subscription_expires_at',
         'subscription_renewed_at',
         'subscription_last_checked_at',
+        'quotation_attachment_max_size',
     ];
 
     protected $hidden = [

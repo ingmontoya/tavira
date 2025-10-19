@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mail\QuotationRequestNotification;
+use App\Mail\QuotationResponseApproved;
+use App\Mail\QuotationResponseRejected;
 use App\Models\Central\Provider;
 use App\Models\ProviderCategory;
 use App\Models\QuotationRequest;
@@ -298,6 +300,61 @@ class QuotationRequestController extends Controller
     }
 
     /**
+     * Display a specific quotation response.
+     */
+    public function showResponse(QuotationRequest $quotationRequest, QuotationResponse $response)
+    {
+        // Verify that the response belongs to this quotation request
+        if ($response->quotation_request_id !== $quotationRequest->id) {
+            return redirect()->route('quotation-requests.show', $quotationRequest)
+                ->with('error', 'La cotización no pertenece a esta solicitud.');
+        }
+
+        $quotationRequest->load(['createdBy', 'categories']);
+
+        // Get provider from central database
+        $provider = Provider::find($response->provider_id);
+
+        if (! $provider) {
+            return redirect()->route('quotation-requests.show', $quotationRequest)
+                ->with('error', 'Proveedor no encontrado.');
+        }
+
+        // Attach provider to response
+        $response->provider = $provider;
+
+        return Inertia::render('quotation-requests/ResponseShow', [
+            'quotationRequest' => $quotationRequest,
+            'response' => $response,
+            'provider' => $provider,
+        ]);
+    }
+
+    /**
+     * Download attachment from a quotation response.
+     */
+    public function downloadAttachment(QuotationRequest $quotationRequest, QuotationResponse $response)
+    {
+        // Verify that the response belongs to this quotation request
+        if ($response->quotation_request_id !== $quotationRequest->id) {
+            return redirect()->route('quotation-requests.show', $quotationRequest)
+                ->with('error', 'La cotización no pertenece a esta solicitud.');
+        }
+
+        if (! $response->attachments) {
+            return redirect()->back()->with('error', 'Esta cotización no tiene adjuntos.');
+        }
+
+        $filePath = storage_path('app/public/'.$response->attachments);
+
+        if (! file_exists($filePath)) {
+            return redirect()->back()->with('error', 'El archivo no existe.');
+        }
+
+        return response()->download($filePath);
+    }
+
+    /**
      * Approve a quotation response.
      */
     public function approveResponse(QuotationRequest $quotationRequest, QuotationResponse $response)
@@ -317,15 +374,47 @@ class QuotationRequestController extends Controller
         }
 
         try {
+            // Accept the response
             $response->accept();
+
+            // Get the provider from central database
+            $provider = Provider::find($response->provider_id);
+
+            if ($provider) {
+                // Send approval email to the selected provider
+                Mail::to($provider->email)->queue(
+                    new QuotationResponseApproved($quotationRequest, $response, $provider)
+                );
+
+                // Get all other pending responses for this quotation request
+                $otherResponses = $quotationRequest->responses()
+                    ->where('id', '!=', $response->id)
+                    ->where('status', 'pending')
+                    ->get();
+
+                // Send notification to other providers that they were not selected
+                foreach ($otherResponses as $otherResponse) {
+                    // Reject the other responses
+                    $otherResponse->reject('Se seleccionó otra propuesta');
+
+                    // Get provider and send email
+                    $otherProvider = Provider::find($otherResponse->provider_id);
+                    if ($otherProvider) {
+                        Mail::to($otherProvider->email)->queue(
+                            new QuotationResponseRejected($quotationRequest, $otherResponse, $otherProvider)
+                        );
+                    }
+                }
+            }
 
             Log::info('Quotation response approved', [
                 'quotation_request_id' => $quotationRequest->id,
                 'quotation_response_id' => $response->id,
                 'approved_by' => auth()->id(),
+                'notified_providers' => ($otherResponses ?? collect())->count() + 1,
             ]);
 
-            return redirect()->back()->with('success', 'Cotización aprobada exitosamente.');
+            return redirect()->back()->with('success', 'Cotización aprobada exitosamente. Se han enviado notificaciones a todos los proveedores.');
         } catch (\Exception $e) {
             Log::error('Quotation response approval failed', [
                 'quotation_request_id' => $quotationRequest->id,

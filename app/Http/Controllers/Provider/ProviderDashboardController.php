@@ -8,7 +8,6 @@ use App\Models\Central\ProviderService;
 use App\Models\QuotationRequest;
 use App\Models\QuotationResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ProviderDashboardController extends Controller
@@ -21,7 +20,7 @@ class ProviderDashboardController extends Controller
         $user = $request->user();
         $provider = Provider::find($user->provider_id);
 
-        if (!$provider) {
+        if (! $provider) {
             abort(403, 'No tienes un perfil de proveedor asociado.');
         }
 
@@ -40,9 +39,13 @@ class ProviderDashboardController extends Controller
         foreach ($tenants as $tenant) {
             $tenant->run(function () use ($categoryIds, &$recentRequests, &$recentProposals, &$totalProposals, &$pendingRequests, $provider, $tenant) {
                 // Get published quotation requests matching provider's categories
+                // Exclude requests where this provider has already submitted a response
                 $requests = QuotationRequest::published()
                     ->whereHas('categories', function ($query) use ($categoryIds) {
                         $query->whereIn('provider_category_id', $categoryIds);
+                    })
+                    ->whereDoesntHave('responses', function ($query) use ($provider) {
+                        $query->where('provider_id', $provider->id);
                     })
                     ->with(['categories', 'createdBy'])
                     ->latest()
@@ -57,15 +60,18 @@ class ProviderDashboardController extends Controller
                         'deadline' => $request->deadline?->format('Y-m-d'),
                         'status' => $request->status,
                         'created_at' => $request->created_at->format('Y-m-d H:i:s'),
-                        'categories' => $request->categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name]),
+                        'categories' => $request->categories->map(fn ($c) => ['id' => $c->id, 'name' => $c->name]),
                         'tenant_id' => tenancy()->tenant->id ?? null,
                     ];
                 }
 
-                // Count statistics
+                // Count statistics - only count requests where provider hasn't responded
                 $pendingRequests += QuotationRequest::published()
                     ->whereHas('categories', function ($query) use ($categoryIds) {
                         $query->whereIn('provider_category_id', $categoryIds);
+                    })
+                    ->whereDoesntHave('responses', function ($query) use ($provider) {
+                        $query->where('provider_id', $provider->id);
                     })
                     ->count();
 

@@ -2,10 +2,9 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, FileText, Pencil, Send, User, XCircle, CheckCircle, Ban } from 'lucide-vue-next';
+import { ArrowLeft, Calendar, FileText, Pencil, Send, User, XCircle, CheckCircle, Ban, Eye } from 'lucide-vue-next';
 
 interface ProviderCategory {
     id: number;
@@ -226,68 +225,78 @@ const getResponseStatusBadge = (status: string) => {
                             <CardDescription>Respuestas de proveedores a esta solicitud</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div v-if="quotationRequest.responses.length > 0" class="rounded-md border">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Proveedor</TableHead>
-                                            <TableHead>Monto</TableHead>
-                                            <TableHead>Tiempo Estimado</TableHead>
-                                            <TableHead>Notas</TableHead>
-                                            <TableHead>Estado</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead class="text-right">Acciones</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        <TableRow v-for="response in quotationRequest.responses" :key="response.id">
-                                            <TableCell>
+                            <div v-if="quotationRequest.responses.length > 0" class="space-y-3">
+                                <div
+                                    v-for="response in quotationRequest.responses"
+                                    :key="response.id"
+                                    class="rounded-lg border p-4 hover:bg-muted/30 transition-colors"
+                                >
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="flex-1 space-y-3">
+                                            <!-- Provider Info & Status -->
+                                            <div class="flex items-start justify-between gap-2">
                                                 <div>
-                                                    <p class="font-medium">{{ response.provider.name }}</p>
+                                                    <p class="font-semibold">{{ response.provider.name }}</p>
                                                     <p class="text-sm text-muted-foreground">{{ response.provider.email }}</p>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell class="font-semibold">
-                                                {{ formatCurrency(response.quoted_amount) }}
-                                            </TableCell>
-                                            <TableCell>
-                                                <span v-if="response.estimated_days">{{ response.estimated_days }} días</span>
-                                                <span v-else class="text-muted-foreground">-</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p class="max-w-xs truncate">{{ response.proposal || '-' }}</p>
-                                            </TableCell>
-                                            <TableCell>
                                                 <Badge :class="getResponseStatusBadge(response.status).class">
                                                     {{ getResponseStatusBadge(response.status).text }}
                                                 </Badge>
-                                            </TableCell>
-                                            <TableCell>{{ formatDate(response.created_at) }}</TableCell>
-                                            <TableCell class="text-right">
-                                                <div class="flex justify-end gap-2">
-                                                    <Button
-                                                        v-if="response.status === 'pending'"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        @click="approveResponse(response.id)"
-                                                    >
-                                                        <CheckCircle class="mr-1 h-4 w-4" />
-                                                        Aprobar
-                                                    </Button>
-                                                    <Button
-                                                        v-if="response.status === 'pending'"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        @click="rejectResponse(response.id)"
-                                                    >
-                                                        <Ban class="mr-1 h-4 w-4" />
-                                                        Rechazar
-                                                    </Button>
+                                            </div>
+
+                                            <!-- Amount & Details -->
+                                            <div class="flex flex-wrap items-center gap-4 text-sm">
+                                                <div class="flex items-center gap-1">
+                                                    <span class="font-medium">Monto:</span>
+                                                    <span class="font-semibold text-green-700">{{ formatCurrency(response.quoted_amount) }}</span>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
+                                                <div v-if="response.estimated_days" class="flex items-center gap-1">
+                                                    <span class="font-medium">Tiempo:</span>
+                                                    <span>{{ response.estimated_days }} días</span>
+                                                </div>
+                                                <div class="flex items-center gap-1">
+                                                    <Calendar class="h-3 w-3" />
+                                                    <span class="text-muted-foreground">{{ formatDate(response.created_at) }}</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Proposal Preview -->
+                                            <div v-if="response.proposal" class="text-sm">
+                                                <p class="line-clamp-2 text-muted-foreground">{{ response.proposal }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="mt-3 flex flex-wrap gap-2 border-t pt-3">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            @click="router.visit(route('quotation-requests.responses.show', [quotationRequest.id, response.id]))"
+                                        >
+                                            <Eye class="mr-1 h-4 w-4" />
+                                            Ver Detalles
+                                        </Button>
+                                        <Button
+                                            v-if="response.status === 'pending'"
+                                            size="sm"
+                                            class="bg-green-600 hover:bg-green-700"
+                                            @click="approveResponse(response.id)"
+                                        >
+                                            <CheckCircle class="mr-1 h-4 w-4" />
+                                            Aprobar
+                                        </Button>
+                                        <Button
+                                            v-if="response.status === 'pending'"
+                                            size="sm"
+                                            variant="destructive"
+                                            @click="rejectResponse(response.id)"
+                                        >
+                                            <Ban class="mr-1 h-4 w-4" />
+                                            Rechazar
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                             <div v-else class="py-8 text-center text-muted-foreground">
                                 <p>No se han recibido cotizaciones aún</p>

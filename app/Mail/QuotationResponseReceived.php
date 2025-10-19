@@ -12,7 +12,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class QuotationResponseRejected extends Mailable implements ShouldQueue
+class QuotationResponseReceived extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
@@ -21,8 +21,10 @@ class QuotationResponseRejected extends Mailable implements ShouldQueue
      */
     public function __construct(
         public QuotationRequest $quotationRequest,
-        public QuotationResponse $quotationResponse,
+        public QuotationResponse $response,
         public Provider $provider,
+        public string $tenantId,
+        public string $tenantName
     ) {
         //
     }
@@ -33,7 +35,7 @@ class QuotationResponseRejected extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Actualización sobre su cotización - '.$this->quotationRequest->title,
+            subject: 'Nueva Propuesta Recibida - '.$this->quotationRequest->title,
         );
     }
 
@@ -43,11 +45,13 @@ class QuotationResponseRejected extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.quotation-response-not-selected',
+            markdown: 'emails.quotation-response-received',
             with: [
                 'quotationRequest' => $this->quotationRequest,
-                'quotationResponse' => $this->quotationResponse,
+                'response' => $this->response,
                 'provider' => $this->provider,
+                'tenantId' => $this->tenantId,
+                'tenantName' => $this->tenantName,
             ],
         );
     }

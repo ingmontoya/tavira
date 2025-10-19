@@ -18,7 +18,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Calendar, FileText, User, Send, ArrowLeft, CheckCircle } from 'lucide-vue-next';
+import { Calendar, FileText, User, Send, ArrowLeft, CheckCircle, Upload, X } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Category {
@@ -60,12 +60,30 @@ interface Props {
 const props = defineProps<Props>();
 
 const showResponseDialog = ref(false);
+const selectedFile = ref<File | null>(null);
+const fileInputKey = ref(0);
 
 const form = useForm({
     quoted_amount: props.existingResponse?.quoted_amount || 0,
     proposal: props.existingResponse?.proposal || '',
     estimated_days: props.existingResponse?.estimated_days || null,
+    attachment: null as File | null,
 });
+
+const handleFileChange = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+        selectedFile.value = file;
+        form.attachment = file;
+    }
+};
+
+const removeFile = () => {
+    selectedFile.value = null;
+    form.attachment = null;
+    fileInputKey.value++; // Force input reset
+};
 
 const submitResponse = () => {
     form.post(route('provider.quotations.respond', [props.tenant_id, props.request.id]), {
@@ -107,10 +125,16 @@ const isExpired = (deadline: string | null): boolean => {
     if (!deadline) return false;
     return new Date(deadline) < new Date();
 };
+
+const breadcrumbs = [
+    { title: 'Dashboard', href: '/provider/dashboard' },
+    { title: 'Solicitudes de Cotización', href: '/provider/quotations' },
+    { title: props.request.title, href: `/provider/quotations/${props.tenant_id}/${props.request.id}` },
+];
 </script>
 
 <template>
-    <AppLayout title="Solicitud de Cotización">
+    <AppLayout title="Solicitud de Cotización" :breadcrumbs="breadcrumbs">
         <Head :title="`Solicitud: ${request.title}`" />
 
         <div class="container mx-auto space-y-6 p-6">
@@ -238,6 +262,42 @@ const isExpired = (deadline: string | null): boolean => {
                                     />
                                     <p v-if="form.errors.proposal" class="text-sm text-destructive">
                                         {{ form.errors.proposal }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="attachment">Documento Adjunto (Opcional)</Label>
+                                    <div class="space-y-2">
+                                        <div v-if="!selectedFile" class="flex items-center gap-2">
+                                            <input
+                                                :key="fileInputKey"
+                                                id="attachment"
+                                                type="file"
+                                                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                @change="handleFileChange"
+                                                class="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
+                                            />
+                                        </div>
+                                        <div v-else class="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+                                            <div class="flex items-center gap-2">
+                                                <FileText class="h-5 w-5 text-blue-600" />
+                                                <div>
+                                                    <p class="text-sm font-medium">{{ selectedFile.name }}</p>
+                                                    <p class="text-xs text-muted-foreground">
+                                                        {{ (selectedFile.size / 1024).toFixed(2) }} KB
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button variant="ghost" size="sm" @click="removeFile">
+                                                <X class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <p class="text-xs text-muted-foreground">
+                                            Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max 5MB)
+                                        </p>
+                                    </div>
+                                    <p v-if="form.errors.attachment" class="text-sm text-destructive">
+                                        {{ form.errors.attachment }}
                                     </p>
                                 </div>
 
