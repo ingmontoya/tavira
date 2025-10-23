@@ -89,6 +89,7 @@ class AccountingTransactionEntry extends Model
 
         return match ($this->third_party_type) {
             'apartment' => $this->thirdParty?->number ?? "Apto #{$this->third_party_id}",
+            'provider' => $this->thirdParty?->name ?? "Proveedor #{$this->third_party_id}",
             'supplier' => $this->thirdParty?->name ?? "Proveedor #{$this->third_party_id}",
             'employee' => $this->thirdParty?->name ?? "Empleado #{$this->third_party_id}",
             default => "Tercero #{$this->third_party_id}",

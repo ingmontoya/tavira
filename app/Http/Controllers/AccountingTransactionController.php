@@ -93,9 +93,23 @@ class AccountingTransactionController extends Controller
                 ];
             });
 
+        $providers = \App\Models\Provider::active()
+            ->orderBy('name')
+            ->get(['id', 'name', 'document_number', 'category'])
+            ->map(function ($provider) {
+                return [
+                    'id' => $provider->id,
+                    'name' => $provider->name,
+                    'label' => $provider->name,
+                    'document_number' => $provider->document_number,
+                    'category' => $provider->category,
+                ];
+            });
+
         return Inertia::render('Accounting/Transactions/Create', [
             'accounts' => $accounts,
             'apartments' => $apartments,
+            'providers' => $providers,
             'referenceTypes' => [
                 'manual' => 'Manual',
                 'adjustment' => 'Ajuste',
@@ -220,6 +234,19 @@ class AccountingTransactionController extends Controller
                 ];
             });
 
+        $providers = \App\Models\Provider::active()
+            ->orderBy('name')
+            ->get(['id', 'name', 'document_number', 'category'])
+            ->map(function ($provider) {
+                return [
+                    'id' => $provider->id,
+                    'name' => $provider->name,
+                    'label' => $provider->name,
+                    'document_number' => $provider->document_number,
+                    'category' => $provider->category,
+                ];
+            });
+
         // Format transaction_date for HTML date input (Y-m-d format)
         $transactionData = $transaction->toArray();
         $transactionData['transaction_date'] = $transaction->transaction_date?->format('Y-m-d');
@@ -228,6 +255,7 @@ class AccountingTransactionController extends Controller
             'transaction' => $transactionData,
             'accounts' => $accounts,
             'apartments' => $apartments,
+            'providers' => $providers,
             'referenceTypes' => [
                 'manual' => 'Manual',
                 'adjustment' => 'Ajuste',

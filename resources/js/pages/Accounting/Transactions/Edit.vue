@@ -61,10 +61,19 @@ interface Apartment {
     label: string;
 }
 
+interface Provider {
+    id: number;
+    name: string;
+    label: string;
+    document_number: string;
+    category: string;
+}
+
 const props = defineProps<{
     transaction: AccountingTransaction;
     accounts: Account[];
     apartments: Apartment[];
+    providers: Provider[];
 }>();
 
 // Form state
@@ -170,10 +179,12 @@ const onAccountChange = (index: number, accountId: number) => {
             requires_third_party: account.requires_third_party,
         };
 
-        // If account requires third party, set type to apartment by default
+        // If account requires third party, keep existing type or set to apartment by default
         if (account.requires_third_party) {
-            form.entries[index].third_party_type = 'apartment';
-            // Clear third_party_id to force user selection
+            if (!form.entries[index].third_party_type) {
+                form.entries[index].third_party_type = 'apartment';
+            }
+            // Clear third_party_id to force user selection if changing type
             if (!form.entries[index].third_party_id) {
                 form.entries[index].third_party_id = null;
             }
@@ -219,6 +230,18 @@ const resetForm = () => {
     form.reset();
     isUnsavedChanges.value = false;
 };
+
+// Watch for third_party_type changes to reset third_party_id
+watch(
+    () => form.entries.map(e => e.third_party_type),
+    (newTypes, oldTypes) => {
+        newTypes.forEach((newType, index) => {
+            if (oldTypes && newType !== oldTypes[index]) {
+                form.entries[index].third_party_id = null;
+            }
+        });
+    },
+);
 
 // Watch for form changes
 watch(
@@ -424,24 +447,42 @@ const breadcrumbs = [
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Select
-                                                v-if="getAccountRequiresThirdParty(entry.account_id)"
-                                                v-model="entry.third_party_id"
-                                                :disabled="!canEdit"
-                                            >
-                                                <SelectTrigger
-                                                    :class="{
-                                                        'border-red-500': getAccountRequiresThirdParty(entry.account_id) && !entry.third_party_id,
-                                                    }"
+                                            <div v-if="getAccountRequiresThirdParty(entry.account_id)" class="flex gap-1">
+                                                <Select v-model="entry.third_party_type" :disabled="!canEdit" class="w-24">
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="apartment">Apto</SelectItem>
+                                                        <SelectItem value="provider">Prov</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <Select
+                                                    v-model="entry.third_party_id"
+                                                    :disabled="!canEdit"
+                                                    class="flex-1"
                                                 >
-                                                    <SelectValue placeholder="Apto..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem v-for="apt in apartments" :key="apt.id" :value="apt.id">
-                                                        {{ apt.number }}
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                                    <SelectTrigger
+                                                        :class="{
+                                                            'border-red-500': !entry.third_party_id,
+                                                        }"
+                                                    >
+                                                        <SelectValue :placeholder="entry.third_party_type === 'provider' ? 'Proveedor...' : 'Apto...'" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <template v-if="entry.third_party_type === 'apartment'">
+                                                            <SelectItem v-for="apt in apartments" :key="apt.id" :value="apt.id">
+                                                                {{ apt.number }}
+                                                            </SelectItem>
+                                                        </template>
+                                                        <template v-else-if="entry.third_party_type === 'provider'">
+                                                            <SelectItem v-for="provider in providers" :key="provider.id" :value="provider.id">
+                                                                {{ provider.name }}
+                                                            </SelectItem>
+                                                        </template>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                             <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
