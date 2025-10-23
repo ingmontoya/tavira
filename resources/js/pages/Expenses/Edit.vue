@@ -62,7 +62,7 @@ interface User {
     name: string;
 }
 
-interface Supplier {
+interface Provider {
     id: number;
     name: string;
     document_type: string;
@@ -109,7 +109,7 @@ const props = defineProps<{
     expenseAccounts: Account[];
     assetAccounts: Account[];
     liabilityAccounts: Account[];
-    suppliers: Supplier[];
+    providers: Provider[];
     approvalSettings?: {
         approval_threshold_amount: number;
         council_approval_required: boolean;
@@ -123,7 +123,7 @@ const errors = computed(() => page.props.errors || {});
 // Form setup
 const form = useForm({
     expense_category_id: props.expense.expense_category_id.toString(),
-    supplier_id: props.expense.supplier_id?.toString() || '',
+    provider_id: props.expense.supplier_id?.toString() || '',
     vendor_name: props.expense.vendor_name,
     vendor_document: props.expense.vendor_document || '',
     vendor_email: props.expense.vendor_email || '',
@@ -149,13 +149,13 @@ const allCreditAccounts = computed(() => {
     return [...props.assetAccounts, ...props.liabilityAccounts];
 });
 
-const selectedSupplier = computed(() => {
-    if (!form.supplier_id) return null;
-    return props.suppliers.find((supplier) => supplier.id === parseInt(form.supplier_id));
+const selectedProvider = computed(() => {
+    if (!form.provider_id) return null;
+    return props.providers.find((provider) => provider.id === parseInt(form.provider_id));
 });
 
 const showVendorFields = computed(() => {
-    return !form.supplier_id;
+    return !form.provider_id;
 });
 
 const canEdit = computed(() => {
@@ -200,16 +200,16 @@ watch(
 
 // Watch for supplier changes to populate vendor fields (only if editing is allowed)
 watch(
-    () => form.supplier_id,
-    (newSupplierId) => {
+    () => form.provider_id,
+    (newProviderId) => {
         if (canEdit.value) {
-            if (newSupplierId) {
-                const supplier = props.suppliers.find((s) => s.id === parseInt(newSupplierId));
-                if (supplier) {
-                    form.vendor_name = supplier.name;
-                    form.vendor_document = supplier.document_number;
-                    form.vendor_email = supplier.email || '';
-                    form.vendor_phone = supplier.phone || '';
+            if (newProviderId) {
+                const provider = props.providers.find((s) => s.id === parseInt(newProviderId));
+                if (provider) {
+                    form.vendor_name = provider.name;
+                    form.vendor_document = provider.document_number;
+                    form.vendor_email = provider.email || '';
+                    form.vendor_phone = provider.phone || '';
                 }
             } else {
                 // Don't clear existing data when deselecting supplier in edit mode
@@ -341,18 +341,18 @@ const cancel = () => {
                                     <!-- Supplier Selection (only if can edit) -->
                                     <div v-if="canEdit" class="space-y-2">
                                         <Label for="supplier_id">Seleccionar Proveedor Registrado</Label>
-                                        <Select v-model="form.supplier_id">
+                                        <Select v-model="form.provider_id">
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Seleccionar proveedor existente (opcional)" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="none">Ninguno - Mantener datos actuales</SelectItem>
-                                                <SelectItem v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id.toString()">
+                                                <SelectItem v-for="provider in providers" :key="provider.id" :value="provider.id.toString()">
                                                     <div class="flex flex-col">
-                                                        <div class="font-medium">{{ supplier.name }}</div>
+                                                        <div class="font-medium">{{ provider.name }}</div>
                                                         <div class="text-xs text-muted-foreground">
-                                                            {{ supplier.document_type }}: {{ supplier.document_number }}
-                                                            <span v-if="supplier.full_contact_info"> • {{ supplier.full_contact_info }}</span>
+                                                            {{ provider.document_type }}: {{ provider.document_number }}
+                                                            <span v-if="provider.full_contact_info"> • {{ provider.full_contact_info }}</span>
                                                         </div>
                                                     </div>
                                                 </SelectItem>
@@ -369,7 +369,7 @@ const cancel = () => {
                                                 id="vendor_name"
                                                 v-model="form.vendor_name"
                                                 placeholder="Nombre o razón social"
-                                                :disabled="!!selectedSupplier || !canEdit"
+                                                :disabled="!!selectedProvider || !canEdit"
                                                 :required="showVendorFields"
                                             />
                                         </div>
@@ -380,7 +380,7 @@ const cancel = () => {
                                                 id="vendor_document"
                                                 v-model="form.vendor_document"
                                                 placeholder="NIT, CC, CE..."
-                                                :disabled="!!selectedSupplier || !canEdit"
+                                                :disabled="!!selectedProvider || !canEdit"
                                             />
                                         </div>
 
@@ -391,7 +391,7 @@ const cancel = () => {
                                                 v-model="form.vendor_email"
                                                 type="email"
                                                 placeholder="email@proveedor.com"
-                                                :disabled="!!selectedSupplier || !canEdit"
+                                                :disabled="!!selectedProvider || !canEdit"
                                             />
                                         </div>
 
@@ -401,18 +401,18 @@ const cancel = () => {
                                                 id="vendor_phone"
                                                 v-model="form.vendor_phone"
                                                 placeholder="Número de contacto"
-                                                :disabled="!!selectedSupplier || !canEdit"
+                                                :disabled="!!selectedProvider || !canEdit"
                                             />
                                         </div>
                                     </div>
 
-                                    <div v-if="selectedSupplier && canEdit" class="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                                    <div v-if="selectedProvider && canEdit" class="rounded-lg border border-blue-200 bg-blue-50 p-3">
                                         <div class="flex items-center gap-2 text-blue-800">
                                             <AlertTriangle class="h-4 w-4" />
                                             <span class="text-sm font-medium">Proveedor Seleccionado</span>
                                         </div>
                                         <p class="mt-1 text-sm text-blue-600">
-                                            Los datos del proveedor "{{ selectedSupplier.name }}" reemplazarán la información actual.
+                                            Los datos del proveedor "{{ selectedProvider.name }}" reemplazarán la información actual.
                                         </p>
                                     </div>
                                 </CardContent>

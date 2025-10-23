@@ -233,14 +233,14 @@ class AccountingValidationService
         $warnings = [];
         $info = [];
 
-        // REGLA 1: Validar que movimientos en cartera tengan apartamento asociado
+        // REGLA 1: Validar que movimientos en cartera tengan apartamento o proveedor asociado
         $carteraEntries = $transaction->entries->filter(function ($entry) {
             return $entry->account && str_starts_with($entry->account->code, '1305'); // Cuentas de cartera
         });
 
         foreach ($carteraEntries as $entry) {
-            if ($entry->third_party_type !== 'apartment') {
-                $warnings[] = "Movimiento en cartera '{$entry->account->name}' no tiene apartamento asociado";
+            if ($entry->third_party_type !== 'apartment' && $entry->third_party_type !== 'provider') {
+                $warnings[] = "Movimiento en cartera '{$entry->account->name}' no tiene apartamento ni proveedor asociado";
             }
         }
 
@@ -284,6 +284,7 @@ class AccountingValidationService
     {
         return match ($type) {
             'apartment' => DB::table('apartments')->where('id', $id)->exists(),
+            'provider' => DB::table('providers')->where('id', $id)->exists(),
             'supplier' => DB::table('suppliers')->where('id', $id)->exists(),
             'employee' => DB::table('employees')->where('id', $id)->exists(),
             default => false,

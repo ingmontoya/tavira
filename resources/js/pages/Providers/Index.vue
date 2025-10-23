@@ -342,6 +342,7 @@ const deleteProvider = (providerId: number) => {
 </script>
 
 <template>
+
     <Head title="Proveedores" />
 
     <AppLayout title="Proveedores" :breadcrumbs="breadcrumbs">
@@ -417,8 +418,8 @@ const deleteProvider = (providerId: number) => {
                     <div class="flex items-center space-x-2">
                         <Button asChild size="sm">
                             <Link href="/providers/create">
-                                <Plus class="mr-2 h-4 w-4" />
-                                Nuevo Proveedor
+                            <Plus class="mr-2 h-4 w-4" />
+                            Nuevo Proveedor
                             </Link>
                         </Button>
                     </div>
@@ -435,7 +436,8 @@ const deleteProvider = (providerId: number) => {
                                 <Label for="search">Buscar</Label>
                                 <div class="relative">
                                     <Search class="absolute top-2.5 left-2 h-4 w-4 text-muted-foreground" />
-                                    <Input id="search" v-model="search" placeholder="Nombre, documento, email..." class="pl-8" />
+                                    <Input id="search" v-model="search" placeholder="Nombre, documento, email..."
+                                        class="pl-8" />
                                 </div>
                             </div>
 
@@ -498,10 +500,8 @@ const deleteProvider = (providerId: number) => {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuCheckboxItem
                                         v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                                        :key="column.id"
-                                        :checked="column.getIsVisible()"
-                                        @update:checked="(value) => column.toggleVisibility(!!value)"
-                                    >
+                                        :key="column.id" :checked="column.getIsVisible()"
+                                        @update:checked="(value) => column.toggleVisibility(!!value)">
                                         {{ column.columnDef.header }}
                                     </DropdownMenuCheckboxItem>
                                 </DropdownMenuContent>
@@ -516,27 +516,23 @@ const deleteProvider = (providerId: number) => {
                         <TableHeader>
                             <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                                 <TableHead v-for="header in headerGroup.headers" :key="header.id">
-                                    <Button
-                                        v-if="!header.isPlaceholder && header.column.getCanSort()"
-                                        variant="ghost"
-                                        @click="header.column.getToggleSortingHandler()?.($event)"
-                                    >
-                                        <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+                                    <Button v-if="!header.isPlaceholder && header.column.getCanSort()" variant="ghost"
+                                        @click="header.column.getToggleSortingHandler()?.($event)">
+                                        <FlexRender :render="header.column.columnDef.header"
+                                            :props="header.getContext()" />
                                         <ChevronsUpDown class="ml-2 h-4 w-4" />
                                     </Button>
-                                    <FlexRender v-else :render="header.column.columnDef.header" :props="header.getContext()" />
+                                    <FlexRender v-else :render="header.column.columnDef.header"
+                                        :props="header.getContext()" />
                                 </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <template v-if="table.getRowModel().rows?.length">
-                                <TableRow
-                                    v-for="row in table.getRowModel().rows"
-                                    :key="row.id"
+                                <TableRow v-for="row in table.getRowModel().rows" :key="row.id"
                                     :data-state="row.getIsSelected() ? 'selected' : undefined"
                                     class="cursor-pointer hover:bg-muted/50"
-                                    @click="router.visit(`/providers/${row.original.id}/edit`)"
-                                >
+                                    @click="router.visit(`/providers/${row.original.id}`)">
                                     <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
                                         <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                     </TableCell>
@@ -544,7 +540,8 @@ const deleteProvider = (providerId: number) => {
                             </template>
                             <template v-else>
                                 <TableRow>
-                                    <TableCell :colspan="columns.length" class="h-24 text-center"> No se encontraron proveedores. </TableCell>
+                                    <TableCell :colspan="columns.length" class="h-24 text-center"> No se encontraron
+                                        proveedores. </TableCell>
                                 </TableRow>
                             </template>
                         </TableBody>
@@ -557,20 +554,12 @@ const deleteProvider = (providerId: number) => {
                         Mostrando {{ providers.from }} a {{ providers.to }} de {{ providers.total }} resultados.
                     </div>
                     <div class="flex items-center space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="providers.current_page === 1"
-                            @click="router.get(window.location.pathname, { ...route().params, page: providers.current_page - 1 })"
-                        >
+                        <Button variant="outline" size="sm" :disabled="providers.current_page === 1"
+                            @click="router.get(window.location.pathname, { ...route().params, page: providers.current_page - 1 })">
                             Anterior
                         </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="providers.current_page === providers.last_page"
-                            @click="router.get(window.location.pathname, { ...route().params, page: providers.current_page + 1 })"
-                        >
+                        <Button variant="outline" size="sm" :disabled="providers.current_page === providers.last_page"
+                            @click="router.get(window.location.pathname, { ...route().params, page: providers.current_page + 1 })">
                             Siguiente
                         </Button>
                     </div>

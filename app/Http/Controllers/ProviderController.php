@@ -49,15 +49,18 @@ class ProviderController extends Controller
             }
         }
 
+        // Add expense counts before pagination
+        $query->withCount([
+            'expenses as expenses_count',
+            'expenses as active_expenses' => function ($query) {
+                $query->whereNotIn('status', ['cancelado']);
+            },
+        ]);
+
         $providers = $query->orderBy('name')->paginate(25);
 
-        // Load expense counts and last expense date for each provider
+        // Load last expense date for each provider
         $providers->each(function ($provider) {
-            $provider->loadCount(['expenses as expenses_count', 'expenses as active_expenses' => function ($query) {
-                $query->whereNotIn('status', ['cancelado']);
-            }]);
-
-            // Load last expense date
             $lastExpense = $provider->expenses()->orderBy('expense_date', 'desc')->first();
             $provider->last_expense_date = $lastExpense ? $lastExpense->expense_date : null;
         });
@@ -79,35 +82,40 @@ class ProviderController extends Controller
         ]);
     }
 
-    public function show(Provider $provider)
+    public function show(Request $request, Provider $provider)
     {
-        $provider->load([
-            'createdBy',
-            'expenses' => function ($query) {
-                $query->with(['expenseCategory', 'debitAccount', 'creditAccount'])
-                    ->orderBy('expense_date', 'desc')
-                    ->limit(10);
-            },
-        ]);
+        $provider->load(['createdBy']);
 
-        $provider->loadCount([
-            'expenses as total_expenses',
-            'expenses as total_amount' => function ($query) {
-                $query->selectRaw('SUM(total_amount) as total');
-            },
-        ]);
+        // Load expenses count and total
+        $provider->loadCount(['expenses as expenses_count']);
+        $provider->total_expenses = $provider->expenses()->sum('total_amount');
 
-        // Recent expenses summary
-        $expenseStats = [
+        // Load paginated expenses
+        $expenses = $provider->expenses()
+            ->with(['expenseCategory', 'debitAccount', 'creditAccount'])
+            ->orderBy('expense_date', 'desc')
+            ->paginate(10);
+
+        // Calculate stats
+        $stats = [
             'total_expenses' => $provider->expenses()->count(),
             'total_amount' => $provider->expenses()->sum('total_amount'),
-            'pending_amount' => $provider->expenses()->whereIn('status', ['borrador', 'pendiente', 'aprobado'])->sum('total_amount'),
+            'pending_amount' => $provider->expenses()->whereIn('status', ['borrador', 'pendiente'])->sum('total_amount'),
+            'pending_expenses' => $provider->expenses()->whereIn('status', ['borrador', 'pendiente'])->count(),
+            'approved_expenses' => $provider->expenses()->where('status', 'aprobado')->count(),
             'paid_amount' => $provider->expenses()->where('status', 'pagado')->sum('total_amount'),
+            'paid_expenses' => $provider->expenses()->where('status', 'pagado')->count(),
+            'overdue_expenses' => $provider->expenses()->where('status', '!=', 'pagado')
+                ->where('due_date', '<', now())->count(),
+            'average_amount' => $provider->expenses()->count() > 0
+                ? $provider->expenses()->avg('total_amount')
+                : 0,
         ];
 
         return Inertia::render('Providers/Show', [
             'provider' => $provider,
-            'expenseStats' => $expenseStats,
+            'expenses' => $expenses,
+            'stats' => $stats,
         ]);
     }
 
