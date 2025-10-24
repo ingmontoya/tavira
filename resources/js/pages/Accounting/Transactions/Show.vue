@@ -174,10 +174,11 @@ const breadcrumbs = [
 </script>
 
 <template>
+
     <Head :title="referenceDisplay" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -192,16 +193,16 @@ const breadcrumbs = [
                 </div>
                 <div class="no-print flex items-center gap-3">
                     <Link href="/accounting/transactions">
-                        <Button variant="outline" class="gap-2">
-                            <ArrowLeft class="h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline" class="gap-2">
+                        <ArrowLeft class="h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
                     <Link v-if="canEdit" :href="`/accounting/transactions/${transaction.id}/edit`">
-                        <Button class="gap-2">
-                            <Edit class="h-4 w-4" />
-                            Editar
-                        </Button>
+                    <Button class="gap-2">
+                        <Edit class="h-4 w-4" />
+                        Editar
+                    </Button>
                     </Link>
                 </div>
             </div>
@@ -222,7 +223,8 @@ const breadcrumbs = [
                                     <p class="font-mono text-lg">{{ referenceDisplay }}</p>
                                 </div>
                                 <div>
-                                    <Label class="text-sm font-medium text-muted-foreground">Fecha de Transacción</Label>
+                                    <Label class="text-sm font-medium text-muted-foreground">Fecha de
+                                        Transacción</Label>
                                     <p class="text-lg">{{ formatDate(transaction.transaction_date) }}</p>
                                 </div>
                             </div>
@@ -246,10 +248,8 @@ const breadcrumbs = [
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Balance</Label>
                                     <div class="flex items-center gap-2">
-                                        <component
-                                            :is="isBalanced ? CheckCircle : AlertCircle"
-                                            :class="['h-4 w-4', isBalanced ? 'text-green-600' : 'text-red-600']"
-                                        />
+                                        <component :is="isBalanced ? CheckCircle : AlertCircle"
+                                            :class="['h-4 w-4', isBalanced ? 'text-green-600' : 'text-red-600']" />
                                         <span :class="isBalanced ? 'text-green-600' : 'text-red-600'">
                                             {{ isBalanced ? 'Balanceado' : 'No Balanceado' }}
                                         </span>
@@ -263,12 +263,14 @@ const breadcrumbs = [
                                 <div>
                                     <Label class="text-muted-foreground">Creada por</Label>
                                     <p>{{ transaction.created_by?.name || 'Sistema' }}</p>
-                                    <p class="text-xs text-muted-foreground">{{ formatDateTime(transaction.created_at) }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ formatDateTime(transaction.created_at)
+                                        }}</p>
                                 </div>
                                 <div v-if="transaction.posted_by && transaction.posted_at">
                                     <Label class="text-muted-foreground">Contabilizada por</Label>
                                     <p>{{ transaction.posted_by?.name || 'Sistema' }}</p>
-                                    <p class="text-xs text-muted-foreground">{{ formatDateTime(transaction.posted_at) }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ formatDateTime(transaction.posted_at) }}
+                                    </p>
                                 </div>
                             </div>
                         </CardContent>
@@ -317,17 +319,15 @@ const breadcrumbs = [
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow
-                                            v-for="entry in transaction.entries"
-                                            :key="entry.id"
+                                        <TableRow v-for="entry in transaction.entries" :key="entry.id"
                                             class="cursor-pointer hover:bg-muted/50"
-                                            @click="router.visit(`/accounting/chart-of-accounts/${entry.account.id}`)"
-                                        >
+                                            @click="router.visit(`/accounting/chart-of-accounts/${entry.account.id}`)">
                                             <TableCell>
                                                 <div class="space-y-1">
                                                     <div class="font-mono text-sm">{{ entry.account.code }}</div>
                                                     <div class="text-sm font-medium">{{ entry.account.name }}</div>
-                                                    <div class="text-xs text-muted-foreground">{{ entry.account.account_type }}</div>
+                                                    <div class="text-xs text-muted-foreground">{{
+                                                        entry.account.account_type }}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
@@ -366,7 +366,8 @@ const breadcrumbs = [
                         <CardContent class="space-y-4">
                             <div class="text-center">
                                 <p class="text-sm text-muted-foreground">Monto Total</p>
-                                <p class="text-2xl font-bold">{{ formatCurrency(parseFloat(transaction.total_amount || 0)) }}</p>
+                                <p class="text-2xl font-bold">{{ formatCurrency(parseFloat(transaction.total_amount ||
+                                    0)) }}</p>
                             </div>
 
                             <Separator />
@@ -378,7 +379,7 @@ const breadcrumbs = [
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted-foreground">Cuentas afectadas:</span>
-                                    <span>{{ new Set(transaction.entries.map((e) => e.account.id)).size }}</span>
+                                    <span>{{new Set(transaction.entries.map((e) => e.account.id)).size}}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -455,6 +456,7 @@ const breadcrumbs = [
 
 <style>
 @media print {
+
     /* Hide non-essential elements when printing */
     .no-print,
     .no-print *,

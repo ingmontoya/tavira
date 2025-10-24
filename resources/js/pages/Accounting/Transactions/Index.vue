@@ -17,7 +17,6 @@ import {
     getCoreRowModel,
     getExpandedRowModel,
     getFilteredRowModel,
-    getPaginationRowModel,
     getSortedRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
@@ -31,7 +30,7 @@ export interface AccountingTransaction {
     description: string;
     transaction_date: string;
     total_amount: number;
-    status: 'Draft' | 'Posted' | 'Reversed';
+    status: 'borrador' | 'contabilizado' | 'cancelado';
     apartment_number?: string;
     created_by: {
         id: number;
@@ -71,72 +70,40 @@ const data: AccountingTransaction[] = props.transactions.data;
 // Custom filters state
 const customFilters = ref({
     search: props.filters?.search || '',
-    status: props.filters?.status || 'all',
-    date_from: props.filters?.date_from || '',
-    date_to: props.filters?.date_to || '',
-});
-
-// Computed values for filter options
-const uniqueStatuses = computed(() => {
-    return ['Draft', 'Posted', 'Reversed'];
+    status: props.filters?.status || '',
+    start_date: props.filters?.start_date || '',
+    end_date: props.filters?.end_date || '',
 });
 
 // Check if custom filters are active
 const hasActiveCustomFilters = computed(() => {
-    return Object.values(customFilters.value).some((value) => value !== '' && value !== 'all');
+    return Object.values(customFilters.value).some((value) => value !== '');
 });
 
-// Clear custom filters
+// Clear custom filters and reload from server
 const clearCustomFilters = () => {
-    customFilters.value = {
-        search: '',
-        status: 'all',
-        date_from: '',
-        date_to: '',
-    };
-    // Also clear table filters
-    table.getColumn('reference')?.setFilterValue('');
+    router.get('/accounting/transactions', {}, { preserveState: true });
 };
 
-// Apply custom filters to data
-const filteredData = computed(() => {
-    let filtered = data;
+// Apply filters by making a server request
+const applyFilters = () => {
+    const params: any = {};
 
-    // Search filter
     if (customFilters.value.search) {
-        const searchTerm = customFilters.value.search.toLowerCase();
-        filtered = filtered.filter((transaction) => {
-            // Extract apartment number from description for search
-            const apartmentMatch = transaction.description?.match(/Apto\s+([A-Z0-9]+)/);
-            const apartmentNumber = apartmentMatch ? apartmentMatch[1].toLowerCase() : '';
-
-            return (
-                transaction.reference?.toLowerCase().includes(searchTerm) ||
-                transaction.description?.toLowerCase().includes(searchTerm) ||
-                transaction.created_by?.name?.toLowerCase().includes(searchTerm) ||
-                apartmentNumber.includes(searchTerm) ||
-                transaction.entries?.some(
-                    (entry) => entry.account.code.toLowerCase().includes(searchTerm) || entry.account.name.toLowerCase().includes(searchTerm),
-                )
-            );
-        });
+        params.search = customFilters.value.search;
+    }
+    if (customFilters.value.status) {
+        params.status = customFilters.value.status;
+    }
+    if (customFilters.value.start_date) {
+        params.start_date = customFilters.value.start_date;
+    }
+    if (customFilters.value.end_date) {
+        params.end_date = customFilters.value.end_date;
     }
 
-    // Status filter
-    if (customFilters.value.status !== 'all') {
-        filtered = filtered.filter((transaction) => transaction.status === customFilters.value.status);
-    }
-
-    // Date range filter
-    if (customFilters.value.date_from) {
-        filtered = filtered.filter((transaction) => transaction.transaction_date >= customFilters.value.date_from);
-    }
-    if (customFilters.value.date_to) {
-        filtered = filtered.filter((transaction) => transaction.transaction_date <= customFilters.value.date_to);
-    }
-
-    return filtered;
-});
+    router.get('/accounting/transactions', params, { preserveState: true, preserveScroll: true });
+};
 
 const columnHelper = createColumnHelper<AccountingTransaction>();
 
@@ -259,9 +226,9 @@ const columns = [
         cell: ({ row }) => {
             const status = row.getValue('status') as string;
             const statusMap = {
-                Draft: { label: 'Borrador', color: 'bg-gray-100 text-gray-800' },
-                Posted: { label: 'Contabilizada', color: 'bg-green-100 text-green-800' },
-                Reversed: { label: 'Reversada', color: 'bg-red-100 text-red-800' },
+                borrador: { label: 'Borrador', color: 'bg-yellow-100 text-yellow-800' },
+                contabilizado: { label: 'Contabilizada', color: 'bg-green-100 text-green-800' },
+                cancelado: { label: 'Cancelada', color: 'bg-red-100 text-red-800' },
             };
             const statusInfo = statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800' };
             return h(
@@ -305,11 +272,10 @@ const expanded = ref<ExpandedState>({});
 
 const table = useVueTable({
     get data() {
-        return filteredData.value;
+        return data;
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -387,39 +353,44 @@ const exportTransactions = () => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <div class="min-w-0 space-y-2">
                             <Label for="filter_status">Estado</Label>
-                            <Select v-model="customFilters.status">
+                            <Select v-model="customFilters.status" @update:model-value="applyFilters">
                                 <SelectTrigger class="w-full">
                                     <SelectValue placeholder="Todos los estados" class="truncate" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">Todos los estados</SelectItem>
-                                    <SelectItem value="Draft">Borrador</SelectItem>
-                                    <SelectItem value="Posted">Contabilizada</SelectItem>
-                                    <SelectItem value="Reversed">Reversada</SelectItem>
+                                    <SelectItem value="">Todos los estados</SelectItem>
+                                    <SelectItem value="borrador">Borrador</SelectItem>
+                                    <SelectItem value="posted">Contabilizada</SelectItem>
+                                    <SelectItem value="cancelled">Cancelada</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div class="min-w-0 space-y-2">
                             <Label for="filter_date_from">Fecha Desde</Label>
-                            <Input id="filter_date_from" v-model="customFilters.date_from" type="date" class="w-full" />
+                            <Input id="filter_date_from" v-model="customFilters.start_date" type="date" class="w-full" @change="applyFilters" />
                         </div>
 
                         <div class="min-w-0 space-y-2">
                             <Label for="filter_date_to">Fecha Hasta</Label>
-                            <Input id="filter_date_to" v-model="customFilters.date_to" type="date" class="w-full" />
+                            <Input id="filter_date_to" v-model="customFilters.end_date" type="date" class="w-full" @change="applyFilters" />
                         </div>
                     </div>
 
                     <!-- Botones de acción -->
                     <div class="flex items-center justify-between">
-                        <Button variant="outline" @click="clearCustomFilters" v-if="hasActiveCustomFilters">
-                            <X class="mr-2 h-4 w-4" />
-                            Limpiar filtros
-                        </Button>
+                        <div class="flex gap-2">
+                            <Button variant="default" @click="applyFilters">
+                                <Search class="mr-2 h-4 w-4" />
+                                Buscar
+                            </Button>
+                            <Button variant="outline" @click="clearCustomFilters" v-if="hasActiveCustomFilters">
+                                <X class="mr-2 h-4 w-4" />
+                                Limpiar filtros
+                            </Button>
+                        </div>
                         <div class="text-sm text-muted-foreground">
-                            Mostrando {{ filteredData.length }} de {{ data.length }} transacciones en esta página ({{ transactions.total || 0 }} total
-                            en el sistema)
+                            Mostrando {{ transactions.from || 0 }} - {{ transactions.to || 0 }} de {{ transactions.total || 0 }} transacciones
                         </div>
                     </div>
                 </div>

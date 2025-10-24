@@ -31,6 +31,7 @@ interface TransactionEntry {
 interface AccountingTransaction {
     id: number;
     reference: string;
+    transaction_number: string;
     description: string;
     transaction_date: string;
     status: string;
@@ -262,10 +263,11 @@ const breadcrumbs = [
 </script>
 
 <template>
-    <Head :title="`Editar: ${transaction.reference}`" />
+
+    <Head :title="`Editarss: ${transaction}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -277,10 +279,10 @@ const breadcrumbs = [
                 </div>
                 <div class="flex items-center gap-3">
                     <Link :href="`/accounting/transactions/${transaction.id}`">
-                        <Button variant="outline" class="gap-2">
-                            <ArrowLeft class="h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline" class="gap-2">
+                        <ArrowLeft class="h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
                 </div>
             </div>
@@ -304,15 +306,11 @@ const breadcrumbs = [
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="reference">Referencia *</Label>
-                                <Input
-                                    id="reference"
-                                    v-model="form.reference"
-                                    placeholder="Ej: ASI-001-2024"
-                                    class="font-mono"
-                                    :disabled="!canEdit"
-                                    :class="{ 'border-red-500': form.errors.reference }"
-                                />
-                                <p class="text-xs text-muted-foreground">Código único para identificar la transacción</p>
+                                <Input id="reference" v-model="form.reference" placeholder="Ej: ASI-001-2024"
+                                    class="font-mono" :disabled="!canEdit"
+                                    :class="{ 'border-red-500': form.errors.reference }" />
+                                <p class="text-xs text-muted-foreground">Código único para identificar la transacción
+                                </p>
                                 <p v-if="form.errors.reference" class="text-sm text-red-600">
                                     {{ form.errors.reference }}
                                 </p>
@@ -320,13 +318,8 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="transaction_date">Fecha de Transacción *</Label>
-                                <Input
-                                    id="transaction_date"
-                                    v-model="form.transaction_date"
-                                    type="date"
-                                    :disabled="!canEdit"
-                                    :class="{ 'border-red-500': form.errors.transaction_date }"
-                                />
+                                <Input id="transaction_date" v-model="form.transaction_date" type="date"
+                                    :disabled="!canEdit" :class="{ 'border-red-500': form.errors.transaction_date }" />
                                 <p v-if="form.errors.transaction_date" class="text-sm text-red-600">
                                     {{ form.errors.transaction_date }}
                                 </p>
@@ -355,7 +348,8 @@ const breadcrumbs = [
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
-                            <p class="text-xs text-muted-foreground">El estado "Contabilizado" confirma y bloquea la transacción permanentemente</p>
+                            <p class="text-xs text-muted-foreground">El estado "Contabilizado" confirma y bloquea la
+                                transacción permanentemente</p>
                             <p v-if="form.errors.status" class="text-sm text-red-600">
                                 {{ form.errors.status }}
                             </p>
@@ -364,14 +358,9 @@ const breadcrumbs = [
                         <!-- Description -->
                         <div class="space-y-2">
                             <Label for="description">Descripción *</Label>
-                            <Textarea
-                                id="description"
-                                v-model="form.description"
-                                placeholder="Descripción detallada de la transacción..."
-                                :disabled="!canEdit"
-                                :class="{ 'border-red-500': form.errors.description }"
-                                rows="3"
-                            />
+                            <Textarea id="description" v-model="form.description"
+                                placeholder="Descripción detallada de la transacción..." :disabled="!canEdit"
+                                :class="{ 'border-red-500': form.errors.description }" rows="3" />
                             <p v-if="form.errors.description" class="text-sm text-red-600">
                                 {{ form.errors.description }}
                             </p>
@@ -388,9 +377,11 @@ const breadcrumbs = [
                                     <Calculator class="h-5 w-5" />
                                     Asientos Contables
                                 </CardTitle>
-                                <CardDescription> Detalle de débitos y créditos (debe estar balanceado) </CardDescription>
+                                <CardDescription> Detalle de débitos y créditos (debe estar balanceado)
+                                </CardDescription>
                             </div>
-                            <Button type="button" variant="outline" size="sm" :disabled="!canEdit" @click="addEntry" class="gap-2">
+                            <Button type="button" variant="outline" size="sm" :disabled="!canEdit" @click="addEntry"
+                                class="gap-2">
                                 <Plus class="h-4 w-4" />
                                 Agregar Línea
                             </Button>
@@ -433,22 +424,20 @@ const breadcrumbs = [
                                 <TableBody>
                                     <TableRow v-for="(entry, index) in form.entries" :key="index">
                                         <TableCell>
-                                            <AccountCombobox
-                                                :accounts="activeAccounts"
-                                                :model-value="entry.account_id"
-                                                :disabled="!canEdit"
-                                                placeholder="Seleccionar cuenta..."
+                                            <AccountCombobox :accounts="activeAccounts" :model-value="entry.account_id"
+                                                :disabled="!canEdit" placeholder="Seleccionar cuenta..."
                                                 @update:model-value="
                                                     (value) => {
                                                         entry.account_id = value;
                                                         onAccountChange(index, value);
                                                     }
-                                                "
-                                            />
+                                                " />
                                         </TableCell>
                                         <TableCell>
-                                            <div v-if="getAccountRequiresThirdParty(entry.account_id)" class="flex gap-1">
-                                                <Select v-model="entry.third_party_type" :disabled="!canEdit" class="w-24">
+                                            <div v-if="getAccountRequiresThirdParty(entry.account_id)"
+                                                class="flex gap-1">
+                                                <Select v-model="entry.third_party_type" :disabled="!canEdit"
+                                                    class="w-24">
                                                     <SelectTrigger>
                                                         <SelectValue />
                                                     </SelectTrigger>
@@ -457,26 +446,24 @@ const breadcrumbs = [
                                                         <SelectItem value="provider">Prov</SelectItem>
                                                     </SelectContent>
                                                 </Select>
-                                                <Select
-                                                    v-model="entry.third_party_id"
-                                                    :disabled="!canEdit"
-                                                    class="flex-1"
-                                                >
-                                                    <SelectTrigger
-                                                        :class="{
-                                                            'border-red-500': !entry.third_party_id,
-                                                        }"
-                                                    >
-                                                        <SelectValue :placeholder="entry.third_party_type === 'provider' ? 'Proveedor...' : 'Apto...'" />
+                                                <Select v-model="entry.third_party_id" :disabled="!canEdit"
+                                                    class="flex-1">
+                                                    <SelectTrigger :class="{
+                                                        'border-red-500': !entry.third_party_id,
+                                                    }">
+                                                        <SelectValue
+                                                            :placeholder="entry.third_party_type === 'provider' ? 'Proveedor...' : 'Apto...'" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <template v-if="entry.third_party_type === 'apartment'">
-                                                            <SelectItem v-for="apt in apartments" :key="apt.id" :value="apt.id">
+                                                            <SelectItem v-for="apt in apartments" :key="apt.id"
+                                                                :value="apt.id">
                                                                 {{ apt.number }}
                                                             </SelectItem>
                                                         </template>
                                                         <template v-else-if="entry.third_party_type === 'provider'">
-                                                            <SelectItem v-for="provider in providers" :key="provider.id" :value="provider.id">
+                                                            <SelectItem v-for="provider in providers" :key="provider.id"
+                                                                :value="provider.id">
                                                                 {{ provider.name }}
                                                             </SelectItem>
                                                         </template>
@@ -486,45 +473,23 @@ const breadcrumbs = [
                                             <span v-else class="text-sm text-muted-foreground">-</span>
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                v-model="entry.description"
-                                                placeholder="Descripción del movimiento"
-                                                :disabled="!canEdit"
-                                                class="w-full"
-                                            />
+                                            <Input v-model="entry.description" placeholder="Descripción del movimiento"
+                                                :disabled="!canEdit" class="w-full" />
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                v-model.number="entry.debit_amount"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                placeholder="0.00"
-                                                :disabled="!canEdit"
-                                                class="text-right font-mono"
-                                                @focus="clearAmount(index, 'debit')"
-                                            />
+                                            <Input v-model.number="entry.debit_amount" type="number" step="0.01" min="0"
+                                                placeholder="0.00" :disabled="!canEdit" class="text-right font-mono"
+                                                @focus="clearAmount(index, 'debit')" />
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                v-model.number="entry.credit_amount"
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                placeholder="0.00"
-                                                :disabled="!canEdit"
-                                                class="text-right font-mono"
-                                                @focus="clearAmount(index, 'credit')"
-                                            />
+                                            <Input v-model.number="entry.credit_amount" type="number" step="0.01"
+                                                min="0" placeholder="0.00" :disabled="!canEdit"
+                                                class="text-right font-mono" @focus="clearAmount(index, 'credit')" />
                                         </TableCell>
                                         <TableCell>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
+                                            <Button type="button" variant="ghost" size="sm"
                                                 :disabled="!canEdit || form.entries.length <= 2"
-                                                @click="removeEntry(index)"
-                                            >
+                                                @click="removeEntry(index)">
                                                 <Trash2 class="h-4 w-4" />
                                             </Button>
                                         </TableCell>
@@ -541,19 +506,25 @@ const breadcrumbs = [
 
                 <!-- Form Actions -->
                 <div class="flex items-center justify-between">
-                    <Button type="button" variant="destructive" :disabled="!canEdit" @click="deleteTransaction" class="gap-2">
+                    <Button type="button" variant="destructive" :disabled="!canEdit" @click="deleteTransaction"
+                        class="gap-2">
                         <Trash2 class="h-4 w-4" />
                         Eliminar Transacción
                     </Button>
 
                     <div class="flex items-center gap-3">
-                        <Button type="button" variant="outline" @click="resetForm" :disabled="!canEdit"> Descartar Cambios </Button>
+                        <Button type="button" variant="outline" @click="resetForm" :disabled="!canEdit"> Descartar
+                            Cambios </Button>
 
-                        <div v-if="!isBalanced && canEdit" class="text-sm text-red-600">El asiento debe estar balanceado para continuar</div>
+                        <div v-if="!isBalanced && canEdit" class="text-sm text-red-600">El asiento debe estar balanceado
+                            para continuar
+                        </div>
 
                         <Button type="submit" :disabled="form.processing || !canSubmit" class="gap-2">
                             <Save class="h-4 w-4" />
-                            {{ form.processing ? 'Guardando...' : form.status === 'contabilizado' ? 'Guardar y Contabilizar' : 'Guardar Cambios' }}
+                            {{
+                                form.processing ? 'Guardando...' : form.status === 'contabilizado' ?
+                                    'Guardar y Contabilizar' : 'Guardar Cambios' }}
                         </Button>
                     </div>
                 </div>
