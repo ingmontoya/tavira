@@ -70,14 +70,17 @@ const data: AccountingTransaction[] = props.transactions.data;
 // Custom filters state
 const customFilters = ref({
     search: props.filters?.search || '',
-    status: props.filters?.status || '',
+    status: props.filters?.status || 'all',
     start_date: props.filters?.start_date || '',
     end_date: props.filters?.end_date || '',
 });
 
 // Check if custom filters are active
 const hasActiveCustomFilters = computed(() => {
-    return Object.values(customFilters.value).some((value) => value !== '');
+    return customFilters.value.search !== '' ||
+           customFilters.value.status !== 'all' ||
+           customFilters.value.start_date !== '' ||
+           customFilters.value.end_date !== '';
 });
 
 // Clear custom filters and reload from server
@@ -92,7 +95,7 @@ const applyFilters = () => {
     if (customFilters.value.search) {
         params.search = customFilters.value.search;
     }
-    if (customFilters.value.status) {
+    if (customFilters.value.status && customFilters.value.status !== 'all') {
         params.status = customFilters.value.status;
     }
     if (customFilters.value.start_date) {
@@ -358,10 +361,10 @@ const exportTransactions = () => {
                                     <SelectValue placeholder="Todos los estados" class="truncate" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Todos los estados</SelectItem>
+                                    <SelectItem value="all">Todos los estados</SelectItem>
                                     <SelectItem value="borrador">Borrador</SelectItem>
-                                    <SelectItem value="posted">Contabilizada</SelectItem>
-                                    <SelectItem value="cancelled">Cancelada</SelectItem>
+                                    <SelectItem value="contabilizado">Contabilizada</SelectItem>
+                                    <SelectItem value="cancelado">Cancelada</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

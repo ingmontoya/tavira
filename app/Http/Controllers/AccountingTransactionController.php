@@ -41,7 +41,7 @@ class AccountingTransactionController extends Controller
 
         $transactions = $query->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate(100)
+            ->paginate(20)
             ->withQueryString()
             ->through(function ($transaction) {
                 // Load reference only if it's not a manual transaction
