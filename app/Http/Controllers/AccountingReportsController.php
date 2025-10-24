@@ -365,18 +365,29 @@ class AccountingReportsController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        // Get default account if none provided
+        // Get default account if none provided (must be level 3 - 4 digits)
         $accountId = $validated['account_id'] ?? null;
         if (! $accountId) {
-            // Find a postable account that has transaction entries
-            $accountIds = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($q) use ($conjunto) {
+            // Find a level 3 account that has transaction entries (directly or through subaccounts)
+            $accountIdsWithEntries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($q) use ($conjunto) {
                 $q->where('status', 'contabilizado')
                     ->where('conjunto_config_id', $conjunto->id);
             })->distinct()->pluck('account_id');
 
+            // Get the parent level 3 accounts of these accounts
+            $level3AccountCodes = ChartOfAccounts::forConjunto($conjunto->id)
+                ->whereIn('id', $accountIdsWithEntries)
+                ->get()
+                ->map(function ($account) {
+                    // Extract first 4 digits from account code
+                    return substr($account->code, 0, 4);
+                })
+                ->unique()
+                ->values();
+
             $defaultAccount = ChartOfAccounts::forConjunto($conjunto->id)
-                ->whereIn('id', $accountIds)
-                ->postable()
+                ->byLevel(3) // Level 3 = 4 digit accounts
+                ->whereIn('code', $level3AccountCodes)
                 ->active()
                 ->orderBy('code')
                 ->first();
@@ -387,11 +398,23 @@ class AccountingReportsController extends Controller
             $accountId = $defaultAccount->id;
         }
 
+        // Get the level 3 account (4 digits)
         $account = ChartOfAccounts::forConjunto($conjunto->id)->findOrFail($accountId);
+
+        // Ensure we're working with a level 3 account
+        if ($account->level != 3) {
+            return back()->withErrors(['account' => 'El libro mayor debe generarse para cuentas de nivel 3 (4 dígitos).']);
+        }
+
+        // Get all subaccounts that belong to this account (codes that start with this account's code)
+        $subaccountIds = ChartOfAccounts::forConjunto($conjunto->id)
+            ->where('code', 'like', $account->code.'%')
+            ->active()
+            ->pluck('id');
 
         // If no date filters provided, use a range that includes all transactions for this account
         if (! isset($validated['start_date']) && ! isset($validated['end_date'])) {
-            $transactionDates = $account->transactionEntries()
+            $transactionDates = \App\Models\AccountingTransactionEntry::whereIn('account_id', $subaccountIds)
                 ->whereHas('transaction', function ($q) use ($conjunto) {
                     $q->where('status', 'contabilizado')
                         ->where('conjunto_config_id', $conjunto->id);
@@ -413,36 +436,47 @@ class AccountingReportsController extends Controller
             $endDate = $validated['end_date'] ?? now()->toDateString();
         }
 
-        // Get opening balance
-        $openingBalance = $account->getBalance(null, date('Y-m-d', strtotime($startDate.' -1 day')));
+        // Calculate opening balance by summing all subaccounts
+        $openingBalance = 0;
+        foreach ($subaccountIds as $subaccountId) {
+            $subaccount = ChartOfAccounts::find($subaccountId);
+            if ($subaccount) {
+                $openingBalance += $subaccount->getBalance(null, date('Y-m-d', strtotime($startDate.' -1 day')));
+            }
+        }
 
-        // Get transactions for the period
-        $entries = $account->transactionEntries()
+        // Get all transaction entries for subaccounts in the period
+        $entries = \App\Models\AccountingTransactionEntry::whereIn('account_id', $subaccountIds)
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
                 $query->where('status', 'contabilizado')
                     ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
-            ->with(['transaction'])
-            ->orderBy('created_at')
-            ->get();
+            ->with(['transaction', 'account'])
+            ->get()
+            ->sortBy(function ($entry) {
+                return $entry->transaction->transaction_date->format('Y-m-d H:i:s').$entry->id;
+            });
 
+        // Build ledger entries with running balance
         $runningBalance = $openingBalance;
-        $ledgerEntries = $entries->map(function ($entry) use (&$runningBalance, $account) {
+        $ledgerEntries = collect();
+
+        foreach ($entries as $entry) {
             $movement = $account->nature === 'debit'
                 ? $entry->debit_amount - $entry->credit_amount
                 : $entry->credit_amount - $entry->debit_amount;
 
             $runningBalance += $movement;
 
-            return [
+            $ledgerEntries->push([
                 'date' => $entry->transaction->transaction_date->format('Y-m-d'),
                 'transaction_number' => $entry->transaction->transaction_number,
                 'description' => $entry->description,
                 'debit_amount' => $entry->debit_amount,
                 'credit_amount' => $entry->credit_amount,
                 'balance' => $runningBalance,
-            ];
-        });
+            ]);
+        }
 
         return Inertia::render('Accounting/Reports/GeneralLedger', [
             'report' => [
@@ -463,6 +497,7 @@ class AccountingReportsController extends Controller
                 'end_date' => $endDate,
             ],
             'accounts' => ChartOfAccounts::forConjunto($conjunto->id)
+                ->byLevel(3) // Only show level 3 accounts (4 digits)
                 ->active()
                 ->orderBy('code')
                 ->get(['id', 'code', 'name']),
