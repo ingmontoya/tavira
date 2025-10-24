@@ -64,7 +64,7 @@ class AccountingReportsController extends Controller
             'status' => 'nullable|in:all,borrador,contabilizado,cancelado',
         ]);
 
-        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+        $startDate = $validated['start_date'] ?? null;
         $endDate = $validated['end_date'] ?? now()->toDateString();
         $status = $validated['status'] ?? 'contabilizado';
 
@@ -76,9 +76,17 @@ class AccountingReportsController extends Controller
         // Get transactions for the period
         $query = \App\Models\AccountingTransaction::forConjunto($conjunto->id)
             ->with(['entries.account', 'createdBy', 'postedBy'])
-            ->whereBetween('transaction_date', [$startDate, $endDate])
             ->orderBy('transaction_date')
             ->orderBy('id');
+
+        // Apply date filters
+        if ($startDate) {
+            $query->where('transaction_date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('transaction_date', '<=', $endDate);
+        }
 
         if ($status) {
             $query->byStatus($status);
@@ -126,12 +134,17 @@ class AccountingReportsController extends Controller
         $totalDebits = $transactions->sum('total_debit');
         $totalCredits = $transactions->sum('total_credit');
 
+        // Generate period description
+        $periodDescription = $startDate
+            ? 'Del '.date('d/m/Y', strtotime($startDate)).' al '.date('d/m/Y', strtotime($endDate))
+            : 'Hasta el '.date('d/m/Y', strtotime($endDate));
+
         return Inertia::render('Accounting/Reports/JournalBook', [
             'report' => [
                 'period' => [
                     'start_date' => $startDate,
                     'end_date' => $endDate,
-                    'description' => 'Del '.date('d/m/Y', strtotime($startDate)).' al '.date('d/m/Y', strtotime($endDate)),
+                    'description' => $periodDescription,
                 ],
                 'transactions' => $transactions,
                 'total_debits' => $totalDebits,
@@ -229,11 +242,11 @@ class AccountingReportsController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
         ]);
 
-        $startDate = $validated['start_date'] ?? now()->startOfMonth()->toDateString();
+        $startDate = $validated['start_date'] ?? null;
         $endDate = $validated['end_date'] ?? now()->toDateString();
 
-        // Income - Solo incluir ingresos de pagos efectivamente recibidos
-        $income = $this->getCashBasisIncome($conjunto->id, $startDate, $endDate);
+        // Income - Usar contabilidad por causación (base devengado)
+        $income = $this->getAccountBalances($conjunto->id, 'income', $startDate, $endDate);
         $totalIncome = array_sum(array_column($income, 'balance'));
 
         // Expenses
@@ -242,12 +255,17 @@ class AccountingReportsController extends Controller
 
         $netIncome = $totalIncome - $totalExpenses;
 
+        // Generate period description
+        $periodDescription = $startDate
+            ? 'Del '.date('d/m/Y', strtotime($startDate)).' al '.date('d/m/Y', strtotime($endDate))
+            : 'Hasta el '.date('d/m/Y', strtotime($endDate));
+
         return Inertia::render('Accounting/Reports/IncomeStatement', [
             'report' => [
                 'period' => [
                     'start_date' => $startDate,
                     'end_date' => $endDate,
-                    'description' => 'Del '.date('d/m/Y', strtotime($startDate)).' al '.date('d/m/Y', strtotime($endDate)),
+                    'description' => $periodDescription,
                 ],
                 'income' => $income,
                 'expenses' => $expenses,
