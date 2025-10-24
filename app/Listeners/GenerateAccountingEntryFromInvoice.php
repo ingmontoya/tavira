@@ -94,7 +94,7 @@ class GenerateAccountingEntryFromInvoice
             'total_debit' => 0,
             'total_credit' => 0,
             'status' => 'borrador',
-            'created_by' => auth()->id() ?? 1,
+            'created_by' => auth()->id(),
         ]);
 
         // Débito: Cartera por concepto específico
@@ -131,7 +131,7 @@ class GenerateAccountingEntryFromInvoice
             'total_debit' => 0,
             'total_credit' => 0,
             'status' => 'borrador',
-            'created_by' => auth()->id() ?? 1,
+            'created_by' => auth()->id(),
         ]);
 
         $carteraAccount = $this->getAccountByCode($conjuntoConfigId, '130501');

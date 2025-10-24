@@ -50,7 +50,7 @@ class GenerateAccountingEntryFromLateFee
                 'total_debit' => 0,
                 'total_credit' => 0,
                 'status' => 'borrador',
-                'created_by' => auth()->id() ?? 1,
+                'created_by' => auth()->id(),
                 'metadata' => [
                     'month' => $month,
                     'invoice_number' => $invoice->invoice_number,

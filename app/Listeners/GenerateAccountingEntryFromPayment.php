@@ -99,7 +99,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             'description' => "Pago {$this->getConceptTypeLabel($conceptType)} - Factura {$invoice->invoice_number} - Apto {$invoice->apartment->number}",
             'reference_type' => 'payment',
             'reference_id' => $invoice->id,
-            'created_by' => auth()->id() ?? 1,
+            'created_by' => auth()->id(),
         ]);
 
         // Débito: Cuenta de efectivo (ingreso de dinero)
@@ -132,7 +132,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
             'description' => "Pago factura {$invoice->invoice_number} - Apto {$invoice->apartment->number}",
             'reference_type' => 'payment',
             'reference_id' => $invoice->id,
-            'created_by' => auth()->id() ?? 1,
+            'created_by' => auth()->id(),
         ]);
 
         $cashAccount = $this->getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod);
