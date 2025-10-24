@@ -286,13 +286,34 @@ class AccountingReportsController extends Controller
                 // Balance de Prueba usa contabilidad por causación (base devengado)
                 $balance = $account->getBalance(null, $asOfDate);
 
+                // En balance de prueba, si una cuenta tiene saldo negativo,
+                // se muestra en el lado opuesto a su naturaleza
+                $debitBalance = 0;
+                $creditBalance = 0;
+
+                if ($balance > 0) {
+                    // Saldo positivo: mostrar según naturaleza de la cuenta
+                    if ($account->nature === 'debit') {
+                        $debitBalance = $balance;
+                    } else {
+                        $creditBalance = $balance;
+                    }
+                } elseif ($balance < 0) {
+                    // Saldo negativo: mostrar en el lado opuesto
+                    if ($account->nature === 'debit') {
+                        $creditBalance = abs($balance);
+                    } else {
+                        $debitBalance = abs($balance);
+                    }
+                }
+
                 return [
                     'code' => $account->code,
                     'name' => $account->name,
                     'account_type' => $account->account_type,
                     'nature' => $account->nature,
-                    'debit_balance' => $account->nature === 'debit' && $balance > 0 ? $balance : 0,
-                    'credit_balance' => $account->nature === 'credit' && $balance > 0 ? $balance : 0,
+                    'debit_balance' => $debitBalance,
+                    'credit_balance' => $creditBalance,
                     'balance' => $balance,
                 ];
             })
