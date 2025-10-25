@@ -1,0 +1,97 @@
+# =============================================================================
+# .dockerignore - Optimize Docker build context
+# Reduces image size and build time significantly
+# =============================================================================
+
+# Git
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+docker/
+.dockerignore
+
+# Kubernetes
+k8s/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm/
+.yarn/
+.pnpm-debug.log
+
+# PHP/Composer
+vendor/
+composer.phar
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# Laravel specific
+storage/logs/*
+!storage/logs/.gitkeep
+storage/framework/cache/*
+!storage/framework/cache/.gitkeep
+storage/framework/sessions/*
+!storage/framework/sessions/.gitkeep
+storage/framework/testing/*
+!storage/framework/testing/.gitkeep
+storage/framework/views/*
+!storage/framework/views/.gitkeep
+bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+.env*
+!.env.example
+
+# Testing
+tests/
+phpunit.xml
+phpunit.xml.dist
+.phpunit.cache
+coverage/
+.pest/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+.DS_Store
+
+# Documentation
+*.md
+!README.md
+docs/
+ROADMAP.md
+SUSCRIPCIONES.md
+CLAUDE.md
+
+# Build artifacts
+public/hot
+public/storage
+public/build/manifest.json
+
+# Database
+*.sql
+*.sqlite
+*.db
+dump.rdb
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
