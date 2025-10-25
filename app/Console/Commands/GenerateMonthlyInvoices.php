@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\DB;
 
 class GenerateMonthlyInvoices extends Command
 {
-    protected $signature = 'invoices:generate-monthly 
-                           {--year= : The year for which to generate invoices (defaults to current year)}
-                           {--month= : The month for which to generate invoices (defaults to current month)}
-                           {--force : Force generation even if invoices already exist}';
+    protected $signature = 'invoices:generate-monthly
+                            {--year= : The year for which to generate invoices (defaults to current year)}
+                            {--month= : The month for which to generate invoices (defaults to current month)}
+                            {--force : Force generation even if invoices already exist}';
 
     protected $description = 'Generate monthly invoices for all eligible apartments based on administration fees';
 
