@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tenants', function (Blueprint $table) {
-            $table->string('admin_name')->nullable();
-            $table->string('admin_email')->nullable();
-            $table->string('admin_password')->nullable();
-        });
+        // Schema::table('tenants', function (Blueprint $table) {
+        //     $table->string('admin_name')->nullable();
+        //     $table->string('admin_email')->nullable();
+        //     $table->string('admin_password')->nullable();
+        // });
     }
 
     /**
@@ -23,8 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tenants', function (Blueprint $table) {
-            $table->dropColumn(['admin_name', 'admin_email', 'admin_password']);
-        });
+        // Schema::table('tenants', function (Blueprint $table) {
+        //     $table->dropColumn(['admin_name', 'admin_email', 'admin_password']);
+        // });
     }
 };

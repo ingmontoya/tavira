@@ -1,0 +1,120 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: ingmontoyav/tavira-app
+  DEPLOYMENT_NAME: tavira-app
+  K8S_NAMESPACE: default
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # 1️⃣ Checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Docker setup
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 3️⃣ Version/tag
+      - name: Extract version from commit
+        id: version
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=v$(date +%Y%m%d)-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      # 4️⃣ Build & push Docker image
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:latest
+          cache-to: type=inline
+
+      # 5️⃣ Setup kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Verify cluster connection
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      # 6️⃣ Update Deployment
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+            php-fpm=${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }} \
+            -n ${{ env.K8S_NAMESPACE }} --record
+
+      - name: Wait for rollout to complete
+        run: |
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }} --timeout=10m
+
+      # 7️⃣ Post-deployment tasks (Laravel + Tenants)
+      - name: Run Laravel post-deploy tasks
+        run: |
+          POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.DEPLOYMENT_NAME }} -o jsonpath='{.items[0].metadata.name}')
+
+          echo "✅ Clearing caches..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:clear
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan route:cache
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache
+
+          echo "✅ Running main migrations..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan migrate --force
+
+          echo "✅ Running tenants migrations..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan tenants:migrate --force
+
+      # 8️⃣ Verify deployment
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.DEPLOYMENT_NAME }}
+          kubectl get deployment ${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }}
+
+      # 9️⃣ Notifications
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Check the logs above."
+          POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.DEPLOYMENT_NAME }} -o jsonpath='{.items[0].metadata.name}')
+          kubectl logs -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm --tail=50
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ Deployment successful!"
+          echo "Version deployed: ${{ steps.version.outputs.tag }}"
+          echo "Image: ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}"
