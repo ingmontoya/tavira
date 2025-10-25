@@ -12,10 +12,12 @@ RUN apk add --no-cache \
     libzip-dev \
     icu-dev \
     postgresql-dev \
+    $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install gd pdo_pgsql pgsql zip intl \
     && pecl install redis \
-    && docker-php-ext-enable redis
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS
 
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
