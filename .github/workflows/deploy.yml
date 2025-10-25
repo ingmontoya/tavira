@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE: ingmontoyav/tavira-app
+  DOCKER_IMAGE_PHP: ingmontoyav/tavira-app
+  DOCKER_IMAGE_NUXT: ingmontoyav/tavira-nuxt
   DEPLOYMENT_NAME: tavira-app
   K8S_NAMESPACE: default
 
@@ -23,17 +24,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Docker setup
+      # 2️⃣ Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 3️⃣ Login Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3️⃣ Version/tag
+      # 4️⃣ Extract version
       - name: Extract version from commit
         id: version
         run: |
@@ -41,19 +43,33 @@ jobs:
           echo "tag=v$(date +%Y%m%d)-${SHORT_SHA}" >> $GITHUB_OUTPUT
           echo "short_sha=${SHORT_SHA}" >> $GITHUB_OUTPUT
 
-      # 4️⃣ Build & push Docker image
-      - name: Build and Push Docker image
+      # 5️⃣ Build & push PHP/FPM image
+      - name: Build & Push PHP Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker
+          file: ./docker/Dockerfile.php
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE_PHP }}:latest
+            ${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }}
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_PHP }}:latest
+          cache-to: type=inline
+
+      # 6️⃣ Build & push Nuxt image
+      - name: Build & Push Nuxt Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKER_IMAGE }}:latest
-            ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE_NUXT }}:latest
+            ${{ env.DOCKER_IMAGE_NUXT }}:${{ steps.version.outputs.tag }}
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_NUXT }}:latest
           cache-to: type=inline
 
-      # 5️⃣ Setup kubectl
+      # 7️⃣ Setup kubectl
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
@@ -67,21 +83,22 @@ jobs:
 
       - name: Verify cluster connection
         run: |
+          kubectl version --client
           kubectl cluster-info
           kubectl get nodes
 
-      # 6️⃣ Update Deployment
+      # 8️⃣ Update deployment image
       - name: Update deployment image
         run: |
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
-            php-fpm=${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }} \
+            php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             -n ${{ env.K8S_NAMESPACE }} --record
 
       - name: Wait for rollout to complete
         run: |
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }} --timeout=10m
 
-      # 7️⃣ Post-deployment tasks (Laravel + Tenants)
+      # 9️⃣ Post-deployment tasks (Laravel + Tenants)
       - name: Run Laravel post-deploy tasks
         run: |
           POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.DEPLOYMENT_NAME }} -o jsonpath='{.items[0].metadata.name}')
@@ -98,13 +115,13 @@ jobs:
           echo "✅ Running tenants migrations..."
           kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan tenants:migrate --force
 
-      # 8️⃣ Verify deployment
+      # 🔟 Verify deployment
       - name: Verify deployment
         run: |
           kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.DEPLOYMENT_NAME }}
           kubectl get deployment ${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }}
 
-      # 9️⃣ Notifications
+      # 1️⃣1️⃣ Notifications
       - name: Notify on failure
         if: failure()
         run: |
@@ -117,4 +134,5 @@ jobs:
         run: |
           echo "✅ Deployment successful!"
           echo "Version deployed: ${{ steps.version.outputs.tag }}"
-          echo "Image: ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}"
+          echo "PHP Image: ${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }}"
+          echo "Nuxt Image: ${{ env.DOCKER_IMAGE_NUXT }}:${{ steps.version.outputs.tag }}"
