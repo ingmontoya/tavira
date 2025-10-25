@@ -38,8 +38,8 @@ RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framewor
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Copiar entrypoint script
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+# Copiar entrypoint script (desde la raíz del contexto de build)
+COPY ./docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
