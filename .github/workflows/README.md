@@ -4,16 +4,19 @@ Este directorio contiene los workflows de CI/CD para Tavira.
 
 ## 🚀 Workflows Disponibles
 
-### 1. `deploy.yml` - Build y Push Automático
+### 1. `deploy.yml` - Deploy Automático Completo a Producción
 
 **Trigger**: Push a `main` o ejecución manual
 
 **Proceso**:
 1. Build de imágenes Docker (PHP-FPM y Nuxt)
 2. Push a Docker Hub con tags automáticos
-3. Muestra instrucciones para deploy manual en Kubernetes
+3. Deploy automático a Kubernetes
+4. Rolling update sin downtime
+5. Ejecución automática de migraciones y cache
+6. Verificación del deployment
 
-**Nota**: El deploy a Kubernetes es manual por seguridad. Usa el script `./scripts/deploy.sh` para desplegar.
+**🔥 Deploy completamente automático**: Solo haz push a main y todo se despliega automáticamente.
 
 ### 2. `tests.yml` - Tests Automáticos
 
@@ -31,7 +34,7 @@ Este directorio contiene los workflows de CI/CD para Tavira.
 
 ## 🔐 Secrets Requeridos
 
-Para que el workflow funcione, necesitas configurar estos secrets en GitHub:
+Para que el workflow de auto-deploy funcione, necesitas configurar estos 3 secrets en GitHub:
 
 ### Configurar Secrets en GitHub
 
@@ -57,25 +60,32 @@ Tu password o Personal Access Token de Docker Hub
 4. Permisos: Read & Write
 5. Copia el token generado
 
-## 📋 Cómo Usar el Workflow
+### `KUBECONFIG`
+Tu archivo kubeconfig en formato base64
 
-### Paso 1: Configurar Secrets
+**Cómo obtenerlo:**
+```bash
+# En tu máquina local donde tienes acceso al cluster
+cat ~/.kube/config | base64 -w 0
 
-Sigue las instrucciones arriba para configurar los 2 secrets requeridos (DOCKER_USERNAME y DOCKER_PASSWORD).
+# En macOS:
+cat ~/.kube/config | base64
 
-### Paso 2: Verificar Configuración
-
-Edita `.github/workflows/deploy.yml` y verifica:
-
-```yaml
-env:
-  DOCKER_IMAGE_PHP: ingmontoyav/tavira-app      # ✅ Tu usuario/imagen
-  DOCKER_IMAGE_NUXT: ingmontoyav/tavira-nuxt    # ✅ Tu usuario/imagen
-  DEPLOYMENT_NAME: tavira-app                   # ✅ Nombre del deployment en K8s
-  K8S_NAMESPACE: default                        # ✅ Namespace correcto
+# Copia el output completo (será una línea muy larga)
 ```
 
-### Paso 3: Hacer Cambios y Push
+**✅ Ya configurado** - Este secret ya está en tu repositorio
+
+## 📋 Cómo Usar el Deploy Automático
+
+### Paso 1: Configurar Secrets (Ya hecho ✅)
+
+Todos los secrets necesarios ya están configurados:
+- ✅ DOCKER_USERNAME
+- ✅ DOCKER_PASSWORD
+- ✅ KUBECONFIG
+
+### Paso 2: Hacer Cambios y Push
 
 ```bash
 # Hacer cambios en el código
@@ -84,71 +94,72 @@ git commit -m "feat: nueva funcionalidad"
 git push origin main
 ```
 
-### Paso 4: Verificar Build
+### Paso 3: ¡Eso es todo! 🎉
 
-1. Ve a tu repositorio en GitHub
-2. Click en "Actions"
-3. Verás el workflow "Deploy to Production" ejecutándose
-4. Espera a que termine (build y push de imágenes Docker)
+El workflow automáticamente:
+1. ✅ Build de imágenes Docker
+2. ✅ Push a Docker Hub
+3. ✅ Deploy a Kubernetes
+4. ✅ Rolling update
+5. ✅ Ejecución de migraciones
+6. ✅ Limpieza de caches
 
-### Paso 5: Deploy a Kubernetes
+### Paso 4: Verificar Deployment
 
-Después de que el workflow termine, copia la versión de la imagen y ejecuta:
+1. Ve a https://github.com/ingmontoya/tavira/actions
+2. Click en el workflow que está corriendo
+3. Observa el progreso en tiempo real
+4. ✅ Cuando termine, tu app estará actualizada en https://tavira.com.co
+
+### Deploy Manual (Opcional)
+
+Si por alguna razón necesitas hacer deploy manual:
 
 ```bash
-# Opción 1: Usar el script automático (recomendado)
+# Usar el script automático
+./scripts/deploy.sh latest
+
+# O especificar una versión
 ./scripts/deploy.sh v20251025-a1b2c3d
-
-# Opción 2: Comandos manuales
-kubectl set image deployment/tavira-app \
-  php-fpm=ingmontoyav/tavira-app:v20251025-a1b2c3d
-
-kubectl rollout status deployment/tavira-app --timeout=10m
-
-# Post-deploy tasks
-POD=$(kubectl get pods -l app=tavira-app -o jsonpath='{.items[0].metadata.name}')
-kubectl exec $POD -c php-fpm -- php artisan config:clear
-kubectl exec $POD -c php-fpm -- php artisan config:cache
-kubectl exec $POD -c php-fpm -- php artisan migrate --force
-kubectl exec $POD -c php-fpm -- php artisan tenants:migrate --force
 ```
 
-## 🔄 Workflow de Deploy
+## 🔄 Workflow de Deploy (AUTOMÁTICO)
 
 ```
 Push a main
     ↓
 GitHub Actions detecta el push
     ↓
-Build imagen Docker PHP (Dockerfile)
+Build imagen Docker PHP (Dockerfile.php)
     ↓
-Build imagen Docker Nuxt (Dockerfile.nuxt)
+Build imagen Docker Nuxt (Dockerfile)
     ↓
 Push imágenes a Docker Hub con tags:
   - latest
-  - v20251025-a1b2c3d (version + commit sha)
+  - v20251025-c5daf3b (version + commit sha)
     ↓
-✅ Build completado - Imágenes listas
+Conectar a Kubernetes con KUBECONFIG
     ↓
-📋 GitHub Actions muestra comandos para deploy
+Rolling update del deployment
     ↓
-[MANUAL] Ejecutar script de deploy localmente:
-    ./scripts/deploy.sh v20251025-a1b2c3d
-    ↓
-Rolling update en Kubernetes
-    ↓
-Esperar que el rollout complete
+Esperar que el rollout complete (max 10 min)
     ↓
 Ejecutar post-deploy tasks automáticamente:
   - php artisan config:clear
   - php artisan config:cache
   - php artisan route:cache
   - php artisan view:cache
-  - php artisan migrate --force
-  - php artisan tenants:migrate --force
+  - php artisan migrate --force (central)
+  - php artisan tenants:migrate --force (todos los tenants)
+    ↓
+Verificar deployment exitoso
     ↓
 ✅ Deploy completado a producción
+    ↓
+App actualizada en https://tavira.com.co
 ```
+
+**⏱️ Tiempo total**: ~5-10 minutos desde push hasta producción
 
 ## 🛠️ Troubleshooting
 
