@@ -4,19 +4,16 @@ Este directorio contiene los workflows de CI/CD para Tavira.
 
 ## 🚀 Workflows Disponibles
 
-### 1. `deploy.yml` - Deploy Automático Completo a Producción
+### 1. `deploy.yml` - Build Automático + Deploy Manual
 
 **Trigger**: Push a `main` o ejecución manual
 
 **Proceso**:
 1. Build de imágenes Docker (PHP-FPM y Nuxt)
 2. Push a Docker Hub con tags automáticos
-3. Deploy automático a Kubernetes
-4. Rolling update sin downtime
-5. Ejecución automática de migraciones y cache
-6. Verificación del deployment
+3. Muestra instrucciones para deploy manual
 
-**🔥 Deploy completamente automático**: Solo haz push a main y todo se despliega automáticamente.
+**⚙️ Semi-automático**: Push hace build automático, luego ejecutas script para deploy.
 
 ### 2. `tests.yml` - Tests Automáticos
 
@@ -34,7 +31,7 @@ Este directorio contiene los workflows de CI/CD para Tavira.
 
 ## 🔐 Secrets Requeridos
 
-Para que el workflow de auto-deploy funcione, necesitas configurar estos 3 secrets en GitHub:
+Para que el workflow funcione, necesitas configurar estos 2 secrets en GitHub:
 
 ### Configurar Secrets en GitHub
 
@@ -60,32 +57,11 @@ Tu password o Personal Access Token de Docker Hub
 4. Permisos: Read & Write
 5. Copia el token generado
 
-### `KUBECONFIG`
-Tu archivo kubeconfig en formato base64
+**✅ Ya configurado** - Estos secrets ya están en tu repositorio
 
-**Cómo obtenerlo:**
-```bash
-# En tu máquina local donde tienes acceso al cluster
-cat ~/.kube/config | base64 -w 0
+## 📋 Cómo Usar el Workflow
 
-# En macOS:
-cat ~/.kube/config | base64
-
-# Copia el output completo (será una línea muy larga)
-```
-
-**✅ Ya configurado** - Este secret ya está en tu repositorio
-
-## 📋 Cómo Usar el Deploy Automático
-
-### Paso 1: Configurar Secrets (Ya hecho ✅)
-
-Todos los secrets necesarios ya están configurados:
-- ✅ DOCKER_USERNAME
-- ✅ DOCKER_PASSWORD
-- ✅ KUBECONFIG
-
-### Paso 2: Hacer Cambios y Push
+### Paso 1: Hacer Cambios y Push
 
 ```bash
 # Hacer cambios en el código
@@ -94,36 +70,34 @@ git commit -m "feat: nueva funcionalidad"
 git push origin main
 ```
 
-### Paso 3: ¡Eso es todo! 🎉
-
-El workflow automáticamente:
-1. ✅ Build de imágenes Docker
-2. ✅ Push a Docker Hub
-3. ✅ Deploy a Kubernetes
-4. ✅ Rolling update
-5. ✅ Ejecución de migraciones
-6. ✅ Limpieza de caches
-
-### Paso 4: Verificar Deployment
+### Paso 2: Esperar el Build
 
 1. Ve a https://github.com/ingmontoya/tavira/actions
-2. Click en el workflow que está corriendo
-3. Observa el progreso en tiempo real
-4. ✅ Cuando termine, tu app estará actualizada en https://tavira.com.co
+2. El workflow automáticamente:
+   - ✅ Build de imágenes Docker
+   - ✅ Push a Docker Hub
+   - ✅ Genera tag con versión (ej: v20251025-abc1234)
 
-### Deploy Manual (Opcional)
+### Paso 3: Deploy a Kubernetes
 
-Si por alguna razón necesitas hacer deploy manual:
+Cuando el workflow termine, copia el tag de la versión y ejecuta:
 
 ```bash
-# Usar el script automático
-./scripts/deploy.sh latest
+# Opción 1 - Script automático (recomendado)
+./scripts/deploy.sh v20251025-abc1234
 
-# O especificar una versión
-./scripts/deploy.sh v20251025-a1b2c3d
+# Opción 2 - Usar 'latest'
+./scripts/deploy.sh latest
 ```
 
-## 🔄 Workflow de Deploy (AUTOMÁTICO)
+El script automáticamente:
+- ✅ Deploy a Kubernetes
+- ✅ Rolling update
+- ✅ Ejecución de migraciones (central + tenants)
+- ✅ Limpieza de caches
+- ✅ Verificación del deployment
+
+## 🔄 Workflow de Deploy (SEMI-AUTOMÁTICO)
 
 ```
 Push a main
@@ -136,15 +110,18 @@ Build imagen Docker Nuxt (Dockerfile)
     ↓
 Push imágenes a Docker Hub con tags:
   - latest
-  - v20251025-c5daf3b (version + commit sha)
+  - v20251025-abc1234 (version + commit sha)
     ↓
-Conectar a Kubernetes con KUBECONFIG
+✅ Build completo - Muestra instrucciones
     ↓
-Rolling update del deployment
+[MANUAL] En tu máquina local:
+    ./scripts/deploy.sh v20251025-abc1234
     ↓
-Esperar que el rollout complete (max 10 min)
+Rolling update en Kubernetes
     ↓
-Ejecutar post-deploy tasks automáticamente:
+Esperar que el rollout complete
+    ↓
+Post-deploy tasks automáticos:
   - php artisan config:clear
   - php artisan config:cache
   - php artisan route:cache
@@ -152,14 +129,12 @@ Ejecutar post-deploy tasks automáticamente:
   - php artisan migrate --force (central)
   - php artisan tenants:migrate --force (todos los tenants)
     ↓
-Verificar deployment exitoso
-    ↓
 ✅ Deploy completado a producción
     ↓
 App actualizada en https://tavira.com.co
 ```
 
-**⏱️ Tiempo total**: ~5-10 minutos desde push hasta producción
+**⏱️ Tiempo total**: ~2-3 min (build) + ~2-3 min (deploy manual)
 
 ## 🛠️ Troubleshooting
 
