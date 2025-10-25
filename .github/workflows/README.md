@@ -4,16 +4,16 @@ Este directorio contiene los workflows de CI/CD para Tavira.
 
 ## 🚀 Workflows Disponibles
 
-### 1. `deploy.yml` - Deploy Automático a Producción
+### 1. `deploy.yml` - Build y Push Automático
 
 **Trigger**: Push a `main` o ejecución manual
 
 **Proceso**:
 1. Build de imágenes Docker (PHP-FPM y Nuxt)
-2. Push a Docker Hub
-3. Rolling update en Kubernetes
-4. Ejecución de migraciones (central y tenants)
-5. Limpieza de caches de Laravel
+2. Push a Docker Hub con tags automáticos
+3. Muestra instrucciones para deploy manual en Kubernetes
+
+**Nota**: El deploy a Kubernetes es manual por seguridad. Usa el script `./scripts/deploy.sh` para desplegar.
 
 ### 2. `tests.yml` - Tests Automáticos
 
@@ -31,7 +31,7 @@ Este directorio contiene los workflows de CI/CD para Tavira.
 
 ## 🔐 Secrets Requeridos
 
-Para que el workflow de deploy funcione, necesitas configurar los siguientes secrets en GitHub:
+Para que el workflow funcione, necesitas configurar estos secrets en GitHub:
 
 ### Configurar Secrets en GitHub
 
@@ -57,32 +57,11 @@ Tu password o Personal Access Token de Docker Hub
 4. Permisos: Read & Write
 5. Copia el token generado
 
-### `KUBECONFIG`
-Tu archivo kubeconfig en formato base64
-
-**Cómo obtenerlo:**
-```bash
-# En tu máquina local donde tienes acceso al cluster
-cat ~/.kube/config | base64 -w 0
-
-# En macOS:
-cat ~/.kube/config | base64
-
-# Copia el output completo (será una línea muy larga)
-```
-
-**Importante**:
-- El kubeconfig debe tener permisos para:
-  - `kubectl set image deployment/tavira-app`
-  - `kubectl exec` en pods
-  - `kubectl get pods/deployments`
-  - `kubectl rollout status`
-
-## 📋 Cómo Configurar el Deploy Automático
+## 📋 Cómo Usar el Workflow
 
 ### Paso 1: Configurar Secrets
 
-Sigue las instrucciones arriba para configurar los 3 secrets requeridos.
+Sigue las instrucciones arriba para configurar los 2 secrets requeridos (DOCKER_USERNAME y DOCKER_PASSWORD).
 
 ### Paso 2: Verificar Configuración
 
@@ -96,20 +75,43 @@ env:
   K8S_NAMESPACE: default                        # ✅ Namespace correcto
 ```
 
-### Paso 3: Hacer Push a Main
+### Paso 3: Hacer Cambios y Push
 
 ```bash
+# Hacer cambios en el código
 git add .
-git commit -m "feat: Add auto-deployment workflow"
+git commit -m "feat: nueva funcionalidad"
 git push origin main
 ```
 
-### Paso 4: Verificar Ejecución
+### Paso 4: Verificar Build
 
 1. Ve a tu repositorio en GitHub
 2. Click en "Actions"
 3. Verás el workflow "Deploy to Production" ejecutándose
-4. Click en el workflow para ver el progreso en tiempo real
+4. Espera a que termine (build y push de imágenes Docker)
+
+### Paso 5: Deploy a Kubernetes
+
+Después de que el workflow termine, copia la versión de la imagen y ejecuta:
+
+```bash
+# Opción 1: Usar el script automático (recomendado)
+./scripts/deploy.sh v20251025-a1b2c3d
+
+# Opción 2: Comandos manuales
+kubectl set image deployment/tavira-app \
+  php-fpm=ingmontoyav/tavira-app:v20251025-a1b2c3d
+
+kubectl rollout status deployment/tavira-app --timeout=10m
+
+# Post-deploy tasks
+POD=$(kubectl get pods -l app=tavira-app -o jsonpath='{.items[0].metadata.name}')
+kubectl exec $POD -c php-fpm -- php artisan config:clear
+kubectl exec $POD -c php-fpm -- php artisan config:cache
+kubectl exec $POD -c php-fpm -- php artisan migrate --force
+kubectl exec $POD -c php-fpm -- php artisan tenants:migrate --force
+```
 
 ## 🔄 Workflow de Deploy
 
@@ -126,13 +128,18 @@ Push imágenes a Docker Hub con tags:
   - latest
   - v20251025-a1b2c3d (version + commit sha)
     ↓
-Conectar a Kubernetes cluster
+✅ Build completado - Imágenes listas
     ↓
-Rolling update del deployment
+📋 GitHub Actions muestra comandos para deploy
+    ↓
+[MANUAL] Ejecutar script de deploy localmente:
+    ./scripts/deploy.sh v20251025-a1b2c3d
+    ↓
+Rolling update en Kubernetes
     ↓
 Esperar que el rollout complete
     ↓
-Ejecutar post-deploy tasks:
+Ejecutar post-deploy tasks automáticamente:
   - php artisan config:clear
   - php artisan config:cache
   - php artisan route:cache
@@ -140,9 +147,7 @@ Ejecutar post-deploy tasks:
   - php artisan migrate --force
   - php artisan tenants:migrate --force
     ↓
-Verificar deployment exitoso
-    ↓
-✅ Deploy completado
+✅ Deploy completado a producción
 ```
 
 ## 🛠️ Troubleshooting
