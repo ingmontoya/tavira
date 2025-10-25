@@ -12,7 +12,9 @@
 # Docker
 Dockerfile*
 docker-compose*.yml
-docker/
+docker/*
+!docker/entrypoint.sh
+!docker/nginx/
 .dockerignore
 
 # Kubernetes
