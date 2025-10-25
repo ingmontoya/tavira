@@ -13,7 +13,9 @@ RUN apk add --no-cache \
     icu-dev \
     postgresql-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install gd pdo_pgsql pgsql zip intl
+    && docker-php-ext-install gd pdo_pgsql pgsql zip intl \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
