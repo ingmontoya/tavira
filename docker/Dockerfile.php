@@ -1,4 +1,21 @@
-# Imagen base mínima de PHP 8.3 FPM
+# Stage 1: Build frontend assets
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app
+
+# Copiar package files
+COPY package.json package-lock.json ./
+
+# Instalar dependencias de Node
+RUN npm ci
+
+# Copiar código fuente
+COPY . .
+
+# Build de producción con Vite
+RUN npm run build
+
+# Stage 2: PHP FPM base image
 FROM php:8.3-fpm-alpine AS base
 
 # Instalar dependencias del sistema necesarias para Laravel
@@ -34,6 +51,9 @@ RUN composer install --no-dev --no-scripts --no-progress --prefer-dist --optimiz
 
 # Copiar el resto del código (sin node_modules, sin .git)
 COPY . .
+
+# Copiar los assets compilados del frontend desde el builder
+COPY --from=frontend-builder /app/public/build ./public/build
 
 # Crear directorios necesarios y ajustar permisos de Laravel
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views \
