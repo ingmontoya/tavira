@@ -20,6 +20,21 @@ class EnsureConjuntoConfigured
             return $next($request);
         }
 
+        // Check if we're in a tenant context (not central)
+        // In central context, ConjuntoConfig table doesn't exist
+        if (! tenancy()->initialized) {
+            // We're in central context - skip conjunto configuration check
+            Inertia::share([
+                'conjuntoConfigured' => [
+                    'exists' => false,
+                    'isActive' => false,
+                    'name' => null,
+                ],
+            ]);
+
+            return $next($request);
+        }
+
         // Since multitenancy was removed, we always check for conjunto configuration
         // For central/superadmin users, bypass conjunto requirement
         $user = auth()->user();
