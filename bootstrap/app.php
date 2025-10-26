@@ -14,6 +14,7 @@ use App\Http\Middleware\RequiresSubscription;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SharePermissions;
 use App\Http\Middleware\ShareTenantFeatures;
+use App\Http\Middleware\TrustProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -42,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
+            TrustProxies::class,
             HandleCors::class,
             VerifyCsrfToken::class,
             // SecurityHeadersMiddleware::class, // Temporarily disabled for testing
