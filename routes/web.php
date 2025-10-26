@@ -36,7 +36,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         require __DIR__.'/modules/placeholder-modules.php';
         require __DIR__.'/modules/subscription-payment.php';
 
-        Route::middleware(['auth', 'verified'])->group(function () {
+        Route::middleware(['auth'])->group(function () {
             // Central dashboard for tenant management
             require __DIR__.'/modules/central-dashboard.php';
 

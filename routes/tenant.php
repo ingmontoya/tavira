@@ -42,7 +42,7 @@ Route::middleware([
     Route::get('/pqrs/public/success/{ticket}', [\App\Http\Controllers\PqrsController::class, 'publicSuccess'])->name('pqrs.public.success');
     Route::get('/pqrs/track', [\App\Http\Controllers\PqrsController::class, 'track'])->name('pqrs.track');
 
-    Route::middleware(['auth', 'verified'])->group(function () {
+    Route::middleware(['auth'])->group(function () {
 
         // Setup/Wizard routes
         Route::prefix('setup')->name('setup.')->group(function () {
