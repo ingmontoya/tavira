@@ -86,10 +86,11 @@ data:
             include fastcgi_params;
 
             # Forward proxy headers to PHP
-            fastcgi_param HTTP_X_FORWARDED_HOST $http_x_forwarded_host;
-            fastcgi_param HTTP_X_FORWARDED_PROTO $http_x_forwarded_proto;
-            fastcgi_param HTTP_X_FORWARDED_FOR $http_x_forwarded_for;
-            fastcgi_param HTTP_X_FORWARDED_PORT $http_x_forwarded_port;
+            # Set X-Forwarded-Host to actual host for tenant subdomain detection
+            fastcgi_param HTTP_X_FORWARDED_HOST $host;
+            fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;
+            fastcgi_param HTTP_X_FORWARDED_FOR $remote_addr;
+            fastcgi_param HTTP_X_FORWARDED_PORT $server_port;
 
             # Timeouts
             fastcgi_read_timeout 300s;

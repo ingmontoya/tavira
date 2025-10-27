@@ -37,16 +37,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force URL root from APP_URL in production/behind proxies
-        // This ensures URL generation works correctly even outside HTTP requests
-        if (config('app.url')) {
-            $appUrl = config('app.url');
-            \Illuminate\Support\Facades\URL::forceRootUrl($appUrl);
-
-            // Also force scheme if APP_URL is https
-            if (str_starts_with($appUrl, 'https://')) {
-                \Illuminate\Support\Facades\URL::forceScheme('https');
-            }
+        // Force HTTPS scheme in production
+        // Do NOT force root URL to allow tenant subdomains to work correctly
+        // The TrustProxies middleware handles X-Forwarded-Host for proper domain detection
+        if (config('app.env') === 'production') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
         // Configurar mapa de morfos para relaciones polimórficas
