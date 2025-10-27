@@ -20,68 +20,17 @@ class ValidateSignatureWithProxy
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        // Check if the signature is valid using relative URL
-        if ($this->hasValidRelativeSignature($request)) {
+        // Use Laravel's built-in relative signature validation
+        // This works correctly behind proxies by using relative URLs
+        if (URL::hasValidRelativeSignature($request)) {
             return $next($request);
         }
 
         // If relative signature fails, try with absolute URL as fallback
-        if ($request->hasValidSignature()) {
+        if (URL::hasValidSignature($request)) {
             return $next($request);
         }
 
         throw new InvalidSignatureException('Invalid signature.');
-    }
-
-    /**
-     * Determine if the given request has a valid signature using relative URL.
-     */
-    protected function hasValidRelativeSignature(Request $request): bool
-    {
-        // Get the signature from the request
-        $signature = $request->query('signature', '');
-
-        if (empty($signature)) {
-            return false;
-        }
-
-        // Build the URL without the signature parameter
-        $url = $request->url();
-        $queryString = $this->buildQueryString($request->except('signature'));
-
-        if ($queryString) {
-            $url .= '?' . $queryString;
-        }
-
-        // Get and decode APP_KEY (Laravel stores it as base64:xxx)
-        $key = $this->getAppKey();
-
-        // Generate expected signature for this URL
-        $expectedSignature = hash_hmac('sha256', $url, $key);
-
-        // Compare signatures
-        return hash_equals($expectedSignature, (string) $signature);
-    }
-
-    /**
-     * Get the application key, decoding it if needed.
-     */
-    protected function getAppKey(): string
-    {
-        $key = config('app.key');
-
-        if (str_starts_with($key, 'base64:')) {
-            $key = base64_decode(substr($key, 7));
-        }
-
-        return $key;
-    }
-
-    /**
-     * Build query string from parameters.
-     */
-    protected function buildQueryString(array $parameters): string
-    {
-        return http_build_query($parameters);
     }
 }
