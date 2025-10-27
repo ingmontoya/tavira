@@ -37,6 +37,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force URL root from APP_URL in production/behind proxies
+        // This ensures URL generation works correctly even outside HTTP requests
+        if (config('app.url')) {
+            $appUrl = config('app.url');
+            \Illuminate\Support\Facades\URL::forceRootUrl($appUrl);
+
+            // Also force scheme if APP_URL is https
+            if (str_starts_with($appUrl, 'https://')) {
+                \Illuminate\Support\Facades\URL::forceScheme('https');
+            }
+        }
+
         // Configurar mapa de morfos para relaciones polimórficas
         Relation::enforceMorphMap([
             'invoice' => \App\Models\Invoice::class,

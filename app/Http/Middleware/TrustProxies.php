@@ -32,17 +32,6 @@ class TrustProxies extends Middleware
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        // Force URL generation to use the correct host and scheme from proxy headers
-        // This must happen BEFORE parent::handle() to affect URL generation
-        $host = $request->header('X-Forwarded-Host') ?? $request->getHost();
-        $scheme = $request->header('X-Forwarded-Proto') ?? $request->getScheme();
-
-        // Only force if we're behind a proxy (not in local development)
-        if ($host !== '127.0.0.1' && $host !== 'localhost') {
-            app('url')->forceRootUrl($scheme.'://'.$host);
-            app('url')->forceScheme($scheme);
-        }
-
         return parent::handle($request, $next);
     }
 }
