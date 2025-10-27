@@ -10,7 +10,8 @@ k8s/deployed/
 ├── deployment.yaml                      # Tavira app deployment
 ├── service.yaml                        # Tavira app service
 ├── nginx-config.yaml                   # Nginx ConfigMap
-├── ingress.yaml                        # Ingress configuration
+├── ingress.yaml                        # Ingress configuration (with wildcard routing)
+├── certificates.yaml                   # SSL certificates (main + tenant subdomains)
 ├── postgres-deployment.yaml            # PostgreSQL deployment
 ├── postgres-service.yaml               # PostgreSQL service
 ├── redis-deployment.yaml               # Redis deployment
@@ -52,7 +53,8 @@ k8s/deployed/
 
 3. **Networking**
    - ClusterIP service on port 80
-   - Ingress configured for external access at `tavira.com.co`
+   - Ingress configured for `tavira.com.co` and wildcard `*.tavira.com.co`
+   - Per-subdomain SSL certificates using Let's Encrypt (HTTP-01 challenge)
 
 ## 🔧 How These Files Were Generated
 
@@ -157,6 +159,128 @@ See `../../PRODUCTION-ENV.md` for complete list.
    kubectl exec deployment/tavira-app -- php artisan view:clear
    ```
 
+## 🔐 SSL Certificate Management
+
+### Certificate Architecture
+
+The application uses **per-subdomain SSL certificates** instead of wildcard certificates:
+- Main domain (`tavira.com.co`) has its own certificate
+- Each tenant subdomain gets its own certificate
+- Uses Let's Encrypt with HTTP-01 challenge validation
+- Automatically issued via cert-manager
+
+**Why not wildcard?** Wildcard certificates (`*.tavira.com.co`) require DNS-01 challenge validation, which needs DNS provider API credentials. Per-subdomain certificates are simpler and more secure.
+
+### Current Certificates
+
+Check all certificates:
+```bash
+kubectl get certificates
+```
+
+Example output:
+```
+NAME                         READY   SECRET                       AGE
+tavira-tls                   True    tavira-tls                   47h
+torresdevillacampestre-tls   True    torresdevillacampestre-tls   5m
+```
+
+### Adding SSL Certificate for New Tenant
+
+When a new tenant subdomain is created (e.g., `nuevo-conjunto.tavira.com.co`):
+
+1. **Create Certificate resource**:
+   ```bash
+   cat <<EOF | kubectl apply -f -
+   apiVersion: cert-manager.io/v1
+   kind: Certificate
+   metadata:
+     name: nuevo-conjunto-tls
+     namespace: default
+   spec:
+     secretName: nuevo-conjunto-tls
+     issuerRef:
+       name: letsencrypt-prod
+       kind: ClusterIssuer
+     dnsNames:
+     - nuevo-conjunto.tavira.com.co
+   EOF
+   ```
+
+2. **Update Ingress** to include the subdomain:
+   ```bash
+   kubectl patch ingress tavira-ingress --type=json -p='[
+     {
+       "op": "add",
+       "path": "/spec/rules/-",
+       "value": {
+         "host": "nuevo-conjunto.tavira.com.co",
+         "http": {
+           "paths": [{
+             "path": "/",
+             "pathType": "Prefix",
+             "backend": {
+               "service": {
+                 "name": "tavira-service",
+                 "port": {"number": 80}
+               }
+             }
+           }]
+         }
+       }
+     },
+     {
+       "op": "add",
+       "path": "/spec/tls/-",
+       "value": {
+         "hosts": ["nuevo-conjunto.tavira.com.co"],
+         "secretName": "nuevo-conjunto-tls"
+       }
+     }
+   ]'
+   ```
+
+3. **Verify certificate issuance** (usually takes 30-60 seconds):
+   ```bash
+   kubectl get certificate nuevo-conjunto-tls
+   # Wait until READY: True
+   ```
+
+4. **Test HTTPS access**:
+   ```bash
+   curl -I https://nuevo-conjunto.tavira.com.co
+   ```
+
+### Certificate Troubleshooting
+
+If certificate is not issuing (READY: False):
+
+```bash
+# Check certificate details
+kubectl describe certificate <certificate-name>
+
+# Check certificate request
+kubectl get certificaterequest
+
+# Check ACME order
+kubectl get order
+
+# Check challenge
+kubectl get challenge
+
+# View cert-manager logs
+kubectl logs -n cert-manager deployment/cert-manager
+```
+
+Common issues:
+- **DNS not pointing to server**: Ensure subdomain DNS A record points to server IP
+- **Ingress not updated**: Subdomain must be in Ingress rules for HTTP-01 challenge to work
+- **Rate limits**: Let's Encrypt has rate limits (50 certificates per domain per week)
+
+### Automating Certificate Creation
+
+**TODO**: Create a Laravel event listener that automatically creates Kubernetes Certificate resources when a new tenant is created.
+
 ## 🐛 Troubleshooting
 
 ### View Logs
@@ -210,6 +334,8 @@ kubectl describe pvc postgres-storage
 3. **Database migrations**: Run tenant migrations with `php artisan tenants:migrate --force`
 4. **Config cache**: Clear after environment changes
 5. **URL generation**: Ensure `TENANCY_CENTRAL_DOMAINS` is set correctly for production
+6. **SSL Certificates**: Create a new Certificate resource for each tenant subdomain
+7. **Ingress updates**: Add tenant subdomain to Ingress after creating certificate
 
 ## 📅 Last Updated
 
