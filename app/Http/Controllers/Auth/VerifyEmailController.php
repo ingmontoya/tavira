@@ -14,16 +14,32 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        $user = $request->user();
+        $centralDomains = config('tenancy.central_domains', []);
+        $isCentralDomain = in_array($request->getHost(), $centralDomains);
+
+        if ($user->hasVerifiedEmail()) {
+            // For central domain users, redirect to subscription plans
+            // The redirect.if.subscribed middleware will handle users who already have a subscription
+            if ($isCentralDomain) {
+                return redirect()->intended(route('subscription.plans', absolute: false).'?verified=1');
+            }
+
+            // For tenant users, redirect to dashboard
             return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
         }
 
-        if ($request->user()->markEmailAsVerified()) {
+        if ($user->markEmailAsVerified()) {
             /** @var \Illuminate\Contracts\Auth\MustVerifyEmail $user */
-            $user = $request->user();
             event(new Verified($user));
         }
 
+        // For central domain users, redirect to subscription plans after verification
+        if ($isCentralDomain) {
+            return redirect()->intended(route('subscription.plans', absolute: false).'?verified=1');
+        }
+
+        // For tenant users, redirect to dashboard
         return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
     }
 }

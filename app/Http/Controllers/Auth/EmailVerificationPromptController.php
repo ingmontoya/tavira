@@ -16,8 +16,16 @@ class EmailVerificationPromptController extends Controller
     public function __invoke(Request $request): RedirectResponse|Response
     {
         if ($request->user()->hasVerifiedEmail()) {
-            // If user is verified, redirect to intended URL or dashboard
-            // Using intended() will use the URL they were trying to access before verification
+            $centralDomains = config('tenancy.central_domains', []);
+            $isCentralDomain = in_array($request->getHost(), $centralDomains);
+
+            // For central domain users, redirect to subscription plans
+            // The redirect.if.subscribed middleware will handle users who already have a subscription
+            if ($isCentralDomain) {
+                return redirect()->intended(route('subscription.plans', absolute: false));
+            }
+
+            // For tenant users, redirect to dashboard
             return redirect()->intended(route('dashboard', absolute: false));
         }
 

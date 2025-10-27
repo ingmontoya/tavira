@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('subscription')->name('subscription.')->group(function () {
     // Show subscription plans (redirect if already subscribed)
     Route::get('/plans', [SubscriptionPaymentController::class, 'index'])
-        ->middleware('redirect.if.subscribed')
+        ->middleware(['auth', 'verified', 'redirect.if.subscribed'])
         ->name('plans');
 
     // Create payment link
