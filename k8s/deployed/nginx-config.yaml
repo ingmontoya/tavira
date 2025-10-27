@@ -3,8 +3,30 @@ data:
   default.conf: |
     # =============================================================================
     # NGINX Configuration for Laravel/Inertia.js App
-    # Optimized for Kubernetes sidecar architecture
+    # Optimized for Kubernetes sidecar architecture with proper proxy header handling
     # =============================================================================
+
+    # Map proxy headers with fallback to nginx variables
+    # This ensures we use Traefik's headers when available
+    map $http_x_forwarded_proto $forwarded_proto {
+        default $http_x_forwarded_proto;
+        "" $scheme;
+    }
+
+    map $http_x_forwarded_host $forwarded_host {
+        default $http_x_forwarded_host;
+        "" $host;
+    }
+
+    map $http_x_forwarded_port $forwarded_port {
+        default $http_x_forwarded_port;
+        "" $server_port;
+    }
+
+    map $http_x_forwarded_for $forwarded_for {
+        default $http_x_forwarded_for;
+        "" $remote_addr;
+    }
 
     server {
         listen 80;
@@ -86,11 +108,12 @@ data:
             include fastcgi_params;
 
             # Forward proxy headers to PHP
-            # Set X-Forwarded-Host to actual host for tenant subdomain detection
-            fastcgi_param HTTP_X_FORWARDED_HOST $host;
-            fastcgi_param HTTP_X_FORWARDED_PROTO $scheme;
-            fastcgi_param HTTP_X_FORWARDED_FOR $remote_addr;
-            fastcgi_param HTTP_X_FORWARDED_PORT $server_port;
+            # Preserve headers from upstream proxy (Traefik) or use nginx variables as fallback
+            # This is critical for signed URL validation and multitenancy
+            fastcgi_param HTTP_X_FORWARDED_HOST $forwarded_host;
+            fastcgi_param HTTP_X_FORWARDED_PROTO $forwarded_proto;
+            fastcgi_param HTTP_X_FORWARDED_FOR $forwarded_for;
+            fastcgi_param HTTP_X_FORWARDED_PORT $forwarded_port;
 
             # Timeouts
             fastcgi_read_timeout 300s;
