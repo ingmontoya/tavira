@@ -53,11 +53,28 @@ class ValidateSignatureWithProxy
             $url .= '?' . $queryString;
         }
 
+        // Get and decode APP_KEY (Laravel stores it as base64:xxx)
+        $key = $this->getAppKey();
+
         // Generate expected signature for this URL
-        $expectedSignature = hash_hmac('sha256', $url, config('app.key'));
+        $expectedSignature = hash_hmac('sha256', $url, $key);
 
         // Compare signatures
         return hash_equals($expectedSignature, (string) $signature);
+    }
+
+    /**
+     * Get the application key, decoding it if needed.
+     */
+    protected function getAppKey(): string
+    {
+        $key = config('app.key');
+
+        if (str_starts_with($key, 'base64:')) {
+            $key = base64_decode(substr($key, 7));
+        }
+
+        return $key;
     }
 
     /**
