@@ -35,3 +35,9 @@ mobile-app
 frankenphp
 frankenphp-worker.php
 .DS_Store
+
+# Kubernetes secrets (never commit actual secrets!)
+k8s/deployed/laravel-env-secret.yaml
+k8s/deployed/*-secret.yaml
+!k8s/deployed/*-secret-template.yaml
+
