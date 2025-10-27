@@ -105,9 +105,8 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        // Redirect to tenant creation since email verification is disabled
-        return redirect()->route('tenant-management.create')
-            ->with('success', 'Cuenta de administrador central creada exitosamente. Ahora puedes crear tu conjunto residencial.');
+        // Redirect to email verification notice
+        return redirect()->route('verification.notice');
     }
 
     /**
@@ -134,9 +133,8 @@ class RegisteredUserController extends Controller
             event(new Registered($user));
             Auth::login($user);
 
-            // Redirect to tenant creation since email verification is disabled
-            return redirect()->route('tenant-management.create')
-                ->with('success', 'Cuenta creada exitosamente. Ahora puedes crear tu conjunto residencial.');
+            // Redirect to email verification notice
+            return redirect()->route('verification.notice');
         }
 
         // Require invitation token for tenant registrations
