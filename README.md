@@ -4,11 +4,21 @@
 
 La plataforma incluye herramientas para la administración de residentes, finanzas completas con facturación automática, seguimiento de pagos, acuerdos de pago, gestión de apartamentos y mucho más. Está diseñada para ser usada tanto desde un panel web como desde dispositivos móviles.
 
-## 📊 Estado Actual del Proyecto (Agosto 2025)
+## 📊 Estado Actual del Proyecto (Octubre 2025)
 
-**Progreso General: 85% Implementado**
+[![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel)](https://laravel.com)
+[![Vue](https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js)](https://vuejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?logo=typescript)](https://www.typescriptlang.org)
+[![Nuxt](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt.js)](https://nuxt.com)
+[![Capacitor](https://img.shields.io/badge/Capacitor-6-119EFF?logo=capacitor)](https://capacitorjs.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Progreso General: 85% Implementado** | [Ver Roadmap Completo →](ROADMAP.md)
 
 🔥 **Últimas Implementaciones:**
+- ✅ Sistema de Asambleas y Votaciones
+- ✅ Portal de Proveedores con Cotizaciones
+- ✅ Botón de Pánico con Rate Limiting
 - ✅ Módulo Contable Completo (Decreto 2650 Colombia)
 - ✅ Sistema de Gastos con Flujo de Aprobación
 - ✅ App Móvil Nativa (iOS + Android)
@@ -20,13 +30,103 @@ La plataforma incluye herramientas para la administración de residentes, finanz
 - ✅ Seguridad Avanzada (OWASP Top 10)
 
 🎆 **Características Destacadas:**
+- **Multitenancy Completo**: Arquitectura multi-tenant con dominio por conjunto
 - **Contabilidad Automatizada**: Partida doble con integración automática
 - **Facturación Electrónica**: Cumplimiento DIAN con Factus
 - **App Móvil Nativa**: iOS y Android con UX moderna
 - **Seguridad Empresarial**: Cumplimiento OWASP con auditoría completa
-- **Automatización IA**: 15+ comandos automatizados para operaciones
+- **Automatización Avanzada**: 20+ comandos automatizados para operaciones
+- **Portal de Proveedores**: Sistema completo de cotizaciones
+- **Asambleas Digitales**: Votaciones y delegaciones electrónicas
+
+### 📈 Métricas del Proyecto
+
+| Métrica | Cantidad |
+|---------|----------|
+| **Módulos Implementados** | 19/22 |
+| **Controladores Laravel** | 95+ |
+| **Modelos Eloquent** | 58+ |
+| **Páginas Vue** | 100+ |
+| **Comandos Artisan** | 20+ |
+| **Servicios de Negocio** | 17+ |
+| **Módulos de Rutas** | 22 |
+| **Tests Automatizados** | 11+ |
 
 A continuación, se detallan las funcionalidades implementadas y por implementar:
+
+---
+
+## 🆕 Módulos Recién Descubiertos (Octubre 2025)
+
+Durante el análisis exhaustivo del codebase, se identificaron módulos completamente funcionales que no estaban documentados en versiones anteriores:
+
+### 🗳️ Sistema de Asambleas y Votaciones
+
+- [x] **Gestión completa de asambleas** - Creación, edición y seguimiento de asambleas
+- [x] **Sistema de votaciones electrónicas** - Votaciones con múltiples opciones
+- [x] **Delegación de votos** - Residentes pueden delegar su voto a otros
+- [x] **Voto por apartamento** - Sistema de votación ponderada
+- [x] **Asistencia a asambleas** - Registro y control de asistencia
+- [x] **Cálculo automático de quórum** - Verificación de validez de votaciones
+- [x] **Reportes de votación** - Resultados detallados y trazabilidad
+
+**Modelos:** `Assembly`, `Vote`, `VoteOption`, `VoteDelegate`, `ApartmentVote`, `AssemblyAttendance`
+**Controladores:** `AssemblyController`, `VoteController`, `VoteDelegateController`
+
+### 🏭 Portal de Proveedores
+
+- [x] **Registro de proveedores** - Sistema de auto-registro con aprobación
+- [x] **Categorías de proveedores** - Clasificación por tipo de servicio
+- [x] **Solicitudes de cotización** - Módulo de RFQ (Request for Quotation)
+- [x] **Respuestas de proveedores** - Sistema de propuestas y ofertas
+- [x] **Dashboard de proveedores** - Panel exclusivo para proveedores
+- [x] **Gestión de servicios** - Catálogo de servicios ofrecidos
+- [x] **Setup de contraseñas** - Invitación y activación de cuentas
+- [x] **Aprobación de registros** - Workflow de validación por administración
+- [x] **Sistema de calificación** - Evaluación de proveedores
+
+**Modelos:** `Provider`, `ProviderCategory`, `ProviderRegistration`, `QuotationRequest`, `QuotationResponse`
+**Controladores:** `CentralProviderController`, `ProviderRegistrationController`, `Provider/ProviderDashboardController`, `Provider/ProviderQuotationController`, `Provider/ProviderServiceController`
+
+### 🚨 Botón de Pánico
+
+- [x] **Alertas de emergencia** - Sistema de alertas críticas para residentes
+- [x] **Rate limiting específico** - 3 alertas por hora para prevenir abuso
+- [x] **Feature flags por tenant** - Habilitación selectiva por conjunto
+- [x] **Comandos de diagnóstico** - Verificación de estado del sistema
+- [x] **Notificaciones automáticas** - Alertas inmediatas a seguridad/administración
+- [x] **Integración con app móvil** - Botón prominente en aplicación móvil
+- [x] **Geolocalización** - Ubicación automática del residente
+
+**Modelos:** `PanicAlert`
+**API:** `Api/PanicAlertController`
+**Comandos:** `CheckPanicButtonCommand`, `EnablePanicButtonCommand`, `SyncPanicButtonFeaturesCommand`
+**Middleware:** Rate limiting especial "panic" (3 intentos/hora)
+
+### 💳 Suscripciones Multi-tenant
+
+- [x] **Gestión de suscripciones** - Sistema de subscriptions por tenant
+- [x] **Estados de suscripción** - Activa, vencida, cancelada
+- [x] **Planes de suscripción** - Múltiples niveles de servicio
+- [x] **Fecha de expiración** - Control automático de vigencia
+- [x] **Pagos de suscripción** - Integración con pasarelas de pago
+- [x] **Sincronización automática** - Comando para actualizar estados
+
+**Modelos:** `TenantSubscription`
+**Controladores:** `SubscriptionPaymentController`
+**Comandos:** `SyncTenantSubscriptionStatus`
+**Middleware:** `RequiresSubscription`, `RedirectIfSubscribed`
+
+### 🎯 Dashboard Central de Administración
+
+- [x] **Vista multi-tenant** - Gestión centralizada de todos los conjuntos
+- [x] **Gestión de features** - Activación/desactivación de módulos por tenant
+- [x] **Impersonación de usuarios** - Acceso de soporte a cuentas de tenants
+- [x] **Métricas centralizadas** - KPIs de todos los conjuntos
+- [x] **Gestión de invitaciones** - Sistema de invitaciones a nuevos conjuntos
+
+**Controladores:** `CentralDashboardController`, `CentralTenantFeatureController`, `TenantImpersonationController`, `TenantManagementController`
+**Modelos:** `Tenant`, `TenantFeature`
 
 ---
 
@@ -368,11 +468,11 @@ A continuación, se detallan las funcionalidades implementadas y por implementar
 - [x] **Cumplimiento de buenas prácticas** - Código limpio, patrones de diseño
 - [x] **Base de datos optimizada** - Migraciones, relaciones, índices adecuados
 - [x] **Manejo de errores robusto** - Excepciones customizadas, logging de errores
-- [ ] Disponibilidad 99.9% (hosting en la nube)
-- [ ] Backups automáticos diarios
-- [ ] Soporte para idiomas (multilenguaje)
-- [ ] Escalabilidad horizontal con microservicios
-- [ ] Cumplimiento Ley 1581 de protección de datos Colombia
+- [ ] Disponibilidad 99.9% (hosting en la nube) - [Ver Roadmap](ROADMAP.md#consideraciones-técnicas)
+- [ ] Backups automáticos diarios - [Planificado Q4 2025](ROADMAP.md#🔴-prioridad-alta-q4-2025)
+- [ ] Soporte para idiomas (multilenguaje) - [Planificado Q3 2026](ROADMAP.md#🟢-prioridad-baja-q2-q3-2026)
+- [ ] Escalabilidad horizontal con microservicios - [Ver Roadmap](ROADMAP.md#escalabilidad)
+- [ ] Cumplimiento Ley 1581 de protección de datos Colombia - [Planificado Q2 2026](ROADMAP.md#🛡️-5-compliance-y-seguridad-avanzada)
 
 ## 🛠️ Stack Tecnológico
 
@@ -429,4 +529,16 @@ A continuación, se detallan las funcionalidades implementadas y por implementar
 - **TypeScript** - Tipado estático completo
 - **TailwindCSS** - Styling consistente con web
 - **Pinia** - Gestión de estado reactiva
-- **Capacitor Plugins** - App, StatusBar, Haptics, Preferences, etc.
+- **Capacitor Plugins** - App, StatusBar, Haptics, Preferences, Camera, Geolocation, etc.
+
+### Multitenancy
+- **stancl/tenancy** - Paquete completo de multitenancy para Laravel
+- **Identificación por dominio** - Cada conjunto tiene su propio dominio/subdominio
+- **Base de datos por tenant** - Aislamiento completo de datos (`tenant{id}`)
+- **Cache aislado** - Redis con prefijos por tenant
+- **File storage aislado** - Sistema de archivos separado por tenant
+- **Queue tenancy** - Trabajos encolados mantienen contexto del tenant
+- **Impersonación** - Soporte técnico puede acceder a cuentas de tenants
+- **Feature flags** - Módulos activables/desactivables por tenant
+- **Central vs Tenant Apps** - Aplicación central para gestión, app tenant para operaciones
+- **Dominios:** Central (`tavira.com.co`), Tenants (`{conjunto}.tavira.com.co`)

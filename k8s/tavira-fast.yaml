@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tavira-app
+spec:
+  selector:
+    matchLabels:
+      app: tavira
+  template:
+    metadata:
+      labels:
+        app: tavira
+    spec:
+      volumes:
+        - name: app-code
+          emptyDir: {}
+      containers:
+        - name: php-fpm
+          image: ingmontoyav/tavira-app:latest
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+          ports:
+            - containerPort: 9000
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
