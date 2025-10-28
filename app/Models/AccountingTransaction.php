@@ -358,7 +358,7 @@ class AccountingTransaction extends Model
 
         // Débito: Caja/Banco
         $transaction->addEntry([
-            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '112005'),
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '111005'),
             'description' => "Pago recibido factura {$invoice->invoice_number}",
             'debit_amount' => $paymentAmount,
             'credit_amount' => 0,
@@ -405,35 +405,44 @@ class AccountingTransaction extends Model
 
     private static function generateTransactionNumber($transaction = null): string
     {
-        $year = now()->year;
-        $month = now()->format('m');
-        $lastTransaction = self::whereYear('created_at', $year)
-            ->whereMonth('created_at', now()->month)
-            ->orderBy('transaction_number', 'desc')
-            ->first();
+        // Use PostgreSQL advisory lock to prevent race conditions during transaction number generation
+        // Lock ID: 987654321 (arbitrary unique number for this operation)
+        \DB::statement('SELECT pg_advisory_lock(987654321)');
 
-        $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
+        try {
+            $year = now()->year;
+            $month = now()->format('m');
+            $lastTransaction = self::whereYear('created_at', $year)
+                ->whereMonth('created_at', now()->month)
+                ->orderBy('id', 'desc')
+                ->first();
 
-        // Try to get apartment number from reference
-        $apartmentCode = '';
-        if ($transaction && $transaction->reference_type === 'invoice' && $transaction->reference_id) {
-            $invoice = \App\Models\Invoice::find($transaction->reference_id);
-            if ($invoice && $invoice->apartment) {
-                $apartmentCode = $invoice->apartment->number.'-';
+            $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
+
+            // Try to get apartment number from reference
+            $apartmentCode = '';
+            if ($transaction && $transaction->reference_type === 'invoice' && $transaction->reference_id) {
+                $invoice = \App\Models\Invoice::find($transaction->reference_id);
+                if ($invoice && $invoice->apartment) {
+                    $apartmentCode = $invoice->apartment->number.'-';
+                }
+            } elseif ($transaction && $transaction->reference_type === 'payment' && $transaction->reference_id) {
+                $invoice = \App\Models\Invoice::find($transaction->reference_id);
+                if ($invoice && $invoice->apartment) {
+                    $apartmentCode = $invoice->apartment->number.'-';
+                }
+            } elseif ($transaction && $transaction->reference_type === 'expense' && $transaction->reference_id) {
+                // For expenses, use EXP- prefix instead of apartment code
+                $expense = \App\Models\Expense::find($transaction->reference_id);
+                if ($expense) {
+                    $apartmentCode = 'EXP-';
+                }
             }
-        } elseif ($transaction && $transaction->reference_type === 'payment' && $transaction->reference_id) {
-            $invoice = \App\Models\Invoice::find($transaction->reference_id);
-            if ($invoice && $invoice->apartment) {
-                $apartmentCode = $invoice->apartment->number.'-';
-            }
-        } elseif ($transaction && $transaction->reference_type === 'expense' && $transaction->reference_id) {
-            // For expenses, use EXP- prefix instead of apartment code
-            $expense = \App\Models\Expense::find($transaction->reference_id);
-            if ($expense) {
-                $apartmentCode = 'EXP-';
-            }
+
+            return sprintf('TXN-%s%s%s-%04d', $apartmentCode, $year, $month, $sequence);
+        } finally {
+            // Always release the lock
+            \DB::statement('SELECT pg_advisory_unlock(987654321)');
         }
-
-        return sprintf('TXN-%s%s%s-%04d', $apartmentCode, $year, $month, $sequence);
     }
 }

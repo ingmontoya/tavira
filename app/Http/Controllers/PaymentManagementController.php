@@ -561,7 +561,7 @@ class PaymentManagementController extends Controller
         // Get the accounts needed for payment accounting simulation
         $accountCodes = [
             '110505', // Caja General
-            '112005', // Bancos
+            '111005', // Bancos Moneda Nacional
             '13050505', // CARTERA ADMINISTRACIÓN
         ];
 

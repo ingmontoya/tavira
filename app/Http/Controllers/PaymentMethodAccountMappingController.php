@@ -211,13 +211,13 @@ class PaymentMethodAccountMappingController extends Controller
             // Define default payment method mappings using correct PUC codes
             $defaultMappings = [
                 'cash' => '110505', // Caja General
-                'bank_transfer' => '112005', // Bancos
-                'credit_card' => '112005', // Bancos
-                'debit_card' => '112005', // Bancos
-                'check' => '112005', // Bancos
-                'pse' => '112005', // Bancos
-                'online' => '112005', // Bancos
-                'other' => '112005', // Bancos
+                'bank_transfer' => '111005', // Bancos Moneda Nacional
+                'credit_card' => '111005', // Bancos Moneda Nacional
+                'debit_card' => '111005', // Bancos Moneda Nacional
+                'check' => '111005', // Bancos Moneda Nacional
+                'pse' => '111005', // Bancos Moneda Nacional
+                'online' => '111005', // Bancos Moneda Nacional
+                'other' => '111005', // Bancos Moneda Nacional
             ];
 
             $createdCount = 0;
