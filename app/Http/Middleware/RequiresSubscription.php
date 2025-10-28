@@ -65,7 +65,6 @@ class RequiresSubscription
             'profile.*',
             'wompi.webhook',
             'user-profile-information.update',
-            'tenant-management.*', // Allow all tenant management routes to avoid redirect loops
             'tenant-features.*', // Allow tenant features routes (central dashboard)
         ];
 
@@ -77,10 +76,31 @@ class RequiresSubscription
 
         // Check subscription status for central operations
         if ($user->hasRole('admin')) {
-            // If user has no tenant_id, redirect to create tenant
-            if (! $user->tenant_id) {
-                return redirect()->route('tenant-management.create')
-                    ->with('info', 'Crea tu conjunto para comenzar.');
+            // First, check if user has an active subscription
+            $activeSubscription = \App\Models\TenantSubscription::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->where(function ($query) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->first();
+
+            // If user has no active subscription, redirect to subscription plans
+            if (! $activeSubscription) {
+                // Allow tenant-management.create route for users without subscription
+                // This allows the flow: subscription → create tenant
+                if (! $request->routeIs('tenant-management.create')) {
+                    return redirect()->route('subscription.plans')
+                        ->with('info', 'Selecciona un plan de suscripción para comenzar.');
+                }
+            }
+
+            // If user has active subscription but no tenant_id, redirect to create tenant
+            if ($activeSubscription && ! $user->tenant_id) {
+                if (! $request->routeIs('tenant-management.*')) {
+                    return redirect()->route('tenant-management.create')
+                        ->with('info', 'Crea tu conjunto para comenzar.');
+                }
             }
         }
 
