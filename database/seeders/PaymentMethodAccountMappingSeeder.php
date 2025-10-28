@@ -24,16 +24,16 @@ class PaymentMethodAccountMappingSeeder extends Seeder
 
         $this->command->info("Creating payment method account mappings for conjunto: {$conjunto->name}");
 
-        // Define payment method to account mappings
+        // Define payment method to account mappings using correct PUC codes
         $paymentMethods = [
-            'cash' => '110501', // Caja General
-            'bank_transfer' => '111001', // Banco Principal - Cuenta Corriente
-            'check' => '111001', // Banco Principal - Cuenta Corriente
-            'credit_card' => '111001', // Banco Principal - Cuenta Corriente
-            'debit_card' => '111001', // Banco Principal - Cuenta Corriente
-            'online' => '111001', // Banco Principal - Cuenta Corriente
-            'pse' => '111001', // Banco Principal - Cuenta Corriente
-            'other' => '111001', // Banco Principal - Cuenta Corriente (default)
+            'cash' => '110505', // Caja General
+            'bank_transfer' => '112005', // Bancos
+            'check' => '112005', // Bancos
+            'credit_card' => '112005', // Bancos
+            'debit_card' => '112005', // Bancos
+            'online' => '112005', // Bancos
+            'pse' => '112005', // Bancos
+            'other' => '112005', // Bancos (default)
         ];
 
         foreach ($paymentMethods as $method => $accountCode) {

@@ -208,13 +208,16 @@ class PaymentMethodAccountMappingController extends Controller
                 ]);
             }
 
-            // Define default payment method mappings
+            // Define default payment method mappings using correct PUC codes
             $defaultMappings = [
-                'cash' => '110501', // Caja General
-                'bank_transfer' => '111001', // Banco - Cuenta Corriente
-                'credit_card' => '111001', // Banco - Cuenta Corriente
-                'debit_card' => '111001', // Banco - Cuenta Corriente
-                'check' => '111001', // Banco - Cuenta Corriente
+                'cash' => '110505', // Caja General
+                'bank_transfer' => '112005', // Bancos
+                'credit_card' => '112005', // Bancos
+                'debit_card' => '112005', // Bancos
+                'check' => '112005', // Bancos
+                'pse' => '112005', // Bancos
+                'online' => '112005', // Bancos
+                'other' => '112005', // Bancos
             ];
 
             $createdCount = 0;
