@@ -560,9 +560,9 @@ class PaymentManagementController extends Controller
     {
         // Get the accounts needed for payment accounting simulation
         $accountCodes = [
-            '110501', // Caja General
-            '111001', // Banco Principal
-            '130501', // CARTERA ADMINISTRACIÓN
+            '110505', // Caja General
+            '112005', // Bancos
+            '13050505', // CARTERA ADMINISTRACIÓN
         ];
 
         $accounts = ChartOfAccounts::forConjunto($conjuntoConfigId)
@@ -584,7 +584,7 @@ class PaymentManagementController extends Controller
 
         return [
             'paymentMethodAccounts' => $paymentMethodAccounts,
-            'adminReceivableAccount' => $accounts->get('130501'),
+            'adminReceivableAccount' => $accounts->get('13050505'),
         ];
     }
 }
