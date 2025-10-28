@@ -34,9 +34,9 @@ php artisan view:clear || true
 echo "   - Caching configuration..."
 php artisan config:cache
 
-# Cache routes for better performance
-echo "   - Caching routes..."
-php artisan route:cache
+# Skip route caching for multi-tenancy (causes conflicts with duplicate route names between central and tenant apps)
+# echo "   - Caching routes..."
+# php artisan route:cache
 
 # Cache views for better performance
 echo "   - Caching views..."
