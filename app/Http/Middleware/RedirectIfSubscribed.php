@@ -39,12 +39,7 @@ class RedirectIfSubscribed
         }
 
         // Check if user already has an active subscription
-        $activeSubscription = TenantSubscription::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)
-                ->orWhere(function ($q) {
-                    $q->whereNull('tenant_id')->whereNull('user_id'); // New signups
-                });
-        })
+        $activeSubscription = TenantSubscription::where('user_id', $user->id)
             ->where('status', 'active')
             ->where(function ($query) {
                 $query->whereNull('expires_at')
