@@ -382,7 +382,7 @@ const exportAccounts = () => {
                     <div class="space-y-2">
                         <p class="font-medium text-amber-800">Plan de cuentas incompleto</p>
                         <p class="text-amber-700">
-                            Tienes {{ accounts_count }} cuentas de 350 esperadas. Sincroniza el plan de cuentas para agregar las cuentas faltantes del
+                            Tienes {{ accounts_count }} cuentas de 316 esperadas. Sincroniza el plan de cuentas para agregar las cuentas faltantes del
                             PUC colombiano para propiedad horizontal.
                         </p>
                         <Button @click="syncAccounts" variant="default" size="sm" class="mt-3">

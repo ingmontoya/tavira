@@ -70,30 +70,31 @@ class PaymentConceptAccountMapping extends Model
         }
 
         // Default account mappings based on payment concept type
+        // Using Colombian PUC codes for property management
         $defaultMappings = [
             'monthly_administration' => [
-                'income_code' => '413501', // Cuotas de Administración
-                'receivable_code' => '130501', // Cartera Administración
+                'income_code' => '417005', // Cuotas de Administración
+                'receivable_code' => '13050505', // Cartera Administración
             ],
             'common_expense' => [
-                'income_code' => '413501', // Cuotas de Administración
-                'receivable_code' => '130501', // Cartera Administración
+                'income_code' => '417005', // Cuotas de Administración
+                'receivable_code' => '13050505', // Cartera Administración
             ],
             'sanction' => [
-                'income_code' => '413505', // Multas y Sanciones
-                'receivable_code' => '130501', // Cartera Administración
+                'income_code' => '417005', // Cuotas de Administración (Multas se incluyen aquí)
+                'receivable_code' => '13050525', // Sanciones Asamblea
             ],
             'parking' => [
-                'income_code' => '413503', // Parqueaderos
-                'receivable_code' => '130501', // Cartera Administración
+                'income_code' => '417005', // Cuotas de Administración (incluye parqueaderos)
+                'receivable_code' => '13050530', // Uso Zonas Comunes
             ],
             'late_fee' => [
-                'income_code' => '413506', // Intereses de Mora
-                'receivable_code' => '130503', // Cartera Intereses Mora
+                'income_code' => '417010', // Intereses de Mora Cuotas de Administración
+                'receivable_code' => '13050510', // Intereses de Mora Cuotas de Administración
             ],
             'special' => [
-                'income_code' => '413502', // Cuotas Extraordinarias
-                'receivable_code' => '130502', // Cartera Cuotas Extraordinarias
+                'income_code' => '417015', // Cuota Extra para Fachadas
+                'receivable_code' => '13050515', // Cuota Extra para Fachadas
             ],
         ];
 

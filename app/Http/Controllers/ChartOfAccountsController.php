@@ -49,7 +49,7 @@ class ChartOfAccountsController extends Controller
 
         $hasAccounts = ChartOfAccounts::forConjunto($conjunto->id)->exists();
         $accountsCount = ChartOfAccounts::forConjunto($conjunto->id)->count();
-        $needsSync = $accountsCount > 0 && $accountsCount < 350;
+        $needsSync = $accountsCount > 0 && $accountsCount < 316;
 
         return Inertia::render('Accounting/ChartOfAccounts/Index', [
             'accounts' => $accounts,
