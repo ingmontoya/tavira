@@ -60,8 +60,26 @@ spec:
               containerPort: 9000
               protocol: TCP
 
+          # Lifecycle hooks for graceful shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Gracefully shutting down..."
+                    # Clear Laravel cache before shutdown
+                    php artisan config:clear || true
+                    php artisan route:clear || true
+                    php artisan view:clear || true
+                    sleep 5
+
           # Environment variables
           env:
+            # Enable auto-migrations (set to false if you prefer manual migrations)
+            - name: AUTO_MIGRATE
+              value: "false"
             - name: APP_NAME
               value: "Tavira"
             - name: APP_ENV
@@ -290,23 +308,32 @@ spec:
               cpu: "500m"
               memory: "512Mi"
 
-          # Liveness probe
+          # Liveness probe - checks if container is alive
           livenessProbe:
             tcpSocket:
               port: 9000
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60  # Increased to allow for entrypoint optimizations
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
 
-          # Readiness probe
+          # Readiness probe - checks if container is ready to receive traffic
           readinessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 30  # Increased to allow for cache generation
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Startup probe - protects slow starting containers
+          startupProbe:
             tcpSocket:
               port: 9000
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
-            failureThreshold: 3
+            failureThreshold: 12  # 12 * 5s = 60s max startup time
 
           # Security context
           securityContext:

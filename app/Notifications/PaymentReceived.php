@@ -30,7 +30,7 @@ class PaymentReceived extends Notification implements ShouldQueue
             ->line('**Método de Pago:** '.$this->getPaymentMethodLabel())
             ->line('**Referencia:** '.$this->payment->reference)
             ->line('**Fecha:** '.$this->payment->payment_date->format('d/m/Y'))
-            ->action('Ver Pago', route('payments.show', $this->payment->id))
+            ->action('Ver Pago', route('finance.payments.show', $this->payment->id))
             ->line('El pago ha sido procesado correctamente.');
     }
 
@@ -44,7 +44,7 @@ class PaymentReceived extends Notification implements ShouldQueue
             'reference' => $this->payment->reference,
             'payment_date' => $this->payment->payment_date,
             'message' => 'Nuevo pago registrado: $'.number_format($this->payment->amount, 2),
-            'action_url' => route('payments.show', $this->payment->id),
+            'action_url' => route('finance.payments.show', $this->payment->id),
         ];
     }
 
