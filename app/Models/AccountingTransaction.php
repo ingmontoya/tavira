@@ -409,7 +409,7 @@ class AccountingTransaction extends Model
         $month = now()->format('m');
         $lastTransaction = self::whereYear('created_at', $year)
             ->whereMonth('created_at', now()->month)
-            ->orderBy('id', 'desc')
+            ->orderBy('transaction_number', 'desc')
             ->first();
 
         $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
