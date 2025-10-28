@@ -358,7 +358,7 @@ class AccountingTransaction extends Model
 
         // Débito: Caja/Banco
         $transaction->addEntry([
-            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '111001'),
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '112005'),
             'description' => "Pago recibido factura {$invoice->invoice_number}",
             'debit_amount' => $paymentAmount,
             'credit_amount' => 0,
@@ -366,7 +366,7 @@ class AccountingTransaction extends Model
 
         // Crédito: Cartera de clientes
         $transaction->addEntry([
-            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '130501'),
+            'account_id' => $this->getAccountByCode($invoice->apartment->apartmentType->conjunto_config_id, '13050505'),
             'description' => "Pago cartera factura {$invoice->invoice_number}",
             'debit_amount' => 0,
             'credit_amount' => $paymentAmount,
