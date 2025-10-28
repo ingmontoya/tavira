@@ -265,7 +265,7 @@ class Payment extends Model
         ]);
 
         $transaction->addEntry([
-            'account_id' => $this->getAccountByCode('130501'), // CARTERA ADMINISTRACIÓN
+            'account_id' => $this->getAccountByCode('13050505'), // CARTERA ADMINISTRACIÓN
             'description' => "Cobro cartera administración - {$description}",
             'debit_amount' => 0,
             'credit_amount' => $application->amount_applied,
@@ -315,8 +315,8 @@ class Payment extends Model
             'credit_amount' => 0,
         ]);
 
-        // Crédito: Cuenta 130501 - CARTERA ADMINISTRACIÓN (disminución de cartera por cobrar)
-        $adminReceivableAccount = $this->getAccountByCode('130501');
+        // Crédito: Cuenta 13050505 - CARTERA ADMINISTRACIÓN (disminución de cartera por cobrar)
+        $adminReceivableAccount = $this->getAccountByCode('13050505');
         $transaction->addEntry([
             'account_id' => $adminReceivableAccount,
             'description' => "Cobro cartera administración - {$description}",
