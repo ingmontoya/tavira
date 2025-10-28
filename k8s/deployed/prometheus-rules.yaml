@@ -1,0 +1,204 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tavira-queue-alerts
+  namespace: default
+  labels:
+    app: tavira
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  # ============================================
+  # Queue Worker Alerts
+  # ============================================
+  - name: tavira.queue.workers
+    interval: 30s
+    rules:
+    # Alerta: No hay queue workers corriendo
+    - alert: QueueWorkersDown
+      expr: kube_deployment_status_replicas_available{deployment="tavira-queue-worker"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "No hay queue workers disponibles"
+        description: "El deployment tavira-queue-worker no tiene pods disponibles. Los jobs no se están procesando."
+        runbook_url: "https://docs.tavira.com.co/runbooks/queue-workers-down"
+
+    # Alerta: Menos workers de los esperados
+    - alert: QueueWorkersLowReplicas
+      expr: |
+        kube_deployment_status_replicas_available{deployment="tavira-queue-worker"}
+        < kube_deployment_spec_replicas{deployment="tavira-queue-worker"}
+      for: 5m
+      labels:
+        severity: warning
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "Queue workers con menos replicas de las esperadas"
+        description: "tavira-queue-worker tiene {{ $value }} replicas disponibles, pero debería tener {{ $labels.replicas }} replicas."
+
+    # Alerta: Workers con muchos restarts
+    - alert: QueueWorkersHighRestarts
+      expr: |
+        rate(kube_pod_container_status_restarts_total{container="queue-worker"}[15m]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "Queue workers reiniciando frecuentemente"
+        description: "El pod {{ $labels.pod }} se ha reiniciado {{ $value | humanize }} veces en los últimos 15 minutos."
+
+    # Alerta: Workers con alto uso de CPU
+    - alert: QueueWorkersHighCPU
+      expr: |
+        rate(container_cpu_usage_seconds_total{pod=~"tavira-queue-worker.*"}[5m]) > 0.8
+      for: 10m
+      labels:
+        severity: warning
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "Queue worker con alto uso de CPU"
+        description: "El pod {{ $labels.pod }} está usando {{ $value | humanizePercentage }} de CPU."
+
+    # Alerta: Workers con alto uso de memoria
+    - alert: QueueWorkersHighMemory
+      expr: |
+        container_memory_usage_bytes{pod=~"tavira-queue-worker.*"}
+        / container_spec_memory_limit_bytes{pod=~"tavira-queue-worker.*"} > 0.9
+      for: 10m
+      labels:
+        severity: warning
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "Queue worker con alto uso de memoria"
+        description: "El pod {{ $labels.pod }} está usando {{ $value | humanizePercentage }} de su límite de memoria."
+
+    # Alerta: Pods en CrashLoopBackOff
+    - alert: QueueWorkersCrashLooping
+      expr: |
+        kube_pod_container_status_waiting_reason{pod=~"tavira-queue-worker.*", reason="CrashLoopBackOff"} > 0
+      for: 5m
+      labels:
+        severity: critical
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "Queue worker en CrashLoopBackOff"
+        description: "El pod {{ $labels.pod }} está en estado CrashLoopBackOff."
+
+  # ============================================
+  # Scheduler Alerts
+  # ============================================
+  - name: tavira.queue.scheduler
+    interval: 60s
+    rules:
+    # Alerta: Scheduler CronJob falló
+    - alert: SchedulerJobFailed
+      expr: kube_job_status_failed{job_name=~"tavira-scheduler.*"} > 0
+      for: 1m
+      labels:
+        severity: warning
+        component: scheduler
+        team: backend
+      annotations:
+        summary: "Laravel Scheduler job falló"
+        description: "El job {{ $labels.job_name }} del scheduler falló."
+
+    # Alerta: Scheduler no se ha ejecutado recientemente
+    - alert: SchedulerNotRunning
+      expr: |
+        time() - kube_cronjob_status_last_schedule_time{cronjob="tavira-scheduler"} > 300
+      for: 5m
+      labels:
+        severity: critical
+        component: scheduler
+        team: backend
+      annotations:
+        summary: "Laravel Scheduler no se ha ejecutado recientemente"
+        description: "El scheduler no se ha ejecutado en los últimos 5 minutos."
+
+    # Alerta: Scheduler suspendido
+    - alert: SchedulerSuspended
+      expr: kube_cronjob_spec_suspend{cronjob="tavira-scheduler"} > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: scheduler
+        team: backend
+      annotations:
+        summary: "Laravel Scheduler está suspendido"
+        description: "El CronJob tavira-scheduler está suspendido y no está ejecutándose."
+
+  # ============================================
+  # Redis Queue Alerts
+  # ============================================
+  - name: tavira.queue.redis
+    interval: 30s
+    rules:
+    # Alerta: Redis no disponible
+    - alert: RedisDown
+      expr: kube_deployment_status_replicas_available{deployment="redis"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        component: redis
+        team: backend
+      annotations:
+        summary: "Redis no está disponible"
+        description: "Redis está caído. Los queue workers no pueden procesar jobs."
+
+    # Alerta: Redis con alto uso de memoria
+    - alert: RedisHighMemory
+      expr: |
+        container_memory_usage_bytes{pod=~"redis.*"}
+        / container_spec_memory_limit_bytes{pod=~"redis.*"} > 0.85
+      for: 10m
+      labels:
+        severity: warning
+        component: redis
+        team: backend
+      annotations:
+        summary: "Redis con alto uso de memoria"
+        description: "Redis está usando {{ $value | humanizePercentage }} de su límite de memoria."
+
+  # ============================================
+  # HPA Alerts
+  # ============================================
+  - name: tavira.queue.hpa
+    interval: 60s
+    rules:
+    # Alerta: HPA en máximo de replicas
+    - alert: HPAMaxedOut
+      expr: |
+        kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="tavira-queue-worker-hpa"}
+        >= kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="tavira-queue-worker-hpa"}
+      for: 15m
+      labels:
+        severity: warning
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "HPA ha alcanzado el máximo de replicas"
+        description: "El HPA está en {{ $value }} replicas (máximo). Considera aumentar el límite o revisar la carga."
+
+    # Alerta: HPA no puede escalar
+    - alert: HPAUnableToScale
+      expr: |
+        kube_horizontalpodautoscaler_status_condition{condition="ScalingLimited", status="true"} > 0
+      for: 10m
+      labels:
+        severity: warning
+        component: queue-workers
+        team: backend
+      annotations:
+        summary: "HPA no puede escalar"
+        description: "El HPA {{ $labels.horizontalpodautoscaler }} no puede escalar debido a limitaciones."

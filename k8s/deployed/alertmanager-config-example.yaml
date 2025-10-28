@@ -1,0 +1,250 @@
+# Ejemplo de configuración de AlertManager para Tavira
+# Copia este archivo y ajusta según tus necesidades
+#
+# Para aplicar:
+# kubectl create secret generic alertmanager-kube-prometheus-alertmanager \
+#   --from-file=alertmanager.yaml=alertmanager-config-example.yaml \
+#   -n monitoring --dry-run=client -o yaml | kubectl apply -f -
+
+global:
+  resolve_timeout: 5m
+  # SMTP configuration (opcional)
+  smtp_from: 'alertmanager@tavira.com.co'
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_auth_username: 'your-email@gmail.com'
+  smtp_auth_password: 'your-app-password'
+
+# Templates para personalizar mensajes
+templates:
+- '/etc/alertmanager/config/*.tmpl'
+
+# Configuración de enrutamiento
+route:
+  # Agrupar alertas por nombre y componente
+  group_by: ['alertname', 'component', 'severity']
+
+  # Esperar 10s antes de enviar la primera alerta de un grupo
+  group_wait: 10s
+
+  # Esperar 10s entre alertas del mismo grupo
+  group_interval: 10s
+
+  # Re-enviar alerta cada 12 horas si no se resuelve
+  repeat_interval: 12h
+
+  # Receptor por defecto
+  receiver: 'default'
+
+  # Rutas específicas
+  routes:
+  # Alertas críticas -> Slack y PagerDuty
+  - match:
+      severity: critical
+    receiver: 'critical-alerts'
+    group_wait: 5s
+    repeat_interval: 4h
+    continue: true  # Continuar evaluando otras rutas
+
+  # Alertas de queue workers
+  - match:
+      component: queue-workers
+    receiver: 'queue-alerts'
+    group_wait: 30s
+    repeat_interval: 6h
+
+  # Alertas del scheduler
+  - match:
+      component: scheduler
+    receiver: 'scheduler-alerts'
+    group_wait: 30s
+    repeat_interval: 6h
+
+  # Alertas de Redis
+  - match:
+      component: redis
+    receiver: 'infrastructure-alerts'
+    repeat_interval: 8h
+
+  # Alertas de warning (no críticas)
+  - match:
+      severity: warning
+    receiver: 'warning-alerts'
+    group_wait: 2m
+    repeat_interval: 24h
+
+# Inhibición de alertas (evitar spam)
+inhibit_rules:
+# Si QueueWorkersDown está activo, no alertar sobre QueueWorkersLowReplicas
+- source_match:
+    alertname: 'QueueWorkersDown'
+  target_match:
+    alertname: 'QueueWorkersLowReplicas'
+  equal: ['component']
+
+# Si RedisDown está activo, no alertar sobre problemas de queue
+- source_match:
+    alertname: 'RedisDown'
+  target_match:
+    component: 'queue'
+  equal: ['namespace']
+
+# Configuración de receptores
+receivers:
+# Receptor por defecto (puede ser un webhook o log)
+- name: 'default'
+  webhook_configs:
+  - url: 'http://localhost:5001/'
+    send_resolved: true
+
+# ============================================
+# Slack - Alertas Críticas
+# ============================================
+- name: 'critical-alerts'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    channel: '#tavira-alerts-critical'
+    username: 'AlertManager'
+    icon_emoji: ':rotating_light:'
+    title: '🚨 [CRITICAL] {{ .GroupLabels.alertname }}'
+    text: |
+      {{ range .Alerts }}
+      *Alert:* {{ .Annotations.summary }}
+      *Description:* {{ .Annotations.description }}
+      *Severity:* {{ .Labels.severity }}
+      *Component:* {{ .Labels.component }}
+      {{ if .Labels.pod }}*Pod:* {{ .Labels.pod }}{{ end }}
+      {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+      {{ end }}
+    send_resolved: true
+    title_link: 'http://your-prometheus-url/alerts'
+
+  # También enviar email para alertas críticas
+  email_configs:
+  - to: 'ops-oncall@tavira.com.co'
+    headers:
+      Subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+    html: |
+      <h2>Critical Alert</h2>
+      {{ range .Alerts }}
+      <p><strong>{{ .Annotations.summary }}</strong></p>
+      <p>{{ .Annotations.description }}</p>
+      <ul>
+        <li>Severity: {{ .Labels.severity }}</li>
+        <li>Component: {{ .Labels.component }}</li>
+        {{ if .Labels.pod }}<li>Pod: {{ .Labels.pod }}</li>{{ end }}
+      </ul>
+      {{ end }}
+
+# ============================================
+# Slack - Alertas de Queue Workers
+# ============================================
+- name: 'queue-alerts'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    channel: '#tavira-queue-alerts'
+    username: 'Queue Monitor'
+    icon_emoji: ':package:'
+    title: '📦 {{ .GroupLabels.alertname }}'
+    text: |
+      {{ range .Alerts }}
+      *{{ .Annotations.summary }}*
+      {{ .Annotations.description }}
+      {{ end }}
+    send_resolved: true
+
+# ============================================
+# Slack - Alertas del Scheduler
+# ============================================
+- name: 'scheduler-alerts'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    channel: '#tavira-scheduler-alerts'
+    username: 'Scheduler Monitor'
+    icon_emoji: ':clock3:'
+    title: '⏰ {{ .GroupLabels.alertname }}'
+    text: |
+      {{ range .Alerts }}
+      *{{ .Annotations.summary }}*
+      {{ .Annotations.description }}
+      {{ end }}
+    send_resolved: true
+
+# ============================================
+# Slack - Alertas de Infraestructura
+# ============================================
+- name: 'infrastructure-alerts'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    channel: '#tavira-infrastructure'
+    username: 'Infrastructure Monitor'
+    icon_emoji: ':computer:'
+    title: '🖥️ {{ .GroupLabels.alertname }}'
+    text: |
+      {{ range .Alerts }}
+      *{{ .Annotations.summary }}*
+      {{ .Annotations.description }}
+      {{ end }}
+    send_resolved: true
+
+# ============================================
+# Slack - Warnings
+# ============================================
+- name: 'warning-alerts'
+  slack_configs:
+  - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    channel: '#tavira-alerts-warnings'
+    username: 'AlertManager'
+    icon_emoji: ':warning:'
+    title: '⚠️ {{ .GroupLabels.alertname }}'
+    text: |
+      {{ range .Alerts }}
+      {{ .Annotations.summary }}
+      {{ .Annotations.description }}
+      {{ end }}
+    send_resolved: true
+
+# ============================================
+# PagerDuty (para alertas críticas)
+# ============================================
+# Descomenta y configura si usas PagerDuty
+# - name: 'pagerduty-critical'
+#   pagerduty_configs:
+#   - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+#     description: '{{ .GroupLabels.alertname }}: {{ .Annotations.summary }}'
+#     details:
+#       firing: '{{ .Alerts.Firing | len }}'
+#       resolved: '{{ .Alerts.Resolved | len }}'
+#       component: '{{ .GroupLabels.component }}'
+
+# ============================================
+# Discord
+# ============================================
+# Descomenta y configura si usas Discord
+# - name: 'discord-alerts'
+#   webhook_configs:
+#   - url: 'https://discord.com/api/webhooks/YOUR/WEBHOOK'
+#     send_resolved: true
+
+# ============================================
+# Microsoft Teams
+# ============================================
+# Descomenta y configura si usas Teams
+# - name: 'teams-alerts'
+#   webhook_configs:
+#   - url: 'https://outlook.office.com/webhook/YOUR/TEAMS/WEBHOOK'
+#     send_resolved: true
+
+# ============================================
+# Email genérico
+# ============================================
+# - name: 'email-alerts'
+#   email_configs:
+#   - to: 'team@tavira.com.co'
+#     headers:
+#       Subject: '[{{ .Status }}] {{ .GroupLabels.alertname }}'
+#     html: |
+#       <h3>Alert: {{ .GroupLabels.alertname }}</h3>
+#       {{ range .Alerts }}
+#       <p><strong>{{ .Annotations.summary }}</strong></p>
+#       <p>{{ .Annotations.description }}</p>
+#       {{ end }}

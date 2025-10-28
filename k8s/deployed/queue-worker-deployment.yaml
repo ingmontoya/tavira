@@ -1,0 +1,198 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tavira-queue-worker
+  namespace: default
+  labels:
+    app: tavira-queue-worker
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tavira-queue-worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tavira-queue-worker
+        version: v1
+    spec:
+      # Init container para copiar el código de la app (igual que el deployment principal)
+      initContainers:
+      - name: copy-app
+        image: ingmontoyav/tavira-app:latest
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          cp -r /var/www/html/* /app-code/
+          mkdir -p /app-code/storage/app/public
+          mkdir -p /app-code/storage/framework/cache
+          mkdir -p /app-code/storage/framework/sessions
+          mkdir -p /app-code/storage/framework/views
+          mkdir -p /app-code/storage/logs
+          chmod -R 775 /app-code/storage
+          chmod -R 775 /app-code/bootstrap/cache
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+        - name: app-code
+          mountPath: /app-code
+
+      containers:
+      - name: queue-worker
+        image: ingmontoyav/tavira-app:latest
+        imagePullPolicy: Always
+
+        # Comando para ejecutar el queue worker
+        command: ["php"]
+        args:
+          - "artisan"
+          - "queue:work"
+          - "--sleep=3"
+          - "--tries=3"
+          - "--max-time=3600"
+          - "--timeout=60"
+          - "--queue=default,tenant"
+          - "--verbose"
+
+        # Variables de entorno (mismas que el deployment principal)
+        env:
+        - name: APP_NAME
+          value: Tavira
+        - name: APP_ENV
+          value: production
+        - name: APP_DEBUG
+          value: "false"
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: APP_KEY
+        - name: APP_URL
+          value: https://tavira.com.co
+        - name: DB_CONNECTION
+          value: pgsql
+        - name: DB_HOST
+          value: postgres
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: DB_DATABASE
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: DB_PASSWORD
+        - name: CACHE_DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: CACHE_DRIVER
+              optional: true
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: REDIS_HOST
+              optional: true
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: REDIS_PORT
+              optional: true
+        - name: QUEUE_CONNECTION
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env
+              key: QUEUE_CONNECTION
+              optional: true
+
+        # Cargar todas las variables del secret
+        envFrom:
+        - secretRef:
+            name: laravel-env
+
+        # Recursos
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        # Liveness probe - verifica que el worker process esté corriendo
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps aux | grep 'artisan queue:work' | grep -v grep"
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Readiness probe - verifica que el worker esté listo
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "pgrep -f 'artisan queue:work' > /dev/null"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        # Security context
+        securityContext:
+          runAsUser: 82
+          runAsGroup: 82
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+
+        # Volúmenes
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        - name: app-storage
+          mountPath: /var/www/html/storage
+
+        # Graceful shutdown - permite que los workers terminen jobs en progreso
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+
+      # Configuración de terminación
+      terminationGracePeriodSeconds: 60
+
+      # Security context del pod
+      securityContext:
+        fsGroup: 82
+
+      # Volúmenes compartidos
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: tavira-storage-pvc

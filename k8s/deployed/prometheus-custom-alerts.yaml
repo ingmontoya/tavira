@@ -1,0 +1,133 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tavira-queue-custom-alerts
+  namespace: default
+  labels:
+    app: tavira
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  # ============================================
+  # Laravel Queue Custom Metrics Alerts
+  # ============================================
+  - name: tavira.queue.custom
+    interval: 30s
+    rules:
+    # Alerta: Cola saturada (muchos jobs pendientes)
+    - alert: QueueHighBacklog
+      expr: tavira_queue_size > 1000
+      for: 10m
+      labels:
+        severity: warning
+        component: queue
+        team: backend
+      annotations:
+        summary: "Cola con muchos jobs pendientes"
+        description: "La cola {{ $labels.queue }} tiene {{ $value }} jobs pendientes."
+        runbook_url: "https://docs.tavira.com.co/runbooks/queue-high-backlog"
+
+    # Alerta: Cola muy saturada (crítico)
+    - alert: QueueCriticalBacklog
+      expr: tavira_queue_size > 5000
+      for: 5m
+      labels:
+        severity: critical
+        component: queue
+        team: backend
+      annotations:
+        summary: "Cola críticamente saturada"
+        description: "La cola {{ $labels.queue }} tiene {{ $value }} jobs pendientes. Acción inmediata requerida."
+
+    # Alerta: Muchos jobs fallidos
+    - alert: QueueHighFailedJobs
+      expr: tavira_queue_failed_jobs > 100
+      for: 15m
+      labels:
+        severity: warning
+        component: queue
+        team: backend
+      annotations:
+        summary: "Muchos jobs fallidos en la cola"
+        description: "Hay {{ $value }} jobs fallidos. Revisa los logs para identificar el problema."
+
+    # Alerta: Jobs fallidos aumentando rápidamente
+    - alert: QueueFailedJobsIncreasing
+      expr: |
+        rate(tavira_queue_failed_jobs[5m]) > 1
+      for: 10m
+      labels:
+        severity: warning
+        component: queue
+        team: backend
+      annotations:
+        summary: "Jobs fallidos aumentando rápidamente"
+        description: "Los jobs fallidos están aumentando a una tasa de {{ $value | humanize }} por segundo."
+
+    # Alerta: Queue worker no reporta métricas
+    - alert: QueueMetricsNotReporting
+      expr: tavira_queue_worker_up == 0
+      for: 5m
+      labels:
+        severity: warning
+        component: queue-metrics
+        team: backend
+      annotations:
+        summary: "Queue worker no reporta métricas"
+        description: "El servicio de métricas del queue worker no está reportando correctamente."
+
+    # Alerta: Redis con muchas conexiones
+    - alert: RedisHighConnections
+      expr: tavira_redis_connected_clients > 100
+      for: 10m
+      labels:
+        severity: warning
+        component: redis
+        team: backend
+      annotations:
+        summary: "Redis tiene muchas conexiones"
+        description: "Redis tiene {{ $value }} clientes conectados."
+
+    # Alerta: Cola creciendo (no se procesa)
+    - alert: QueueGrowing
+      expr: |
+        rate(tavira_queue_size[5m]) > 10
+      for: 15m
+      labels:
+        severity: warning
+        component: queue
+        team: backend
+      annotations:
+        summary: "Cola creciendo sin procesarse"
+        description: "La cola {{ $labels.queue }} está creciendo a {{ $value | humanize }} jobs/segundo. Los workers no están procesando suficientemente rápido."
+
+    # Alerta: Jobs reservados pero no completándose
+    - alert: QueueJobsStuck
+      expr: tavira_queue_reserved_jobs > 50
+      for: 30m
+      labels:
+        severity: warning
+        component: queue
+        team: backend
+      annotations:
+        summary: "Jobs reservados pero no completándose"
+        description: "Hay {{ $value }} jobs reservados por más de 30 minutos. Pueden estar atascados."
+
+  # ============================================
+  # Tenant-specific Alerts
+  # ============================================
+  - name: tavira.tenants
+    interval: 60s
+    rules:
+    # Alerta: Sin tenants (problema en la app)
+    - alert: NoTenantsFound
+      expr: tavira_tenants_total == 0
+      for: 5m
+      labels:
+        severity: critical
+        component: application
+        team: backend
+      annotations:
+        summary: "No se encontraron tenants en la base de datos"
+        description: "Puede haber un problema con la conexión a la base de datos central."

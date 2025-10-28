@@ -1,0 +1,60 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tavira-queue-worker-hpa
+  namespace: default
+  labels:
+    app: tavira-queue-worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tavira-queue-worker
+
+  # Mínimo y máximo de replicas
+  minReplicas: 2
+  maxReplicas: 10
+
+  # Métricas para escalar
+  metrics:
+  # Escalar basado en uso de CPU
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+
+  # Escalar basado en uso de memoria
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+  # Comportamiento de escalado
+  behavior:
+    scaleUp:
+      # Escalar hacia arriba rápidamente cuando hay carga
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Max
+
+    scaleDown:
+      # Escalar hacia abajo más lentamente para evitar oscilaciones
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 120
+      - type: Pods
+        value: 1
+        periodSeconds: 120
+      selectPolicy: Min
