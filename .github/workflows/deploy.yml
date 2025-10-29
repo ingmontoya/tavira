@@ -108,15 +108,21 @@ jobs:
         run: |
           echo "🛠️ Running post-deployment tasks..."
 
-          # Get pod name (using correct label 'app=tavira')
+          # Wait a bit for pods to stabilize after rollout
+          sleep 5
+
+          # Get running pod name (using correct label 'app=tavira' and phase=Running)
           POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} \
             -l app=tavira \
+            --field-selector=status.phase=Running \
             -o jsonpath='{.items[0].metadata.name}')
 
           echo "📦 Pod: $POD"
 
           if [ -z "$POD" ]; then
-            echo "❌ No pod found with label app=tavira"
+            echo "❌ No running pod found with label app=tavira"
+            echo "Available pods:"
+            kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=tavira
             exit 1
           fi
 
