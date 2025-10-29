@@ -1,4 +1,5 @@
 <template>
+
     <Head>
         <!-- Dynamic Title -->
         <title>{{ metaTitle }}</title>
@@ -38,8 +39,7 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
         <link
             href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet"
-        />
+            rel="stylesheet" />
 
         <!-- DNS Prefetch -->
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -64,7 +64,7 @@ const metaTitle = computed(() =>
 
 const metaDescription = computed(() =>
     currentLocale.value === 'es'
-        ? 'Software líder para administración de conjuntos residenciales en Colombia. Apps móviles iOS/Android, portería digital, citófonos, pases QR, facturación DIAN, contabilidad, marketplace comunitario. Base de datos exclusiva. Prueba gratis 30 días.'
+        ? 'Software líder para administración de conjuntos residenciales en Colombia. Apps móviles iOS/Android, portería digital, citófonos, pases QR, facturación DIAN, contabilidad, marketplace comunitario. Base de datos exclusiva. Regístrate 30 días.'
         : 'Leading software for residential complex management in Colombia. iOS/Android mobile apps, digital concierge, intercoms, QR passes, DIAN invoicing, accounting, community marketplace. Exclusive database. Free 30-day trial.',
 );
 

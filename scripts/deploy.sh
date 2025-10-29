@@ -75,12 +75,14 @@ fi
 echo -e "${GREEN}✅ Rollout completed successfully${NC}"
 echo ""
 
-# Get pod name
+# Get pod name (using correct label 'app=tavira')
 echo "🔍 Getting pod information..."
-POD=$(kubectl get pods -n $NAMESPACE -l app=$DEPLOYMENT_NAME -o jsonpath='{.items[0].metadata.name}')
+POD=$(kubectl get pods -n $NAMESPACE -l app=tavira -o jsonpath='{.items[0].metadata.name}')
 
 if [ -z "$POD" ]; then
     echo -e "${RED}❌ Could not find pod${NC}"
+    echo "Available pods:"
+    kubectl get pods -n $NAMESPACE
     exit 1
 fi
 echo -e "${GREEN}✅ Pod: $POD${NC}"
@@ -116,7 +118,7 @@ kubectl get deployment $DEPLOYMENT_NAME -n $NAMESPACE
 echo ""
 
 echo "📋 Running pods:"
-kubectl get pods -n $NAMESPACE -l app=$DEPLOYMENT_NAME
+kubectl get pods -n $NAMESPACE -l app=tavira
 echo ""
 
 echo -e "${GREEN}✅ Deployment completed successfully!${NC}"
