@@ -67,7 +67,7 @@ class ChartOfAccountsSeeder extends Seeder
         $accounts = [];
 
         // Helper function to determine account type and nature
-        $getAccountInfo = function($code) {
+        $getAccountInfo = function ($code) {
             $firstDigit = substr($code, 0, 1);
             switch ($firstDigit) {
                 case '1':
@@ -90,7 +90,7 @@ class ChartOfAccountsSeeder extends Seeder
         };
 
         // Helper function to calculate level based on code length
-        $calculateLevel = function($code) {
+        $calculateLevel = function ($code) {
             $length = strlen($code);
             return match ($length) {
                 1 => 1,
@@ -103,7 +103,7 @@ class ChartOfAccountsSeeder extends Seeder
         };
 
         // Helper function to get parent code
-        $getParentCode = function($code) {
+        $getParentCode = function ($code) {
             $length = strlen($code);
             if ($length == 1) return null;
             if ($length == 2) return substr($code, 0, 1);
