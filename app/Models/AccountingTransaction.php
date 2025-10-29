@@ -407,14 +407,17 @@ class AccountingTransaction extends Model
     {
         // Use PostgreSQL advisory lock to prevent race conditions during transaction number generation
         // Lock ID: 987654321 (arbitrary unique number for this operation)
-        \DB::statement('SELECT pg_advisory_lock(987654321)');
+        // Use the tenant connection to ensure the lock works correctly in multitenancy
+        \DB::connection('tenant')->statement('SELECT pg_advisory_lock(987654321)');
 
         try {
             $year = now()->year;
             $month = now()->format('m');
-            $lastTransaction = self::whereYear('created_at', $year)
-                ->whereMonth('created_at', now()->month)
-                ->orderBy('id', 'desc')
+
+            // Use a unique identifier to prevent race conditions
+            // Instead of using created_at (which doesn't exist yet), use transaction_number pattern
+            $lastTransaction = self::where('transaction_number', 'like', "TXN-%-{$year}{$month}-%")
+                ->orderBy('transaction_number', 'desc')
                 ->first();
 
             $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
@@ -431,6 +434,12 @@ class AccountingTransaction extends Model
                 if ($invoice && $invoice->apartment) {
                     $apartmentCode = $invoice->apartment->number.'-';
                 }
+            } elseif ($transaction && $transaction->reference_type === 'payment_application' && $transaction->reference_id) {
+                // For payment applications, get apartment from the payment application
+                $paymentApplication = \App\Models\PaymentApplication::find($transaction->reference_id);
+                if ($paymentApplication && $paymentApplication->invoice && $paymentApplication->invoice->apartment) {
+                    $apartmentCode = $paymentApplication->invoice->apartment->number.'-';
+                }
             } elseif ($transaction && $transaction->reference_type === 'expense' && $transaction->reference_id) {
                 // For expenses, use EXP- prefix instead of apartment code
                 $expense = \App\Models\Expense::find($transaction->reference_id);
@@ -441,8 +450,8 @@ class AccountingTransaction extends Model
 
             return sprintf('TXN-%s%s%s-%04d', $apartmentCode, $year, $month, $sequence);
         } finally {
-            // Always release the lock
-            \DB::statement('SELECT pg_advisory_unlock(987654321)');
+            // Always release the lock on the tenant connection
+            \DB::connection('tenant')->statement('SELECT pg_advisory_unlock(987654321)');
         }
     }
 }
