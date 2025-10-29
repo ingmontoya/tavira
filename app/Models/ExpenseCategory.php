@@ -99,7 +99,7 @@ class ExpenseCategory extends Model
                 ->where('conjunto_config_id', $this->conjunto_config_id);
         })
             ->where('account_id', $this->budget_account_id)
-            ->sum('annual_amount');
+            ->sum('budgeted_amount');
     }
 
     public function getBudgetExecutionPercentageAttribute(): float
