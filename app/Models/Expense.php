@@ -392,13 +392,33 @@ class Expense extends Model
             'credit_amount' => 0,
         ]);
 
-        // Crédito: Cuenta de origen (caja/banco o cuentas por pagar)
-        $creditEntry = [
-            'account_id' => $this->credit_account_id,
-            'description' => "Pago/Provisión: {$vendorName}",
-            'debit_amount' => 0,
-            'credit_amount' => $this->total_amount,
-        ];
+        // If there's a tax/withholding account and tax amount, create separate entries
+        if ($this->tax_account_id && $this->tax_amount > 0) {
+            // Crédito: Cuenta de retención en la fuente
+            $transaction->addEntry([
+                'account_id' => $this->tax_account_id,
+                'description' => "Retención en la fuente: {$vendorName}",
+                'debit_amount' => 0,
+                'credit_amount' => $this->tax_amount,
+            ]);
+
+            // Crédito: Cuenta de origen (neto a pagar = total - retención)
+            $netAmount = $this->total_amount - $this->tax_amount;
+            $creditEntry = [
+                'account_id' => $this->credit_account_id,
+                'description' => "Pago/Provisión neto: {$vendorName}",
+                'debit_amount' => 0,
+                'credit_amount' => $netAmount,
+            ];
+        } else {
+            // Crédito: Cuenta de origen (caja/banco o cuentas por pagar) - monto completo
+            $creditEntry = [
+                'account_id' => $this->credit_account_id,
+                'description' => "Pago/Provisión: {$vendorName}",
+                'debit_amount' => 0,
+                'credit_amount' => $this->total_amount,
+            ];
+        }
 
         // If credit account requires third party (like providers account), add provider info
         $creditAccount = ChartOfAccounts::find($this->credit_account_id);

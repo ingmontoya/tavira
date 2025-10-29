@@ -592,6 +592,7 @@ const cancel = () => {
                                     >
                                         <h4 class="mb-2 text-sm font-medium">Vista Previa del Asiento Contable:</h4>
                                         <div class="space-y-1 text-xs">
+                                            <!-- Débito: Gasto -->
                                             <div class="flex justify-between">
                                                 <span
                                                     >Débito:
@@ -599,14 +600,36 @@ const cancel = () => {
                                                 >
                                                 <span class="font-mono">{{ formatCurrency(form.total_amount) }}</span>
                                             </div>
+                                            <!-- Crédito: Retención (si aplica) -->
+                                            <div v-if="form.tax_account_id && form.tax_amount > 0" class="flex justify-between">
+                                                <span class="ml-4"
+                                                    >Crédito (Retención):
+                                                    {{ taxAccounts.find((acc) => acc.id === parseInt(form.tax_account_id))?.full_name }}</span
+                                                >
+                                                <span class="font-mono">{{ formatCurrency(form.tax_amount) }}</span>
+                                            </div>
+                                            <!-- Crédito: Neto a pagar o monto total -->
                                             <div class="flex justify-between">
-                                                <span
-                                                    >Crédito:
+                                                <span :class="{ 'ml-4': form.tax_account_id && form.tax_amount > 0 }"
+                                                    >Crédito{{ form.tax_account_id && form.tax_amount > 0 ? ' (Neto)' : '' }}:
                                                     {{
                                                         allCreditAccounts.find((acc) => acc.id === parseInt(form.credit_account_id))?.full_name
                                                     }}</span
                                                 >
-                                                <span class="font-mono">{{ formatCurrency(form.total_amount) }}</span>
+                                                <span class="font-mono">{{
+                                                    formatCurrency(
+                                                        form.tax_account_id && form.tax_amount > 0
+                                                            ? form.total_amount - form.tax_amount
+                                                            : form.total_amount,
+                                                    )
+                                                }}</span>
+                                            </div>
+                                            <!-- Línea de separación y totales -->
+                                            <div class="border-t border-border pt-1 mt-2">
+                                                <div class="flex justify-between font-medium">
+                                                    <span>Total</span>
+                                                    <span class="font-mono">{{ formatCurrency(form.total_amount) }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
