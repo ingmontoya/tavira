@@ -18,7 +18,7 @@
                     <Link v-if="!$page.props.auth.user" :href="route('register')"
                         class="flex-shrink-0 transform rounded-xl bg-gradient-to-r from-[#FF6B6B] to-[#FF6B6B] px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all duration-200 hover:-translate-y-1 hover:from-[#ff5555] hover:to-[#ff5555] hover:shadow-[#FF6B6B]/25 md:px-8 md:py-4 md:text-lg">
                     <span class="sm:hidden">Regístrate</span>
-                    <span class="hidden sm:inline">Comenzar Prueba Gratuita de 30 Días</span>
+                    <span class="hidden sm:inline">Regístrate</span>
                     </Link>
                     <button
                         class="flex-shrink-0 rounded-xl border-2 border-white/30 px-4 py-3 text-sm font-semibold text-white transition-all duration-200 hover:border-white/50 hover:bg-white/15 md:px-8 md:py-4 md:text-lg">

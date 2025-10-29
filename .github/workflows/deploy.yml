@@ -127,8 +127,8 @@ jobs:
           echo "  → Caching config..."
           kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache
 
-          echo "  → Caching routes..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan route:cache
+          # Note: route:cache is skipped for multitenancy apps to avoid route conflicts
+          # Routes are dynamically loaded per tenant
 
           echo "  → Caching views..."
           kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache

@@ -97,8 +97,8 @@ kubectl exec -n $NAMESPACE $POD -c php-fpm -- php artisan config:clear
 echo "  → Caching config..."
 kubectl exec -n $NAMESPACE $POD -c php-fpm -- php artisan config:cache
 
-echo "  → Caching routes..."
-kubectl exec -n $NAMESPACE $POD -c php-fpm -- php artisan route:cache
+# Note: route:cache is skipped for multitenancy apps to avoid route conflicts
+echo "  → Skipping route cache (multitenancy app)"
 
 echo "  → Caching views..."
 kubectl exec -n $NAMESPACE $POD -c php-fpm -- php artisan view:cache

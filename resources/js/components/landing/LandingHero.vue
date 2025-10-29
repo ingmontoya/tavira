@@ -40,7 +40,7 @@
                         class="group flex-shrink-0 transform rounded-xl bg-[#FF6B6B] px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-[#ff5555] hover:shadow-[#FF6B6B]/40 md:px-8 md:py-4 md:text-lg">
                     <span class="flex items-center justify-center space-x-2">
                         <span class="sm:hidden">Regístrate</span>
-                        <span class="hidden sm:inline">Comienza tu Prueba Gratuita</span>
+                        <span class="hidden sm:inline">Regístrate</span>
                         <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
