@@ -9,6 +9,7 @@ use App\Models\ConjuntoConfig;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PaymentConcept;
+use App\Settings\PaymentSettings;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -130,6 +131,9 @@ class GenerateMonthlyInvoices extends Command
         $periodEnd = $periodStart->copy()->endOfMonth();
         $dueDate = $periodEnd->copy(); // Due date is the last day of the billing period month
 
+        // Get payment settings for late fee calculation
+        $paymentSettings = app(PaymentSettings::class);
+
         // Obtener o crear el concepto de Administración Mensual
         $monthlyAdminConcept = PaymentConcept::firstOrCreate(
             [
@@ -146,20 +150,44 @@ class GenerateMonthlyInvoices extends Command
             ]
         );
 
+        // Obtener o crear el concepto de Interés de Mora
+        $lateFeeConcept = PaymentConcept::firstOrCreate(
+            [
+                'name' => 'Interés de Mora',
+                'type' => 'late_fee',
+            ],
+            [
+                'description' => 'Intereses por mora en el pago de obligaciones',
+                'default_amount' => 0,
+                'is_recurring' => false,
+                'is_active' => true,
+                'billing_cycle' => 'one_time',
+                'applicable_apartment_types' => null,
+            ]
+        );
+
+        // Calculate previous billing period
+        $previousPeriodDate = $periodStart->copy()->subMonth();
+        $previousYear = $previousPeriodDate->year;
+        $previousMonth = $previousPeriodDate->month;
+
         $generatedCount = 0;
         $skippedCount = 0;
         $errorCount = 0;
+        $lateFeesAppliedCount = 0;
 
         $this->info("Procesando {$apartments->count()} apartamentos elegibles...");
         $this->info("Usando concepto: {$monthlyAdminConcept->name} (ID: {$monthlyAdminConcept->id})");
+        $this->info("Verificando facturas del período anterior: {$previousYear}-{$previousMonth}");
 
         $progressBar = $this->output->createProgressBar($apartments->count());
         $progressBar->start();
 
         // Process apartments in chunks to avoid memory issues
         $apartments->chunk(50)->each(function ($apartmentChunk) use (
-            &$generatedCount, &$skippedCount, &$errorCount, $progressBar,
-            $billingDate, $dueDate, $year, $month, $periodStart, $periodEnd, $monthlyAdminConcept
+            &$generatedCount, &$skippedCount, &$errorCount, &$lateFeesAppliedCount, $progressBar,
+            $billingDate, $dueDate, $year, $month, $periodStart, $periodEnd, $monthlyAdminConcept,
+            $lateFeeConcept, $paymentSettings, $previousYear, $previousMonth
         ) {
             foreach ($apartmentChunk as $apartment) {
                 try {
@@ -172,6 +200,30 @@ class GenerateMonthlyInvoices extends Command
                         continue;
                     }
 
+                    // Check for unpaid invoice from previous month
+                    $previousInvoice = Invoice::where('apartment_id', $apartment->id)
+                        ->where('type', 'monthly')
+                        ->where('billing_period_year', $previousYear)
+                        ->where('billing_period_month', $previousMonth)
+                        ->first();
+
+                    $lateFeeAmount = 0;
+                    $shouldApplyLateFee = false;
+
+                    if ($previousInvoice && $previousInvoice->status !== 'pagado' && $paymentSettings->late_fees_enabled) {
+                        // Invoice from previous month exists and is not paid
+                        $gracePeriodEnd = $previousInvoice->due_date->copy()->addDays($paymentSettings->grace_period_days);
+
+                        // Check if grace period has ended
+                        if ($billingDate->greaterThan($gracePeriodEnd)) {
+                            // Calculate late fee based on the unpaid balance
+                            $baseAmount = $previousInvoice->balance_amount;
+                            $lateFeeAmount = round($baseAmount * ($paymentSettings->late_fee_percentage / 100), 2);
+                            $shouldApplyLateFee = $lateFeeAmount > 0;
+                        }
+                    }
+
+                    // Create the new invoice
                     $invoice = Invoice::create([
                         'apartment_id' => $apartment->id,
                         'type' => 'monthly',
@@ -181,7 +233,7 @@ class GenerateMonthlyInvoices extends Command
                         'billing_period_month' => $month,
                     ]);
 
-                    // Create invoice item for administration fee using the monthly administration concept
+                    // Create invoice item for administration fee
                     InvoiceItem::create([
                         'invoice_id' => $invoice->id,
                         'payment_concept_id' => $monthlyAdminConcept->id,
@@ -191,6 +243,23 @@ class GenerateMonthlyInvoices extends Command
                         'period_start' => $periodStart,
                         'period_end' => $periodEnd,
                     ]);
+
+                    // Add late fee item if applicable
+                    if ($shouldApplyLateFee) {
+                        InvoiceItem::create([
+                            'invoice_id' => $invoice->id,
+                            'payment_concept_id' => $lateFeeConcept->id,
+                            'description' => "Interés de Mora - Factura {$previousInvoice->invoice_number} ({$previousYear}-{$previousMonth})",
+                            'quantity' => 1,
+                            'unit_price' => $lateFeeAmount,
+                            'period_start' => $previousInvoice->due_date,
+                            'period_end' => $billingDate,
+                        ]);
+
+                        $lateFeesAppliedCount++;
+
+                        $this->line("  → Mora aplicada a Apt {$apartment->number}: $".number_format($lateFeeAmount, 2));
+                    }
 
                     $invoice->calculateTotals();
 
@@ -214,6 +283,10 @@ class GenerateMonthlyInvoices extends Command
         $this->newLine();
 
         $this->info("Facturas generadas exitosamente: {$generatedCount}");
+
+        if ($lateFeesAppliedCount > 0) {
+            $this->warn("Facturas con mora aplicada: {$lateFeesAppliedCount}");
+        }
 
         if ($skippedCount > 0) {
             $this->warn("Apartamentos omitidos (sin conceptos aplicables): {$skippedCount}");
