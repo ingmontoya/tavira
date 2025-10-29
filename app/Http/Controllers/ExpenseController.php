@@ -190,6 +190,7 @@ class ExpenseController extends Controller
             'total_amount' => 'required|numeric|min:0',
             'debit_account_id' => 'required|exists:chart_of_accounts,id',
             'credit_account_id' => 'required|exists:chart_of_accounts,id',
+            'tax_account_id' => 'nullable|exists:chart_of_accounts,id',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -325,6 +326,7 @@ class ExpenseController extends Controller
             'total_amount' => 'required|numeric|min:0',
             'debit_account_id' => 'required|exists:chart_of_accounts,id',
             'credit_account_id' => 'required|exists:chart_of_accounts,id',
+            'tax_account_id' => 'nullable|exists:chart_of_accounts,id',
             'notes' => 'nullable|string|max:1000',
         ]);
 
