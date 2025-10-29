@@ -12,6 +12,8 @@ use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
 use App\Listeners\SyncProvidersToNewTenant;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
+use App\Models\ConjuntoConfig;
+use App\Observers\ConjuntoConfigObserver;
 use App\Services\FeatureFlags\CentralApiDriver;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -20,7 +22,6 @@ use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
 use Stancl\Tenancy\Events\SyncedResourceSaved;
 use Stancl\Tenancy\Events\TenantCreated;
-use Stancl\Tenancy\Listeners\UpdateSyncedResource;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -74,5 +75,8 @@ class AppServiceProvider extends ServiceProvider
         // NOTA: SyncedResourceSaved ya está registrado en TenancyServiceProvider
         // Solo registramos el listener personalizado para nuevos tenants aquí
         Event::listen(TenantCreated::class, SyncProvidersToNewTenant::class);
+
+        // Observers
+        ConjuntoConfig::observe(ConjuntoConfigObserver::class);
     }
 }
