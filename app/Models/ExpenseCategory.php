@@ -95,7 +95,7 @@ class ExpenseCategory extends Model
         $currentYear = now()->year;
 
         return BudgetItem::whereHas('budget', function ($query) use ($currentYear) {
-            $query->where('year', $currentYear)
+            $query->where('fiscal_year', $currentYear)
                 ->where('conjunto_config_id', $this->conjunto_config_id);
         })
             ->where('account_id', $this->budget_account_id)
