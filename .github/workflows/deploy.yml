@@ -69,35 +69,88 @@ jobs:
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_NUXT }}:latest
           cache-to: type=inline
 
-      # 7️⃣ Build complete - Show deployment instructions
-      - name: ✅ Build complete - Ready to deploy
+      # 7️⃣ Configure kubectl
+      - name: Set up kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      # 8️⃣ Verify cluster connection
+      - name: Verify cluster connection
+        run: |
+          echo "🔍 Checking cluster connection..."
+          kubectl cluster-info
+          kubectl get nodes
+          echo "✅ Connected to cluster"
+
+      # 9️⃣ Update deployment
+      - name: Update Kubernetes deployment
+        run: |
+          echo "🔄 Updating deployment to ${{ steps.version.outputs.tag }}..."
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+            php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --record
+          echo "✅ Deployment updated"
+
+      # 🔟 Wait for rollout
+      - name: Wait for rollout to complete
+        run: |
+          echo "⏳ Waiting for rollout to complete..."
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} \
+            -n ${{ env.K8S_NAMESPACE }} \
+            --timeout=10m
+          echo "✅ Rollout completed successfully"
+
+      # 1️⃣1️⃣ Run post-deployment tasks
+      - name: Run post-deployment tasks
+        run: |
+          echo "🛠️ Running post-deployment tasks..."
+
+          # Get pod name
+          POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} \
+            -l app=${{ env.DEPLOYMENT_NAME }} \
+            -o jsonpath='{.items[0].metadata.name}')
+
+          echo "📦 Pod: $POD"
+
+          # Clear and cache config
+          echo "  → Clearing config cache..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:clear
+
+          echo "  → Caching config..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache
+
+          echo "  → Caching routes..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan route:cache
+
+          echo "  → Caching views..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache
+
+          # Run migrations
+          echo "  → Running central migrations..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan migrate --force
+
+          echo "  → Running tenant migrations..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan tenants:migrate --force
+
+          echo "✅ Post-deployment tasks completed"
+
+      # 1️⃣2️⃣ Show deployment status
+      - name: ✅ Deployment complete
         run: |
           echo "============================================="
-          echo "✅ Docker images built and pushed successfully!"
+          echo "✅ Deployment completed successfully!"
           echo "============================================="
           echo ""
-          echo "📦 Images ready:"
-          echo "  • PHP: ${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }}"
-          echo "  • Nuxt: ${{ env.DOCKER_IMAGE_NUXT }}:${{ steps.version.outputs.tag }}"
+          echo "📦 Deployed version: ${{ steps.version.outputs.tag }}"
           echo ""
-          echo "🚀 TO DEPLOY TO PRODUCTION:"
-          echo "============================================="
+          echo "📊 Current deployment status:"
+          kubectl get deployment ${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }}
           echo ""
-          echo "Option 1 - Quick deploy (recommended):"
-          echo "  ./scripts/deploy.sh ${{ steps.version.outputs.tag }}"
+          echo "📋 Running pods:"
+          kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=${{ env.DEPLOYMENT_NAME }}
           echo ""
-          echo "Option 2 - Manual commands:"
-          echo "  kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \\"
-          echo "    php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }}"
-          echo ""
-          echo "  kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}"
-          echo ""
-          echo "  POD=\$(kubectl get pods -l app=${{ env.DEPLOYMENT_NAME }} -o jsonpath='{.items[0].metadata.name}')"
-          echo "  kubectl exec \$POD -c php-fpm -- php artisan config:clear"
-          echo "  kubectl exec \$POD -c php-fpm -- php artisan config:cache"
-          echo "  kubectl exec \$POD -c php-fpm -- php artisan migrate --force"
-          echo "  kubectl exec \$POD -c php-fpm -- php artisan tenants:migrate --force"
-          echo ""
-          echo "============================================="
-          echo "💡 TIP: The deploy script handles all steps automatically"
+          echo "🌐 Application available at: https://tavira.com.co"
           echo "============================================="
