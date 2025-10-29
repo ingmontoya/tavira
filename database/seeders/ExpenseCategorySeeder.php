@@ -41,8 +41,8 @@ class ExpenseCategorySeeder extends Seeder
                 'color' => '#10B981',
                 'icon' => 'users',
                 'requires_approval' => true,
-                'debit_code' => '5105', // 5105 - Gastos de personal
-                'credit_code' => '2505', // 2505 - Salarios por pagar
+                'debit_code' => '510506', // 510506 - SUELDOS
+                'credit_code' => '1110', // 1110 - BANCOS (pago directo de nómina)
             ],
             [
                 'name' => 'Mantenimiento',
@@ -104,8 +104,8 @@ class ExpenseCategorySeeder extends Seeder
                 'color' => '#8B5CF6',
                 'icon' => 'scale',
                 'requires_approval' => true,
-                'debit_code' => '5120', // 5120 - Honorarios
-                'credit_code' => '2365', // 2365 - Retención en la fuente
+                'debit_code' => '511015', // 511015 - CONTABILIDAD
+                'credit_code' => '23352510', // 23352510 - CONTADOR
             ],
             [
                 'name' => 'Servicios Contratados',
