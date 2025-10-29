@@ -17,6 +17,7 @@ class ExpenseCategory extends Model
         'description',
         'default_debit_account_id',
         'default_credit_account_id',
+        'default_tax_account_id',
         'is_active',
         'color',
         'icon',
@@ -49,6 +50,11 @@ class ExpenseCategory extends Model
     public function defaultCreditAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccounts::class, 'default_credit_account_id');
+    }
+
+    public function defaultTaxAccount(): BelongsTo
+    {
+        return $this->belongsTo(ChartOfAccounts::class, 'default_tax_account_id');
     }
 
     public function budgetAccount(): BelongsTo

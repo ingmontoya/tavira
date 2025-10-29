@@ -34,6 +34,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => false,
                 'debit_code' => '5135', // 5135 - Servicios
                 'credit_code' => '1110', // 1110 - Bancos (efectivo)
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Personal',
@@ -43,6 +44,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '510506', // 510506 - SUELDOS
                 'credit_code' => '1110', // 1110 - BANCOS (pago directo de nómina)
+                'tax_code' => '236505', // 236505 - SALARIOS Y PAGOS LABORALES (Retención en la fuente)
             ],
             [
                 'name' => 'Mantenimiento',
@@ -52,6 +54,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '5160', // 5160 - Adecuación e instalación
                 'credit_code' => '2335', // 2335 - Costos y gastos por pagar
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Vigilancia',
@@ -61,6 +64,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => false,
                 'debit_code' => '5135', // 5135 - Servicios
                 'credit_code' => '2335', // 2335 - Costos y gastos por pagar
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Limpieza',
@@ -70,6 +74,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => false,
                 'debit_code' => '5135', // 5135 - Servicios
                 'credit_code' => '1110', // 1110 - Bancos
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Jardinería',
@@ -79,6 +84,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => false,
                 'debit_code' => '5135', // 5135 - Servicios
                 'credit_code' => '1110', // 1110 - Bancos
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Administrativos',
@@ -88,6 +94,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '5195', // 5195 - Diversos
                 'credit_code' => '1110', // 1110 - Bancos
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Seguros',
@@ -97,6 +104,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '5110', // 5110 - Seguros
                 'credit_code' => '1110', // 1110 - Bancos
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Legales y Contables',
@@ -106,6 +114,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '511015', // 511015 - CONTABILIDAD
                 'credit_code' => '23352510', // 23352510 - CONTADOR
+                'tax_code' => '236515', // 236515 - HONORARIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Servicios Contratados',
@@ -115,6 +124,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '5135', // 5135 - Servicios
                 'credit_code' => '2335', // 2335 - Costos y gastos por pagar
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
             [
                 'name' => 'Otros Gastos',
@@ -124,6 +134,7 @@ class ExpenseCategorySeeder extends Seeder
                 'requires_approval' => true,
                 'debit_code' => '5195', // 5195 - Diversos
                 'credit_code' => '1110', // 1110 - Bancos
+                'tax_code' => '236525', // 236525 - SERVICIOS (Retención en la fuente)
             ],
         ];
 
@@ -142,6 +153,15 @@ class ExpenseCategorySeeder extends Seeder
                 ->postable()
                 ->first();
 
+            // Find the tax/withholding account (retención en la fuente)
+            $taxAccount = null;
+            if (isset($categoryData['tax_code'])) {
+                $taxAccount = ChartOfAccounts::forConjunto($conjunto->id)
+                    ->where('code', 'LIKE', $categoryData['tax_code'] . '%')
+                    ->postable()
+                    ->first();
+            }
+
             if (! $debitAccount) {
                 $this->command->warn("Debit account {$categoryData['debit_code']} not found for category: {$categoryData['name']}");
                 continue;
@@ -155,24 +175,32 @@ class ExpenseCategorySeeder extends Seeder
             // Find budget account (same as debit account for expense categories)
             $budgetAccount = $debitAccount;
 
+            $categoryAttributes = [
+                'description' => $categoryData['description'],
+                'is_active' => true,
+                'color' => $categoryData['color'],
+                'icon' => $categoryData['icon'],
+                'requires_approval' => $categoryData['requires_approval'],
+                'default_debit_account_id' => $debitAccount->id,
+                'default_credit_account_id' => $creditAccount->id,
+                'budget_account_id' => $budgetAccount->id,
+            ];
+
+            // Add tax account if found
+            if ($taxAccount) {
+                $categoryAttributes['default_tax_account_id'] = $taxAccount->id;
+            }
+
             ExpenseCategory::updateOrCreate(
                 [
                     'conjunto_config_id' => $conjunto->id,
                     'name' => $categoryData['name'],
                 ],
-                [
-                    'description' => $categoryData['description'],
-                    'is_active' => true,
-                    'color' => $categoryData['color'],
-                    'icon' => $categoryData['icon'],
-                    'requires_approval' => $categoryData['requires_approval'],
-                    'default_debit_account_id' => $debitAccount->id,
-                    'default_credit_account_id' => $creditAccount->id,
-                    'budget_account_id' => $budgetAccount->id,
-                ]
+                $categoryAttributes
             );
 
-            $this->command->info("✓ Created category: {$categoryData['name']} (Debit: {$debitAccount->code}, Credit: {$creditAccount->code})");
+            $taxInfo = $taxAccount ? ", Tax: {$taxAccount->code}" : '';
+            $this->command->info("✓ Created category: {$categoryData['name']} (Debit: {$debitAccount->code}, Credit: {$creditAccount->code}{$taxInfo})");
         }
 
         $this->command->info('Expense categories created successfully!');

@@ -33,6 +33,7 @@ class Expense extends Model
         'notes',
         'debit_account_id',
         'credit_account_id',
+        'tax_account_id',
         'created_by',
         'approved_by',
         'approved_at',

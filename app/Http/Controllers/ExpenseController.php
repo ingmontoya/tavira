@@ -121,7 +121,7 @@ class ExpenseController extends Controller
 
         $categories = ExpenseCategory::forConjunto($conjunto->id)
             ->active()
-            ->with(['defaultDebitAccount', 'defaultCreditAccount'])
+            ->with(['defaultDebitAccount', 'defaultCreditAccount', 'defaultTaxAccount'])
             ->orderBy('name')
             ->get();
 
@@ -146,6 +146,13 @@ class ExpenseController extends Controller
             ->orderBy('code')
             ->get();
 
+        $taxAccounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->where('code', 'LIKE', '2365%')
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
         $providers = Provider::active()
             ->orderBy('name')
             ->get();
@@ -155,6 +162,7 @@ class ExpenseController extends Controller
             'expenseAccounts' => $expenseAccounts,
             'assetAccounts' => $assetAccounts,
             'liabilityAccounts' => $liabilityAccounts,
+            'taxAccounts' => $taxAccounts,
             'providers' => $providers,
             'approvalSettings' => [
                 'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,
@@ -244,7 +252,7 @@ class ExpenseController extends Controller
 
         $categories = ExpenseCategory::forConjunto($conjunto->id)
             ->active()
-            ->with(['defaultDebitAccount', 'defaultCreditAccount'])
+            ->with(['defaultDebitAccount', 'defaultCreditAccount', 'defaultTaxAccount'])
             ->orderBy('name')
             ->get();
 
@@ -269,6 +277,13 @@ class ExpenseController extends Controller
             ->orderBy('code')
             ->get();
 
+        $taxAccounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->where('code', 'LIKE', '2365%')
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
         $providers = Provider::active()
             ->orderBy('name')
             ->get();
@@ -279,6 +294,7 @@ class ExpenseController extends Controller
             'expenseAccounts' => $expenseAccounts,
             'assetAccounts' => $assetAccounts,
             'liabilityAccounts' => $liabilityAccounts,
+            'taxAccounts' => $taxAccounts,
             'providers' => $providers,
             'approvalSettings' => [
                 'approval_threshold_amount' => $expenseSettings->approval_threshold_amount,

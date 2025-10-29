@@ -48,6 +48,12 @@ interface ExpenseCategory {
         name: string;
         full_name: string;
     };
+    default_tax_account?: {
+        id: number;
+        code: string;
+        name: string;
+        full_name: string;
+    };
 }
 
 interface Account {
@@ -109,6 +115,7 @@ const props = defineProps<{
     expenseAccounts: Account[];
     assetAccounts: Account[];
     liabilityAccounts: Account[];
+    taxAccounts: Account[];
     providers: Provider[];
     approvalSettings?: {
         approval_threshold_amount: number;
@@ -136,6 +143,7 @@ const form = useForm({
     total_amount: props.expense.total_amount,
     debit_account_id: props.expense.debit_account_id?.toString() || '',
     credit_account_id: props.expense.credit_account_id?.toString() || '',
+    tax_account_id: props.expense.tax_account_id?.toString() || '',
     notes: props.expense.notes || '',
 });
 
@@ -554,6 +562,26 @@ const cancel = () => {
                                         </Select>
                                         <p class="text-xs text-muted-foreground">
                                             Seleccione Activos (Caja/Bancos) para pagos inmediatos o Pasivos (Cuentas por Pagar) para gastos por pagar
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="tax_account_id">Cuenta de Impuestos/Retenciones</Label>
+                                        <Select v-model="form.tax_account_id">
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Seleccionar cuenta de retención (opcional)" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="">
+                                                    <span class="text-muted-foreground">Sin retención</span>
+                                                </SelectItem>
+                                                <SelectItem v-for="account in taxAccounts" :key="account.id" :value="account.id.toString()">
+                                                    {{ account.full_name }}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p class="text-xs text-muted-foreground">
+                                            Cuenta para registrar retenciones en la fuente (opcional)
                                         </p>
                                     </div>
 
