@@ -15,6 +15,8 @@ class TenantDatabaseSeeder extends Seeder
             SecuritySettingsSeeder::class,
             RolePermissionSeeder::class,
             MaintenancePermissionsSeeder::class,
+            ChartOfAccountsSeeder::class,
+            ExpenseCategorySeeder::class,
             // Note: ConjuntoConfigSeeder and ResidentSeeder are intentionally excluded
             // as these should be created by the tenant admin through the UI
         ]);
