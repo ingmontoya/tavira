@@ -75,7 +75,7 @@ class AccountingTransaction extends Model
      */
     public function getReferencedModel()
     {
-        if ($this->reference_type === 'manual' || !$this->reference_id) {
+        if ($this->reference_type === 'manual' || ! $this->reference_id) {
             return null;
         }
 
@@ -398,60 +398,66 @@ class AccountingTransaction extends Model
 
         static::creating(function ($transaction) {
             if (empty($transaction->transaction_number)) {
-                $transaction->transaction_number = self::generateTransactionNumber($transaction);
+                $maxAttempts = 10;
+                $attempts = 0;
+
+                while ($attempts < $maxAttempts) {
+                    try {
+                        $transaction->transaction_number = self::generateTransactionNumber($transaction);
+                        break;
+                    } catch (\Exception $e) {
+                        $attempts++;
+                        if ($attempts >= $maxAttempts) {
+                            throw new \Exception("Failed to generate unique transaction number after {$maxAttempts} attempts: ".$e->getMessage());
+                        }
+                        // Small random delay to reduce collision probability
+                        usleep(rand(1000, 5000)); // 1-5ms delay
+                    }
+                }
             }
         });
     }
 
     private static function generateTransactionNumber($transaction = null): string
     {
-        // Use PostgreSQL advisory lock to prevent race conditions during transaction number generation
-        // Lock ID: 987654321 (arbitrary unique number for this operation)
-        // Use the tenant connection to ensure the lock works correctly in multitenancy
-        \DB::connection('tenant')->statement('SELECT pg_advisory_lock(987654321)');
-
-        try {
+        return \DB::connection('tenant')->transaction(function () use ($transaction) {
             $year = now()->year;
             $month = now()->format('m');
+            $prefix = "TXN-{$year}{$month}-";
 
-            // Use a unique identifier to prevent race conditions
-            // Instead of using created_at (which doesn't exist yet), use transaction_number pattern
-            $lastTransaction = self::where('transaction_number', 'like', "TXN-%-{$year}{$month}-%")
-                ->orderBy('transaction_number', 'desc')
-                ->first();
+            // Start with a random offset to reduce collisions in high-concurrency scenarios
+            $randomOffset = rand(0, 10);
 
-            $sequence = $lastTransaction ? ((int) substr($lastTransaction->transaction_number, -4)) + 1 : 1;
+            // Get max sequence without FOR UPDATE (PostgreSQL doesn't support FOR UPDATE with aggregates)
+            // Use raw SQL to get the max sequence number for this period
+            $result = \DB::connection('tenant')->select('
+                SELECT MAX(CAST(RIGHT(transaction_number, 4) AS INTEGER)) as max_sequence
+                FROM accounting_transactions
+                WHERE conjunto_config_id = ?
+                AND transaction_number LIKE ?
+            ', [$transaction->conjunto_config_id, "{$prefix}%"]);
 
-            // Try to get apartment number from reference
-            $apartmentCode = '';
-            if ($transaction && $transaction->reference_type === 'invoice' && $transaction->reference_id) {
-                $invoice = \App\Models\Invoice::find($transaction->reference_id);
-                if ($invoice && $invoice->apartment) {
-                    $apartmentCode = $invoice->apartment->number.'-';
-                }
-            } elseif ($transaction && $transaction->reference_type === 'payment' && $transaction->reference_id) {
-                $invoice = \App\Models\Invoice::find($transaction->reference_id);
-                if ($invoice && $invoice->apartment) {
-                    $apartmentCode = $invoice->apartment->number.'-';
-                }
-            } elseif ($transaction && $transaction->reference_type === 'payment_application' && $transaction->reference_id) {
-                // For payment applications, get apartment from the payment application
-                $paymentApplication = \App\Models\PaymentApplication::find($transaction->reference_id);
-                if ($paymentApplication && $paymentApplication->invoice && $paymentApplication->invoice->apartment) {
-                    $apartmentCode = $paymentApplication->invoice->apartment->number.'-';
-                }
-            } elseif ($transaction && $transaction->reference_type === 'expense' && $transaction->reference_id) {
-                // For expenses, use EXP- prefix instead of apartment code
-                $expense = \App\Models\Expense::find($transaction->reference_id);
-                if ($expense) {
-                    $apartmentCode = 'EXP-';
+            $maxSequence = $result[0]->max_sequence ?? 0;
+            $sequence = $maxSequence + 1 + $randomOffset;
+
+            // Try sequences until we find one that doesn't exist
+            for ($i = 0; $i < 50; $i++) {
+                $transactionNumber = sprintf('%s%04d', $prefix, $sequence + $i);
+
+                // Check if this number is available with a lock
+                $exists = \DB::connection('tenant')->selectOne('
+                    SELECT 1 FROM accounting_transactions
+                    WHERE conjunto_config_id = ?
+                    AND transaction_number = ?
+                    FOR UPDATE
+                ', [$transaction->conjunto_config_id, $transactionNumber]);
+
+                if (! $exists) {
+                    return $transactionNumber;
                 }
             }
 
-            return sprintf('TXN-%s%s%s-%04d', $apartmentCode, $year, $month, $sequence);
-        } finally {
-            // Always release the lock on the tenant connection
-            \DB::connection('tenant')->statement('SELECT pg_advisory_unlock(987654321)');
-        }
+            throw new \Exception('Unable to generate unique transaction number after 50 attempts');
+        });
     }
 }
