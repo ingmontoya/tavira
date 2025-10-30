@@ -505,6 +505,7 @@ class Expense extends Model
             if ($existingPaymentTransaction->status === 'borrador' && $existingPaymentTransaction->can_be_posted) {
                 $existingPaymentTransaction->post();
             }
+
             return;
         }
 
@@ -518,8 +519,24 @@ class Expense extends Model
         );
 
         if (! $cashAccount) {
-            throw new \Exception("No se encontró mapeo de cuenta para el método de pago: {$paymentMethod}");
+            // Try to get a default cash/bank account as fallback
+            $cashAccount = ChartOfAccounts::where('conjunto_config_id', $this->conjunto_config_id)
+                ->where('code', 'LIKE', '1110%') // Bancos
+                ->where('is_active', true)
+                ->where('is_postable', true)
+                ->first();
+
+            if (! $cashAccount) {
+                throw new \Exception("No se encontró mapeo de cuenta para el método de pago: {$paymentMethod}. Por favor configure los mapeos de métodos de pago en Configuración > Mapeo de Métodos de Pago.");
+            }
         }
+
+        // Calculate the net payment amount (considering withholding tax)
+        // If there's withholding tax, the net amount paid is: total_amount - tax_amount
+        // Otherwise, the full total_amount is paid
+        $netPaymentAmount = $this->tax_amount > 0
+            ? $this->total_amount - $this->tax_amount
+            : $this->total_amount;
 
         // For expense payments, we need to:
         // 1. Debit the supplier account (reduce liability)
@@ -545,10 +562,11 @@ class Expense extends Model
         ]);
 
         // Débito: Cuenta del proveedor (reducir pasivo - cuenta por pagar)
+        // This should be the net amount (after withholding) that was originally credited
         $debitEntry = [
             'account_id' => $supplierAccount->id,
             'description' => "Pago a {$vendorName} - {$this->expense_number}",
-            'debit_amount' => $this->total_amount,
+            'debit_amount' => $netPaymentAmount,
             'credit_amount' => 0,
         ];
 
@@ -566,7 +584,7 @@ class Expense extends Model
             'description' => "Pago efectuado - {$this->expense_number}".
                            ($paymentReference ? " (Ref: {$paymentReference})" : ''),
             'debit_amount' => 0,
-            'credit_amount' => $this->total_amount,
+            'credit_amount' => $netPaymentAmount,
         ]);
 
         // Post the payment transaction immediately
