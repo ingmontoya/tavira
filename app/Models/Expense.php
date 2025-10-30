@@ -7,6 +7,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Expense Model
+ *
+ * Handles expense tracking and accounting for the conjunto.
+ *
+ * IMPORTANT - Amount Fields:
+ * - subtotal: The total value of the service/purchase (NOT affected by withholdings)
+ * - tax_amount: Withholding tax amount (retención en la fuente) - INFORMATIONAL ONLY
+ *   This amount is deducted from the net payment but DOES NOT change the expense total
+ * - total_amount: Same as subtotal (the full expense amount)
+ *
+ * Example:
+ * - Service cost: $1,000,000 (subtotal and total_amount)
+ * - Withholding tax: $100,000 (tax_amount - cuenta 2365)
+ * - Net payment: $900,000 (what's actually paid)
+ *
+ * Accounting Entry:
+ * - Debit: Expense account (e.g., 513510 Vigilancia) $1,000,000
+ * - Credit: Withholding account (2365xx) $100,000
+ * - Credit: Bank/Payable account $900,000
+ */
 class Expense extends Model
 {
     use SoftDeletes;
@@ -24,7 +45,7 @@ class Expense extends Model
         'expense_date',
         'due_date',
         'subtotal',
-        'tax_amount',
+        'tax_amount',  // Retención en la fuente (withholding tax)
         'total_amount',
         'status',
         'payment_method',
@@ -384,7 +405,8 @@ class Expense extends Model
             'created_by' => auth()->id(),
         ]);
 
-        // Débito: Cuenta de gasto
+        // Débito: Cuenta de gasto por el valor total del servicio/compra
+        // Ejemplo: 513510 Vigilancia $1,000,000
         $transaction->addEntry([
             'account_id' => $this->debit_account_id,
             'description' => "Gasto: {$this->description}",
@@ -392,17 +414,31 @@ class Expense extends Model
             'credit_amount' => 0,
         ]);
 
-        // If there's a tax/withholding account and tax amount, create separate entries
+        // If there's withholding tax (retención en la fuente), create separate entries
+        // The withholding reduces the net payment but doesn't change the expense amount
         if ($this->tax_account_id && $this->tax_amount > 0) {
-            // Crédito: Cuenta de retención en la fuente
-            $transaction->addEntry([
+            // Crédito: Cuenta de retención en la fuente (2365)
+            // Ejemplo: 236525 Retención Servicios $100,000
+            // The withholding account requires third party info (who we're withholding from)
+            $taxEntry = [
                 'account_id' => $this->tax_account_id,
                 'description' => "Retención en la fuente: {$vendorName}",
                 'debit_amount' => 0,
                 'credit_amount' => $this->tax_amount,
-            ]);
+            ];
+
+            // Check if tax account requires third party and add provider info
+            $taxAccount = ChartOfAccounts::find($this->tax_account_id);
+            if ($taxAccount && $taxAccount->requires_third_party && $this->provider_id) {
+                $taxEntry['third_party_type'] = 'provider';
+                $taxEntry['third_party_id'] = $this->provider_id;
+            }
+
+            $transaction->addEntry($taxEntry);
 
             // Crédito: Cuenta de origen (neto a pagar = total - retención)
+            // Ejemplo: 111005 Bancos $900,000 (si pago inmediato)
+            // Ejemplo: 2335 Cuentas por pagar $900,000 (si es a crédito)
             $netAmount = $this->total_amount - $this->tax_amount;
             $creditEntry = [
                 'account_id' => $this->credit_account_id,
@@ -412,6 +448,7 @@ class Expense extends Model
             ];
         } else {
             // Crédito: Cuenta de origen (caja/banco o cuentas por pagar) - monto completo
+            // Sin retención, se paga el monto completo
             $creditEntry = [
                 'account_id' => $this->credit_account_id,
                 'description' => "Pago/Provisión: {$vendorName}",

@@ -192,9 +192,10 @@ watch(
     },
 );
 
-// Calculate total when subtotal or tax changes
-watch([() => form.subtotal, () => form.tax_amount], () => {
-    form.total_amount = (form.subtotal || 0) + (form.tax_amount || 0);
+// Calculate total - for expenses, withholding tax doesn't change the total
+// The withholding is deducted from the net payment, but the expense amount remains the same
+watch(() => form.subtotal, () => {
+    form.total_amount = form.subtotal || 0;
 });
 
 // Submit form
@@ -390,18 +391,23 @@ const cancel = () => {
                                 <CardContent class="space-y-4">
                                     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                                         <div class="space-y-2">
-                                            <Label for="subtotal" class="required">Subtotal</Label>
+                                            <Label for="subtotal" class="required">Valor del Gasto</Label>
                                             <Input id="subtotal" v-model.number="form.subtotal" type="number" step="0.01" min="0" required />
+                                            <p class="text-xs text-muted-foreground">Valor total del servicio o compra</p>
                                         </div>
 
                                         <div class="space-y-2">
-                                            <Label for="tax_amount">Impuestos</Label>
+                                            <Label for="tax_amount">Retención en la Fuente</Label>
                                             <Input id="tax_amount" v-model.number="form.tax_amount" type="number" step="0.01" min="0" />
+                                            <p class="text-xs text-muted-foreground">Monto a retener (no afecta el total)</p>
                                         </div>
 
                                         <div class="space-y-2">
-                                            <Label for="total_amount" class="required">Total</Label>
+                                            <Label for="total_amount" class="required">Total del Gasto</Label>
                                             <Input id="total_amount" :value="formatCurrency(form.total_amount)" disabled class="font-bold" />
+                                            <p class="text-xs text-muted-foreground">
+                                                Neto a pagar: {{ formatCurrency((form.total_amount || 0) - (form.tax_amount || 0)) }}
+                                            </p>
                                         </div>
                                     </div>
 
@@ -513,13 +519,13 @@ const cancel = () => {
                                     </div>
 
                                     <div class="space-y-2">
-                                        <Label for="tax_account_id">Cuenta de Impuestos/Retenciones</Label>
+                                        <Label for="tax_account_id">Cuenta de Retención en la Fuente</Label>
                                         <Select v-model="form.tax_account_id">
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Seleccionar cuenta de retención (opcional)" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="">
+                                                <SelectItem value="none">
                                                     <span class="text-muted-foreground">Sin retención</span>
                                                 </SelectItem>
                                                 <SelectItem v-for="account in taxAccounts" :key="account.id" :value="account.id.toString()">
@@ -528,7 +534,7 @@ const cancel = () => {
                                             </SelectContent>
                                         </Select>
                                         <p class="text-xs text-muted-foreground">
-                                            Cuenta para registrar retenciones en la fuente (opcional)
+                                            Cuenta 2365 - Retención en la fuente por pagar (opcional)
                                         </p>
                                     </div>
 
@@ -548,7 +554,7 @@ const cancel = () => {
                                                 <span class="font-mono">{{ formatCurrency(form.total_amount) }}</span>
                                             </div>
                                             <!-- Crédito: Retención (si aplica) -->
-                                            <div v-if="form.tax_account_id && form.tax_amount > 0" class="flex justify-between">
+                                            <div v-if="form.tax_account_id && form.tax_account_id !== 'none' && form.tax_amount > 0" class="flex justify-between">
                                                 <span class="ml-4"
                                                     >Crédito (Retención):
                                                     {{ taxAccounts.find((acc) => acc.id === parseInt(form.tax_account_id))?.full_name }}</span
@@ -557,15 +563,15 @@ const cancel = () => {
                                             </div>
                                             <!-- Crédito: Neto a pagar o monto total -->
                                             <div class="flex justify-between">
-                                                <span :class="{ 'ml-4': form.tax_account_id && form.tax_amount > 0 }"
-                                                    >Crédito{{ form.tax_account_id && form.tax_amount > 0 ? ' (Neto)' : '' }}:
+                                                <span :class="{ 'ml-4': form.tax_account_id && form.tax_account_id !== 'none' && form.tax_amount > 0 }"
+                                                    >Crédito{{ form.tax_account_id && form.tax_account_id !== 'none' && form.tax_amount > 0 ? ' (Neto)' : '' }}:
                                                     {{
                                                         allCreditAccounts.find((acc) => acc.id === parseInt(form.credit_account_id))?.full_name
                                                     }}</span
                                                 >
                                                 <span class="font-mono">{{
                                                     formatCurrency(
-                                                        form.tax_account_id && form.tax_amount > 0
+                                                        form.tax_account_id && form.tax_account_id !== 'none' && form.tax_amount > 0
                                                             ? form.total_amount - form.tax_amount
                                                             : form.total_amount,
                                                     )

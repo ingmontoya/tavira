@@ -22,28 +22,28 @@ class ExpenseApprovalController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         // Get pending approvals
-        $pendingApprovals = Expense::with(['expenseCategory', 'supplier', 'debitAccount', 'creditAccount', 'createdBy'])
+        $pendingApprovals = Expense::with(['expenseCategory', 'provider', 'debitAccount', 'creditAccount', 'createdBy'])
             ->forConjunto($conjunto->id)
             ->where('status', 'pendiente')
             ->orderBy('expense_date', 'asc')
             ->get();
 
         // Get council pending approvals
-        $councilPendingApprovals = Expense::with(['expenseCategory', 'supplier', 'debitAccount', 'creditAccount', 'createdBy', 'approvedBy'])
+        $councilPendingApprovals = Expense::with(['expenseCategory', 'provider', 'debitAccount', 'creditAccount', 'createdBy', 'approvedBy'])
             ->forConjunto($conjunto->id)
             ->where('status', 'pendiente_concejo')
             ->orderBy('approved_at', 'asc')
             ->get();
 
         // Get overdue expenses (approved but not paid)
-        $overdueExpenses = Expense::with(['expenseCategory', 'supplier'])
+        $overdueExpenses = Expense::with(['expenseCategory', 'provider'])
             ->forConjunto($conjunto->id)
             ->overdue()
             ->orderBy('due_date', 'asc')
             ->get();
 
         // Get recent approvals (last 7 days)
-        $recentApprovals = Expense::with(['expenseCategory', 'supplier', 'approvedBy'])
+        $recentApprovals = Expense::with(['expenseCategory', 'provider', 'approvedBy'])
             ->forConjunto($conjunto->id)
             ->where('status', 'aprobado')
             ->where('approved_at', '>=', now()->subDays(7))
