@@ -401,18 +401,18 @@ const deleteExpense = () => {
 
                                         <!-- Amount breakdown -->
                                         <div class="space-y-2">
-                                            <div class="flex justify-between">
-                                                <span class="text-muted-foreground">Subtotal:</span>
-                                                <span class="font-medium">{{ formatCurrency(expense.subtotal) }}</span>
-                                            </div>
-                                            <div v-if="expense.tax_amount > 0" class="flex justify-between">
-                                                <span class="text-muted-foreground">Impuestos:</span>
-                                                <span class="font-medium">{{ formatCurrency(expense.tax_amount) }}</span>
-                                            </div>
-                                            <Separator />
                                             <div class="flex justify-between text-lg font-bold">
-                                                <span>Total:</span>
+                                                <span>Valor del Gasto:</span>
                                                 <span>{{ formatCurrency(expense.total_amount) }}</span>
+                                            </div>
+                                            <div v-if="expense.tax_amount > 0" class="flex justify-between text-amber-600">
+                                                <span class="text-muted-foreground">Retención en la Fuente:</span>
+                                                <span class="font-medium">- {{ formatCurrency(expense.tax_amount) }}</span>
+                                            </div>
+                                            <Separator v-if="expense.tax_amount > 0" />
+                                            <div v-if="expense.tax_amount > 0" class="flex justify-between text-lg font-bold text-green-600">
+                                                <span>Neto a Pagar:</span>
+                                                <span>{{ formatCurrency(expense.total_amount - expense.tax_amount) }}</span>
                                             </div>
                                         </div>
 
@@ -682,8 +682,12 @@ const deleteExpense = () => {
                                 />
                             </div>
                             <div class="rounded-md bg-muted p-3">
-                                <div class="mb-1 text-sm font-medium text-muted-foreground">Monto a Pagar</div>
-                                <div class="text-lg font-bold">{{ formatCurrency(expense.total_amount) }}</div>
+                                <div class="mb-1 text-sm font-medium text-muted-foreground">Monto a Pagar (Neto)</div>
+                                <div class="text-lg font-bold">{{ formatCurrency(expense.total_amount - (expense.tax_amount || 0)) }}</div>
+                                <div v-if="expense.tax_amount > 0" class="mt-1 text-xs text-muted-foreground">
+                                    Gasto total: {{ formatCurrency(expense.total_amount) }}<br />
+                                    Retención: {{ formatCurrency(expense.tax_amount) }}
+                                </div>
                             </div>
                         </div>
 
