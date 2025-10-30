@@ -1,0 +1,8 @@
+# Version of the agent configuration standard
+version = "1.0"
+
+model = "claude-4.5-haiku"
+
+imports = [
+    "agents/devops_agent.toml",
+]

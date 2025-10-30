@@ -1,0 +1,99 @@
+[commands.create_staging_environment]
+description = "Create and deploy a full staging environment for Tavira"
+instructions = """
+You are the DevOps automation agent for Tavira.
+Your task is to provision, configure, and deploy a complete STAGING environment replicating production with limited scale.
+
+## Context
+Tavira is a multi-tenant SaaS application using:
+- Backend: Laravel 11 (PHP-FPM + Nginx)
+- Frontend: Nuxt 3 (SSR)
+- Database: PostgreSQL
+- Queue: Redis
+- Infrastructure: Kubernetes + Docker
+- CI/CD: GitHub Actions
+- Monitoring: Prometheus + Grafana
+
+## Objectives
+1. **Provision Infrastructure**
+   - Create a Kubernetes namespace `tavira-staging`.
+   - Deploy ConfigMaps and Secrets from `/deploy/staging/config/`.
+   - Ensure persistent storage for PostgreSQL and Redis.
+   - Apply network policies and staging ingress (`staging.tavira.example.com`).
+
+2. **Deploy Application**
+   - Build Docker images for Laravel (`backend`) and Nuxt (`frontend`).
+   - Push images to the container registry (`ghcr.io/tavira`).
+   - Apply manifests: `deployment-staging.yaml`, `service-staging.yaml`, `ingress-staging.yaml`.
+   - Run Laravel migrations with `php artisan migrate --force`.
+   - Run seeders if needed (`php artisan db:seed --force`).
+
+3. **Verification**
+   - Run health checks: `kubectl get pods -n tavira-staging` until all pods are READY.
+   - Verify endpoint response: `curl -I https://staging.tavira.example.com`.
+   - Check database connectivity and cache availability.
+   - Report deployment logs and summary.
+
+4. **Expected Outcome**
+   - Fully running staging environment replicating production.
+   - Accessible via HTTPS under staging domain.
+   - Output a structured report including namespace status, image tags, and endpoint health.
+
+Return output in JSON with this structure:
+
+{
+  "success": true,
+  "namespace": "tavira-staging",
+  "deployed_images": ["backend:<tag>", "frontend:<tag>"],
+  "endpoint": "https://staging.tavira.example.com",
+  "status": "Healthy",
+  "deployment_log": "..."
+}
+"""
+
+arguments = [
+  { name = "version_tag", type = "string", required = true, description = "Docker image version or Git tag to deploy" },
+  { name = "registry", type = "string", required = false, default = "ghcr.io/tavira", description = "Container registry base path" },
+  { name = "domain", type = "string", required = false, default = "staging.tavira.example.com", description = "Staging domain name" }
+]
+
+mcpServers = """
+{
+  "shell": {
+    "command": "uvx",
+    "args": ["mcp-shell-server"],
+    "env": {
+      "ALLOW_COMMANDS": "kubectl,docker,helm,php,composer,git"
+    }
+  },
+  "github": {
+    "command": "docker",
+    "args": [
+      "run",
+      "-i",
+      "--rm",
+      "-e",
+      "GITHUB_PERSONAL_ACCESS_TOKEN",
+      "ghcr.io/github/github-mcp-server"
+    ]
+  }
+}
+"""
+
+tools = ["shell", "git", "docker", "kubernetes", "github"]
+execution_strategy = "plan"
+
+output_schema = """
+{
+  "properties": {
+    "success": {"type": "boolean"},
+    "namespace": {"type": "string"},
+    "deployed_images": {"type": "array", "items": {"type": "string"}},
+    "endpoint": {"type": "string"},
+    "status": {"type": "string"},
+    "deployment_log": {"type": "string"}
+  }
+}
+"""
+
+exit_expression = "success"

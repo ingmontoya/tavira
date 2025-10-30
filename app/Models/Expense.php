@@ -329,6 +329,11 @@ class Expense extends Model
             throw new \Exception('El gasto no puede ser marcado como pagado');
         }
 
+        // Additional safety check: don't process if already paid
+        if ($this->status === 'pagado') {
+            throw new \Exception('El gasto ya está marcado como pagado');
+        }
+
         \Illuminate\Support\Facades\DB::transaction(function () use ($paymentMethod, $paymentReference) {
             $this->update([
                 'status' => 'pagado',
@@ -489,6 +494,20 @@ class Expense extends Model
 
     private function createPaymentTransaction(string $paymentMethod, ?string $paymentReference = null): void
     {
+        // Check if payment transaction already exists
+        $existingPaymentTransaction = $this->accountingTransactions()
+            ->where('reference_type', 'expense_payment')
+            ->where('reference_id', $this->id)
+            ->first();
+
+        if ($existingPaymentTransaction) {
+            // Payment transaction already exists, just post it if needed
+            if ($existingPaymentTransaction->status === 'borrador' && $existingPaymentTransaction->can_be_posted) {
+                $existingPaymentTransaction->post();
+            }
+            return;
+        }
+
         // Get vendor name for description
         $vendorName = $this->getVendorDisplayName();
 

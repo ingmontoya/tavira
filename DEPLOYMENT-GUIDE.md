@@ -1,14 +1,126 @@
 # 🚀 Guía de Despliegue Optimizado - Tavira
 
-Esta guía describe el proceso de despliegue optimizado para Kubernetes con Laravel.
+Esta guía describe el proceso de despliegue optimizado para Kubernetes con Laravel, incluyendo CI/CD automático con GitHub Actions.
 
 ## 📋 Tabla de Contenidos
 
-1. [Optimizaciones Implementadas](#optimizaciones-implementadas)
-2. [Proceso de Despliegue](#proceso-de-despliegue)
-3. [Verificación y Monitoreo](#verificación-y-monitoreo)
-4. [Troubleshooting](#troubleshooting)
-5. [Rollback](#rollback)
+1. [Despliegue Automático (CI/CD)](#despliegue-automático-cicd) ⭐ **NUEVO**
+2. [Optimizaciones Implementadas](#optimizaciones-implementadas)
+3. [Proceso de Despliegue Manual](#proceso-de-despliegue-manual)
+4. [Verificación y Monitoreo](#verificación-y-monitoreo)
+5. [Troubleshooting](#troubleshooting)
+6. [Rollback](#rollback)
+
+---
+
+## 🤖 Despliegue Automático (CI/CD)
+
+### ⚡ Flujo Automático con GitHub Actions
+
+**¿Cómo funciona?** Cuando haces `push` a la rama `main`, se ejecuta automáticamente:
+
+```
+Push to main → Build Docker → Push to Hub → Deploy K8s → Run Migrations → ✅ Live
+```
+
+### 🎯 Lo que se ejecuta automáticamente:
+
+1. ✅ **Build de imágenes Docker** (PHP + Nuxt)
+2. ✅ **Push a Docker Hub** con versionado automático (`v20251029-abc1234`)
+3. ✅ **Deploy a Kubernetes** con rolling update (zero downtime)
+4. ✅ **Verificación de rollout** (espera hasta 10 minutos)
+5. ✅ **Post-deployment tasks**:
+   - Clear config cache
+   - Cache config and views (routes NOT cached - see note below)
+   - Run central migrations
+   - Run tenant migrations
+
+> **Note**: `route:cache` is intentionally skipped in multitenancy applications to avoid route name conflicts between central and tenant routes. Routes are dynamically loaded per tenant without performance impact.
+6. ✅ **Verificación de estado** del deployment
+
+### 🚀 Cómo Usar el Despliegue Automático
+
+#### 1. Configuración Inicial (Una sola vez)
+
+Necesitas configurar los secrets en GitHub:
+
+```bash
+# Ver guía detallada de configuración
+cat GITHUB-SECRETS-SETUP.md
+```
+
+**Secrets necesarios:**
+- `KUBE_CONFIG` - Tu archivo kubeconfig de Kubernetes
+- `DOCKER_USERNAME` - Usuario de Docker Hub (ya configurado)
+- `DOCKER_PASSWORD` - Password de Docker Hub (ya configurado)
+
+📖 **[Ver guía completa de configuración →](./GITHUB-SECRETS-SETUP.md)**
+
+#### 2. Desplegar (Automático)
+
+```bash
+# Simplemente haz push a main
+git add .
+git commit -m "feat: nueva funcionalidad"
+git push origin main
+
+# 🎉 ¡Eso es todo! El resto es automático
+```
+
+#### 3. Monitorear el Despliegue
+
+**Opción 1: GitHub UI**
+1. Ve a tu repositorio en GitHub
+2. Click en la pestaña **Actions**
+3. Observa el workflow "Deploy to Production" en tiempo real
+
+**Opción 2: Línea de comandos**
+```bash
+# Monitorear el rollout en Kubernetes
+kubectl rollout status deployment/tavira-app -w
+
+# Ver logs en tiempo real
+kubectl logs -f -l app=tavira -c php-fpm
+
+# Ver estado de los pods
+kubectl get pods -l app=tavira
+```
+
+### 🔧 Trigger Manual
+
+También puedes ejecutar el workflow manualmente sin hacer push:
+
+1. Ve a **Actions** en GitHub
+2. Selecciona **Deploy to Production**
+3. Click en **Run workflow**
+4. Selecciona la rama `main`
+5. Click en **Run workflow**
+
+### 🎨 Ventajas del Despliegue Automático
+
+| Característica | Manual | Automático |
+|----------------|--------|------------|
+| Build de imagen | 🔴 Manual | 🟢 Automático |
+| Versionado | 🔴 Manual | 🟢 Automático (fecha + commit) |
+| Deploy a K8s | 🔴 Manual | 🟢 Automático |
+| Migraciones | 🔴 Manual | 🟢 Automático |
+| Rollback | 🟢 Fácil | 🟢 Fácil |
+| Zero downtime | 🟢 Sí | 🟢 Sí |
+| Logs visibles | 🔴 Solo kubectl | 🟢 GitHub + kubectl |
+
+### 📊 Timeline del Despliegue Automático
+
+Un despliegue típico toma **~8-12 minutos**:
+
+```
+0:00 - Push to main
+0:30 - Build PHP image (4-6 min)
+5:00 - Build Nuxt image (2-3 min)
+7:30 - Deploy to K8s (30s)
+8:00 - Rollout (2-5 min)
+10:00 - Post-deployment tasks (1 min)
+11:00 - ✅ Deployment complete
+```
 
 ---
 
@@ -56,7 +168,9 @@ opcache.max_accelerated_files=10000
 
 ---
 
-## 🚀 Proceso de Despliegue
+## 🚀 Proceso de Despliegue Manual
+
+> ℹ️ **Nota**: Con el despliegue automático configurado, raramente necesitarás estos pasos manuales. Úsalos solo para casos especiales o troubleshooting.
 
 ### Opción 1: Script Automatizado (Recomendado)
 
@@ -159,9 +273,130 @@ kubectl describe pod <pod-name>
 
 ---
 
+## ⚠️ Multitenancy Considerations
+
+### Why Routes Are NOT Cached
+
+En aplicaciones multitenancy como Tavira, **NO se cachean las rutas** (`route:cache`) por las siguientes razones:
+
+1. **Conflictos de nombres**: Las rutas centrales y de tenant pueden tener nombres duplicados (`login`, `register`, etc.)
+2. **Contexto dinámico**: Las rutas deben cargarse dinámicamente según el dominio/tenant actual
+3. **Flexibilidad**: Permite cambios en rutas sin necesidad de limpiar cachés
+
+**Impacto en performance**: Mínimo. Laravel es muy eficiente cargando rutas, y OPcache cachea el código PHP.
+
+**Alternativa**: Si necesitas mejorar el performance de rutas:
+- Optimiza el número total de rutas
+- Usa route model binding
+- Implementa caching a nivel de aplicación
+
+### What IS Cached
+
+✅ **Config cache** (`config:cache`) - Seguro para multitenancy
+✅ **View cache** (`view:cache`) - Seguro para multitenancy
+❌ **Route cache** (`route:cache`) - Deshabilitado para multitenancy
+
+---
+
 ## 🚨 Troubleshooting
 
-### Problema: Pod no inicia (CrashLoopBackOff)
+### Problemas del Despliegue Automático (GitHub Actions)
+
+#### Error: "Unable to connect to the server"
+
+**Causa**: El secret `KUBE_CONFIG` está mal configurado o expiró.
+
+**Solución**:
+```bash
+# 1. Obtener tu kubeconfig actualizado
+cat ~/.kube/config
+
+# 2. Actualizar el secret en GitHub
+gh secret set KUBE_CONFIG < ~/.kube/config
+
+# 3. Re-ejecutar el workflow
+```
+
+#### Error: "Forbidden: User cannot get resource"
+
+**Causa**: El service account no tiene permisos suficientes.
+
+**Solución**:
+```bash
+# Crear service account con permisos
+kubectl create serviceaccount github-actions -n default
+kubectl create clusterrolebinding github-actions-admin \
+  --clusterrole=cluster-admin \
+  --serviceaccount=default:github-actions
+
+# Generar token y actualizar KUBE_CONFIG
+kubectl create token github-actions -n default --duration=87600h
+```
+
+#### Workflow se queda "stuck" en el rollout
+
+**Causa**: Los nuevos pods no pasan el health check.
+
+**Solución**:
+```bash
+# Ver qué está pasando con los pods
+kubectl get pods -l app=tavira
+kubectl describe pod <pod-name>
+kubectl logs <pod-name> -c php-fpm
+
+# Si necesitas hacer rollback manualmente
+kubectl rollout undo deployment/tavira-app
+```
+
+#### Migraciones fallan en GitHub Actions
+
+**Causa**: Puede ser problema de conectividad a la base de datos.
+
+**Solución**:
+```bash
+# Ejecutar migraciones manualmente
+POD=$(kubectl get pods -l app=tavira -o jsonpath='{.items[0].metadata.name}')
+kubectl exec $POD -c php-fpm -- php artisan migrate --force
+kubectl exec $POD -c php-fpm -- php artisan tenants:migrate --force
+```
+
+#### Error: "Unable to prepare route [login] for serialization"
+
+**Causa**: Rutas duplicadas entre central y tenant. Este error aparecía cuando se intentaba cachear rutas.
+
+**Solución**: Ya está resuelto. El workflow ahora **NO cachea rutas** (`route:cache`) para evitar conflictos en multitenancy. Ver sección [Multitenancy Considerations](#multitenancy-considerations) para más detalles.
+
+Si modificaste manualmente el deployment y ves este error:
+```bash
+# Simplemente NO ejecutes route:cache
+php artisan config:cache  # ✅ OK
+php artisan view:cache    # ✅ OK
+php artisan route:cache   # ❌ NO ejecutar en multitenancy
+```
+
+#### Error: "cannot exec into a container in a completed pod"
+
+**Causa**: El script intenta ejecutar comandos en un pod que ya terminó (estado `Succeeded` o `Failed`) en lugar de uno que está corriendo.
+
+**Solución**: Ya está resuelto. El workflow ahora:
+1. Espera 5 segundos después del rollout para que los pods se estabilicen
+2. Usa `--field-selector=status.phase=Running` para obtener solo pods activos
+3. Valida que el pod existe antes de ejecutar comandos
+
+Si ves este error manualmente:
+```bash
+# Obtener SOLO pods en estado Running
+POD=$(kubectl get pods -l app=tavira \
+  --field-selector=status.phase=Running \
+  -o jsonpath='{.items[0].metadata.name}')
+
+# Verificar el estado antes de ejecutar
+kubectl get pod $POD
+```
+
+### Problemas del Deployment (Kubernetes)
+
+#### Problema: Pod no inicia (CrashLoopBackOff)
 
 ```bash
 # Ver logs del pod fallido

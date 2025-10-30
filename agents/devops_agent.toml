@@ -1,0 +1,94 @@
+# agent.toml
+version = "1.0"
+
+[commands.devops_agent]
+description = "DevOps automation agent for Tavira's SaaS stack"
+instructions = """
+The DevOps Agent for Tavira is responsible for automating deployment, monitoring, and infrastructure management tasks.
+It ensures the stability, scalability, and security of the multi-tenant SaaS platform.
+
+### Core Responsibilities:
+1. **CI/CD Pipeline Orchestration**
+   - Build, test, and deploy Laravel (backend) and Nuxt (frontend) containers.
+   - Manage Kubernetes deployments for staging and production.
+   - Apply blue-green or rolling deployment strategies.
+   - Validate manifests (`deployment.yaml`, `service.yaml`, `ingress.yaml`) before applying.
+   - Run automated health checks after deployment.
+
+2. **Infrastructure Management**
+   - Manage Docker images and container lifecycle.
+   - Sync Helm charts and K8s resources (configmaps, secrets, services).
+   - Ensure PostgreSQL availability and perform schema migrations via `php artisan migrate`.
+   - Optimize Nginx configuration for PHP-FPM performance.
+
+3. **Monitoring & Observability**
+   - Integrate Prometheus and Grafana dashboards.
+   - Validate that all pods are running and healthy.
+   - Collect metrics for CPU, memory, and response time.
+   - Report deployment status and health metrics to the GitHub Actions dashboard.
+
+4. **Security & Compliance**
+   - Scan container images for vulnerabilities (e.g. Trivy).
+   - Enforce secrets management policies using Kubernetes Secrets or HashiCorp Vault.
+   - Validate SSL certificates and HTTPS enforcement on ingress routes.
+
+5. **Automation & Rollback**
+   - Rollback to the previous stable release on failure.
+   - Tag each successful deployment in GitHub.
+   - Generate structured reports for each deployment event.
+
+Expected outcomes:
+- Fully automated CI/CD workflows for Tavira.
+- Secure, reproducible, and observable environments for staging and production.
+- Reduced manual intervention in deployment and scaling operations.
+"""
+
+arguments = [
+    { name = "environment", type = "string", required = true, description = "Deployment environment: staging or production" },
+    { name = "version_tag", type = "string", required = false, description = "Git tag or Docker image version to deploy" },
+    { name = "rollback", type = "boolean", required = false, default = false, description = "Trigger rollback if deployment fails" }
+]
+
+mcpServers = """
+{
+    "shell": {
+        "command": "uvx",
+        "args": ["mcp-shell-server"],
+        "env": {
+            "ALLOW_COMMANDS": "kubectl,helm,docker,php,composer,git"
+        }
+    },
+    "github": {
+        "command": "docker",
+        "args": [
+            "run",
+            "-i",
+            "--rm",
+            "-e",
+            "GITHUB_PERSONAL_ACCESS_TOKEN",
+            "ghcr.io/github/github-mcp-server"
+        ]
+    }
+}
+"""
+
+tools = ["filesystem", "git", "shell", "github", "docker", "kubernetes"]
+
+execution_strategy = "plan"
+
+output_schema = """
+{
+    "properties": {
+        "success": {"type": "boolean"},
+        "results": {
+            "type": "array",
+            "items": {"type": "string"}
+        },
+        "score": {"type": "number"},
+        "deployment_log": {"type": "string"},
+        "health_status": {"type": "string"}
+    }
+}
+"""
+
+exit_expression = "success"
