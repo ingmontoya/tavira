@@ -108,7 +108,7 @@ spec:
         envFrom:
         - secretRef:
             name: laravel-env
-        image: ingmontoyav/tavira-app:v20251027-cf6bafe
+        image: ingmontoyav/tavira-app:v20251030-dddf16c
         imagePullPolicy: Always
         livenessProbe:
           failureThreshold: 3

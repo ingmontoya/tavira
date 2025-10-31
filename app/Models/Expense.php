@@ -400,6 +400,9 @@ class Expense extends Model
             return; // Don't create duplicate transactions
         }
 
+        // Ensure we have a provider_id if any account requires third party
+        $this->ensureProviderForThirdPartyAccounts();
+
         // Get vendor name (from supplier or manual entry)
         $vendorName = $this->getVendorDisplayName();
 
@@ -500,6 +503,62 @@ class Expense extends Model
         if ($transaction && $transaction->can_be_posted) {
             $transaction->post();
         }
+    }
+
+    /**
+     * Ensure the expense has a provider_id if any of the accounting accounts require third party
+     * If vendor_name is set but no provider_id, create a provider automatically
+     */
+    private function ensureProviderForThirdPartyAccounts(): void
+    {
+        // If we already have a provider_id, nothing to do
+        if ($this->provider_id) {
+            return;
+        }
+
+        // If we don't even have a vendor_name, nothing we can do
+        if (! $this->vendor_name) {
+            return;
+        }
+
+        // Check if any of the accounts require third party
+        $requiresThirdParty = false;
+
+        if ($this->credit_account_id) {
+            $creditAccount = ChartOfAccounts::find($this->credit_account_id);
+            if ($creditAccount && $creditAccount->requires_third_party) {
+                $requiresThirdParty = true;
+            }
+        }
+
+        if (!$requiresThirdParty && $this->tax_account_id) {
+            $taxAccount = ChartOfAccounts::find($this->tax_account_id);
+            if ($taxAccount && $taxAccount->requires_third_party) {
+                $requiresThirdParty = true;
+            }
+        }
+
+        // If no account requires third party, nothing to do
+        if (! $requiresThirdParty) {
+            return;
+        }
+
+        // At this point, we have vendor_name but no provider_id, and accounts require third party
+        // Create a provider automatically
+        $provider = \App\Models\Provider::firstOrCreate(
+            [
+                'name' => $this->vendor_name,
+            ],
+            [
+                'document' => $this->vendor_document,
+                'email' => $this->vendor_email,
+                'phone' => $this->vendor_phone,
+                'is_active' => true,
+            ]
+        );
+
+        // Update the expense with the provider_id
+        $this->update(['provider_id' => $provider->id]);
     }
 
     private function createPaymentTransaction(string $paymentMethod, ?string $paymentReference = null): void
