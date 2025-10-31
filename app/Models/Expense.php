@@ -352,6 +352,9 @@ class Expense extends Model
             // Ensure provider exists for third party accounting requirements
             $expense->ensureProviderForThirdPartyAccounts();
 
+            // Refresh to get the updated provider_id before posting transactions
+            $expense->refresh();
+
             // Post the original accounting transaction (provision)
             $expense->postAccountingTransaction();
 
