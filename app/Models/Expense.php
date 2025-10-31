@@ -325,17 +325,24 @@ class Expense extends Model
 
     public function markAsPaid(?string $paymentMethod = null, ?string $paymentReference = null): void
     {
-        if (! $this->can_be_paid) {
-            throw new \Exception('El gasto no puede ser marcado como pagado');
-        }
-
-        // Additional safety check: don't process if already paid
-        if ($this->status === 'pagado') {
-            throw new \Exception('El gasto ya está marcado como pagado');
-        }
-
         \Illuminate\Support\Facades\DB::transaction(function () use ($paymentMethod, $paymentReference) {
-            $this->update([
+            // Lock the row for update to prevent concurrent modifications
+            $expense = self::lockForUpdate()->find($this->id);
+
+            if (! $expense) {
+                throw new \Exception('El gasto no fue encontrado');
+            }
+
+            // Re-check status after acquiring lock
+            if ($expense->status === 'pagado') {
+                throw new \Exception('El gasto ya está marcado como pagado');
+            }
+
+            if ($expense->status !== 'aprobado') {
+                throw new \Exception('El gasto no puede ser marcado como pagado. Estado actual: '.$expense->status);
+            }
+
+            $expense->update([
                 'status' => 'pagado',
                 'payment_method' => $paymentMethod ?: 'bank_transfer',
                 'payment_reference' => $paymentReference,
@@ -343,10 +350,13 @@ class Expense extends Model
             ]);
 
             // Post the original accounting transaction (provision)
-            $this->postAccountingTransaction();
+            $expense->postAccountingTransaction();
 
             // Create the payment transaction
-            $this->createPaymentTransaction($paymentMethod ?: 'bank_transfer', $paymentReference);
+            $expense->createPaymentTransaction($paymentMethod ?: 'bank_transfer', $paymentReference);
+
+            // Refresh the current model instance
+            $this->refresh();
         });
     }
 
