@@ -38,16 +38,6 @@ spec:
               number: 80
         path: /
         pathType: Prefix
-  - host: '*.tavira.com.co'
-    http:
-      paths:
-      - backend:
-          service:
-            name: tavira-service
-            port:
-              number: 80
-        path: /
-        pathType: Prefix
   tls:
   - hosts:
     - tavira.com.co
