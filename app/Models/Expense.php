@@ -702,8 +702,11 @@ class Expense extends Model
             'credit_amount' => 0,
         ];
 
-        // If liability account requires third party, add provider info
-        if ($creditAccount->requires_third_party && $this->provider_id) {
+        // If liability account requires third party, we MUST have provider_id
+        if ($creditAccount->requires_third_party) {
+            if (! $this->provider_id) {
+                throw new \Exception('La cuenta '.$creditAccount->code.' - '.$creditAccount->name.' requiere tercero pero el gasto no tiene proveedor asignado');
+            }
             $debitEntry['third_party_type'] = 'provider';
             $debitEntry['third_party_id'] = $this->provider_id;
         }
