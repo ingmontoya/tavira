@@ -101,10 +101,11 @@ const submit = () => {
 </script>
 
 <template>
+
     <Head title="Nuevo Cierre Contable" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -113,10 +114,10 @@ const submit = () => {
                 </div>
                 <div class="flex items-center gap-3">
                     <Link :href="route('accounting.closures.index')">
-                        <Button variant="outline" class="gap-2">
-                            <ArrowLeft class="h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline" class="gap-2">
+                        <ArrowLeft class="h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
                 </div>
             </div>
@@ -146,11 +147,7 @@ const submit = () => {
                                         <SelectValue placeholder="Selecciona el año" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem
-                                            v-for="year in availableYearsToClose"
-                                            :key="year"
-                                            :value="year"
-                                        >
+                                        <SelectItem v-for="year in availableYearsToClose" :key="year" :value="year">
                                             {{ year }}
                                         </SelectItem>
                                     </SelectContent>
@@ -166,12 +163,8 @@ const submit = () => {
                             <!-- Closure Date -->
                             <div class="space-y-2">
                                 <Label for="closure_date">Fecha de Cierre *</Label>
-                                <Input
-                                    id="closure_date"
-                                    v-model="form.closure_date"
-                                    type="date"
-                                    :class="{ 'border-red-500': form.errors.closure_date }"
-                                />
+                                <Input id="closure_date" v-model="form.closure_date" type="date"
+                                    :class="{ 'border-red-500': form.errors.closure_date }" />
                                 <p class="text-xs text-muted-foreground">
                                     Normalmente es el último día del año fiscal
                                 </p>
@@ -183,22 +176,13 @@ const submit = () => {
                             <!-- Notes -->
                             <div class="space-y-2">
                                 <Label for="notes">Notas</Label>
-                                <Textarea
-                                    id="notes"
-                                    v-model="form.notes"
-                                    placeholder="Observaciones sobre el cierre (opcional)"
-                                    rows="3"
-                                />
+                                <Textarea id="notes" v-model="form.notes"
+                                    placeholder="Observaciones sobre el cierre (opcional)" rows="3" />
                             </div>
 
                             <!-- Preview Button -->
-                            <Button
-                                type="button"
-                                variant="outline"
-                                class="w-full gap-2"
-                                :disabled="isLoadingPreview || availableYearsToClose.length === 0"
-                                @click="loadPreview"
-                            >
+                            <Button type="button" variant="outline" class="w-full gap-2"
+                                :disabled="isLoadingPreview || availableYearsToClose.length === 0" @click="loadPreview">
                                 <Eye class="h-4 w-4" />
                                 {{ isLoadingPreview ? 'Cargando...' : 'Cargar Vista Previa' }}
                             </Button>
@@ -236,15 +220,10 @@ const submit = () => {
                             <CardTitle class="flex items-center justify-between">
                                 <span>Vista Previa del Cierre</span>
                                 <div class="flex items-center gap-1">
-                                    <component
-                                        :is="preview.is_profit ? TrendingUp : TrendingDown"
-                                        class="h-5 w-5"
-                                        :class="preview.is_profit ? 'text-green-600' : 'text-red-600'"
-                                    />
-                                    <span
-                                        class="text-lg font-bold"
-                                        :class="preview.is_profit ? 'text-green-600' : 'text-red-600'"
-                                    >
+                                    <component :is="preview.is_profit ? TrendingUp : TrendingDown" class="h-5 w-5"
+                                        :class="preview.is_profit ? 'text-green-600' : 'text-red-600'" />
+                                    <span class="text-lg font-bold"
+                                        :class="preview.is_profit ? 'text-green-600' : 'text-red-600'">
                                         {{ preview.is_profit ? 'Excedente' : 'Déficit' }}
                                     </span>
                                 </div>
@@ -271,10 +250,8 @@ const submit = () => {
                                 <div class="border-t pt-3">
                                     <div class="flex justify-between">
                                         <span class="font-semibold">Resultado Neto:</span>
-                                        <span
-                                            class="font-mono text-lg font-bold"
-                                            :class="preview.is_profit ? 'text-green-600' : 'text-red-600'"
-                                        >
+                                        <span class="font-mono text-lg font-bold"
+                                            :class="preview.is_profit ? 'text-green-600' : 'text-red-600'">
                                             {{ formatCurrency(Math.abs(preview.net_result)) }}
                                         </span>
                                     </div>
@@ -309,7 +286,8 @@ const submit = () => {
                                     <div class="max-h-40 overflow-y-auto rounded-md border">
                                         <Table>
                                             <TableBody>
-                                                <TableRow v-for="account in preview.expense_details" :key="account.code">
+                                                <TableRow v-for="account in preview.expense_details"
+                                                    :key="account.code">
                                                     <TableCell class="py-2 text-xs">{{ account.code }}</TableCell>
                                                     <TableCell class="py-2 text-xs">{{ account.name }}</TableCell>
                                                     <TableCell class="py-2 text-right text-xs font-mono text-red-600">
@@ -323,12 +301,7 @@ const submit = () => {
                             </div>
 
                             <!-- Submit Button -->
-                            <Button
-                                type="button"
-                                class="w-full gap-2"
-                                :disabled="form.processing"
-                                @click="submit"
-                            >
+                            <Button type="button" class="w-full gap-2" :disabled="form.processing" @click="submit">
                                 <Save class="h-4 w-4" />
                                 {{ form.processing ? 'Ejecutando Cierre...' : 'Ejecutar Cierre Contable' }}
                             </Button>
@@ -348,7 +321,9 @@ const submit = () => {
                     <!-- Loading State -->
                     <Card v-else-if="isLoadingPreview">
                         <CardContent class="flex min-h-[400px] flex-col items-center justify-center py-12 text-center">
-                            <div class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                            <div
+                                class="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent">
+                            </div>
                             <p class="text-muted-foreground">Cargando vista previa...</p>
                         </CardContent>
                     </Card>
