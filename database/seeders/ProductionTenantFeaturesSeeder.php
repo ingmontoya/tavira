@@ -72,24 +72,40 @@ class ProductionTenantFeaturesSeeder extends Seeder
 
         $this->command->line("   📦 Aplicando plan '{$template['name']}' a tenant {$tenant->id}");
 
+        // Update marketplace commission based on plan
+        $tenant->updateCommissionFromPlan();
+
         // Configurar cada feature disponible
-        foreach ($this->getAllAvailableFeatures() as $feature) {
-            $enabled = in_array($feature, $features);
+        $tenant->run(function () use ($tenant, $features) {
+            foreach ($this->getAllAvailableFeatures() as $feature) {
+                $featureValue = $features[$feature] ?? false;
 
-            TenantFeature::updateOrCreate(
-                [
-                    'tenant_id' => $tenant->id,
-                    'feature' => $feature,
-                ],
-                [
-                    'enabled' => $enabled,
-                ]
-            );
+                // Determinar si el feature está habilitado
+                $enabled = $featureValue !== false;
 
-            if ($enabled) {
-                $this->command->line("     ✓ {$feature}");
+                // Determinar config (si es array, es config; si es boolean true, config es null)
+                $config = null;
+                if (is_array($featureValue)) {
+                    $config = $featureValue;
+                }
+
+                TenantFeature::updateOrCreate(
+                    [
+                        'tenant_id' => $tenant->id,
+                        'feature' => $feature,
+                    ],
+                    [
+                        'enabled' => $enabled,
+                        'config' => $config,
+                    ]
+                );
+
+                if ($enabled) {
+                    $configInfo = $config ? ' (con configuración)' : '';
+                    $this->command->line("     ✓ {$feature}{$configInfo}");
+                }
             }
-        }
+        });
     }
 
     /**
@@ -159,52 +175,20 @@ class ProductionTenantFeaturesSeeder extends Seeder
     }
 
     /**
-     * Get feature templates (same as TenantFeatureController)
+     * Get feature templates from config
      */
     private function getFeatureTemplates(): array
     {
-        return [
-            'basic' => [
-                'name' => 'Plan Básico',
-                'features' => [
-                    'correspondence',
-                    'announcements',
-                    'support_tickets',
-                ],
-            ],
-            'standard' => [
-                'name' => 'Plan Estándar',
-                'features' => [
-                    'correspondence',
-                    'maintenance_requests',
-                    'announcements',
-                    'support_tickets',
-                    'documents',
-                ],
-            ],
-            'premium' => [
-                'name' => 'Plan Premium',
-                'features' => [
-                    'correspondence',
-                    'maintenance_requests',
-                    'visitor_management',
-                    'accounting',
-                    'reservations',
-                    'announcements',
-                    'documents',
-                    'support_tickets',
-                    'payment_agreements',
-                ],
-            ],
-        ];
+        return config('feature-plans');
     }
 
     /**
-     * Get all available features
+     * Get all available features (28 total)
      */
     private function getAllAvailableFeatures(): array
     {
         return [
+            // ✅ Already implemented (10)
             'correspondence',
             'maintenance_requests',
             'visitor_management',
@@ -214,6 +198,27 @@ class ProductionTenantFeaturesSeeder extends Seeder
             'documents',
             'support_tickets',
             'payment_agreements',
+            'panic_button',
+
+            // 🔴 To be implemented (18)
+            'institutional_email',
+            'apartment_management',
+            'access_control',
+            'analytics_dashboard',
+            'internal_messaging',
+            'financial_reports',
+            'meeting_minutes',
+            'system_configuration',
+            'basic_administration',
+            'voting',
+            'audit_logs',
+            'push_notifications',
+            'resident_management',
+            'qr_security_scanner',
+            'expense_approvals',
+            'advanced_reports',
+            'bulk_operations',
+            'marketplace_providers', // CRITICAL - Marketplace feature
         ];
     }
 
@@ -229,8 +234,11 @@ class ProductionTenantFeaturesSeeder extends Seeder
         $templates = $this->getFeatureTemplates();
         foreach ($templates as $key => $template) {
             $this->command->info("🎯 {$template['name']} ({$key}):");
-            foreach ($template['features'] as $feature) {
-                $this->command->info("   ✓ {$feature}");
+            foreach ($template['features'] as $feature => $value) {
+                if ($value !== false) {
+                    $configInfo = is_array($value) ? ' (con configuración)' : '';
+                    $this->command->info("   ✓ {$feature}{$configInfo}");
+                }
             }
             $this->command->info('');
         }

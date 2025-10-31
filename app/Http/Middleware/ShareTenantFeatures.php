@@ -17,18 +17,33 @@ class ShareTenantFeatures
     {
         // Solo aplicar en contexto de tenant (no en central dashboard)
         if (function_exists('tenant') && tenant()) {
-            $tenantId = tenant('id');
+            $tenant = tenant();
 
             try {
-                // Obtener todas las features del tenant
-                $tenantFeatures = TenantFeature::where('tenant_id', $tenantId)->get();
+                // Obtener todas las features del tenant con sus configuraciones
+                $featuresData = [];
+                $tenant->run(function () use ($tenant, &$featuresData) {
+                    $tenantFeatures = TenantFeature::where('tenant_id', $tenant->id)
+                        ->where('enabled', true)
+                        ->get();
+
+                    // Crear un mapa más simple: feature => config
+                    foreach ($tenantFeatures as $feature) {
+                        $featuresData[$feature->feature] = [
+                            'enabled' => true,
+                            'config' => $feature->config ?? [],
+                        ];
+                    }
+                });
 
                 // Compartir con Inertia
                 Inertia::share([
-                    'tenant' => function () use ($tenantId, $tenantFeatures) {
+                    'tenant' => function () use ($tenant, $featuresData) {
                         return [
-                            'id' => $tenantId,
-                            'features' => $tenantFeatures->toArray(),
+                            'id' => $tenant->id,
+                            'subscription_plan' => $tenant->subscription_plan ?? 'basic',
+                            'marketplace_commission' => $tenant->marketplace_commission,
+                            'features' => $featuresData,
                         ];
                     },
                 ]);
@@ -36,7 +51,7 @@ class ShareTenantFeatures
             } catch (\Exception $e) {
                 // En caso de error, no bloquear la aplicación
                 \Log::warning("Error sharing tenant features: {$e->getMessage()}", [
-                    'tenant_id' => $tenantId,
+                    'tenant_id' => $tenant->id ?? 'unknown',
                 ]);
             }
         }
