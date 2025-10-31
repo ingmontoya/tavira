@@ -344,6 +344,13 @@ export function useNavigation() {
                     tourId: 'nav-accounting-reports',
                     visible: isFeatureEnabled('financial_reports') && hasPermission('view_accounting'),
                 },
+                {
+                    title: 'Cierres Contables',
+                    href: '/accounting/closures',
+                    icon: CalendarDays,
+                    tourId: 'nav-accounting-closures',
+                    visible: hasPermission('view_accounting'),
+                },
             ],
         },
         {
