@@ -512,6 +512,25 @@ class Expense extends Model
         // Get vendor name for description
         $vendorName = $this->getVendorDisplayName();
 
+        // Get the original credit account from the provision transaction
+        $creditAccount = ChartOfAccounts::find($this->credit_account_id);
+
+        if (! $creditAccount) {
+            throw new \Exception('No se encontró la cuenta de crédito para crear la transacción de pago');
+        }
+
+        // IMPORTANT: Check if the credit account is a cash/bank account (1110xx)
+        // If it is, it means this expense was already paid in the provision transaction
+        // and we should NOT create a separate payment transaction
+        if (str_starts_with($creditAccount->code, '1110') || str_starts_with($creditAccount->code, '1105')) {
+            // This is a cash/bank account - expense was paid immediately in provision
+            // No need to create a payment transaction
+            return;
+        }
+
+        // If we get here, the credit account is a liability account (e.g., 2335 - Cuentas por Pagar)
+        // This means the expense was provisioned (a crédito) and now needs to be paid
+
         // Get cash account for the payment method
         $cashAccount = PaymentMethodAccountMapping::getCashAccountForPaymentMethod(
             $this->conjunto_config_id,
@@ -538,16 +557,9 @@ class Expense extends Model
             ? $this->total_amount - $this->tax_amount
             : $this->total_amount;
 
-        // For expense payments, we need to:
-        // 1. Debit the supplier account (reduce liability)
+        // For expense payments of provisioned expenses, we need to:
+        // 1. Debit the liability account (2335 - reduce accounts payable)
         // 2. Credit the cash/bank account (reduce asset)
-
-        // Get the original credit account (should be the supplier/liability account)
-        $supplierAccount = ChartOfAccounts::find($this->credit_account_id);
-
-        if (! $supplierAccount) {
-            throw new \Exception('No se encontró la cuenta del proveedor para crear la transacción de pago');
-        }
 
         // Create payment transaction
         $paymentTransaction = AccountingTransaction::create([
@@ -561,17 +573,17 @@ class Expense extends Model
             'created_by' => auth()->id(),
         ]);
 
-        // Débito: Cuenta del proveedor (reducir pasivo - cuenta por pagar)
-        // This should be the net amount (after withholding) that was originally credited
+        // Débito: Cuenta del pasivo (2335 - Costos y Gastos por Pagar)
+        // This reduces the liability that was created in the provision transaction
         $debitEntry = [
-            'account_id' => $supplierAccount->id,
+            'account_id' => $creditAccount->id,
             'description' => "Pago a {$vendorName} - {$this->expense_number}",
             'debit_amount' => $netPaymentAmount,
             'credit_amount' => 0,
         ];
 
-        // If provider account requires third party, add provider info
-        if ($supplierAccount->requires_third_party && $this->provider_id) {
+        // If liability account requires third party, add provider info
+        if ($creditAccount->requires_third_party && $this->provider_id) {
             $debitEntry['third_party_type'] = 'provider';
             $debitEntry['third_party_id'] = $this->provider_id;
         }
