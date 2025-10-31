@@ -525,9 +525,10 @@ class Expense extends Model
             'tax_account_id' => $this->tax_account_id,
         ]);
 
-        // If we already have a provider_id, nothing to do
+        // If we already have a provider_id, update existing transactions and return
         if ($this->provider_id) {
-            \Log::info('Provider already exists, skipping', ['provider_id' => $this->provider_id]);
+            \Log::info('Provider already exists, updating existing transactions', ['provider_id' => $this->provider_id]);
+            $this->updateExistingTransactionEntriesWithThirdParty($this->provider_id);
             return;
         }
 
