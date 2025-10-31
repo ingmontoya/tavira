@@ -58,6 +58,21 @@ class Budget extends Model
         return $this->hasMany(BudgetItem::class)->where('category', 'expense');
     }
 
+    public function fixedExpenseItems(): HasMany
+    {
+        return $this->hasMany(BudgetItem::class)->where('category', 'expense')->where('expense_type', 'fixed');
+    }
+
+    public function variableExpenseItems(): HasMany
+    {
+        return $this->hasMany(BudgetItem::class)->where('category', 'expense')->where('expense_type', 'variable');
+    }
+
+    public function specialFundItems(): HasMany
+    {
+        return $this->hasMany(BudgetItem::class)->where('category', 'expense')->where('expense_type', 'special_fund');
+    }
+
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
@@ -278,6 +293,7 @@ class Budget extends Model
                 $this->items()->create([
                     'account_id' => $account->id,
                     'category' => $accountData['category'],
+                    'expense_type' => $accountData['expense_type'] ?? null,
                     'budgeted_amount' => $accountData['default_amount'] ?? 0,
                     'notes' => $accountData['notes'] ?? null,
                 ]);
@@ -285,6 +301,65 @@ class Budget extends Model
         }
 
         $this->calculateTotals();
+    }
+
+    public function getCashFlowProjection(): array
+    {
+        $monthlyData = [];
+        $cumulativeBalance = 0;
+
+        for ($month = 1; $month <= 12; $month++) {
+            $monthlyIncome = $this->incomeItems->sum(function ($item) use ($month) {
+                return $item->getAmountForMonth($month);
+            });
+
+            $monthlyExpenses = $this->expenseItems->sum(function ($item) use ($month) {
+                return $item->getAmountForMonth($month);
+            });
+
+            $netCashFlow = $monthlyIncome - $monthlyExpenses;
+            $cumulativeBalance += $netCashFlow;
+
+            $monthlyData[] = [
+                'month' => $month,
+                'month_name' => $this->getMonthName($month),
+                'income' => (float) $monthlyIncome,
+                'expenses' => (float) $monthlyExpenses,
+                'net_cash_flow' => (float) $netCashFlow,
+                'cumulative_balance' => (float) $cumulativeBalance,
+            ];
+        }
+
+        return $monthlyData;
+    }
+
+    public function getExpensesSummaryByCategoryType(): array
+    {
+        return [
+            'fixed' => [
+                'total' => (float) $this->fixedExpenseItems->sum('budgeted_amount'),
+                'items' => $this->fixedExpenseItems->with('account')->get(),
+            ],
+            'variable' => [
+                'total' => (float) $this->variableExpenseItems->sum('budgeted_amount'),
+                'items' => $this->variableExpenseItems->with('account')->get(),
+            ],
+            'special_fund' => [
+                'total' => (float) $this->specialFundItems->sum('budgeted_amount'),
+                'items' => $this->specialFundItems->with('account')->get(),
+            ],
+        ];
+    }
+
+    private function getMonthName(int $month): string
+    {
+        $months = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+        ];
+
+        return $months[$month] ?? '';
     }
 
     private function getDefaultBudgetAccountsTemplate(): array
@@ -322,46 +397,53 @@ class Budget extends Model
                 'notes' => 'Ingresos por intereses de mora',
             ],
 
-            // Expense Accounts
+            // Fixed Expense Accounts
             [
                 'code' => '510501',
                 'category' => 'expense',
+                'expense_type' => 'fixed',
                 'default_amount' => 0,
                 'notes' => 'Gastos por sueldos y salarios del personal',
             ],
             [
                 'code' => '513501',
                 'category' => 'expense',
+                'expense_type' => 'fixed',
                 'default_amount' => 0,
                 'notes' => 'Gastos por servicio de energía eléctrica',
             ],
             [
                 'code' => '513502',
                 'category' => 'expense',
+                'expense_type' => 'fixed',
                 'default_amount' => 0,
                 'notes' => 'Gastos por servicios de agua y alcantarillado',
             ],
             [
                 'code' => '513508',
                 'category' => 'expense',
+                'expense_type' => 'fixed',
                 'default_amount' => 0,
                 'notes' => 'Gastos por servicios de vigilancia',
             ],
             [
                 'code' => '513509',
                 'category' => 'expense',
+                'expense_type' => 'variable',
                 'default_amount' => 0,
                 'notes' => 'Gastos por servicios de jardinería',
             ],
             [
                 'code' => '513510',
                 'category' => 'expense',
+                'expense_type' => 'fixed',
                 'default_amount' => 0,
                 'notes' => 'Gastos por limpieza de zonas comunes',
             ],
             [
                 'code' => '530501',
                 'category' => 'expense',
+                'expense_type' => 'fixed',
                 'default_amount' => 0,
                 'notes' => 'Gastos por servicios bancarios',
             ],

@@ -12,6 +12,7 @@ class BudgetItem extends Model
         'budget_id',
         'account_id',
         'category',
+        'expense_type',
         'budgeted_amount',
         'jan_amount',
         'feb_amount',
@@ -46,6 +47,7 @@ class BudgetItem extends Model
 
     protected $appends = [
         'category_label',
+        'expense_type_label',
         'monthly_amounts',
         'total_distributed',
         'remaining_amount',
@@ -81,12 +83,46 @@ class BudgetItem extends Model
         return $query->where('category', 'expense');
     }
 
+    public function scopeByExpenseType($query, string $expenseType)
+    {
+        return $query->where('expense_type', $expenseType);
+    }
+
+    public function scopeFixedExpenses($query)
+    {
+        return $query->where('category', 'expense')->where('expense_type', 'fixed');
+    }
+
+    public function scopeVariableExpenses($query)
+    {
+        return $query->where('category', 'expense')->where('expense_type', 'variable');
+    }
+
+    public function scopeSpecialFunds($query)
+    {
+        return $query->where('category', 'expense')->where('expense_type', 'special_fund');
+    }
+
     public function getCategoryLabelAttribute(): string
     {
         return match ($this->category) {
             'income' => 'Ingreso',
             'expense' => 'Gasto',
             default => 'Sin categoría',
+        };
+    }
+
+    public function getExpenseTypeLabelAttribute(): ?string
+    {
+        if ($this->category !== 'expense' || !$this->expense_type) {
+            return null;
+        }
+
+        return match ($this->expense_type) {
+            'fixed' => 'Gasto Fijo',
+            'variable' => 'Gasto Variable',
+            'special_fund' => 'Fondo Especial',
+            default => null,
         };
     }
 

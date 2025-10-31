@@ -106,6 +106,7 @@ class BudgetController extends Controller
             'items' => 'nullable|array',
             'items.*.account_id' => 'required|exists:chart_of_accounts,id',
             'items.*.category' => 'required|in:income,expense',
+            'items.*.expense_type' => 'nullable|in:fixed,variable,special_fund',
             'items.*.budgeted_amount' => 'required|numeric|min:0',
             'items.*.notes' => 'nullable|string|max:500',
             'items.*.monthly_distribution' => 'nullable|array',
@@ -151,6 +152,7 @@ class BudgetController extends Controller
                         $item = $budget->items()->create([
                             'account_id' => $itemData['account_id'],
                             'category' => $itemData['category'],
+                            'expense_type' => $itemData['expense_type'] ?? null,
                             'budgeted_amount' => $itemData['budgeted_amount'],
                             'notes' => $itemData['notes'] ?? null,
                         ]);
@@ -237,6 +239,7 @@ class BudgetController extends Controller
             'items' => 'required|array|min:1',
             'items.*.account_id' => 'required|exists:chart_of_accounts,id',
             'items.*.category' => 'required|in:income,expense',
+            'items.*.expense_type' => 'nullable|in:fixed,variable,special_fund',
             'items.*.budgeted_amount' => 'required|numeric|min:0',
             'items.*.notes' => 'nullable|string|max:500',
             'items.*.monthly_distribution' => 'nullable|array',
@@ -257,6 +260,7 @@ class BudgetController extends Controller
                 $item = $budget->items()->create([
                     'account_id' => $itemData['account_id'],
                     'category' => $itemData['category'],
+                    'expense_type' => $itemData['expense_type'] ?? null,
                     'budgeted_amount' => $itemData['budgeted_amount'],
                     'notes' => $itemData['notes'] ?? null,
                 ]);
@@ -557,6 +561,7 @@ class BudgetController extends Controller
         $validated = $request->validate([
             'account_id' => 'required|exists:chart_of_accounts,id',
             'category' => 'required|in:income,expense',
+            'expense_type' => 'nullable|in:fixed,variable,special_fund',
             'budgeted_amount' => 'required|numeric|min:0',
             'notes' => 'nullable|string|max:500',
             'monthly_distribution' => 'nullable|array',
@@ -572,6 +577,7 @@ class BudgetController extends Controller
             $item = $budget->items()->create([
                 'account_id' => $validated['account_id'],
                 'category' => $validated['category'],
+                'expense_type' => $validated['expense_type'] ?? null,
                 'budgeted_amount' => $validated['budgeted_amount'],
                 'notes' => $validated['notes'] ?? null,
             ]);
@@ -588,6 +594,28 @@ class BudgetController extends Controller
         return redirect()
             ->route('accounting.budgets.show', $budget)
             ->with('success', 'Partida presupuestal agregada exitosamente.');
+    }
+
+    public function cashFlowProjection(Budget $budget)
+    {
+        $budget->load(['incomeItems', 'expenseItems']);
+
+        $cashFlowData = $budget->getCashFlowProjection();
+        $expensesSummary = $budget->getExpensesSummaryByCategoryType();
+
+        return Inertia::render('Accounting/Budgets/CashFlow', [
+            'budget' => $budget,
+            'cashFlowData' => $cashFlowData,
+            'expensesSummary' => $expensesSummary,
+            'totals' => [
+                'total_income' => (float) $budget->total_budgeted_income,
+                'total_expenses' => (float) $budget->total_budgeted_expenses,
+                'net_balance' => (float) ($budget->total_budgeted_income - $budget->total_budgeted_expenses),
+                'fixed_expenses' => $expensesSummary['fixed']['total'],
+                'variable_expenses' => $expensesSummary['variable']['total'],
+                'special_funds' => $expensesSummary['special_fund']['total'],
+            ],
+        ]);
     }
 
     private function transformBudgetForFrontend(Budget $budget, array $executionSummary): array
