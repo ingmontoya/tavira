@@ -517,13 +517,23 @@ class Expense extends Model
      */
     private function ensureProviderForThirdPartyAccounts(): void
     {
+        \Log::info('ensureProviderForThirdPartyAccounts called', [
+            'expense_id' => $this->id,
+            'provider_id' => $this->provider_id,
+            'vendor_name' => $this->vendor_name,
+            'credit_account_id' => $this->credit_account_id,
+            'tax_account_id' => $this->tax_account_id,
+        ]);
+
         // If we already have a provider_id, nothing to do
         if ($this->provider_id) {
+            \Log::info('Provider already exists, skipping', ['provider_id' => $this->provider_id]);
             return;
         }
 
         // If we don't even have a vendor_name, nothing we can do
         if (! $this->vendor_name) {
+            \Log::warning('No vendor_name, cannot create provider');
             return;
         }
 
@@ -532,6 +542,12 @@ class Expense extends Model
 
         if ($this->credit_account_id) {
             $creditAccount = ChartOfAccounts::find($this->credit_account_id);
+            \Log::info('Credit account check', [
+                'account_id' => $this->credit_account_id,
+                'found' => $creditAccount ? true : false,
+                'requires_third_party' => $creditAccount ? $creditAccount->requires_third_party : null,
+                'code' => $creditAccount ? $creditAccount->code : null,
+            ]);
             if ($creditAccount && $creditAccount->requires_third_party) {
                 $requiresThirdParty = true;
             }
@@ -539,10 +555,17 @@ class Expense extends Model
 
         if (!$requiresThirdParty && $this->tax_account_id) {
             $taxAccount = ChartOfAccounts::find($this->tax_account_id);
+            \Log::info('Tax account check', [
+                'account_id' => $this->tax_account_id,
+                'found' => $taxAccount ? true : false,
+                'requires_third_party' => $taxAccount ? $taxAccount->requires_third_party : null,
+            ]);
             if ($taxAccount && $taxAccount->requires_third_party) {
                 $requiresThirdParty = true;
             }
         }
+
+        \Log::info('Third party requirement check result', ['requires_third_party' => $requiresThirdParty]);
 
         // If no account requires third party, nothing to do
         if (! $requiresThirdParty) {
@@ -551,6 +574,7 @@ class Expense extends Model
 
         // At this point, we have vendor_name but no provider_id, and accounts require third party
         // Create a provider automatically
+        \Log::info('Creating provider from vendor_name', ['vendor_name' => $this->vendor_name]);
         $provider = \App\Models\Provider::firstOrCreate(
             [
                 'name' => $this->vendor_name,
@@ -563,8 +587,14 @@ class Expense extends Model
             ]
         );
 
+        \Log::info('Provider created/found', ['provider_id' => $provider->id]);
+
         // Update the expense with the provider_id
         $this->update(['provider_id' => $provider->id]);
+        \Log::info('Expense updated with provider_id', [
+            'expense_id' => $this->id,
+            'provider_id' => $this->provider_id,
+        ]);
 
         // Update existing accounting transaction entries to include third party
         $this->updateExistingTransactionEntriesWithThirdParty($provider->id);
