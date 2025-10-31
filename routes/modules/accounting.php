@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountingClosureController;
 use App\Http\Controllers\AccountingReportsController;
 use App\Http\Controllers\AccountingTransactionController;
 use App\Http\Controllers\BudgetController;
@@ -38,6 +39,14 @@ Route::prefix('accounting')->name('accounting.')->middleware('can:view_accountin
     // Budget Items
     Route::get('budgets/{budget}/items/create', [BudgetController::class, 'createItem'])->name('budgets.items.create');
     Route::post('budgets/{budget}/items', [BudgetController::class, 'storeItem'])->name('budgets.items.store');
+
+    // Period Closures
+    Route::get('closures', [AccountingClosureController::class, 'index'])->name('closures.index');
+    Route::get('closures/create', [AccountingClosureController::class, 'create'])->name('closures.create');
+    Route::post('closures/preview', [AccountingClosureController::class, 'preview'])->name('closures.preview');
+    Route::post('closures', [AccountingClosureController::class, 'store'])->name('closures.store');
+    Route::get('closures/{closure}', [AccountingClosureController::class, 'show'])->name('closures.show');
+    Route::post('closures/{closure}/reverse', [AccountingClosureController::class, 'reverse'])->name('closures.reverse');
 
     // Accounting Reports
     Route::prefix('reports')->name('reports.')->group(function () {

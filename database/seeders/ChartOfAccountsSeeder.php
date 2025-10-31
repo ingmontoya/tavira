@@ -380,6 +380,11 @@ class ChartOfAccountsSeeder extends Seeder
             ['519910', 'EXPENSAS Y SERVICIOS COMUNES', 4],
             ['519915', 'ANTICIPOS RECLAMACIONES Y DEUDORES VARIOS', 4],
 
+            // Cuenta de cierre contable
+            ['59', 'GANANCIAS Y PERDIDAS', 2],
+            ['5905', 'GANANCIAS Y PERDIDAS', 3],
+            ['590505', 'GANANCIAS Y PERDIDAS DEL EJERCICIO', 4],
+
             // CLASE 8 - CUENTAS DE ORDEN DEUDORAS
             ['8', 'CUENTAS DE ORDEN DEUDORAS', 1],
             ['81', 'DERECHOS CONTINGENTES', 2],
