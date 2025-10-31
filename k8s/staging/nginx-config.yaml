@@ -118,7 +118,8 @@ data:
             # Forward proxy headers to PHP
             # Preserve headers from upstream proxy (Traefik) or use nginx variables as fallback
             # This is critical for signed URL validation and multitenancy
-            fastcgi_param HTTP_HOST $forwarded_host;
+            # Override SERVER_NAME to use forwarded host instead of wildcard "_"
+            fastcgi_param SERVER_NAME $forwarded_host;
             fastcgi_param HTTP_X_FORWARDED_HOST $forwarded_host;
             fastcgi_param HTTP_X_FORWARDED_PROTO $forwarded_proto;
             fastcgi_param HTTP_X_FORWARDED_FOR $forwarded_for;
