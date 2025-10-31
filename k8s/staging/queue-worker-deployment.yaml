@@ -1,0 +1,197 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tavira-queue-worker-staging
+  namespace: default
+  labels:
+    app: tavira-queue-worker-staging
+    environment: staging
+    version: v1
+spec:
+  # Staging: 1 replica (minimal for testing)
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tavira-queue-worker-staging
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tavira-queue-worker-staging
+        environment: staging
+        version: v1
+    spec:
+      # Init container to copy app code
+      initContainers:
+      - name: copy-app
+        image: ingmontoyav/tavira-app:staging
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          cp -r /var/www/html/* /app-code/
+          mkdir -p /app-code/storage/app/public
+          mkdir -p /app-code/storage/framework/cache
+          mkdir -p /app-code/storage/framework/sessions
+          mkdir -p /app-code/storage/framework/views
+          mkdir -p /app-code/storage/logs
+          chmod -R 775 /app-code/storage
+          chmod -R 775 /app-code/bootstrap/cache
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+        - name: app-code
+          mountPath: /app-code
+
+      containers:
+      - name: queue-worker
+        image: ingmontoyav/tavira-app:staging
+        imagePullPolicy: Always
+
+        # Queue worker command
+        command: ["php"]
+        args:
+          - "artisan"
+          - "queue:work"
+          - "--sleep=3"
+          - "--tries=3"
+          - "--max-time=3600"
+          - "--timeout=60"
+          - "--queue=default,tenant"
+          - "--verbose"
+
+        # Environment variables
+        env:
+        - name: APP_NAME
+          value: "Tavira Staging"
+        - name: APP_ENV
+          value: staging
+        - name: APP_DEBUG
+          value: "true"
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: APP_KEY
+        - name: APP_URL
+          value: https://staging.tavira.com.co
+        - name: DB_CONNECTION
+          value: pgsql
+        - name: DB_HOST
+          value: postgres-staging
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: DB_DATABASE
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: DB_PASSWORD
+        - name: CACHE_DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: CACHE_DRIVER
+              optional: true
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: REDIS_HOST
+              optional: true
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: REDIS_PORT
+              optional: true
+        - name: QUEUE_CONNECTION
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: QUEUE_CONNECTION
+              optional: true
+
+        envFrom:
+        - secretRef:
+            name: laravel-env-staging
+
+        # Reduced resources for staging
+        resources:
+          requests:
+            cpu: 50m        # Reduced from 100m
+            memory: 128Mi   # Reduced from 256Mi
+          limits:
+            cpu: 300m       # Reduced from 500m
+            memory: 256Mi   # Reduced from 512Mi
+
+        # Liveness probe
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps aux | grep 'artisan queue:work' | grep -v grep"
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        # Readiness probe
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "pgrep -f 'artisan queue:work' > /dev/null"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        # Security context
+        securityContext:
+          runAsUser: 82
+          runAsGroup: 82
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+
+        # Volume mounts
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        - name: app-storage
+          mountPath: /var/www/html/storage
+
+        # Graceful shutdown
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+
+      terminationGracePeriodSeconds: 60
+
+      securityContext:
+        fsGroup: 82
+
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: tavira-storage-pvc-staging
