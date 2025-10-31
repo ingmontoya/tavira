@@ -349,6 +349,9 @@ class Expense extends Model
                 'paid_at' => now(),
             ]);
 
+            // Ensure provider exists for third party accounting requirements
+            $expense->ensureProviderForThirdPartyAccounts();
+
             // Post the original accounting transaction (provision)
             $expense->postAccountingTransaction();
 
@@ -559,6 +562,51 @@ class Expense extends Model
 
         // Update the expense with the provider_id
         $this->update(['provider_id' => $provider->id]);
+
+        // Update existing accounting transaction entries to include third party
+        $this->updateExistingTransactionEntriesWithThirdParty($provider->id);
+    }
+
+    /**
+     * Update existing accounting transaction entries to include third party information
+     */
+    private function updateExistingTransactionEntriesWithThirdParty(int $providerId): void
+    {
+        // Find existing provision transaction
+        $transaction = $this->accountingTransactions()
+            ->where('reference_type', 'expense')
+            ->where('status', 'borrador')
+            ->first();
+
+        if (! $transaction) {
+            return;
+        }
+
+        // Update credit account entry if it requires third party
+        if ($this->credit_account_id) {
+            $creditAccount = ChartOfAccounts::find($this->credit_account_id);
+            if ($creditAccount && $creditAccount->requires_third_party) {
+                $transaction->entries()
+                    ->where('account_id', $this->credit_account_id)
+                    ->update([
+                        'third_party_type' => 'provider',
+                        'third_party_id' => $providerId,
+                    ]);
+            }
+        }
+
+        // Update tax account entry if it requires third party
+        if ($this->tax_account_id) {
+            $taxAccount = ChartOfAccounts::find($this->tax_account_id);
+            if ($taxAccount && $taxAccount->requires_third_party) {
+                $transaction->entries()
+                    ->where('account_id', $this->tax_account_id)
+                    ->update([
+                        'third_party_type' => 'provider',
+                        'third_party_id' => $providerId,
+                    ]);
+            }
+        }
     }
 
     private function createPaymentTransaction(string $paymentMethod, ?string $paymentReference = null): void
