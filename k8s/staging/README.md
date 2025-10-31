@@ -2,6 +2,8 @@
 
 Este directorio contiene los manifiestos de Kubernetes para el ambiente de **staging** de Tavira.
 
+> **⚡ Primera vez?** → Ve a [QUICKSTART.md](QUICKSTART.md) para un setup en 5 minutos
+
 ## 📋 Descripción General
 
 El ambiente staging está optimizado para pruebas con recursos mínimos:
@@ -23,12 +25,24 @@ El ambiente staging está optimizado para pruebas con recursos mínimos:
 
 ## 🚀 Despliegue Inicial
 
-### Pre-requisitos
+### ⚠️ IMPORTANTE: Pre-requisitos
 
-1. Cluster de Kubernetes configurado
-2. `kubectl` instalado y configurado
-3. Dominio staging configurado: `staging.tavira.com.co` y `*.staging.tavira.com.co`
-4. Secrets configurados (ver sección de Secrets)
+Antes de hacer push a `develop` o ejecutar el pipeline, **debes crear primero**:
+
+- [ ] Secret `laravel-env-staging` (ver Paso 1 abajo)
+- [ ] ConfigMaps (se crean automáticamente con `kubectl apply`)
+- [ ] PVCs (se crean automáticamente con `kubectl apply`)
+- [ ] Base de datos PostgreSQL (se crea automáticamente con `kubectl apply`)
+- [ ] Redis (se crea automáticamente con `kubectl apply`)
+
+**Si no creas estos recursos primero, el pipeline fallará.**
+
+### Pre-requisitos del sistema
+
+1. Cluster de Kubernetes configurado y funcionando
+2. `kubectl` instalado, configurado y con acceso al cluster
+3. GitHub Actions secrets configurados (KUBE_CONFIG, DOCKER_USERNAME, DOCKER_PASSWORD)
+4. (Opcional) Dominio staging: `staging.tavira.com.co` y `*.staging.tavira.com.co`
 
 ### Pasos de Despliegue
 

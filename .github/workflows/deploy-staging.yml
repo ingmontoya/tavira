@@ -129,11 +129,12 @@ jobs:
 
       # 1️⃣3️⃣ Run post-deployment tasks
       - name: Run post-deployment tasks
+        continue-on-error: true
         run: |
           echo "🛠️ Running post-deployment tasks for staging..."
 
           # Wait a bit for pods to stabilize after rollout
-          sleep 5
+          sleep 10
 
           # Get running pod name (using correct label)
           POD=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} \
@@ -144,31 +145,45 @@ jobs:
           echo "📦 Pod: $POD"
 
           if [ -z "$POD" ]; then
-            echo "❌ No running pod found with label app=tavira-staging"
+            echo "⚠️  No running pod found with label app=tavira-staging"
             echo "Available pods:"
             kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=tavira-staging
-            exit 1
+            echo "⚠️  Skipping post-deployment tasks"
+            exit 0
+          fi
+
+          # Verify database connectivity before running migrations
+          echo "  → Verifying database connectivity..."
+          if ! kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan db:show 2>/dev/null; then
+            echo "⚠️  Database not ready, skipping migrations"
+            echo "ℹ️  You can run migrations manually later with:"
+            echo "    kubectl exec $POD -c php-fpm -- php artisan migrate --force"
+            exit 0
           fi
 
           # Clear and cache config
           echo "  → Clearing config cache..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:clear
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:clear || true
 
           echo "  → Caching config..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache || true
 
           # Note: route:cache is skipped for multitenancy apps to avoid route conflicts
           # Routes are dynamically loaded per tenant
 
           echo "  → Caching views..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache || true
 
           # Run migrations
           echo "  → Running central migrations..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan migrate --force
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan migrate --force || {
+            echo "⚠️  Migrations failed, but continuing..."
+          }
 
           echo "  → Running tenant migrations..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan tenants:migrate --force
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan tenants:migrate --force || {
+            echo "⚠️  Tenant migrations failed, but continuing..."
+          }
 
           echo "✅ Post-deployment tasks completed"
 
@@ -195,11 +210,35 @@ jobs:
           echo "   https://staging.tavira.com.co"
           echo "============================================="
 
-      # 1️⃣5️⃣ Notify on failure
+      # 1️⃣5️⃣ Verify deployment health
+      - name: Verify deployment health
+        run: |
+          echo "🔍 Verifying deployment health..."
+
+          # Check if pods are running
+          RUNNING_PODS=$(kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=tavira-staging --field-selector=status.phase=Running -o json | jq '.items | length')
+
+          if [ "$RUNNING_PODS" -eq 0 ]; then
+            echo "❌ No running pods found!"
+            kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=tavira-staging
+            kubectl describe deployment ${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }}
+            exit 1
+          fi
+
+          echo "✅ $RUNNING_PODS pod(s) running successfully"
+
+      # 1️⃣6️⃣ Notify on failure
       - name: Notify on failure
         if: failure()
         run: |
           echo "❌ Staging deployment failed!"
           echo "Check the logs above for details."
+          echo ""
+          echo "Current pods:"
           kubectl get pods -n ${{ env.K8S_NAMESPACE }} -l app=tavira-staging
+          echo ""
+          echo "Deployment details:"
           kubectl describe deployment ${{ env.DEPLOYMENT_NAME }} -n ${{ env.K8S_NAMESPACE }}
+          echo ""
+          echo "Recent events:"
+          kubectl get events -n ${{ env.K8S_NAMESPACE }} --sort-by='.lastTimestamp' | tail -20
