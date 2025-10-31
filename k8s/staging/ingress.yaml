@@ -12,25 +12,13 @@ metadata:
     traefik.ingress.kubernetes.io/redirect-permanent: "true"
 spec:
   tls:
+  # Certificado solo para el dominio principal (sin wildcard)
   - hosts:
     - staging.tavira.com.co
-    - "*.staging.tavira.com.co"
     secretName: tavira-tls-staging
   rules:
   # Main staging domain
   - host: staging.tavira.com.co
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: tavira-service-staging
-            port:
-              number: 80
-
-  # Wildcard for tenant subdomains in staging
-  - host: "*.staging.tavira.com.co"
     http:
       paths:
       - path: /
