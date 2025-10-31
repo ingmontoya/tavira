@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis-staging
-  namespace: default
+  namespace: staging
   labels:
     app: redis-staging
     environment: staging

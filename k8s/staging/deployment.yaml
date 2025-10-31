@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tavira-app-staging
-  namespace: default
+  namespace: staging
   labels:
     app: tavira-staging
     environment: staging
@@ -173,6 +173,21 @@ spec:
           runAsGroup: 82
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
+
+        # Lifecycle hook to create storage directories after PVC is mounted
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - sh
+              - -c
+              - |
+                mkdir -p /var/www/html/storage/framework/cache/data
+                mkdir -p /var/www/html/storage/framework/sessions
+                mkdir -p /var/www/html/storage/framework/testing
+                mkdir -p /var/www/html/storage/framework/views
+                mkdir -p /var/www/html/storage/app/public
+                chmod -R 775 /var/www/html/storage
 
         volumeMounts:
         - name: app-code

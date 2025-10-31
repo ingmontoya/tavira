@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-config-staging
-  namespace: default
+  namespace: staging
   labels:
     app: postgres-staging
     environment: staging

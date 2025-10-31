@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tavira-queue-worker-staging
-  namespace: default
+  namespace: staging
   labels:
     app: tavira-queue-worker-staging
     environment: staging

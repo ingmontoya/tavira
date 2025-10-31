@@ -11,7 +11,7 @@ env:
   DOCKER_IMAGE_NUXT: ingmontoyav/tavira-nuxt
   DEPLOYMENT_NAME: tavira-app-staging
   QUEUE_WORKER_DEPLOYMENT: tavira-queue-worker-staging
-  K8S_NAMESPACE: default
+  K8S_NAMESPACE: staging
 
 jobs:
   deploy-staging:
