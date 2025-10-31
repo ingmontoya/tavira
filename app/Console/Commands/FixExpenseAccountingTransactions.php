@@ -4,14 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\Expense;
 use Illuminate\Console\Command;
-use Stancl\Tenancy\Concerns\HasATenancyOption;
-use Stancl\Tenancy\Concerns\TenantAwareCommand;
 
 class FixExpenseAccountingTransactions extends Command
 {
-    use HasATenancyOption, TenantAwareCommand;
-
-    protected $signature = 'expenses:fix-accounting-transactions {expense_id?} {--dry-run} {--tenancy=*}';
+    protected $signature = 'expenses:fix-accounting-transactions {expense_id?} {--dry-run}';
 
     protected $description = 'Fix accounting transactions for expenses with withholding tax that were created incorrectly';
 
