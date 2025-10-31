@@ -398,6 +398,23 @@ const deleteExpense = (expenseId: number) => {
         });
     }
 };
+
+// Pagination function
+const changePage = (page: number) => {
+    const params: any = { page };
+
+    if (search.value) params.search = search.value;
+    if (statusFilter.value !== 'all') params.status = statusFilter.value;
+    if (categoryFilter.value !== 'all') params.category_id = categoryFilter.value;
+    if (dateFromFilter.value) params.date_from = dateFromFilter.value;
+    if (dateToFilter.value) params.date_to = dateToFilter.value;
+    if (vendorFilter.value) params.vendor = vendorFilter.value;
+
+    router.get('/expenses', params, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
@@ -644,7 +661,7 @@ const deleteExpense = (expenseId: number) => {
                             variant="outline"
                             size="sm"
                             :disabled="expenses.current_page === 1"
-                            @click="router.get(window.location.pathname, { ...route().params, page: expenses.current_page - 1 })"
+                            @click="changePage(expenses.current_page - 1)"
                         >
                             Anterior
                         </Button>
@@ -652,7 +669,7 @@ const deleteExpense = (expenseId: number) => {
                             variant="outline"
                             size="sm"
                             :disabled="expenses.current_page === expenses.last_page"
-                            @click="router.get(window.location.pathname, { ...route().params, page: expenses.current_page + 1 })"
+                            @click="changePage(expenses.current_page + 1)"
                         >
                             Siguiente
                         </Button>
