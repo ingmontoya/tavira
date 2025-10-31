@@ -138,6 +138,50 @@ Para evitar este error en futuros deployments:
 
 ---
 
+## Error: "View path not found" durante view:cache
+
+### Síntoma
+
+El workflow muestra:
+```
+→ Caching views...
+View path not found.
+command terminated with exit code 1
+```
+
+### Causa
+
+El comando `php artisan view:cache` intenta compilar las vistas de Blade, pero:
+1. El directorio `resources/views` aún no se copió completamente
+2. El init container está ejecutándose o acaba de terminar
+3. Los archivos aún no están disponibles en el volumen compartido
+
+### Solución
+
+**Este error NO es crítico** - el workflow ahora continúa aunque falle. Las vistas se compilarán just-in-time cuando se acceda a ellas.
+
+Si quieres cachear las vistas manualmente después:
+
+```bash
+POD=$(kubectl get pods -l app=tavira-staging -o jsonpath='{.items[0].metadata.name}')
+
+# Verificar que los archivos existen
+kubectl exec $POD -c php-fpm -- ls -la /var/www/html/resources/views
+
+# Cachear vistas
+kubectl exec $POD -c php-fpm -- php artisan view:cache
+```
+
+### Prevención
+
+El workflow actualizado ahora:
+- Tiene mejor manejo de errores (`|| true`)
+- Suprime stderr para comandos no críticos (`2>/dev/null`)
+- Muestra advertencias en lugar de fallar
+- Verifica que los archivos de la aplicación existan antes de continuar
+
+---
+
 ## Otros Problemas Comunes
 
 ### Pod en estado CrashLoopBackOff

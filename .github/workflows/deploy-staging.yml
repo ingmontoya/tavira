@@ -152,6 +152,13 @@ jobs:
             exit 0
           fi
 
+          # Verify application is ready
+          echo "  → Checking application files..."
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- ls -la /var/www/html/artisan 2>/dev/null || {
+            echo "⚠️  Application files not ready yet"
+            exit 0
+          }
+
           # Verify database connectivity before running migrations
           echo "  → Verifying database connectivity..."
           if ! kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan db:show 2>/dev/null; then
@@ -161,18 +168,26 @@ jobs:
             exit 0
           fi
 
+          echo "  ✅ Database connection verified"
+
           # Clear and cache config
           echo "  → Clearing config cache..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:clear || true
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:clear 2>/dev/null || {
+            echo "    ⚠️  Config clear failed (not critical)"
+          }
 
           echo "  → Caching config..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache || true
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan config:cache 2>/dev/null || {
+            echo "    ⚠️  Config cache failed (not critical)"
+          }
 
           # Note: route:cache is skipped for multitenancy apps to avoid route conflicts
           # Routes are dynamically loaded per tenant
 
           echo "  → Caching views..."
-          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache || true
+          kubectl exec -n ${{ env.K8S_NAMESPACE }} $POD -c php-fpm -- php artisan view:cache 2>/dev/null || {
+            echo "    ⚠️  View cache failed (views may not be compiled yet - not critical)"
+          }
 
           # Run migrations
           echo "  → Running central migrations..."
