@@ -216,9 +216,10 @@ class GenerateMonthlyInvoices extends Command
 
                         // Check if grace period has ended
                         if ($billingDate->greaterThan($gracePeriodEnd)) {
-                            // Calculate late fee based on the unpaid balance
-                            $baseAmount = $previousInvoice->balance_amount;
-                            $lateFeeAmount = round($baseAmount * ($paymentSettings->late_fee_percentage / 100), 2);
+                            // IMPORTANTE: Calcular mora SOLO sobre el capital (excluyendo moras previas)
+                            // No se permite cobrar intereses sobre intereses (anatocismo)
+                            $capitalBalance = $previousInvoice->getCapitalBalance();
+                            $lateFeeAmount = round($capitalBalance * ($paymentSettings->late_fee_percentage / 100), 2);
                             $shouldApplyLateFee = $lateFeeAmount > 0;
                         }
                     }
