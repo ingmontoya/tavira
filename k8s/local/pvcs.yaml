@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc-local
+  namespace: local
+  labels:
+    app: postgres-local
+    environment: local
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi  # Smaller for local development
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tavira-storage-pvc-local
+  namespace: local
+  labels:
+    app: tavira-local
+    environment: local
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi  # Smaller for local development

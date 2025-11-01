@@ -335,17 +335,21 @@ class DashboardController extends Controller
 
     private function getPaymentsByStatus(int $year, int $month): \Illuminate\Support\Collection
     {
-        // Calcular dinámicamente basado en facturas reales, no en payment_status almacenado
+        // Calcular dinámicamente basado en facturas del mes seleccionado
         $conjuntoConfig = ConjuntoConfig::first();
         if (! $conjuntoConfig) {
             return collect();
         }
 
-        $apartments = Apartment::where('conjunto_config_id', $conjuntoConfig->id)
-            ->with(['invoices' => function ($query) {
-                $query->whereIn('status', ['pending', 'overdue', 'partial'])
-                    ->orderBy('due_date', 'asc');
-            }])->get();
+        // Obtener todas las facturas del mes seleccionado
+        $invoices = Invoice::forPeriod($year, $month)
+            ->with('apartment')
+            ->get();
+
+        // Si no hay facturas para este mes, retornar vacío
+        if ($invoices->isEmpty()) {
+            return collect();
+        }
 
         $alDia = 0;
         $overdue30 = 0;
@@ -353,19 +357,17 @@ class DashboardController extends Controller
         $overdue90 = 0;
         $overdue90Plus = 0;
 
-        foreach ($apartments as $apartment) {
-            $oldestUnpaidInvoice = $apartment->invoices->first();
-
-            if (! $oldestUnpaidInvoice) {
-                // No hay facturas pendientes, apartamento al día
+        foreach ($invoices as $invoice) {
+            if ($invoice->status === 'pagado') {
+                // Factura pagada, apartamento al día
                 $alDia++;
             } else {
-                // Calcular días de mora
+                // Calcular días de mora basados en la fecha de vencimiento
                 $today = now()->startOfDay();
-                $dueDate = $oldestUnpaidInvoice->due_date->startOfDay();
+                $dueDate = $invoice->due_date->startOfDay();
 
                 if ($today->lte($dueDate)) {
-                    // Aún no vencida
+                    // Aún no vencida, apartamento al día
                     $alDia++;
                 } else {
                     $daysOverdue = $dueDate->diffInDays($today);
@@ -385,7 +387,7 @@ class DashboardController extends Controller
 
         return collect([
             ['status' => 'Al día', 'count' => $alDia, 'color' => '#10b981'],
-            ['status' => '30 días de mora', 'count' => $overdue30, 'color' => '#f59e0b'],
+            ['status' => '0-30 días de mora', 'count' => $overdue30, 'color' => '#f59e0b'],
             ['status' => '60 días de mora', 'count' => $overdue60, 'color' => '#ef4444'],
             ['status' => '90 días de mora', 'count' => $overdue90, 'color' => '#dc2626'],
             ['status' => '+90 días de mora', 'count' => $overdue90Plus, 'color' => '#7f1d1d'],

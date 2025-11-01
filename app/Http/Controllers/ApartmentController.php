@@ -51,7 +51,8 @@ class ApartmentController extends Controller
 
         // Append payment status badge and agreement info to each apartment
         $apartments->getCollection()->transform(function ($apartment) {
-            $apartment->payment_status_badge = $apartment->paymentStatusBadge;
+            // Calculate payment status badge dynamically based on oldest unpaid invoice
+            $apartment->payment_status_badge = $this->calculateDynamicPaymentBadge($apartment);
 
             // Get active payment agreement info
             $activeAgreement = $apartment->paymentAgreements
@@ -356,6 +357,45 @@ class ApartmentController extends Controller
         $filename = 'morosos_'.now()->format('Y-m-d_H-i-s').'.pdf';
 
         return $pdf->download($filename);
+    }
+
+    /**
+     * Calculate dynamic payment badge based on oldest unpaid invoice
+     */
+    private function calculateDynamicPaymentBadge(Apartment $apartment): array
+    {
+        // Get the oldest unpaid invoice
+        $oldestUnpaidInvoice = $apartment->invoices()
+            ->whereIn('status', ['pending', 'partial', 'overdue'])
+            ->orderBy('due_date', 'asc')
+            ->first();
+
+        if (! $oldestUnpaidInvoice) {
+            // No unpaid invoices, apartment is current
+            return ['text' => 'Al día', 'class' => 'bg-green-100 text-green-800'];
+        }
+
+        // Calculate days overdue based on the oldest unpaid invoice
+        $today = now()->startOfDay();
+        $dueDate = $oldestUnpaidInvoice->due_date->startOfDay();
+
+        if ($today->lte($dueDate)) {
+            // Not overdue yet, apartment is current
+            return ['text' => 'Al día', 'class' => 'bg-green-100 text-green-800'];
+        }
+
+        // Calculate days overdue
+        $daysOverdue = $dueDate->diffInDays($today);
+
+        if ($daysOverdue >= 90) {
+            return ['text' => '+90 días', 'class' => 'bg-red-200 text-red-900'];
+        } elseif ($daysOverdue >= 60) {
+            return ['text' => '90 días', 'class' => 'bg-red-100 text-red-800'];
+        } elseif ($daysOverdue >= 30) {
+            return ['text' => '60 días', 'class' => 'bg-orange-100 text-orange-800'];
+        } else {
+            return ['text' => '0-30 días', 'class' => 'bg-yellow-100 text-yellow-800'];
+        }
     }
 
     /**

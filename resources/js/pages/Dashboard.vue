@@ -255,23 +255,6 @@
 
             <!-- Charts Row 1 -->
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <!-- Residents by Tower Chart -->
-                <Card class="p-6">
-                    <div class="mb-4">
-                        <h3 class="text-lg font-semibold">Residentes por Torre</h3>
-                        <p class="text-sm text-muted-foreground">Distribución de residentes en diferentes torres</p>
-                    </div>
-                    <div class="flex h-80 items-center justify-center">
-                        <div v-if="charts.residentsByTower && charts.residentsByTower.length > 0" class="h-full w-full">
-                            <canvas ref="towerChart" class="max-h-full max-w-full"></canvas>
-                        </div>
-                        <div v-else class="text-center text-muted-foreground">
-                            <Icon name="pie-chart" class="mx-auto mb-2 h-12 w-12 opacity-50" />
-                            <p>No hay datos disponibles</p>
-                        </div>
-                    </div>
-                </Card>
-
                 <!-- Payment Status Chart -->
                 <Card class="p-6">
                     <div class="mb-4">
@@ -285,6 +268,85 @@
                         <div v-else class="text-center text-muted-foreground">
                             <Icon name="doughnut-chart" class="mx-auto mb-2 h-12 w-12 opacity-50" />
                             <p>No hay datos disponibles</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- Collection Efficiency -->
+                <Card class="p-6">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold">Eficiencia de Recaudo</h3>
+                        <p class="text-sm text-muted-foreground">Comparación de recaudo vs esperado - {{ selectedMonthLabel }}</p>
+                    </div>
+                    <div class="flex h-80 flex-col items-center justify-center">
+                        <div v-if="kpis.totalPaymentsExpected > 0" class="w-full space-y-6">
+                            <!-- Progress Circle -->
+                            <div class="flex justify-center">
+                                <div class="relative h-48 w-48">
+                                    <svg class="h-full w-full -rotate-90 transform">
+                                        <circle
+                                            cx="96"
+                                            cy="96"
+                                            r="80"
+                                            stroke="currentColor"
+                                            stroke-width="16"
+                                            fill="transparent"
+                                            class="text-gray-200"
+                                        />
+                                        <circle
+                                            cx="96"
+                                            cy="96"
+                                            r="80"
+                                            stroke="currentColor"
+                                            stroke-width="16"
+                                            fill="transparent"
+                                            :stroke-dasharray="502.4"
+                                            :stroke-dashoffset="
+                                                502.4 -
+                                                (502.4 *
+                                                    (kpis.totalPaymentsExpected > 0
+                                                        ? kpis.totalPaymentsReceived / kpis.totalPaymentsExpected
+                                                        : 0))
+                                            "
+                                            :class="
+                                                kpis.totalPaymentsExpected > 0 &&
+                                                kpis.totalPaymentsReceived / kpis.totalPaymentsExpected >= 0.8
+                                                    ? 'text-green-500'
+                                                    : kpis.totalPaymentsReceived / kpis.totalPaymentsExpected >= 0.6
+                                                      ? 'text-yellow-500'
+                                                      : 'text-red-500'
+                                            "
+                                            class="transition-all duration-1000 ease-out"
+                                        />
+                                    </svg>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span class="text-3xl font-bold">
+                                            {{
+                                                kpis.totalPaymentsExpected > 0
+                                                    ? Math.round((kpis.totalPaymentsReceived / kpis.totalPaymentsExpected) * 100)
+                                                    : 0
+                                            }}%
+                                        </span>
+                                        <span class="text-xs text-muted-foreground">Recaudado</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="grid grid-cols-2 gap-4 px-8">
+                                <div class="space-y-1 text-center">
+                                    <p class="text-xs text-muted-foreground">Esperado</p>
+                                    <p class="text-lg font-semibold text-blue-600">${{ (kpis.totalPaymentsExpected || 0).toLocaleString() }}</p>
+                                </div>
+                                <div class="space-y-1 text-center">
+                                    <p class="text-xs text-muted-foreground">Recaudado</p>
+                                    <p class="text-lg font-semibold text-green-600">${{ (kpis.totalPaymentsReceived || 0).toLocaleString() }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center text-muted-foreground">
+                            <Icon name="bar-chart-2" class="mx-auto mb-2 h-12 w-12 opacity-50" />
+                            <p>No hay datos de recaudo disponibles</p>
                         </div>
                     </div>
                 </Card>
@@ -457,7 +519,6 @@ const props = defineProps({
     },
 });
 
-const towerChart = ref(null);
 const statusChart = ref(null);
 const trendChart = ref(null);
 const selectedMonth = ref(props.selectedMonth);
@@ -549,44 +610,6 @@ const initCharts = async () => {
 
     try {
         const Chart = (await import('chart.js/auto')).default;
-
-        // Residents by Tower Chart
-        if (towerChart.value && props.charts?.residentsByTower?.length > 0) {
-            // Validate and sanitize data
-            const validTowerData = props.charts.residentsByTower.filter(
-                (item) => item && typeof item.residents === 'number' && !isNaN(item.residents) && item.residents >= 0 && item.name && item.color,
-            );
-
-            if (validTowerData.length > 0) {
-                new Chart(towerChart.value, {
-                    type: 'pie',
-                    data: {
-                        labels: validTowerData.map((item) => item.name),
-                        datasets: [
-                            {
-                                data: validTowerData.map((item) => Math.max(0, item.residents)),
-                                backgroundColor: validTowerData.map((item) => item.color),
-                                borderWidth: 2,
-                                borderColor: '#ffffff',
-                            },
-                        ],
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 20,
-                                    usePointStyle: true,
-                                },
-                            },
-                        },
-                    },
-                });
-            }
-        }
 
         // Payment Status Chart
         if (statusChart.value && props.charts?.paymentsByStatus?.length > 0) {

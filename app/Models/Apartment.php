@@ -192,7 +192,7 @@ class Apartment extends Model
     {
         return match ($this->payment_status) {
             'current' => ['text' => 'Al día', 'class' => 'bg-green-100 text-green-800'],
-            'overdue_30' => ['text' => '30 días', 'class' => 'bg-yellow-100 text-yellow-800'],
+            'overdue_30' => ['text' => '0-30 días', 'class' => 'bg-yellow-100 text-yellow-800'],
             'overdue_60' => ['text' => '60 días', 'class' => 'bg-orange-100 text-orange-800'],
             'overdue_90' => ['text' => '90 días', 'class' => 'bg-red-100 text-red-800'],
             'overdue_90_plus' => ['text' => '+90 días', 'class' => 'bg-red-200 text-red-900'],

@@ -1,0 +1,117 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: generate-november-invoices
+  namespace: default  # Cambia esto según tu namespace de producción
+  labels:
+    app: tavira-job
+    type: invoice-generation
+spec:
+  # Eliminar automáticamente después de 1 hora
+  ttlSecondsAfterFinished: 3600
+
+  # No reintentar si falla
+  backoffLimit: 2
+
+  template:
+    metadata:
+      labels:
+        app: tavira-job
+        type: invoice-generation
+    spec:
+      restartPolicy: Never
+
+      # Init container para copiar el código
+      initContainers:
+      - name: copy-app
+        image: ingmontoyav/tavira-app:latest
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          cp -r /var/www/html/* /app-code/
+          mkdir -p /app-code/storage/app/public
+          mkdir -p /app-code/storage/framework/cache
+          mkdir -p /app-code/storage/framework/sessions
+          mkdir -p /app-code/storage/framework/views
+          mkdir -p /app-code/storage/logs
+          chmod -R 775 /app-code/storage
+          chmod -R 775 /app-code/bootstrap/cache
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+        - name: app-code
+          mountPath: /app-code
+
+      containers:
+      - name: invoice-generator
+        image: ingmontoyav/tavira-app:latest
+        imagePullPolicy: Always
+
+        # Comando para generar facturas de noviembre
+        command: ["php"]
+        args:
+          - "artisan"
+          - "tenants:run"
+          - "invoices:generate-monthly"
+          - "--option=month=11"
+          - "--option=year=2025"
+          - "--verbose"
+
+        # Variables de entorno (cargar desde el secret de Laravel)
+        envFrom:
+        - secretRef:
+            name: laravel-env
+
+        env:
+        - name: APP_NAME
+          value: Tavira
+        - name: APP_ENV
+          value: production
+        - name: APP_DEBUG
+          value: "false"
+        - name: APP_URL
+          value: https://tavira.com.co
+        - name: DB_CONNECTION
+          value: pgsql
+        - name: DB_HOST
+          value: postgres
+        - name: DB_PORT
+          value: "5432"
+
+        # Recursos
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        # Security context
+        securityContext:
+          runAsUser: 82
+          runAsGroup: 82
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+
+        # Volúmenes
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        - name: app-storage
+          mountPath: /var/www/html/storage
+
+      # Security context del pod
+      securityContext:
+        fsGroup: 82
+
+      # Volúmenes compartidos
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: tavira-storage-pvc
