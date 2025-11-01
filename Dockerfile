@@ -62,6 +62,11 @@ RUN npm ci --only=production=false
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
 
+# Set APP_URL for build (will be overridden by env at runtime)
+# Use ARG to allow build-time configuration
+ARG APP_URL=http://localhost
+ENV APP_URL=${APP_URL}
+
 # Build production assets
 RUN npm run build && \
     rm -rf node_modules && \

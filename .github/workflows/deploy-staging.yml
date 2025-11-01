@@ -73,6 +73,7 @@ jobs:
           cache-to: type=inline
           build-args: |
             BUILD_ENV=staging
+            APP_URL=https://staging.tavira.com.co
 
       # 7️⃣ Configure kubectl
       - name: Set up kubectl
