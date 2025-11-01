@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function ($schedule) {
+        // Generate monthly invoices on the 1st of each month at 00:01
+        $schedule->command('invoices:generate-monthly')->monthlyOn(1, '00:01');
+
+        // Process late fees on the 1st of each month at 09:00
         $schedule->command('invoices:process-late-fees')->monthlyOn(1, '09:00');
 
         // Sync tenant subscription status every hour

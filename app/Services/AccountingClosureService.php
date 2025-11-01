@@ -245,7 +245,8 @@ class AccountingClosureService
             ->first();
 
         if (! $account5905) {
-            throw new \Exception('No se encontró la cuenta 590505 (Ganancias y Pérdidas). Debe ejecutar el seeder de cuentas primero.');
+            $totalCuentas = ChartOfAccounts::forConjunto($this->conjuntoConfigId)->count();
+            throw new \Exception("No se encontró la cuenta 590505 (Ganancias y Pérdidas) para el conjunto {$this->conjuntoConfigId}. Total de cuentas en el conjunto: {$totalCuentas}. Ejecute: php artisan tenants:seed --class=ChartOfAccountsSeeder");
         }
 
         // Validar que las cuentas de patrimonio existen
@@ -258,7 +259,11 @@ class AccountingClosureService
             ->first();
 
         if (! $account3605 || ! $account3610) {
-            throw new \Exception('No se encontraron las cuentas de patrimonio 360505 (Excedente) o 361005 (Deficit). Debe ejecutar el seeder de cuentas primero.');
+            $cuentasFaltantes = [];
+            if (! $account3605) $cuentasFaltantes[] = '360505 (Excedente del Ejercicio)';
+            if (! $account3610) $cuentasFaltantes[] = '361005 (Déficit del Ejercicio)';
+
+            throw new \Exception('No se encontraron las cuentas de patrimonio: '.implode(', ', $cuentasFaltantes)." para el conjunto {$this->conjuntoConfigId}. Ejecute: php artisan tenants:seed --class=ChartOfAccountsSeeder");
         }
     }
 
