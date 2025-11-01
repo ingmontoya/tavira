@@ -45,10 +45,21 @@ class HandleInertiaRequests extends Middleware
                 'tenant_name' => session('tenant_name'),
                 'original_admin_id' => session('original_admin_id'),
             ],
-            'ziggy' => [
-                ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
-            ],
+            'ziggy' => function () use ($request) {
+                $ziggy = (new Ziggy)->toArray();
+
+                // Override URL and port to use APP_URL instead of internal request URL
+                // This fixes issues with Ziggy generating 127.0.0.1 URLs in K8s environments
+                if (config('app.url')) {
+                    $ziggy['url'] = config('app.url');
+                    $ziggy['port'] = null; // Remove port from URL
+                }
+
+                return [
+                    ...$ziggy,
+                    'location' => $request->url(),
+                ];
+            },
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
