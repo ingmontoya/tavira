@@ -39,9 +39,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS scheme in production
+        // Force HTTPS scheme in production and staging
         // The TrustProxies middleware handles X-Forwarded-Host for proper domain detection
-        if (config('app.env') === 'production') {
+        if (in_array(config('app.env'), ['production', 'staging'])) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
