@@ -47,7 +47,9 @@ class HandleInertiaRequests extends Middleware
             ],
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
+                // Use APP_URL as base for location to ensure correct URL in K8s/proxied environments
+                // This prevents Ziggy from using internal pod IPs (127.0.0.1) for route generation
+                'location' => rtrim(config('app.url'), '/').$request->getRequestUri(),
                 // Override URL and port to use APP_URL instead of internal request URL
                 // This fixes issues with Ziggy generating 127.0.0.1 URLs in K8s environments
                 'url' => config('app.url') ?: (new Ziggy)->toArray()['url'],
