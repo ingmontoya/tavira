@@ -37,6 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Process late fees on the 1st of each month at 09:00
         $schedule->command('invoices:process-late-fees')->monthlyOn(1, '09:00');
 
+        // Update apartment payment statuses daily at 03:00 (runs for all tenants)
+        $schedule->command('tenants:run apartments:update-payment-status')->dailyAt('03:00');
+
         // Sync tenant subscription status every hour
         $schedule->command('tenants:sync-subscription-status')->hourly();
 
