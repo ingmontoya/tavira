@@ -300,7 +300,8 @@ function getEnabledFeaturesCount(tenant: Tenant): number {
 function toggleFeature(tenantId: string, feature: string, enabled: boolean) {
     console.log('toggleFeature called:', { tenantId, feature, enabled });
 
-    const url = route('tenant-features.update-feature', { tenant: tenantId, feature });
+    // Use relative URLs to avoid origin issues in K8s/proxied environments
+    const url = route('tenant-features.update-feature', { tenant: tenantId, feature }, false);
     console.log('Generated route URL:', url);
     console.log('Current Ziggy config:', (window as any).Ziggy);
 
