@@ -280,6 +280,7 @@ kubectl delete secret laravel-env-staging
 El secret `laravel-env-staging` debe contener:
 
 - `APP_KEY`: Clave de encriptación de Laravel
+- `APP_URL`: URL base de la aplicación (https://staging.tavira.com.co) - **REQUERIDO para Ziggy routes**
 - `DB_DATABASE`: Nombre de la base de datos
 - `DB_USERNAME`: Usuario de PostgreSQL
 - `DB_PASSWORD`: Contraseña de PostgreSQL
