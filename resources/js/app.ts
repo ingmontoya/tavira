@@ -23,7 +23,11 @@ createInertiaApp({
             integrations: [],
         });
         // Pass Ziggy config from initial props to ensure correct base URL in K8s/staging
-        const ziggyConfig = props.initialPage.props.ziggy;
+        // Convert location to URL object like SSR does - this ensures route() helper uses correct base
+        const ziggyConfig = {
+            ...props.initialPage.props.ziggy,
+            location: new URL(props.initialPage.props.ziggy.location),
+        };
         console.log('Ziggy config from props:', ziggyConfig);
 
         // Set window.Ziggy so route() helper can access it globally
