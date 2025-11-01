@@ -27,42 +27,52 @@ class AccountingClosureService
     }
 
     /**
-     * Ejecuta el cierre contable anual completo
+     * Ejecuta el cierre contable de un período (mensual o anual)
      *
+     * @param  string  $periodType  Tipo de período: 'monthly' o 'annual'
      * @param  int  $fiscalYear  Año fiscal a cerrar
-     * @param  string  $closureDate  Fecha de cierre (generalmente último día del año)
+     * @param  string  $closureDate  Fecha de cierre
+     * @param  string  $periodStartDate  Fecha de inicio del período
+     * @param  string  $periodEndDate  Fecha de fin del período
      * @param  array  $options  Opciones adicionales de cierre
      * @return array Resultado del cierre con detalles
      *
      * @throws \Exception Si hay errores en el proceso de cierre
      */
-    public function executeAnnualClosure(int $fiscalYear, string $closureDate, array $options = []): array
-    {
+    public function executePeriodClosure(
+        string $periodType,
+        int $fiscalYear,
+        string $closureDate,
+        string $periodStartDate,
+        string $periodEndDate,
+        array $options = []
+    ): array {
         DB::connection('tenant')->beginTransaction();
 
         try {
             $startTime = microtime(true);
             $closureDate = Carbon::parse($closureDate);
+            $periodStartDate = Carbon::parse($periodStartDate);
+            $periodEndDate = Carbon::parse($periodEndDate);
 
-            Log::info('Iniciando cierre contable anual', [
+            Log::info("Iniciando cierre contable {$periodType}", [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'fiscal_year' => $fiscalYear,
+                'period_type' => $periodType,
+                'period_start_date' => $periodStartDate->toDateString(),
+                'period_end_date' => $periodEndDate->toDateString(),
                 'closure_date' => $closureDate->toDateString(),
                 'options' => $options,
             ]);
 
             // Validar precondiciones
-            $this->validatePreconditions($fiscalYear, $closureDate);
-
-            // Determinar fechas del período
-            $periodStartDate = Carbon::create($fiscalYear, 1, 1);
-            $periodEndDate = Carbon::create($fiscalYear, 12, 31);
+            $this->validatePreconditions($fiscalYear, $periodType, $periodEndDate);
 
             // Crear registro de cierre en borrador
             $closure = AccountingPeriodClosure::create([
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'fiscal_year' => $fiscalYear,
-                'period_type' => 'annual',
+                'period_type' => $periodType,
                 'period_start_date' => $periodStartDate,
                 'period_end_date' => $periodEndDate,
                 'closure_date' => $closureDate,
@@ -131,9 +141,12 @@ class AccountingClosureService
 
             DB::connection('tenant')->commit();
 
-            Log::info('Cierre contable anual completado exitosamente', [
+            Log::info("Cierre contable {$periodType} completado exitosamente", [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'fiscal_year' => $fiscalYear,
+                'period_type' => $periodType,
+                'period_start_date' => $periodStartDate->toDateString(),
+                'period_end_date' => $periodEndDate->toDateString(),
                 'duration' => $results['duration_seconds'],
                 'net_result' => $netResult,
             ]);
@@ -143,9 +156,10 @@ class AccountingClosureService
         } catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
 
-            Log::error('Error durante cierre contable anual', [
+            Log::error("Error durante cierre contable {$periodType}", [
                 'conjunto_config_id' => $this->conjuntoConfigId,
                 'fiscal_year' => $fiscalYear,
+                'period_type' => $periodType,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -155,38 +169,74 @@ class AccountingClosureService
     }
 
     /**
+     * Ejecuta el cierre contable anual completo (método de compatibilidad)
+     *
+     * @param  int  $fiscalYear  Año fiscal a cerrar
+     * @param  string  $closureDate  Fecha de cierre (generalmente último día del año)
+     * @param  array  $options  Opciones adicionales de cierre
+     * @return array Resultado del cierre con detalles
+     *
+     * @throws \Exception Si hay errores en el proceso de cierre
+     */
+    public function executeAnnualClosure(int $fiscalYear, string $closureDate, array $options = []): array
+    {
+        $periodStartDate = Carbon::create($fiscalYear, 1, 1)->toDateString();
+        $periodEndDate = Carbon::create($fiscalYear, 12, 31)->toDateString();
+
+        return $this->executePeriodClosure(
+            'annual',
+            $fiscalYear,
+            $closureDate,
+            $periodStartDate,
+            $periodEndDate,
+            $options
+        );
+    }
+
+    /**
      * Valida que el período puede ser cerrado
      */
-    private function validatePreconditions(int $fiscalYear, Carbon $closureDate): void
+    private function validatePreconditions(int $fiscalYear, string $periodType, Carbon $periodEndDate): void
     {
         // Validar que el período no esté ya cerrado
         $existingClosure = AccountingPeriodClosure::forConjunto($this->conjuntoConfigId)
             ->byFiscalYear($fiscalYear)
-            ->where('period_type', 'annual')
+            ->where('period_type', $periodType)
             ->where('status', 'completed')
             ->first();
 
+        $periodLabel = $periodType === 'monthly'
+            ? "El período {$periodEndDate->format('F Y')}"
+            : "El año fiscal {$fiscalYear}";
+
         if ($existingClosure) {
-            throw new \Exception("El año fiscal {$fiscalYear} ya está cerrado. Si necesita reversar el cierre, debe hacerlo primero.");
+            throw new \Exception("{$periodLabel} ya está cerrado. Si necesita reversar el cierre, debe hacerlo primero.");
         }
 
-        // Validar que no haya transacciones en borrador para el año
-        $periodStartDate = Carbon::create($fiscalYear, 1, 1);
-        $periodEndDate = Carbon::create($fiscalYear, 12, 31);
+        // Validar que no haya transacciones en borrador para el período
+        // Para cierres anuales, revisar todo el año
+        // Para cierres mensuales, revisar solo el mes
+        if ($periodType === 'annual') {
+            $periodStartDate = Carbon::create($fiscalYear, 1, 1);
+            $periodEndDateCheck = Carbon::create($fiscalYear, 12, 31);
+        } else {
+            // Para cierres mensuales, usar el período específico
+            $periodStartDate = $periodEndDate->copy()->startOfMonth();
+            $periodEndDateCheck = $periodEndDate->copy()->endOfMonth();
+        }
 
         $draftTransactions = AccountingTransaction::forConjunto($this->conjuntoConfigId)
-            ->whereBetween('transaction_date', [$periodStartDate, $periodEndDate])
+            ->whereBetween('transaction_date', [$periodStartDate, $periodEndDateCheck])
             ->where('status', 'borrador')
             ->count();
 
         if ($draftTransactions > 0) {
-            throw new \Exception("Existen {$draftTransactions} transacciones en borrador para el año {$fiscalYear}. Deben ser contabilizadas o canceladas antes del cierre.");
+            throw new \Exception("Existen {$draftTransactions} transacciones en borrador para {$periodLabel}. Deben ser contabilizadas o canceladas antes del cierre.");
         }
 
-        // Validar que el año no sea futuro
-        $yearEnd = Carbon::create($fiscalYear, 12, 31);
-        if ($yearEnd->isFuture()) {
-            throw new \Exception("No se puede cerrar un año fiscal futuro: {$fiscalYear}");
+        // Validar que el período no sea futuro
+        if ($periodEndDate->isFuture()) {
+            throw new \Exception("No se puede cerrar un período futuro: {$periodEndDate->format('Y-m-d')}");
         }
 
         // Validar que la cuenta 5905 existe
@@ -612,12 +662,12 @@ class AccountingClosureService
     }
 
     /**
-     * Vista previa del cierre sin ejecutarlo
+     * Vista previa del cierre sin ejecutarlo (para un período específico)
      */
-    public function previewClosure(int $fiscalYear): array
+    public function previewClosureForPeriod(string $periodStartDate, string $periodEndDate): array
     {
-        $periodStartDate = Carbon::create($fiscalYear, 1, 1);
-        $periodEndDate = Carbon::create($fiscalYear, 12, 31);
+        $periodStartDate = Carbon::parse($periodStartDate);
+        $periodEndDate = Carbon::parse($periodEndDate);
 
         // Calcular totales de ingresos
         $incomeAccounts = ChartOfAccounts::forConjunto($this->conjuntoConfigId)
@@ -675,7 +725,7 @@ class AccountingClosureService
         $netResult = $totalIncome - $totalExpenses;
 
         return [
-            'fiscal_year' => $fiscalYear,
+            'fiscal_year' => $periodStartDate->year,
             'period_start_date' => $periodStartDate->format('Y-m-d'),
             'period_end_date' => $periodEndDate->format('Y-m-d'),
             'total_income' => $totalIncome,
@@ -689,5 +739,16 @@ class AccountingClosureService
             'can_close' => true,
             'warnings' => [],
         ];
+    }
+
+    /**
+     * Vista previa del cierre sin ejecutarlo (método de compatibilidad para cierres anuales)
+     */
+    public function previewClosure(int $fiscalYear): array
+    {
+        $periodStartDate = Carbon::create($fiscalYear, 1, 1)->toDateString();
+        $periodEndDate = Carbon::create($fiscalYear, 12, 31)->toDateString();
+
+        return $this->previewClosureForPeriod($periodStartDate, $periodEndDate);
     }
 }

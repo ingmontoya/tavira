@@ -18,6 +18,7 @@ interface Props {
     conjunto: any;
     availableYears: number[];
     closedYears: number[];
+    closedMonths: Array<{ year: number; month: number }>;
 }
 
 const props = defineProps<Props>();
@@ -37,7 +38,9 @@ interface PreviewData {
 }
 
 const form = useForm({
+    period_type: 'annual' as 'monthly' | 'annual',
     fiscal_year: props.availableYears[0] || new Date().getFullYear(),
+    period_month: new Date().getMonth() + 1,
     closure_date: new Date().toISOString().split('T')[0],
     notes: '',
 });
@@ -54,7 +57,36 @@ const breadcrumbs = [
 ];
 
 const availableYearsToClose = computed(() => {
-    return props.availableYears.filter(year => !props.closedYears.includes(year));
+    if (form.period_type === 'annual') {
+        return props.availableYears.filter(year => !props.closedYears.includes(year));
+    }
+    return props.availableYears;
+});
+
+const availableMonthsToClose = computed(() => {
+    if (form.period_type === 'monthly') {
+        const closedMonthsForYear = props.closedMonths
+            .filter(cm => cm.year === form.fiscal_year)
+            .map(cm => cm.month);
+
+        const allMonths = [
+            { value: 1, label: 'Enero' },
+            { value: 2, label: 'Febrero' },
+            { value: 3, label: 'Marzo' },
+            { value: 4, label: 'Abril' },
+            { value: 5, label: 'Mayo' },
+            { value: 6, label: 'Junio' },
+            { value: 7, label: 'Julio' },
+            { value: 8, label: 'Agosto' },
+            { value: 9, label: 'Septiembre' },
+            { value: 10, label: 'Octubre' },
+            { value: 11, label: 'Noviembre' },
+            { value: 12, label: 'Diciembre' },
+        ];
+
+        return allMonths.filter(month => !closedMonthsForYear.includes(month.value));
+    }
+    return [];
 });
 
 const formatCurrency = (value: number) => {
@@ -73,7 +105,9 @@ const loadPreview = async () => {
 
     try {
         const response = await axios.post(route('accounting.closures.preview'), {
+            period_type: form.period_type,
             fiscal_year: form.fiscal_year,
+            period_month: form.period_type === 'monthly' ? form.period_month : null,
         });
 
         if (response.data.success) {
@@ -94,7 +128,11 @@ const submit = () => {
         return;
     }
 
-    if (confirm(`¿Está seguro de ejecutar el cierre contable para el año ${form.fiscal_year}? Esta acción no se puede deshacer fácilmente.`)) {
+    const periodLabel = form.period_type === 'monthly'
+        ? `${availableMonthsToClose.value.find(m => m.value === form.period_month)?.label} ${form.fiscal_year}`
+        : `el año ${form.fiscal_year}`;
+
+    if (confirm(`¿Está seguro de ejecutar el cierre contable para ${periodLabel}? Esta acción no se puede deshacer fácilmente.`)) {
         form.post(route('accounting.closures.store'));
     }
 };
@@ -110,7 +148,9 @@ const submit = () => {
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
                     <h1 class="text-3xl font-bold tracking-tight">Nuevo Cierre Contable</h1>
-                    <p class="text-muted-foreground">Ejecutar cierre contable anual</p>
+                    <p class="text-muted-foreground">
+                        Ejecutar cierre contable {{ form.period_type === 'monthly' ? 'mensual' : 'anual' }}
+                    </p>
                 </div>
                 <div class="flex items-center gap-3">
                     <Link :href="route('accounting.closures.index')">
@@ -139,6 +179,26 @@ const submit = () => {
                             </CardDescription>
                         </CardHeader>
                         <CardContent class="space-y-6">
+                            <!-- Period Type -->
+                            <div class="space-y-2">
+                                <Label for="period_type">Tipo de Cierre *</Label>
+                                <Select v-model="form.period_type">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona el tipo de cierre" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="monthly">Cierre Mensual</SelectItem>
+                                        <SelectItem value="annual">Cierre Anual</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p class="text-xs text-muted-foreground">
+                                    Los cierres mensuales permiten cerrar períodos del año en curso
+                                </p>
+                                <p v-if="form.errors.period_type" class="text-sm text-red-600">
+                                    {{ form.errors.period_type }}
+                                </p>
+                            </div>
+
                             <!-- Fiscal Year -->
                             <div class="space-y-2">
                                 <Label for="fiscal_year">Año Fiscal *</Label>
@@ -152,11 +212,34 @@ const submit = () => {
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <p v-if="availableYearsToClose.length === 0" class="text-sm text-amber-600">
+                                <p v-if="form.period_type === 'annual' && availableYearsToClose.length === 0"
+                                    class="text-sm text-amber-600">
                                     No hay años disponibles para cerrar. Todos los años recientes ya están cerrados.
                                 </p>
                                 <p v-if="form.errors.fiscal_year" class="text-sm text-red-600">
                                     {{ form.errors.fiscal_year }}
+                                </p>
+                            </div>
+
+                            <!-- Period Month (only for monthly closures) -->
+                            <div v-if="form.period_type === 'monthly'" class="space-y-2">
+                                <Label for="period_month">Mes a Cerrar *</Label>
+                                <Select v-model="form.period_month">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona el mes" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem v-for="month in availableMonthsToClose" :key="month.value"
+                                            :value="month.value">
+                                            {{ month.label }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="availableMonthsToClose.length === 0" class="text-sm text-amber-600">
+                                    No hay meses disponibles para cerrar en el año {{ form.fiscal_year }}.
+                                </p>
+                                <p v-if="form.errors.period_month" class="text-sm text-red-600">
+                                    {{ form.errors.period_month }}
                                 </p>
                             </div>
 
@@ -166,7 +249,10 @@ const submit = () => {
                                 <Input id="closure_date" v-model="form.closure_date" type="date"
                                     :class="{ 'border-red-500': form.errors.closure_date }" />
                                 <p class="text-xs text-muted-foreground">
-                                    Normalmente es el último día del año fiscal
+                                    {{ form.period_type === 'monthly'
+                                        ? 'Normalmente es el último día del mes'
+                                        : 'Normalmente es el último día del año fiscal'
+                                    }}
                                 </p>
                                 <p v-if="form.errors.closure_date" class="text-sm text-red-600">
                                     {{ form.errors.closure_date }}
@@ -195,7 +281,8 @@ const submit = () => {
                         <AlertDescription>
                             <strong>Importante:</strong> El cierre contable es un proceso crítico que:
                             <ul class="mt-2 list-inside list-disc space-y-1 text-sm">
-                                <li>Cerrará todas las cuentas de ingresos y gastos del año</li>
+                                <li>Cerrará todas las cuentas de ingresos y gastos del {{ form.period_type === 'monthly'
+                                    ? 'mes' : 'año' }}</li>
                                 <li>Trasladará el resultado neto a patrimonio</li>
                                 <li>Creará transacciones contables permanentes</li>
                                 <li>No se puede deshacer fácilmente</li>
