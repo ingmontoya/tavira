@@ -67,6 +67,11 @@ COPY --from=vendor /app/vendor ./vendor
 ARG APP_URL=http://localhost
 ENV APP_URL=${APP_URL}
 
+# Cache-busting: Force rebuild when APP_URL changes
+# This ensures npm run build uses the correct APP_URL
+RUN echo "Building with APP_URL: ${APP_URL}" && \
+    echo "${APP_URL}" > /tmp/app-url-cache-bust.txt
+
 # Build production assets
 RUN npm run build && \
     rm -rf node_modules && \
