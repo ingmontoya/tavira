@@ -74,6 +74,7 @@ jobs:
           build-args: |
             BUILD_ENV=staging
             APP_URL=https://staging.tavira.com.co
+            BUILD_ID=${{ steps.version.outputs.short_sha }}
 
       # 7️⃣ Configure kubectl
       - name: Set up kubectl

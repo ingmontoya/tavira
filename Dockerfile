@@ -65,15 +65,12 @@ COPY --from=vendor /app/vendor ./vendor
 # Set APP_URL for build (will be overridden by env at runtime)
 # Use ARG to allow build-time configuration
 ARG APP_URL=http://localhost
+ARG BUILD_ID=unknown
 ENV APP_URL=${APP_URL}
 
-# Cache-busting: Force rebuild when APP_URL changes
-# This ensures npm run build uses the correct APP_URL
-RUN echo "Building with APP_URL: ${APP_URL}" && \
-    echo "${APP_URL}" > /tmp/app-url-cache-bust.txt
-
-# Build production assets
-RUN npm run build && \
+# Build production assets - BUILD_ID cache-busting ensures fresh build each time
+RUN echo "Building with APP_URL: ${APP_URL}, BUILD_ID: ${BUILD_ID}" && \
+    npm run build && \
     rm -rf node_modules && \
     npm cache clean --force
 
