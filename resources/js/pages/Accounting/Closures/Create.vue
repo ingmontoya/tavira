@@ -7,6 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useToast } from '@/composables/useToast';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -48,6 +59,8 @@ const form = useForm({
 const preview = ref<PreviewData | null>(null);
 const isLoadingPreview = ref(false);
 const previewError = ref<string | null>(null);
+const showConfirmDialog = ref(false);
+const { toast } = useToast();
 
 const breadcrumbs = [
     { title: 'Escritorio', href: '/dashboard' },
@@ -122,19 +135,26 @@ const loadPreview = async () => {
     }
 };
 
+const periodLabel = computed(() => {
+    return form.period_type === 'monthly'
+        ? `${availableMonthsToClose.value.find(m => m.value === form.period_month)?.label} ${form.fiscal_year}`
+        : `el año ${form.fiscal_year}`;
+});
+
 const submit = () => {
     if (!preview.value) {
-        alert('Debe cargar la vista previa antes de ejecutar el cierre');
+        toast.error('Debe cargar la vista previa antes de ejecutar el cierre', {
+            title: 'Vista previa requerida',
+        });
         return;
     }
 
-    const periodLabel = form.period_type === 'monthly'
-        ? `${availableMonthsToClose.value.find(m => m.value === form.period_month)?.label} ${form.fiscal_year}`
-        : `el año ${form.fiscal_year}`;
+    showConfirmDialog.value = true;
+};
 
-    if (confirm(`¿Está seguro de ejecutar el cierre contable para ${periodLabel}? Esta acción no se puede deshacer fácilmente.`)) {
-        form.post(route('accounting.closures.store'));
-    }
+const confirmSubmit = () => {
+    showConfirmDialog.value = false;
+    form.post(route('accounting.closures.store'));
 };
 </script>
 
@@ -417,5 +437,31 @@ const submit = () => {
                 </div>
             </div>
         </div>
+
+        <!-- Confirmation Dialog -->
+        <AlertDialog v-model:open="showConfirmDialog">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar Cierre Contable</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        ¿Está seguro de ejecutar el cierre contable para <strong>{{ periodLabel }}</strong>?
+                        <br /><br />
+                        Esta acción:
+                        <ul class="mt-2 list-inside list-disc space-y-1 text-sm">
+                            <li>Cerrará todas las cuentas de ingresos y gastos del {{ form.period_type === 'monthly' ? 'mes' : 'año' }}</li>
+                            <li>Trasladará el resultado neto a patrimonio</li>
+                            <li>Creará transacciones contables permanentes</li>
+                            <li>No se puede deshacer fácilmente</li>
+                        </ul>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction @click="confirmSubmit" :disabled="form.processing">
+                        {{ form.processing ? 'Ejecutando...' : 'Sí, ejecutar cierre' }}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </AppLayout>
 </template>

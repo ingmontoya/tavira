@@ -271,9 +271,18 @@ const columns = [
             ]);
         },
     }),
-    columnHelper.display({
+    columnHelper.accessor('tower', {
         id: 'location',
-        header: 'Ubicación',
+        header: ({ column }) => {
+            return h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                },
+                () => ['Ubicación', h(ChevronsUpDown, { class: 'ml-2 h-4 w-4' })],
+            );
+        },
         cell: ({ row }) => {
             const apartment = row.original;
             return h('div', { class: 'space-y-1' }, [
@@ -299,7 +308,16 @@ const columns = [
     }),
     columnHelper.accessor('status', {
         enablePinning: true,
-        header: 'Estado',
+        header: ({ column }) => {
+            return h(
+                Button,
+                {
+                    variant: 'ghost',
+                    onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
+                },
+                () => ['Estado', h(ChevronsUpDown, { class: 'ml-2 h-4 w-4' })],
+            );
+        },
         cell: ({ row }) => {
             const status = row.getValue('status') as string;
             return h(
@@ -593,7 +611,7 @@ const breadcrumbs = [
 
                 <Card class="p-4">
                     <div class="space-y-2">
-                        <div class="text-sm font-medium text-muted-foreground">30 días</div>
+                        <div class="text-sm font-medium text-muted-foreground">0-30 días</div>
                         <div class="text-2xl font-bold text-yellow-600">{{ paymentStats.overdue_30 }}</div>
                     </div>
                 </Card>

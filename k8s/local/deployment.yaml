@@ -1,0 +1,242 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tavira-app-local
+  namespace: local
+  labels:
+    app: tavira-local
+    environment: local
+    version: v1
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: tavira-local
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tavira-local
+        environment: local
+        version: v1
+    spec:
+      initContainers:
+      - name: copy-app
+        image: tavira-app:local
+        imagePullPolicy: Never  # Use local image, don't pull from registry
+        command:
+        - sh
+        - -c
+        - |
+          echo "Copying application files..."
+          cp -r /var/www/html/* /app-code/
+
+          echo "Creating storage directories..."
+          mkdir -p /app-code/storage/app/public
+          mkdir -p /app-code/storage/framework/cache
+          mkdir -p /app-code/storage/framework/cache/data
+          mkdir -p /app-code/storage/framework/sessions
+          mkdir -p /app-code/storage/framework/testing
+          mkdir -p /app-code/storage/framework/views
+          mkdir -p /app-code/storage/logs
+
+          echo "Setting permissions..."
+          chmod -R 775 /app-code/storage
+          chmod -R 775 /app-code/bootstrap/cache
+
+          echo "Verifying directories..."
+          ls -la /app-code/storage/framework/
+
+          echo "Init container completed successfully"
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+        - name: app-code
+          mountPath: /app-code
+
+      containers:
+      # PHP-FPM Container
+      - name: php-fpm
+        image: tavira-app:local
+        imagePullPolicy: Never  # Use local image, don't pull from registry
+        ports:
+        - containerPort: 9000
+          name: php-fpm
+          protocol: TCP
+
+        env:
+        - name: APP_NAME
+          value: "Tavira Local"
+        - name: APP_ENV
+          value: local
+        - name: APP_DEBUG
+          value: "true"
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: APP_KEY
+        - name: APP_URL
+          value: http://localhost:30080
+        - name: DB_CONNECTION
+          value: pgsql
+        - name: DB_HOST
+          value: postgres-local
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: DB_DATABASE
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: DB_PASSWORD
+        - name: CACHE_DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: CACHE_DRIVER
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: REDIS_PORT
+        - name: QUEUE_CONNECTION
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: QUEUE_CONNECTION
+        - name: SESSION_DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-local
+              key: SESSION_DRIVER
+        - name: SESSION_LIFETIME
+          value: "120"
+
+        # Minimal resources for local development
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        securityContext:
+          runAsUser: 82
+          runAsGroup: 82
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        - name: app-storage
+          mountPath: /var/www/html/storage
+
+      # Nginx Container
+      - name: nginx
+        image: nginx:1.26-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+
+        # Minimal resources for local development
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+
+        securityContext:
+          runAsUser: 101
+          runAsGroup: 101
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+          readOnly: true
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+
+      securityContext:
+        fsGroup: 82
+
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: tavira-storage-pvc-local
+      - name: nginx-config
+        configMap:
+          name: tavira-nginx-config-local
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}

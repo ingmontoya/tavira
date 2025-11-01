@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-local
+  namespace: local
+  labels:
+    app: postgres-local
+    environment: local
+data:
+  POSTGRES_DB: "tavira_local"
+  POSTGRES_USER: "tavira_user_local"
