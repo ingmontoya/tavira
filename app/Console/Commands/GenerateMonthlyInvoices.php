@@ -166,6 +166,30 @@ class GenerateMonthlyInvoices extends Command
             ]
         );
 
+        // Obtener o crear el concepto de Cuota Extraordinaria
+        $extraordinaryConcept = PaymentConcept::firstOrCreate(
+            [
+                'name' => 'Cuota Extraordinaria',
+                'type' => 'extraordinary_assessment',
+            ],
+            [
+                'description' => 'Cuota extraordinaria para proyectos especiales',
+                'default_amount' => 0,
+                'is_recurring' => false,
+                'is_active' => true,
+                'billing_cycle' => 'one_time',
+                'applicable_apartment_types' => null,
+                'conjunto_config_id' => $conjunto->id,
+            ]
+        );
+
+        // Obtener cuotas extraordinarias activas para este período
+        $extraordinaryAssessments = \App\Models\ExtraordinaryAssessment::forCurrentMonth($periodStart)
+            ->with('apartments')
+            ->get();
+
+        $this->info("Cuotas extraordinarias activas: {$extraordinaryAssessments->count()}");
+
         // Calculate previous billing period
         $previousPeriodDate = $periodStart->copy()->subMonth();
         $previousYear = $previousPeriodDate->year;
@@ -175,6 +199,7 @@ class GenerateMonthlyInvoices extends Command
         $skippedCount = 0;
         $errorCount = 0;
         $lateFeesAppliedCount = 0;
+        $extraordinaryItemsCount = 0;
 
         $this->info("Procesando {$apartments->count()} apartamentos elegibles...");
         $this->info("Usando concepto: {$monthlyAdminConcept->name} (ID: {$monthlyAdminConcept->id})");
@@ -185,9 +210,10 @@ class GenerateMonthlyInvoices extends Command
 
         // Process apartments in chunks to avoid memory issues
         $apartments->chunk(50)->each(function ($apartmentChunk) use (
-            &$generatedCount, &$skippedCount, &$errorCount, &$lateFeesAppliedCount, $progressBar,
+            &$generatedCount, &$skippedCount, &$errorCount, &$lateFeesAppliedCount, &$extraordinaryItemsCount, $progressBar,
             $billingDate, $dueDate, $year, $month, $periodStart, $periodEnd, $monthlyAdminConcept,
-            $lateFeeConcept, $paymentSettings, $previousYear, $previousMonth
+            $lateFeeConcept, $extraordinaryConcept, $paymentSettings, $previousYear, $previousMonth,
+            $extraordinaryAssessments
         ) {
             foreach ($apartmentChunk as $apartment) {
                 try {
@@ -262,6 +288,36 @@ class GenerateMonthlyInvoices extends Command
                         $this->line("  → Mora aplicada a Apt {$apartment->number}: $".number_format($lateFeeAmount, 2));
                     }
 
+                    // Add extraordinary assessment items if applicable
+                    foreach ($extraordinaryAssessments as $assessment) {
+                        // Verificar si debe generar cuota para este mes
+                        if (!$assessment->shouldGenerateInstallmentForMonth($periodStart)) {
+                            continue;
+                        }
+
+                        // Buscar la asignación del apartamento
+                        $assessmentApartment = $assessment->apartments()
+                            ->where('apartment_id', $apartment->id)
+                            ->first();
+
+                        if ($assessmentApartment && $assessmentApartment->installment_amount > 0) {
+                            InvoiceItem::create([
+                                'invoice_id' => $invoice->id,
+                                'payment_concept_id' => $extraordinaryConcept->id,
+                                'description' => "Cuota Extraordinaria - {$assessment->name} (Cuota " .
+                                    ($assessment->installments_generated + 1) . "/{$assessment->number_of_installments})",
+                                'quantity' => 1,
+                                'unit_price' => $assessmentApartment->installment_amount,
+                                'period_start' => $periodStart,
+                                'period_end' => $periodEnd,
+                            ]);
+
+                            $extraordinaryItemsCount++;
+
+                            $this->line("  → Cuota extraordinaria agregada a Apt {$apartment->number}: $".number_format($assessmentApartment->installment_amount, 2) . " ({$assessment->name})");
+                        }
+                    }
+
                     $invoice->calculateTotals();
 
                     // Fire the InvoiceCreated event after invoice is fully populated
@@ -283,10 +339,23 @@ class GenerateMonthlyInvoices extends Command
         $progressBar->finish();
         $this->newLine();
 
+        // Marcar las extraordinarias como generadas
+        foreach ($extraordinaryAssessments as $assessment) {
+            if ($assessment->shouldGenerateInstallmentForMonth($periodStart)) {
+                $assessment->markInstallmentGenerated();
+                $this->info("Cuota extraordinaria generada: {$assessment->name} (Cuota {$assessment->installments_generated}/{$assessment->number_of_installments})");
+            }
+        }
+
+        $this->newLine();
         $this->info("Facturas generadas exitosamente: {$generatedCount}");
 
         if ($lateFeesAppliedCount > 0) {
             $this->warn("Facturas con mora aplicada: {$lateFeesAppliedCount}");
+        }
+
+        if ($extraordinaryItemsCount > 0) {
+            $this->warn("Ítems de cuotas extraordinarias agregados: {$extraordinaryItemsCount}");
         }
 
         if ($skippedCount > 0) {

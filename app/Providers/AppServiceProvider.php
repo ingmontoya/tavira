@@ -10,6 +10,7 @@ use App\Listeners\GenerateAccountingEntryFromInvoice;
 use App\Listeners\GenerateAccountingEntryFromLateFee;
 use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
+use App\Listeners\UpdateExtraordinaryAssessmentProgress;
 use App\Listeners\SyncProvidersToNewTenant;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
 use App\Models\ConjuntoConfig;
@@ -68,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
         // Eventos contables
         Event::listen(InvoiceCreated::class, GenerateAccountingEntryFromInvoice::class);
         Event::listen(PaymentReceived::class, GenerateAccountingEntryFromPayment::class);
+        Event::listen(PaymentReceived::class, UpdateExtraordinaryAssessmentProgress::class);
         Event::listen(LateFeeApplied::class, GenerateAccountingEntryFromLateFee::class);
         Event::listen(AccountingTransactionPosted::class, UpdateBudgetExecutionFromTransaction::class);
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ExpenseApprovalController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ExtraordinaryAssessmentController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\InvoiceEmailController;
 use App\Http\Controllers\PaymentAgreementController;
@@ -97,6 +98,12 @@ Route::post('payment-agreements/{paymentAgreement}/activate', [PaymentAgreementC
 Route::post('payment-agreements/{paymentAgreement}/cancel', [PaymentAgreementController::class, 'cancel'])->name('payment-agreements.cancel')->middleware('can:edit_payments');
 Route::post('payment-agreements/{paymentAgreement}/submit-for-approval', [PaymentAgreementController::class, 'submitForApproval'])->name('payment-agreements.submit-for-approval')->middleware('can:view_payments');
 Route::post('payment-agreements/{paymentAgreement}/record-payment', [PaymentAgreementController::class, 'recordPayment'])->name('payment-agreements.record-payment')->middleware('can:edit_payments');
+
+// Extraordinary Assessments Management
+Route::get('extraordinary-assessments/dashboard', [ExtraordinaryAssessmentController::class, 'dashboard'])->name('extraordinary-assessments.dashboard')->middleware('can:view_payments');
+Route::resource('extraordinary-assessments', ExtraordinaryAssessmentController::class)->middleware('can:view_payments');
+Route::post('extraordinary-assessments/{extraordinaryAssessment}/activate', [ExtraordinaryAssessmentController::class, 'activate'])->name('extraordinary-assessments.activate')->middleware('can:edit_payments');
+Route::post('extraordinary-assessments/{extraordinaryAssessment}/cancel', [ExtraordinaryAssessmentController::class, 'cancel'])->name('extraordinary-assessments.cancel')->middleware('can:edit_payments');
 
 // Email Provider Webhooks (no auth required)
 Route::post('webhooks/email/{provider}', [InvoiceEmailController::class, 'webhook'])
