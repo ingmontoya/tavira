@@ -1,0 +1,267 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tavira-app-staging
+  namespace: staging
+  labels:
+    app: tavira-staging
+    environment: staging
+    version: v1
+spec:
+  # Staging: 1 replica (minimal for testing)
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: tavira-staging
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: tavira-staging
+        environment: staging
+        version: v1
+    spec:
+      initContainers:
+      - name: copy-app
+        image: ingmontoyav/tavira-app:staging
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          echo "Copying application files..."
+          cp -r /var/www/html/* /app-code/
+
+          echo "Creating storage directories..."
+          mkdir -p /app-code/storage/app/public
+          mkdir -p /app-code/storage/framework/cache
+          mkdir -p /app-code/storage/framework/cache/data
+          mkdir -p /app-code/storage/framework/sessions
+          mkdir -p /app-code/storage/framework/testing
+          mkdir -p /app-code/storage/framework/views
+          mkdir -p /app-code/storage/logs
+
+          echo "Setting permissions..."
+          chmod -R 775 /app-code/storage
+          chmod -R 775 /app-code/bootstrap/cache
+
+          echo "Verifying directories..."
+          ls -la /app-code/storage/framework/
+
+          echo "Init container completed successfully"
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        volumeMounts:
+        - name: app-code
+          mountPath: /app-code
+
+      containers:
+      # PHP-FPM Container
+      - name: php-fpm
+        image: ingmontoyav/tavira-app:staging
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+          name: php-fpm
+          protocol: TCP
+
+        env:
+        - name: APP_NAME
+          value: "Tavira Staging"
+        - name: APP_ENV
+          value: staging
+        - name: APP_DEBUG
+          value: "true"
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: APP_KEY
+        - name: APP_URL
+          value: https://staging.tavira.com.co
+        - name: DB_CONNECTION
+          value: pgsql
+        - name: DB_HOST
+          value: postgres-staging
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: DB_DATABASE
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: DB_PASSWORD
+        - name: CACHE_DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: CACHE_DRIVER
+              optional: true
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: REDIS_HOST
+              optional: true
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: REDIS_PORT
+              optional: true
+        - name: QUEUE_CONNECTION
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: QUEUE_CONNECTION
+              optional: true
+        - name: SESSION_DRIVER
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: SESSION_DRIVER
+              optional: true
+        - name: SESSION_LIFETIME
+          value: "120"
+
+        envFrom:
+        - secretRef:
+            name: laravel-env-staging
+
+        # Reduced resources for staging
+        resources:
+          requests:
+            cpu: 50m        # Reduced from 100m
+            memory: 128Mi   # Reduced from 256Mi
+          limits:
+            cpu: 300m       # Reduced from 500m
+            memory: 256Mi   # Reduced from 512Mi
+
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        securityContext:
+          runAsUser: 82
+          runAsGroup: 82
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+
+        # Lifecycle hook to create storage directories after PVC is mounted
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - sh
+              - -c
+              - |
+                mkdir -p /var/www/html/storage/framework/cache/data
+                mkdir -p /var/www/html/storage/framework/sessions
+                mkdir -p /var/www/html/storage/framework/testing
+                mkdir -p /var/www/html/storage/framework/views
+                mkdir -p /var/www/html/storage/app/public
+                chmod -R 775 /var/www/html/storage
+
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+        - name: app-storage
+          mountPath: /var/www/html/storage
+
+      # Nginx Container
+      - name: nginx
+        image: nginx:1.26-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+
+        # Reduced resources for staging
+        resources:
+          requests:
+            cpu: 25m        # Reduced from 50m
+            memory: 32Mi    # Reduced from 64Mi
+          limits:
+            cpu: 100m       # Reduced from 200m
+            memory: 64Mi    # Reduced from 128Mi
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          failureThreshold: 3
+
+        securityContext:
+          runAsUser: 101
+          runAsGroup: 101
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
+        volumeMounts:
+        - name: app-code
+          mountPath: /var/www/html
+          readOnly: true
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
+        - name: nginx-run
+          mountPath: /var/run
+
+      securityContext:
+        fsGroup: 82
+
+      volumes:
+      - name: app-code
+        emptyDir: {}
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: tavira-storage-pvc-staging
+      - name: nginx-config
+        configMap:
+          name: tavira-nginx-config-staging
+      - name: nginx-cache
+        emptyDir: {}
+      - name: nginx-run
+        emptyDir: {}

@@ -21,47 +21,100 @@ class SubscriptionPaymentController extends Controller
      */
     public function index()
     {
+        // Get plans from config to match feature-flags system
+        $planConfigs = config('feature-plans');
+
         $plans = [
             [
-                'id' => 'basico',
-                'name' => 'Básico',
-                'price' => 99000,
+                'id' => 'basic',
+                'name' => 'Plan Básico',
+                'price' => $planConfigs['basic']['price'],
                 'billing' => 'mensual',
+                'max_units' => $planConfigs['basic']['max_units'],
                 'features' => [
-                    'Hasta 50 apartamentos',
-                    'Gestión básica de residentes',
-                    'Facturas y pagos básicos',
-                    'Soporte por email',
+                    'Hasta ' . $planConfigs['basic']['max_units'] . ' apartamentos',
+                    'Correspondencia',
+                    'Anuncios',
+                    'Tickets de soporte (PQRS)',
+                    'Gestión básica de apartamentos y residentes',
+                    'Dashboard analítico básico',
+                    'Control de acceso básico',
+                    'Notificaciones push',
+                    'Gestión de documentos (1GB)',
+                    'Marketplace de proveedores (3 cotizaciones/mes)',
                 ],
                 'popular' => false,
             ],
             [
-                'id' => 'profesional',
-                'name' => 'Profesional',
-                'price' => 199000,
+                'id' => 'standard',
+                'name' => 'Plan Estándar',
+                'price' => $planConfigs['standard']['price'],
                 'billing' => 'mensual',
+                'max_units' => $planConfigs['standard']['max_units'],
                 'features' => [
-                    'Hasta 200 apartamentos',
-                    'Gestión completa de residentes',
-                    'Sistema de facturas avanzado',
-                    'Contabilidad integrada',
-                    'Reportes avanzados',
-                    'Soporte prioritario',
+                    'Hasta ' . $planConfigs['standard']['max_units'] . ' apartamentos',
+                    'Todo lo del plan Básico',
+                    'Solicitudes de mantenimiento (50/mes)',
+                    'Correo institucional',
+                    'Mensajería interna',
+                    'Reportes financieros básicos',
+                    'Aprobación de gastos (flujo simple)',
+                    'Logs de auditoría (30 días)',
+                    'Gestión de documentos (3GB)',
+                    'Marketplace de proveedores (10 cotizaciones/mes)',
                 ],
                 'popular' => true,
             ],
             [
-                'id' => 'empresarial',
-                'name' => 'Empresarial',
-                'price' => 299000,
+                'id' => 'premium',
+                'name' => 'Plan Premium',
+                'price' => $planConfigs['premium']['price'],
                 'billing' => 'mensual',
+                'max_units' => $planConfigs['premium']['max_units'],
+                'features' => [
+                    'Hasta ' . $planConfigs['premium']['max_units'] . ' apartamentos',
+                    'Todo lo del plan Estándar',
+                    'Gestión de visitantes',
+                    'Contabilidad completa',
+                    'Reservas de espacios comunes',
+                    'Acuerdos de pago (hasta 6 cuotas)',
+                    'Actas de reuniones',
+                    'Votaciones (2 al año)',
+                    'Botón de pánico básico',
+                    'Escáner QR de seguridad',
+                    'Reportes avanzados',
+                    'Operaciones masivas',
+                    'Gestión de documentos (10GB)',
+                    'Marketplace profesional (cotizaciones ilimitadas)',
+                    'Licitaciones digitales',
+                    'Contratos digitales',
+                ],
+                'popular' => false,
+            ],
+            [
+                'id' => 'enterprise',
+                'name' => 'Plan Enterprise',
+                'price' => $planConfigs['enterprise']['price'],
+                'billing' => 'mensual',
+                'max_units' => 'ilimitados',
                 'features' => [
                     'Apartamentos ilimitados',
-                    'Todas las funcionalidades',
-                    'API personalizada',
-                    'Integración con terceros',
-                    'Soporte dedicado 24/7',
-                    'Backup diario automático',
+                    'Todas las funcionalidades sin restricciones',
+                    'Dashboard BI empresarial',
+                    'Mantenimiento predictivo',
+                    'Multi-propiedad',
+                    'Acceso API',
+                    'Subdominio personalizado',
+                    'Branding personalizado',
+                    'Soporte dedicado 24/7 con SLA',
+                    'Account manager exclusivo',
+                    'Logs de auditoría (365 días)',
+                    'Gestión de documentos (50GB)',
+                    'Marketplace VIP',
+                    'Subastas inversas',
+                    'Acuerdos marco',
+                    'Negociación por volumen',
+                    'Dashboard ejecutivo',
                 ],
                 'popular' => false,
             ],
@@ -79,7 +132,7 @@ class SubscriptionPaymentController extends Controller
     public function createPaymentLink(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|in:basico,profesional,empresarial',
+            'plan_id' => 'required|in:basic,standard,premium,enterprise',
             'tenant_id' => 'nullable|exists:tenants,id',
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email',
@@ -90,17 +143,34 @@ class SubscriptionPaymentController extends Controller
         ]);
 
         try {
-            // Define plan prices
+            // Get plan prices from config
+            $planConfigs = config('feature-plans');
+
+            // Define plan prices (annual = monthly * 10, with 2 months discount)
             $planPrices = [
-                'basico' => ['mensual' => 99000, 'anual' => 990000],
-                'profesional' => ['mensual' => 199000, 'anual' => 1990000],
-                'empresarial' => ['mensual' => 299000, 'anual' => 2990000],
+                'basic' => [
+                    'mensual' => $planConfigs['basic']['price'],
+                    'anual' => $planConfigs['basic']['price'] * 10,
+                ],
+                'standard' => [
+                    'mensual' => $planConfigs['standard']['price'],
+                    'anual' => $planConfigs['standard']['price'] * 10,
+                ],
+                'premium' => [
+                    'mensual' => $planConfigs['premium']['price'],
+                    'anual' => $planConfigs['premium']['price'] * 10,
+                ],
+                'enterprise' => [
+                    'mensual' => $planConfigs['enterprise']['price'],
+                    'anual' => $planConfigs['enterprise']['price'] * 10,
+                ],
             ];
 
             $planNames = [
-                'basico' => 'Básico',
-                'profesional' => 'Profesional',
-                'empresarial' => 'Empresarial',
+                'basic' => 'Plan Básico',
+                'standard' => 'Plan Estándar',
+                'premium' => 'Plan Premium',
+                'enterprise' => 'Plan Enterprise',
             ];
 
             $planId = $request->plan_id;

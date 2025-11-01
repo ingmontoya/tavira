@@ -68,37 +68,37 @@
             </div>
 
             <!-- Plans Grid -->
-            <div class="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
+            <div class="mx-auto grid max-w-7xl gap-6 lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1">
                 <div
                     v-for="plan in plans"
                     :key="plan.id"
                     :class="[
-                        'relative rounded-2xl border-2 bg-white shadow-lg transition-all duration-300 hover:shadow-xl',
-                        plan.popular ? 'ring-opacity-20 border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200 hover:border-indigo-300',
+                        'relative flex flex-col rounded-2xl border-2 bg-white shadow-lg transition-all duration-300 hover:shadow-xl',
+                        plan.popular ? 'ring-opacity-20 border-indigo-500 ring-2 ring-indigo-500 scale-105 lg:scale-105' : 'border-gray-200 hover:border-indigo-300',
                     ]"
                 >
                     <!-- Popular Badge -->
                     <div v-if="plan.popular" class="absolute -top-4 left-1/2 -translate-x-1/2 transform">
-                        <span class="rounded-full bg-indigo-600 px-6 py-1 text-sm font-medium text-white"> Más Popular </span>
+                        <span class="rounded-full bg-indigo-600 px-5 py-1 text-xs font-medium text-white shadow-md"> Más Popular </span>
                     </div>
 
-                    <div class="p-8">
+                    <div class="flex flex-col flex-grow p-6">
                         <!-- Plan Header -->
-                        <div class="mb-8 text-center">
-                            <h3 class="mb-2 text-2xl font-bold text-gray-900">{{ plan.name }}</h3>
-                            <div class="mb-4">
-                                <span class="text-4xl font-bold text-gray-900"> ${{ formatPrice(getPrice(plan)) }} </span>
-                                <span class="ml-1 text-gray-600"> /{{ billingType === 'anual' ? 'año' : 'mes' }} </span>
+                        <div class="mb-6 text-center">
+                            <h3 class="mb-2 text-xl font-bold text-gray-900">{{ plan.name }}</h3>
+                            <div class="mb-3">
+                                <span class="text-3xl font-bold text-gray-900"> ${{ formatPrice(getPrice(plan)) }} </span>
+                                <span class="ml-1 text-sm text-gray-600"> /{{ billingType === 'anual' ? 'año' : 'mes' }} </span>
                             </div>
-                            <p v-if="billingType === 'anual'" class="text-sm font-medium text-green-600">
+                            <p v-if="billingType === 'anual'" class="text-xs font-medium text-green-600">
                                 Equivale a ${{ formatPrice(Math.round(getPrice(plan) / 12)) }}/mes
                             </p>
                         </div>
 
                         <!-- Features -->
-                        <ul class="mb-8 space-y-4">
+                        <ul class="mb-6 flex-grow space-y-3 text-sm">
                             <li v-for="feature in plan.features" :key="feature" class="flex items-start">
-                                <svg class="mt-0.5 mr-3 h-5 w-5 flex-shrink-0 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path
                                         fill-rule="evenodd"
                                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -113,7 +113,7 @@
                         <button
                             @click="selectPlan(plan)"
                             :class="[
-                                'w-full rounded-lg px-6 py-3 font-medium transition-all duration-200',
+                                'w-full rounded-lg px-5 py-2.5 text-sm font-medium transition-all duration-200',
                                 plan.popular
                                     ? 'bg-indigo-600 text-white shadow-md hover:bg-indigo-700 hover:shadow-lg'
                                     : 'border border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200',

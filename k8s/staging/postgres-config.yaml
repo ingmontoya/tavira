@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config-staging
+  namespace: staging
+  labels:
+    app: postgres-staging
+    environment: staging
+data:
+  POSTGRES_DB: "tavira_staging"
+  POSTGRES_USER: "tavira_user_staging"

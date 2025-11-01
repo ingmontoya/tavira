@@ -85,21 +85,7 @@ class WompiPaymentService
                 'payment_methods' => $options['payment_methods'] ?? ['CARD', 'NEQUI', 'PSE'],
                 'redirect_url' => $options['redirect_url'] ?? route('subscription.success'),
                 'collect_phone_number' => true,
-                'shipping_address' => [
-                    'address_line_1' => $subscriptionData['conjunto_address'] ?? 'N/A',
-                    'country' => 'CO',
-                    'region' => $options['region'] ?? 'Bogotá D.C.',
-                    'city' => $options['city'] ?? 'Bogotá',
-                    'name' => $subscriptionData['customer_name'],
-                    'phone_number' => $subscriptionData['customer_phone'] ?? '',
-                ],
                 'expiration_time' => $options['expiration_hours'] ?? 72, // 72 hours for subscription
-                'tax_in_cents' => [
-                    [
-                        'type' => 'VAT',
-                        'amount_in_cents' => intval($subscriptionData['amount'] * 100 * 0.19), // 19% IVA
-                    ],
-                ],
             ];
 
             Log::info('Creating Wompi payment link with data:', [

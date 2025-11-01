@@ -208,14 +208,23 @@ spec:
         - sh
         - -c
         - |
+          echo "Copying application files..."
           cp -r /var/www/html/* /app-code/
+
+          echo "Creating storage directories..."
           mkdir -p /app-code/storage/app/public
           mkdir -p /app-code/storage/framework/cache
+          mkdir -p /app-code/storage/framework/cache/data
           mkdir -p /app-code/storage/framework/sessions
+          mkdir -p /app-code/storage/framework/testing
           mkdir -p /app-code/storage/framework/views
           mkdir -p /app-code/storage/logs
+
+          echo "Setting permissions..."
           chmod -R 775 /app-code/storage
           chmod -R 775 /app-code/bootstrap/cache
+
+          echo "Init container completed successfully"
         image: ingmontoyav/tavira-app:latest
         imagePullPolicy: Always
         name: copy-app

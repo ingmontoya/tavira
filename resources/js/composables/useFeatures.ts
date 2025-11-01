@@ -2,13 +2,9 @@ import { usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed } from 'vue';
 
-interface TenantFeature {
-    id: number;
-    tenant_id: string;
-    feature: string;
+interface FeatureConfig {
     enabled: boolean;
-    created_at: string;
-    updated_at: string;
+    config: Record<string, any>;
 }
 
 interface User {
@@ -25,9 +21,11 @@ interface PageProps {
     };
     tenant?: {
         id: string;
-        features?: TenantFeature[];
+        subscription_plan?: string;
+        marketplace_commission?: number;
+        features?: Record<string, FeatureConfig>;
     };
-    // ... other page properties
+    [key: string]: any; // Index signature for dynamic properties
 }
 
 export function useFeatures() {
@@ -38,9 +36,19 @@ export function useFeatures() {
         return page.props.tenant?.id || page.props.auth.user.tenant_id;
     });
 
-    // Get tenant features from page props
+    // Get tenant subscription plan
+    const subscriptionPlan = computed(() => {
+        return page.props.tenant?.subscription_plan || 'basic';
+    });
+
+    // Get marketplace commission rate
+    const marketplaceCommission = computed(() => {
+        return page.props.tenant?.marketplace_commission || 0.08;
+    });
+
+    // Get tenant features from page props (new format: Record<string, FeatureConfig>)
     const tenantFeatures = computed(() => {
-        return page.props.tenant?.features || [];
+        return page.props.tenant?.features || {};
     });
 
     /**
@@ -48,23 +56,40 @@ export function useFeatures() {
      */
     const isFeatureEnabled = (feature: string): boolean => {
         if (!tenantId.value) return false;
+        return tenantFeatures.value[feature]?.enabled ?? false;
+    };
 
-        const featureRecord = tenantFeatures.value.find((f) => f.feature === feature);
-        return featureRecord?.enabled ?? false;
+    /**
+     * Get feature configuration
+     */
+    const getFeatureConfig = <T = Record<string, any>>(feature: string): T | null => {
+        if (!tenantId.value || !isFeatureEnabled(feature)) return null;
+        return (tenantFeatures.value[feature]?.config as T) || null;
+    };
+
+    /**
+     * Get a specific config value from a feature
+     */
+    const getFeatureConfigValue = <T = any>(feature: string, key: string, defaultValue?: T): T | undefined => {
+        const config = getFeatureConfig(feature);
+        if (!config) return defaultValue;
+        return (config as any)[key] ?? defaultValue;
     };
 
     /**
      * Get all enabled features for the current tenant
      */
     const getEnabledFeatures = computed(() => {
-        return tenantFeatures.value.filter((f) => f.enabled).map((f) => f.feature);
+        return Object.keys(tenantFeatures.value).filter(
+            (feature) => tenantFeatures.value[feature]?.enabled
+        );
     });
 
     /**
      * Get count of enabled features
      */
     const getEnabledFeaturesCount = computed(() => {
-        return tenantFeatures.value.filter((f) => f.enabled).length;
+        return getEnabledFeatures.value.length;
     });
 
     /**
@@ -168,6 +193,8 @@ export function useFeatures() {
     return {
         // Computed properties
         tenantId: computed(() => tenantId.value),
+        subscriptionPlan,
+        marketplaceCommission,
         tenantFeatures: computed(() => tenantFeatures.value),
         getEnabledFeatures,
         getEnabledFeaturesCount,
@@ -175,6 +202,8 @@ export function useFeatures() {
 
         // Methods
         isFeatureEnabled,
+        getFeatureConfig,
+        getFeatureConfigValue,
         fetchFeatureStatus,
         fetchAllFeatures,
         requireFeature,

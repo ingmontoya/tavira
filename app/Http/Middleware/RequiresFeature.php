@@ -20,19 +20,21 @@ class RequiresFeature
             return $next($request);
         }
 
-        $tenantId = tenant('id');
+        $tenant = tenant();
 
-        if (! TenantFeature::isFeatureEnabled($tenantId, $feature)) {
+        if (! $tenant->hasFeature($feature)) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => 'Esta funcionalidad no está disponible en su plan.',
                     'feature' => $feature,
                     'enabled' => false,
+                    'current_plan' => $tenant->subscription_plan,
+                    'upgrade_required' => true,
                 ], 403);
             }
 
             return redirect()->route('dashboard')
-                ->with('error', 'Esta funcionalidad no está disponible en su plan.');
+                ->with('error', 'Esta funcionalidad no está disponible en su plan. Contacta a soporte para actualizar.');
         }
 
         return $next($request);

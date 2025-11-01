@@ -8,7 +8,7 @@ use App\Http\Controllers\ChartOfAccountsController;
 use Illuminate\Support\Facades\Route;
 
 // Accounting System
-Route::prefix('accounting')->name('accounting.')->middleware('can:view_accounting')->group(function () {
+Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounting', 'requires.feature:accounting'])->group(function () {
     // Chart of Accounts
     Route::resource('chart-of-accounts', ChartOfAccountsController::class);
     Route::get('chart-of-accounts/{chartOfAccount}/balance', [ChartOfAccountsController::class, 'getBalance'])->name('chart-of-accounts.balance');
