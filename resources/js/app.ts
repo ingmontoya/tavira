@@ -22,7 +22,8 @@ createInertiaApp({
             sendDefaultPii: true,
             integrations: [],
         });
-        app.use(plugin).use(ZiggyVue).use(i18n).mount(el);
+        // Pass Ziggy config from initial props to ensure correct base URL in K8s/staging
+        app.use(plugin).use(ZiggyVue, props.initialPage.props.ziggy).use(i18n).mount(el);
         return app;
     },
     progress: {
