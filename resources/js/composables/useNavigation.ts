@@ -245,6 +245,13 @@ export function useNavigation() {
                     ],
                 },
                 {
+                    title: 'Cuotas Extraordinarias',
+                    href: '/extraordinary-assessments',
+                    icon: TrendingUp,
+                    tourId: 'nav-extraordinary-assessments',
+                    visible: hasPermission('view_payments'),
+                },
+                {
                     title: 'Gastos',
                     icon: TrendingDown,
                     visible:
