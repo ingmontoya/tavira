@@ -13,6 +13,30 @@ data:
     # Optimized for Kubernetes sidecar architecture with proper proxy header handling
     # =============================================================================
 
+    # FastCGI Cache Configuration
+    # Cache path: 100MB in memory, 500MB on disk, 10min inactive timeout, 60min key validity
+    fastcgi_cache_path /var/cache/nginx/fastcgi
+                       levels=1:2
+                       keys_zone=laravel_cache:100m
+                       max_size=500m
+                       inactive=10m
+                       use_temp_path=off;
+
+    # Cache bypass conditions (don't cache these)
+    map $request_method $skip_cache {
+        default 0;
+        POST 1;
+        PUT 1;
+        DELETE 1;
+        PATCH 1;
+    }
+
+    map $http_cookie $skip_cache_cookie {
+        default 0;
+        ~*laravel_session 1;  # Don't cache if user has session cookie
+        ~*XSRF-TOKEN 1;       # Don't cache CSRF protected requests
+    }
+
     # Map proxy headers with fallback to nginx variables
     # This ensures we use Traefik's headers when available
     map $http_x_forwarded_proto $forwarded_proto {
@@ -53,9 +77,9 @@ data:
         # Disable server tokens
         server_tokens off;
 
-        # Logging (more verbose for staging)
+        # Logging (optimized for staging)
         access_log /var/log/nginx/access.log;
-        error_log /var/log/nginx/error.log debug;
+        error_log /var/log/nginx/error.log warn;
 
         # Client settings
         client_max_body_size 10M;
@@ -136,6 +160,31 @@ data:
 
             # Security
             fastcgi_hide_header X-Powered-By;
+
+            # FastCGI Cache Configuration
+            fastcgi_cache laravel_cache;
+            fastcgi_cache_key "$scheme$request_method$host$request_uri";
+            fastcgi_cache_valid 200 10m;       # Cache 200 responses for 10 minutes
+            fastcgi_cache_valid 301 302 1h;    # Cache redirects for 1 hour
+            fastcgi_cache_valid 404 1m;        # Cache 404s for 1 minute
+            fastcgi_cache_use_stale error timeout updating http_500 http_503;
+            fastcgi_cache_background_update on;
+            fastcgi_cache_lock on;
+            fastcgi_cache_lock_timeout 5s;
+
+            # Bypass cache for authenticated users and write operations
+            set $final_skip_cache 0;
+            if ($skip_cache) {
+                set $final_skip_cache 1;
+            }
+            if ($skip_cache_cookie) {
+                set $final_skip_cache 1;
+            }
+            fastcgi_cache_bypass $final_skip_cache;
+            fastcgi_no_cache $final_skip_cache;
+
+            # Add cache status header for debugging
+            add_header X-FastCGI-Cache $upstream_cache_status;
         }
 
         # Deny access to sensitive files

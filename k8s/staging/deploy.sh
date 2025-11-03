@@ -28,7 +28,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuración
-NAMESPACE="default"
+NAMESPACE="staging"
 STAGING_DIR="k8s/staging"
 
 # Funciones de utilidad
@@ -145,6 +145,10 @@ deploy_app() {
     kubectl apply -f "$STAGING_DIR/service.yaml"
     wait_for_pod "app=tavira-staging" 180
 
+    # HPA (Horizontal Pod Autoscaler)
+    print_info "Configurando auto-scaling..."
+    kubectl apply -f "$STAGING_DIR/hpa.yaml"
+
     # Queue worker
     print_info "Desplegando queue worker..."
     kubectl apply -f "$STAGING_DIR/queue-worker-deployment.yaml"
@@ -210,6 +214,9 @@ show_status() {
     echo -e "\n${YELLOW}🌐 Ingress:${NC}"
     kubectl get ingress tavira-ingress-staging -n "$NAMESPACE"
 
+    echo -e "\n${YELLOW}📈 HPA (Auto-scaling):${NC}"
+    kubectl get hpa -l environment=staging -n "$NAMESPACE"
+
     echo -e "\n${YELLOW}💾 PVCs:${NC}"
     kubectl get pvc -l environment=staging -n "$NAMESPACE"
 }
@@ -246,6 +253,7 @@ clean_staging() {
     kubectl delete -f "$STAGING_DIR/deployment.yaml" --ignore-not-found=true
     kubectl delete -f "$STAGING_DIR/queue-worker-deployment.yaml" --ignore-not-found=true
     kubectl delete -f "$STAGING_DIR/service.yaml" --ignore-not-found=true
+    kubectl delete -f "$STAGING_DIR/hpa.yaml" --ignore-not-found=true
     kubectl delete -f "$STAGING_DIR/postgres-deployment.yaml" --ignore-not-found=true
     kubectl delete -f "$STAGING_DIR/postgres-service.yaml" --ignore-not-found=true
     kubectl delete -f "$STAGING_DIR/redis-deployment.yaml" --ignore-not-found=true
