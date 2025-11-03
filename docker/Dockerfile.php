@@ -15,7 +15,24 @@ COPY . .
 # Build de producción con Vite
 RUN npm run build
 
-# Stage 2: PHP FPM base image
+# Stage 2: Build Landing Page (Nuxt SSG)
+FROM node:20-alpine AS landing-builder
+
+WORKDIR /app/landing
+
+# Copy landing package files
+COPY landing/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy landing source files
+COPY landing/ ./
+
+# Generate static site
+RUN npm run generate
+
+# Stage 3: PHP FPM base image
 FROM php:8.3-fpm-alpine AS base
 
 # Instalar dependencias del sistema necesarias para Laravel
@@ -54,6 +71,9 @@ COPY . .
 
 # Copiar los assets compilados del frontend desde el builder
 COPY --from=frontend-builder /app/public/build ./public/build
+
+# Copiar landing page static files
+COPY --from=landing-builder --chown=www-data:www-data /app/landing/.output/public ./public/landing
 
 # Crear directorios necesarios y ajustar permisos de Laravel
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views \
