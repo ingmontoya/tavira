@@ -70,6 +70,12 @@ data:
         "~^(www\.)?tavira\.com\.co$" 1;
     }
 
+    # Map to set root directory based on domain type
+    map $is_main_domain $document_root {
+        default "/var/www/html/public";
+        1 "/var/www/html/public/landing";
+    }
+
     server {
         listen 80;
         listen [::]:80;
@@ -130,27 +136,11 @@ data:
 
         # Main location - serve landing for main domain, Laravel for tenant subdomains
         location / {
-            # Set root based on domain
-            set $serve_root /var/www/html/public;
-            if ($is_main_domain = 1) {
-                set $serve_root /var/www/html/public/landing;
-            }
-            root $serve_root;
+            # Use root from map based on domain type
+            root $document_root;
 
-            # Try files, fallback to index.html for SPA (landing) or Laravel (tenant)
-            try_files $uri $uri/ @fallback;
-        }
-
-        # Fallback location
-        location @fallback {
-            # For main domain, serve index.html (Nuxt SPA)
-            if ($is_main_domain = 1) {
-                root /var/www/html/public/landing;
-                rewrite ^ /index.html break;
-            }
-            # For tenant domains, route to Laravel
-            root /var/www/html/public;
-            rewrite ^(.*)$ /index.php?$query_string last;
+            # Try to serve file directly, then directory, then fallback
+            try_files $uri $uri/ /index.html /index.php?$query_string;
         }
 
         # PHP-FPM processing
