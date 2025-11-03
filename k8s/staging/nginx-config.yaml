@@ -59,6 +59,17 @@ data:
         "" $remote_addr;
     }
 
+    # Detect if this is the main domain (landing) vs tenant subdomain
+    # Main domains: staging.tavira.com.co, tavira.com.co
+    # Tenant domains: *.staging.tavira.com.co, *.tavira.com.co
+    map $forwarded_host $is_main_domain {
+        default 0;
+        "staging.tavira.com.co" 1;
+        "tavira.com.co" 1;
+        "~^(www\.)?staging\.tavira\.com\.co$" 1;
+        "~^(www\.)?tavira\.com\.co$" 1;
+    }
+
     server {
         listen 80;
         listen [::]:80;
@@ -117,8 +128,16 @@ data:
             log_not_found off;
         }
 
-        # Main location - route everything through index.php
+        # Main location - serve landing for main domain, Laravel for tenant subdomains
         location / {
+            # If main domain (landing), serve Nuxt static files
+            if ($is_main_domain = 1) {
+                root /var/www/html/public/landing;
+                try_files $uri $uri/ /index.html =404;
+                break;
+            }
+
+            # Otherwise, route through Laravel (tenant subdomain)
             try_files $uri $uri/ /index.php?$query_string;
         }
 

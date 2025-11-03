@@ -75,7 +75,26 @@ RUN echo "Building with APP_URL: ${APP_URL}, BUILD_ID: ${BUILD_ID}" && \
     npm cache clean --force
 
 # =============================================================================
-# Stage 3: Production Image (PHP-FPM Only)
+# Stage 3: Build Landing Page (Nuxt SSG)
+# =============================================================================
+FROM node:20-alpine AS landing
+
+WORKDIR /app/landing
+
+# Copy landing package files
+COPY landing/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy landing source files
+COPY landing/ ./
+
+# Generate static site
+RUN npm run generate
+
+# =============================================================================
+# Stage 4: Production Image (PHP-FPM Only)
 # =============================================================================
 FROM php:8.3-fpm-alpine
 
@@ -100,6 +119,9 @@ COPY --from=vendor --chown=www-data:www-data /app ./
 
 # Copy built assets from frontend stage
 COPY --from=frontend --chown=www-data:www-data /app/public/build ./public/build
+
+# Copy landing page static files
+COPY --from=landing --chown=www-data:www-data /app/landing/.output/public ./public/landing
 
 # Copy entrypoint script
 COPY --chown=www-data:www-data docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
