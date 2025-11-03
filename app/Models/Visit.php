@@ -71,6 +71,11 @@ class Visit extends Model
         return $this->belongsTo(User::class, 'authorized_by');
     }
 
+    public function guests()
+    {
+        return $this->hasMany(VisitGuest::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
