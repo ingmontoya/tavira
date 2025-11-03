@@ -17,6 +17,5 @@ defineProps<Props>();
 <template>
     <img v-if="black" :src="type === 'iso' ? '/img/iso.png' : '/img/tavira_logo.png'" alt="Logo"
         :class="$attrs.className" />
-    <img v-else :src="type === 'iso' ? '/img/iso.png' : '/img/tavira_logo_blanco.png'" alt="Logo"
-        :class="$attrs.className" />
+    <img v-else :src="type === 'iso' ? '/img/iso.png' : '/img/tavira_logo.png'" alt="Logo" :class="$attrs.className" />
 </template>
