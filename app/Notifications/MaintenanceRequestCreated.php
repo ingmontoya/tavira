@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\GeneratesTenantUrls;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -9,7 +10,7 @@ use Illuminate\Notifications\Notification;
 
 class MaintenanceRequestCreated extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, GeneratesTenantUrls;
 
     public function __construct(
         private $maintenanceRequest
@@ -38,7 +39,7 @@ class MaintenanceRequestCreated extends Notification implements ShouldQueue
             ->line('**Prioridad:** '.$this->getPriorityLabel($this->maintenanceRequest->priority))
             ->line('**Categoría:** '.$this->maintenanceRequest->maintenanceCategory->name)
             ->line('**Solicitado por:** '.$this->maintenanceRequest->requestedBy->name)
-            ->action('Ver Solicitud', route('maintenance-requests.show', $this->maintenanceRequest->id))
+            ->action('Ver Solicitud', $this->tenantRoute('maintenance-requests.show', $this->maintenanceRequest->id))
             ->line('Por favor, revise y procese esta solicitud lo antes posible.');
     }
 
@@ -61,7 +62,7 @@ class MaintenanceRequestCreated extends Notification implements ShouldQueue
             'requested_by' => $this->maintenanceRequest->requestedBy->name,
             'created_at' => $this->maintenanceRequest->created_at,
             'message' => 'Nueva solicitud de mantenimiento: '.$this->maintenanceRequest->title,
-            'action_url' => route('maintenance-requests.show', $this->maintenanceRequest->id),
+            'action_url' => $this->tenantRoute('maintenance-requests.show', $this->maintenanceRequest->id),
         ];
     }
 

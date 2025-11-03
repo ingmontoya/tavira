@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\GeneratesTenantUrls;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -9,7 +10,7 @@ use Illuminate\Notifications\Notification;
 
 class AnnouncementPublished extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, GeneratesTenantUrls;
 
     public function __construct(
         private $announcement
@@ -33,7 +34,7 @@ class AnnouncementPublished extends Notification implements ShouldQueue
             ->when($this->announcement->requires_confirmation, function ($message) {
                 return $message->line('**Este comunicado requiere confirmación de lectura.**');
             })
-            ->action('Ver Comunicado', route('announcements.show', $this->announcement->id))
+            ->action('Ver Comunicado', $this->tenantRoute('announcements.show', $this->announcement->id))
             ->line('Por favor, revise el comunicado completo.');
     }
 
@@ -48,7 +49,7 @@ class AnnouncementPublished extends Notification implements ShouldQueue
             'published_by' => $this->announcement->user->name,
             'published_at' => $this->announcement->created_at,
             'message' => 'Nuevo comunicado: '.$this->announcement->title,
-            'action_url' => route('announcements.show', $this->announcement->id),
+            'action_url' => $this->tenantRoute('announcements.show', $this->announcement->id),
         ];
     }
 
