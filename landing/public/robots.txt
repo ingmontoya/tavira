@@ -1,0 +1,30 @@
+# robots.txt for Tavira Landing Page
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_nuxt/
+
+# Sitemap
+Sitemap: https://tavira.com.co/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Google bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Bing bot
+User-agent: Bingbot
+Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10

@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { router, usePage } from '@inertiajs/vue3';
-import { Bell, Check, X } from 'lucide-vue-next';
+import { Bell, Check, ChevronRight, X } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
 interface NotificationData {
@@ -195,8 +195,9 @@ onMounted(() => {
                         <div
                             v-for="notification in notifications.slice(0, 5)"
                             :key="notification.id"
-                            class="flex cursor-pointer items-start space-x-3 border-b p-4 last:border-b-0 hover:bg-gray-50"
-                            @click="navigateToNotification(notification)"
+                            class="group flex items-start space-x-3 border-b p-4 last:border-b-0 transition-colors hover:bg-gray-50"
+                            :class="{ 'cursor-pointer': notification.data.action_url }"
+                            @click="notification.data.action_url ? navigateToNotification(notification) : null"
                         >
                             <!-- Icon -->
                             <div class="flex-shrink-0">
@@ -215,14 +216,21 @@ onMounted(() => {
                                 </p>
                             </div>
 
+                            <!-- Action indicator -->
+                            <ChevronRight
+                                v-if="notification.data.action_url"
+                                class="h-4 w-4 flex-shrink-0 text-gray-400 transition-colors group-hover:text-gray-600"
+                            />
+
                             <!-- Mark as read button -->
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 @click.stop="markAsRead(notification.id)"
-                                class="opacity-0 transition-opacity group-hover:opacity-100"
+                                class="flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                title="Marcar como leída"
                             >
-                                <Check class="h-3 w-3" />
+                                <Check class="h-4 w-4 text-green-600" />
                             </Button>
                         </div>
                     </div>

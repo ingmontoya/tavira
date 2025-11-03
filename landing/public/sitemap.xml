@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+                           http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://tavira.com.co/</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://tavira.com.co/og-image.jpg</image:loc>
+      <image:title>Tavira - Software para Administración de Conjuntos Residenciales</image:title>
+      <image:caption>Plataforma integral para gestión de conjuntos residenciales en Colombia</image:caption>
+    </image:image>
+  </url>
+
+  <!-- Features Section -->
+  <url>
+    <loc>https://tavira.com.co/#features</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Security Section -->
+  <url>
+    <loc>https://tavira.com.co/#security</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Testimonials -->
+  <url>
+    <loc>https://tavira.com.co/#testimonials</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- How it Works -->
+  <url>
+    <loc>https://tavira.com.co/#how-it-works</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Register -->
+  <url>
+    <loc>https://tavira.com.co/register</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Login -->
+  <url>
+    <loc>https://tavira.com.co/login</loc>
+    <lastmod>2025-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>

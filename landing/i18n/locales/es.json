@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "features": "Características",
+    "security": "Seguridad",
+    "providers": "¿Eres Proveedor?",
+    "login": "Iniciar Sesión",
+    "register": "Regístrate",
+    "dashboard": "Dashboard"
+  },
+  "hero": {
+    "badge": "🔒 Seguridad Bancaria - Base de Datos Exclusiva",
+    "title": "Transforma la",
+    "titleHighlight": "Administración",
+    "titleEnd": "de tu Conjunto",
+    "description": "Plataforma integral para conjuntos residenciales en Colombia. Gestión financiera, comunicación, mantenimiento y más. Con seguridad bancaria y base de datos exclusiva para tu conjunto.",
+    "cta": "Regístrate",
+    "demo": "Ver Demostración"
+  },
+  "stats": {
+    "complexes": "Conjuntos",
+    "apartments": "Apartamentos",
+    "uptime": "Disponibilidad",
+    "support": "Soporte"
+  },
+  "dashboard": {
+    "monthlyIncome": "Ingresos Mensuales",
+    "apartments": "Apartamentos",
+    "delinquent": "Morosos",
+    "newInvoice": "Nueva Factura",
+    "paymentReceived": "Pago Recibido"
+  },
+  "features": {
+    "sectionTitle": "Todo lo que necesitas para una administración exitosa",
+    "sectionDescription": "Sistema integral diseñado específicamente para conjuntos residenciales en Colombia. Desde finanzas hasta comunicación, todo en una plataforma segura."
+  },
+  "benefits": {
+    "sectionTitle": "Resultados que Impactan",
+    "sectionDescription": "Más de 500 conjuntos en Colombia ya confían en Tavira. Con aplicaciones móviles nativas para iOS y Android, estos son los resultados reales que obtienen nuestros clientes."
+  },
+  "detailedFeatures": {
+    "sectionTitle": "Funcionalidades Detalladas para cada Usuario",
+    "sectionDescription": "Desde aplicaciones móviles nativas hasta gestión avanzada, cada usuario tiene herramientas específicas para sus necesidades."
+  },
+  "testimonials": {
+    "sectionTitle": "Lo que dicen nuestros Clientes",
+    "sectionDescription": "Administradores, concejales y residentes de toda Colombia confían en Tavira para transformar sus conjuntos."
+  },
+  "howItWorks": {
+    "sectionTitle": "Cómo",
+    "sectionTitleHighlight": "Funciona",
+    "sectionTitleEnd": "",
+    "sectionDescription": "Implementar Tavira en tu conjunto es rápido y sencillo. En menos de una semana estarás operando completamente.",
+    "step1": {
+      "title": "Regístrate y Configura",
+      "description": "Crea tu cuenta, configura tu conjunto y personaliza el sistema según tus necesidades específicas."
+    },
+    "step2": {
+      "title": "Migra tus Datos",
+      "description": "Nuestro equipo te ayuda a migrar toda tu información existente de forma segura y sin interrupciones."
+    },
+    "step3": {
+      "title": "Capacita y Opera",
+      "description": "Capacitamos a tu equipo y residentes. En pocos días estarás operando con máxima eficiencia."
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Transformar tu Conjunto?",
+    "description": "Únete a más de 500 conjuntos en Colombia que ya confían en Tavira. Comienza hoy mismo con nuestra prueba gratuita de 30 días.",
+    "register": "Regístrate",
+    "demo": "Solicitar Demostración Personalizada",
+    "benefits": {
+      "trial": "Prueba gratuita 30 días",
+      "noCard": "Sin tarjeta de crédito",
+      "support": "Soporte incluido",
+      "implementation": "Implementación gratuita"
+    }
+  },
+  "footer": {
+    "tagline": "Gestión simple, comunidades fuertes",
+    "description": "Plataforma líder en administración de conjuntos residenciales en Colombia. Transformamos la gestión inmobiliaria con tecnología de punta y seguridad bancaria.",
+    "email": "hola{'@'}tavira.com.co",
+    "phone": "+44 7447 313219",
+    "product": "Producto",
+    "solutions": "Soluciones",
+    "support": "Soporte",
+    "legal": "Legal",
+    "copyright": "© 2024 Tavira - Software para Administración de Conjuntos Residenciales en Colombia.",
+    "compliance": "Cumplimiento DIAN • Seguridad Bancaria • Base de Datos Exclusiva por Conjunto"
+  }
+}
