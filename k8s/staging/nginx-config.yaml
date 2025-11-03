@@ -130,21 +130,27 @@ data:
 
         # Main location - serve landing for main domain, Laravel for tenant subdomains
         location / {
-            # If main domain (landing), use the landing location
+            # Set root based on domain
+            set $serve_root /var/www/html/public;
             if ($is_main_domain = 1) {
-                rewrite ^ /__landing__$uri last;
+                set $serve_root /var/www/html/public/landing;
             }
+            root $serve_root;
 
-            # Otherwise, route through Laravel (tenant subdomain)
-            try_files $uri $uri/ /index.php?$query_string;
+            # Try files, fallback to index.html for SPA (landing) or Laravel (tenant)
+            try_files $uri $uri/ @fallback;
         }
 
-        # Internal location to serve Nuxt landing (SPA mode)
-        location ~ ^/__landing__(/.*)?$ {
-            internal;
-            root /var/www/html/public/landing;
-            rewrite ^/__landing__(/.*)$ $1 break;
-            try_files $uri $uri/ /index.html;
+        # Fallback location
+        location @fallback {
+            # For main domain, serve index.html (Nuxt SPA)
+            if ($is_main_domain = 1) {
+                root /var/www/html/public/landing;
+                rewrite ^ /index.html break;
+            }
+            # For tenant domains, route to Laravel
+            root /var/www/html/public;
+            rewrite ^(.*)$ /index.php?$query_string last;
         }
 
         # PHP-FPM processing
