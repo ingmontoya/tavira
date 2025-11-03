@@ -22,15 +22,15 @@
       >
         <div class="space-y-6">
           <div
-            class="inline-flex items-center space-x-2 rounded-full border border-secondary/30 bg-white/15 px-4 py-2 text-secondary backdrop-blur-sm"
+            class="inline-flex items-center space-x-2 rounded-full border-2 border-white/40 bg-white/25 px-4 py-2.5 text-white shadow-lg backdrop-blur-md"
           >
-            <span class="h-2 w-2 animate-pulse rounded-full bg-secondary"></span>
-            <span class="text-sm font-medium">{{ $t('hero.badge') }}</span>
+            <span class="h-2 w-2 animate-pulse rounded-full bg-white shadow-sm"></span>
+            <span class="text-sm font-semibold">{{ $t('hero.badge') }}</span>
           </div>
 
           <h1 class="font-brand text-4xl font-bold leading-tight text-white md:text-5xl lg:text-7xl">
             {{ $t('hero.title') }}
-            <span class="text-primary">
+            <span class="bg-gradient-to-r from-primary via-orange-400 to-primary bg-clip-text text-transparent">
               {{ $t('hero.titleHighlight') }}
             </span>
             <br />{{ $t('hero.titleEnd') }}
