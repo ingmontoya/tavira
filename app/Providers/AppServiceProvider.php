@@ -44,11 +44,9 @@ class AppServiceProvider extends ServiceProvider
         if (in_array(config('app.env'), ['production', 'staging'])) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
 
-            // Also set root URL to ensure consistency
-            $appUrl = config('app.url');
-            if ($appUrl && str_starts_with($appUrl, 'https://')) {
-                \Illuminate\Support\Facades\URL::forceRootUrl($appUrl);
-            }
+            // IMPORTANT: Do NOT force root URL here because it breaks tenant domains
+            // The TrustProxies middleware will correctly detect the domain from X-Forwarded-Host
+            // Only the HTTPS scheme needs to be forced
         }
 
         // Configurar mapa de morfos para relaciones polimórficas
