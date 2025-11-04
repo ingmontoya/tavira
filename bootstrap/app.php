@@ -50,8 +50,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        $middleware->web(prepend: [
+            TrustProxies::class, // Must be first to handle X-Forwarded-* headers
+        ]);
+
         $middleware->web(append: [
-            TrustProxies::class,
             HandleCors::class,
             VerifyCsrfToken::class,
             // SecurityHeadersMiddleware::class, // Temporarily disabled for testing
