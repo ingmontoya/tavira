@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-const { locale } = useI18n()
+const { locale, setLocale } = useI18n()
 
 const languages = [
   { code: 'es', name: 'ES', flag: '🇨🇴' },
@@ -25,19 +25,19 @@ const languages = [
 
 const currentLocale = computed(() => locale.value)
 
-const changeLanguage = (langCode: string) => {
-  locale.value = langCode
+const changeLanguage = async (langCode: string) => {
+  await setLocale(langCode)
   if (process.client) {
     localStorage.setItem('language', langCode)
   }
 }
 
 // Load saved language preference on mount
-onMounted(() => {
+onMounted(async () => {
   if (process.client) {
     const savedLang = localStorage.getItem('language')
     if (savedLang) {
-      locale.value = savedLang
+      await setLocale(savedLang)
     }
   }
 })

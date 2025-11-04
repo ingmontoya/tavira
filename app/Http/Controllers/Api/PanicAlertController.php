@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Events\PanicAlertTriggered;
+use App\Events\PanicAlertUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\PanicAlert;
 use Illuminate\Http\Request;
@@ -76,6 +77,12 @@ class PanicAlertController extends Controller
 
         $panicAlert->update(['status' => 'cancelled']);
 
+        // Broadcast the status update
+        event(new PanicAlertUpdated($panicAlert));
+
+        // Clear cache
+        \Cache::forget('panic_alerts:active:'.tenant('id'));
+
         return response()->json([
             'success' => true,
             'message' => 'Alerta de pánico cancelada',
@@ -108,6 +115,12 @@ class PanicAlertController extends Controller
         }
 
         $panicAlert->update(['status' => 'resolved']);
+
+        // Broadcast the status update
+        event(new PanicAlertUpdated($panicAlert));
+
+        // Clear cache
+        \Cache::forget('panic_alerts:active:'.tenant('id'));
 
         return response()->json([
             'success' => true,
@@ -160,6 +173,8 @@ class PanicAlertController extends Controller
 
     /**
      * Get active alerts for global banner.
+     * CACHED: This endpoint is now cached aggressively since real-time updates
+     * are handled via WebSockets. Only used as fallback/bootstrap.
      */
     public function active()
     {
@@ -171,11 +186,17 @@ class PanicAlertController extends Controller
             ]);
         }
 
-        $alerts = PanicAlert::with(['user', 'apartment'])
-            ->active()
-            ->orderBy('created_at', 'desc')
-            ->limit(10) // Limit to 10 most recent
-            ->get();
+        // Cache for 30 seconds to reduce DB load
+        // Real-time updates are handled via WebSockets (Laravel Reverb)
+        $cacheKey = 'panic_alerts:active:'.tenant('id');
+
+        $alerts = \Cache::remember($cacheKey, 30, function () {
+            return PanicAlert::with(['user', 'apartment'])
+                ->active()
+                ->orderBy('created_at', 'desc')
+                ->limit(10) // Limit to 10 most recent
+                ->get();
+        });
 
         $transformedAlerts = $alerts->map(function ($alert) {
             return [
@@ -218,6 +239,12 @@ class PanicAlertController extends Controller
         }
 
         $panicAlert->update(['status' => 'confirmed']);
+
+        // Broadcast the status update
+        event(new PanicAlertUpdated($panicAlert));
+
+        // Clear cache
+        \Cache::forget('panic_alerts:active:'.tenant('id'));
 
         return response()->json([
             'success' => true,
