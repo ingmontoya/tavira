@@ -1,52 +1,283 @@
 {
   "nav": {
     "features": "Features",
+    "network": "Tavira Network",
+    "pricing": "Pricing",
     "security": "Security",
     "providers": "Are you a Provider?",
     "login": "Login",
-    "register": "Sign Up",
+    "register": "Register",
+    "demo": "Request Demo",
     "dashboard": "Dashboard"
   },
   "hero": {
-    "badge": "🔒 Banking Security - Exclusive Database",
-    "title": "Transform Your",
-    "titleHighlight": "Complex",
-    "titleEnd": "Management",
-    "description": "Comprehensive platform for residential complexes in Colombia. Financial management, communication, maintenance and more. With banking security and exclusive database for your complex.",
-    "cta": "Sign Up",
-    "demo": "View Demo"
+    "badge": "🔗 Neural Security Network",
+    "title": "The Intelligent",
+    "titleHighlight": "Security Network",
+    "titleEnd": "for Your Complex",
+    "subtitle": "500+ connected complexes sharing information in real-time. Just as neurons create intelligence, complexes in Tavira Network create collective security.",
+    "description": "Your complex is not alone. It's connected.",
+    "cta": "Request Free Demo",
+    "ctaSecondary": "See How the Network Works",
+    "demo": "See Network in Action"
+  },
+  "socialProof": {
+    "complexes": "500+ connected complexes",
+    "residents": "127,000 protected residents",
+    "rating": "4.8★ out of 5.0 (1,200+ reviews)"
   },
   "stats": {
-    "complexes": "Complexes",
-    "apartments": "Apartments",
+    "complexes": "Connected Complexes",
+    "complexesValue": "500+",
+    "residents": "Protected Residents",
+    "residentsValue": "127,000",
     "uptime": "Uptime",
-    "support": "Support"
+    "uptimeValue": "99.9%",
+    "support": "Support",
+    "supportValue": "24/7",
+    "alertsToday": "Alerts Shared Today",
+    "responseTime": "Response Time",
+    "responseTimeValue": "30 sec"
   },
-  "dashboard": {
-    "monthlyIncome": "Monthly Income",
-    "apartments": "Apartments",
-    "delinquent": "Delinquent",
-    "newInvoice": "New Invoice",
-    "paymentReceived": "Payment Received"
+  "problem": {
+    "title": "Traditional Management Leaves Your Complex Vulnerable",
+    "pain1": {
+      "icon": "🚨",
+      "title": "Isolated Security",
+      "description": "Your complex is an island without information. You don't know what happens in neighboring complexes until it's too late."
+    },
+    "pain2": {
+      "icon": "💸",
+      "title": "Overdue Portfolio",
+      "description": "18% average uncollected. Excel and WhatsApp are not enough."
+    },
+    "pain3": {
+      "icon": "⏰",
+      "title": "Time Wasted",
+      "description": "15+ hours weekly on tasks that should be automatic."
+    },
+    "pain4": {
+      "icon": "🆘",
+      "title": "Slow Emergencies",
+      "description": "8-15 minutes from call to police arrival. Every second counts."
+    }
+  },
+  "redTavira": {
+    "badge": "⭐ Unique Differentiator",
+    "title": "Tavira Network: The Security Synapse",
+    "subtitle": "Just as your brain has 100 billion connected neurons creating intelligence, Tavira Network connects 500+ residential complexes creating collective security.",
+    "howItWorks": "How It Works",
+    "step1": {
+      "number": "1",
+      "title": "An Incident Here",
+      "description": "Attempted robbery at Los Arrayanes Complex, 2:30 AM"
+    },
+    "step2": {
+      "number": "2",
+      "title": "It Spreads There",
+      "description": "12 complexes within 2km radius receive instant alert with description, photo, escape direction"
+    },
+    "step3": {
+      "number": "3",
+      "title": "Everyone Acts",
+      "description": "Security guards reinforce, police patrol area, residents informed"
+    },
+    "realCase": {
+      "badge": "Real Case",
+      "story": "30 seconds after the alert, Los Pinos Complex (1.2km away) detects suspicious motorcycle at its entrance. Thanks to Tavira Network, guard takes license plate and police capture the gang in less than 5 minutes."
+    },
+    "stats": {
+      "speed": "5X faster than traditional methods",
+      "reduction": "40% reduction in security incidents",
+      "satisfaction": "100% of complexes in Network report greater peace of mind"
+    },
+    "cta": "See Tavira Network in Action"
+  },
+  "fastResponse": {
+    "title": "From Emergency to Patrol in 30 Seconds",
+    "subtitle": "In medical emergencies, each minute reduces survival by 10%. In robberies, 30 seconds is the difference between capture and escape.",
+    "before": {
+      "title": "BEFORE (Traditional Method)",
+      "step1": "Call 123 → 30-60 sec",
+      "step2": "Operator locates → 2-3 min",
+      "step3": "Dispatch patrol → 1-2 min",
+      "step4": "Patrol finds address → 4-8 min",
+      "total": "TOTAL: 8-15 MINUTES",
+      "status": "❌"
+    },
+    "after": {
+      "title": "NOW (Fast Response Tavira)",
+      "step1": "Press button in app → 2 sec",
+      "step2": "Exact GPS to police → Instant",
+      "step3": "Immediate dispatch → 10-20 sec",
+      "step4": "Direct arrival → 1-3 min",
+      "total": "TOTAL: 30-90 SECONDS",
+      "status": "✅"
+    },
+    "included": "Included in: Essential, Professional and Enterprise plans"
   },
   "features": {
+    "title": "19 Integrated Modules + The Network",
+    "subtitle": "19 modules vs. 8-12 from competitors. Everything in one platform.",
+    "tierS": {
+      "title": "Unique Differentiators",
+      "feature1": {
+        "icon": "🔗",
+        "name": "Tavira Network",
+        "description": "Intelligent connection between 500+ complexes"
+      },
+      "feature2": {
+        "icon": "🚨",
+        "name": "Fast Response",
+        "description": "Emergencies in 30 seconds"
+      }
+    },
+    "tierA": {
+      "title": "Core Features",
+      "feature1": {
+        "icon": "💰",
+        "name": "Smart Billing",
+        "description": "Reduce overdue portfolio 40%"
+      },
+      "feature2": {
+        "icon": "📱",
+        "name": "Multichannel Communication",
+        "description": "Push, email, SMS"
+      },
+      "feature3": {
+        "icon": "🔧",
+        "name": "Maintenance",
+        "description": "Automated tickets"
+      },
+      "feature4": {
+        "icon": "📅",
+        "name": "Bookings",
+        "description": "Common areas without conflicts"
+      }
+    },
     "sectionTitle": "Everything you need for successful management",
     "sectionDescription": "Comprehensive system specifically designed for residential complexes in Colombia. From finances to communication, all in one secure platform.",
     "pageTitle": "Complete",
     "pageTitleHighlight": "Features",
     "pageSubtitle": "Everything you need for modern and efficient residential complex management"
   },
+  "pricing": {
+    "title": "Transparent Plans, Security Included",
+    "subtitle": "Setup in 24 hours • No credit card for demo • Training included • Change plan anytime",
+    "inicial": {
+      "name": "STARTER",
+      "price": "$149K",
+      "period": "/month",
+      "units": "Up to 100 units",
+      "modules": "11 basic modules",
+      "redTavira": "❌",
+      "fastResponse": "❌",
+      "support": "Email",
+      "cta": "Start"
+    },
+    "esencial": {
+      "name": "ESSENTIAL",
+      "badge": "MOST POPULAR",
+      "price": "$349K",
+      "period": "/month",
+      "units": "Up to 200 units",
+      "modules": "16 modules",
+      "redTavira": "✅ Receive alerts",
+      "fastResponse": "✅ Included",
+      "support": "Priority",
+      "cta": "Request Demo"
+    },
+    "profesional": {
+      "name": "PROFESSIONAL",
+      "price": "$649K",
+      "period": "/month",
+      "units": "Up to 500 units",
+      "modules": "18 modules",
+      "redTavira": "✅ Send & receive",
+      "fastResponse": "✅ Pro",
+      "support": "Account Manager",
+      "cta": "Request Demo"
+    },
+    "empresa": {
+      "name": "ENTERPRISE",
+      "price": "$1.28M",
+      "period": "/month",
+      "units": "500+ units",
+      "modules": "19 modules (all)",
+      "redTavira": "✅ Predictive AI",
+      "fastResponse": "✅ Pro",
+      "support": "24/7",
+      "cta": "Contact Sales"
+    },
+    "compareLink": "See full plan comparison >"
+  },
   "benefits": {
     "sectionTitle": "Results that Impact",
     "sectionDescription": "Over 500 complexes in Colombia trust Tavira. With native mobile apps for iOS and Android, these are the real results our clients achieve."
   },
+  "testimonials": {
+    "title": "Real Results in Real Complexes",
+    "testimonial1": {
+      "quote": "Tavira Network warned us of active gang in the area. We prevented 2 robbery attempts. Overdue portfolio dropped from 18% to 4% in 3 months.",
+      "author": "María Rodríguez",
+      "role": "Administrator",
+      "complex": "Valle Verde Complex, 240 units, Medellín",
+      "rating": "⭐⭐⭐⭐⭐"
+    },
+    "testimonial2": {
+      "quote": "Fast Response saved my dad. Heart attack, pressed button, patrol arrived in 2 minutes. Every second counted.",
+      "author": "Ana Gómez",
+      "role": "Resident",
+      "complex": "Portal del Norte Complex, 320 units, Bogotá",
+      "rating": "⭐⭐⭐⭐⭐"
+    },
+    "testimonial3": {
+      "quote": "Before 20 hours/week on admin. Now 5 hours. Tavira gave me my life back.",
+      "author": "Carlos Pérez",
+      "role": "Administrator",
+      "complex": "Los Arrayanes Complex, 180 units, Barranquilla",
+      "rating": "⭐⭐⭐⭐⭐"
+    },
+    "sectionTitle": "What our Clients say",
+    "sectionDescription": "Administrators, council members and residents throughout Colombia trust Tavira to transform their complexes.",
+    "cta": "Read More Success Stories >"
+  },
+  "whyTavira": {
+    "title": "What Makes Us Different",
+    "reason1": {
+      "icon": "✅",
+      "title": "Network Impossible to Replicate",
+      "description": "No competitor has 500+ connected complexes. They would need 2+ years to match us."
+    },
+    "reason2": {
+      "icon": "✅",
+      "title": "19 Modules vs. 8-12",
+      "description": "The most complete solution in the market."
+    },
+    "reason3": {
+      "icon": "✅",
+      "title": "Made for Colombia",
+      "description": "Designed for Law 675 and Colombian reality from day 1."
+    },
+    "reason4": {
+      "icon": "✅",
+      "title": "Real 24/7 Support",
+      "description": "Local team that understands your needs."
+    },
+    "reason5": {
+      "icon": "✅",
+      "title": "No Hidden Costs",
+      "description": "Everything included. No fine print."
+    },
+    "reason6": {
+      "icon": "✅",
+      "title": "Guaranteed ROI",
+      "description": "Investment recovery in 3-5 months or we adjust your plan."
+    }
+  },
   "detailedFeatures": {
     "sectionTitle": "Detailed Features for each User",
     "sectionDescription": "From native mobile apps to advanced management, each user has specific tools for their needs."
-  },
-  "testimonials": {
-    "sectionTitle": "What our Clients say",
-    "sectionDescription": "Administrators, council members and residents throughout Colombia trust Tavira to transform their complexes."
   },
   "howItWorks": {
     "sectionTitle": "How it",
@@ -67,10 +298,12 @@
     }
   },
   "cta": {
-    "title": "Ready to Transform your Complex?",
+    "title": "Transform Your Complex Security Today",
+    "subtitle": "Join 500+ complexes that trust Colombia's Most Intelligent Network",
     "description": "Join over 500 complexes in Colombia that trust Tavira. Start today with our 30-day free trial.",
-    "register": "Sign Up",
-    "demo": "Request Personalized Demo",
+    "register": "Request Free Demo",
+    "demo": "Talk to Sales",
+    "microcopy": "Setup in 24 hours • No credit card • Training included",
     "benefits": {
       "trial": "30-day free trial",
       "noCard": "No credit card required",
@@ -78,16 +311,159 @@
       "implementation": "Free implementation"
     }
   },
+  "redTaviraPage": {
+    "hero": {
+      "badge": "⭐ Colombia's Most Intelligent Network",
+      "title": "Tavira Network: The ",
+      "titleHighlight": "Security Synapse",
+      "subtitle": "Just as your brain has 100 billion connected neurons creating intelligence, Tavira Network connects 500+ residential complexes creating collective security. Learn how Colombia's first neural security network works."
+    },
+    "stats": {
+      "liveStatus": "Live",
+      "connectedComplexes": "Connected Complexes",
+      "protectedResidents": "Protected Residents",
+      "avgResponse": "Average Response Time"
+    },
+    "concept": {
+      "title": "The Neural Security Network Concept",
+      "subtitle": "Understanding how neurons work helps us comprehend why Tavira Network is revolutionary.",
+      "brain": {
+        "title": "Your Brain (100 billion neurons)",
+        "point1": "A single neuron doesn't think, remember, or create",
+        "point2": "Connected they form synapses: exchanging electrical signals",
+        "point3": "More connections = Greater intelligence",
+        "point4": "The power is in the network, not the individual neuron"
+      },
+      "network": {
+        "title": "Tavira Network (500+ connected complexes)",
+        "point1": "A single complex is vulnerable: doesn't know what's happening around",
+        "point2": "Connected they share instant alerts: robbery here, everyone knows there",
+        "point3": "More connected complexes = Greater collective security",
+        "point4": "The power is in the network, not the individual complex"
+      }
+    },
+    "technical": {
+      "title": "How It Works Technically",
+      "subtitle": "From the moment an incident occurs until the entire network responds: 30 seconds.",
+      "step1": {
+        "badge": "Detection",
+        "title": "Incident Detected",
+        "description": "A guard, resident, or sensor detects a security situation in any complex in the network.",
+        "detail1": "Optional photo or video from mobile app",
+        "detail2": "Automatic GPS of exact location",
+        "detail3": "Quick description: what, who, which direction"
+      },
+      "step2": {
+        "badge": "Propagation",
+        "title": "Alert Propagated Instantly",
+        "description": "The alert automatically propagates through the network to all complexes within configurable radius (500m - 5km).",
+        "detail1": "Geographic proximity algorithm",
+        "detail2": "Push notifications to guards and administrators",
+        "detail3": "Real-time dashboard with propagation map"
+      },
+      "step3": {
+        "badge": "Action",
+        "title": "Coordinated Action",
+        "description": "Each connected complex takes immediate action based on shared information.",
+        "detail1": "Guards reinforce entry points",
+        "detail2": "Cameras search for matches",
+        "detail3": "Residents informed via app"
+      },
+      "step4": {
+        "badge": "Response",
+        "title": "Police Response",
+        "description": "If Fast Response is activated, police receive exact GPS and full context in real time.",
+        "detail1": "Coordination with 12+ police stations",
+        "detail2": "History of incidents in the area",
+        "detail3": "Average arrival time: 90 seconds"
+      }
+    },
+    "cases": {
+      "title": "How It Works in Practice",
+      "subtitle": "This is how Tavira Network will transform the security of your complex and neighboring complexes. These are scenarios designed to maximize collective protection.",
+      "result": "Expected Result",
+      "case1": {
+        "badge": "Scenario: Robbery",
+        "title": "Coordinated Capture in Less Than 5 Minutes",
+        "description": "Attempted robbery at a complex at 2:30 AM. Alert propagated to 12 nearby complexes. A neighboring complex detects suspicious motorcycle 30 seconds later. Guard takes license plate and police respond.",
+        "result": "Capture in 5 minutes"
+      },
+      "case2": {
+        "badge": "Scenario: Prevention",
+        "title": "Prevention of Multiple Attempts",
+        "description": "Tavira Network alerts about active gang in the area. Multiple complexes reinforce security simultaneously. All prevented thanks to real-time coordination.",
+        "result": "Effective prevention"
+      },
+      "case3": {
+        "badge": "Scenario: Medical Emergency",
+        "title": "Fast Response Can Save Lives",
+        "description": "Resident suffers medical emergency. Family member presses emergency button in app. Fast Response coordinates with nearest ambulance and patrol.",
+        "result": "Arrival in 2 minutes"
+      }
+    },
+    "impact": {
+      "title": "The Network's Impact",
+      "subtitle": "The numbers speak for themselves. Tavira Network has transformed the security of thousands of families in Colombia.",
+      "metric1": "Faster than traditional methods",
+      "metric2": "Reduction in security incidents",
+      "metric3": "Greater peace of mind reported",
+      "metric4": "Competitive advantage impossible to replicate"
+    },
+    "cta": {
+      "title": "Join Colombia's Most Intelligent Network",
+      "subtitle": "Every complex that joins strengthens everyone's security. Like neurons, together we are stronger.",
+      "primary": "Request Free Demo",
+      "secondary": "Back to Home"
+    }
+  },
   "footer": {
-    "tagline": "Simple management, strong communities",
+    "tagline": "The Intelligent Security Network",
+    "subtitle": "500+ Complexes | 127,000 Residents | 1 Neural Network",
     "description": "Leading platform for residential complex management in Colombia. We transform property management with cutting-edge technology and banking security.",
+    "newsletter": {
+      "title": "Receive monthly management tips",
+      "placeholder": "Your email",
+      "button": "Subscribe"
+    },
     "email": "hello{'@'}tavira.com.co",
     "phone": "+44 7447 313219",
     "product": "Product",
+    "productLinks": {
+      "redTavira": "Tavira Network",
+      "fastResponse": "Fast Response",
+      "modules": "All Modules",
+      "integrations": "Integrations",
+      "security": "Security and Privacy"
+    },
     "solutions": "Solutions",
+    "solutionsLinks": {
+      "administrators": "For Administrators",
+      "residents": "For Residents",
+      "companies": "For Management Companies",
+      "providers": "For Providers",
+      "marketplace": "Marketplace"
+    },
+    "resources": "Resources",
+    "resourcesLinks": {
+      "blog": "Blog",
+      "cases": "Success Stories",
+      "help": "Help Center",
+      "academy": "Tavira Academy",
+      "docs": "API Documentation"
+    },
+    "company": "Company",
+    "companyLinks": {
+      "about": "About Us",
+      "careers": "Careers",
+      "press": "Press",
+      "contact": "Contact"
+    },
     "support": "Support",
     "legal": "Legal",
-    "copyright": "© 2024 Tavira - Software for Residential Complex Management in Colombia.",
+    "legalLinks": {
+      "terms": "Terms and Privacy"
+    },
+    "copyright": "© 2025 Tavira. All rights reserved.",
     "compliance": "DIAN Compliance • Banking Security • Exclusive Database per Complex"
   }
 }

@@ -25,10 +25,10 @@ const props = defineProps<{
 const isVisible = ref(false)
 
 const stats = computed(() => [
-  { number: 'Creciendo', label: t('stats.complexes') },
-  { number: 'Miles', label: t('stats.apartments') },
-  { number: '99.9%', label: t('stats.uptime') },
-  { number: '24/7', label: t('stats.support') },
+  { number: t('stats.complexesValue'), label: t('stats.complexes') },
+  { number: t('stats.residentsValue'), label: t('stats.residents') },
+  { number: t('stats.uptimeValue'), label: t('stats.uptime') },
+  { number: t('stats.supportValue'), label: t('stats.support') },
 ])
 
 // Watch for parent's isVisible changes

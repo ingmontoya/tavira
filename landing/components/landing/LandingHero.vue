@@ -33,10 +33,14 @@
             <span class="bg-gradient-to-r from-primary via-orange-400 to-primary bg-clip-text text-transparent">
               {{ $t('hero.titleHighlight') }}
             </span>
-            <br />{{ $t('hero.titleEnd') }}
+            {{ $t('hero.titleEnd') }}
           </h1>
 
-          <p class="max-w-lg text-lg leading-relaxed text-white/85 md:text-xl">
+          <p class="max-w-lg text-lg leading-relaxed text-white/90 md:text-xl">
+            {{ $t('hero.subtitle') }}
+          </p>
+
+          <p class="max-w-lg text-base font-semibold leading-relaxed text-white md:text-lg">
             {{ $t('hero.description') }}
           </p>
         </div>
@@ -59,11 +63,28 @@
             </span>
           </a>
 
-          <button
-            class="flex-shrink-0 rounded-xl border-2 border-secondary/50 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-secondary/70 hover:bg-secondary/20 md:px-8 md:py-4 md:text-lg"
+          <NuxtLink
+            to="/red-tavira"
+            class="flex-shrink-0 rounded-xl border-2 border-secondary/50 px-4 py-3 text-center text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-secondary/70 hover:bg-secondary/20 md:px-8 md:py-4 md:text-lg"
           >
-            {{ $t('hero.demo') }}
-          </button>
+            {{ $t('hero.ctaSecondary') }}
+          </NuxtLink>
+        </div>
+
+        <!-- Social Proof -->
+        <div class="flex flex-wrap items-center gap-6 pt-4 text-sm text-white/80 md:text-base">
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">🏢</span>
+            <span>{{ $t('socialProof.complexes') }}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">👥</span>
+            <span>{{ $t('socialProof.residents') }}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl">⭐</span>
+            <span>{{ $t('socialProof.rating') }}</span>
+          </div>
         </div>
 
         <!-- Stats -->

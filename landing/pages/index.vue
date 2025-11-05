@@ -3,17 +3,29 @@
     <!-- Hero Section -->
     <LandingHero />
 
+    <!-- Problem Section -->
+    <LandingProblem />
+
+    <!-- Red Tavira Section - Main Differentiator -->
+    <LandingRedTavira />
+
+    <!-- Fast Response Section -->
+    <LandingFastResponse />
+
     <!-- Features Overview Section -->
     <LandingFeatures />
 
     <!-- Platform Benefits Section -->
     <LandingBenefits />
 
-    <!-- Detailed Features Section -->
-    <LandingDetailedFeatures />
-
     <!-- Testimonials Section -->
     <LandingTestimonials />
+
+    <!-- Why Tavira Section -->
+    <LandingWhyTavira />
+
+    <!-- Detailed Features Section -->
+    <LandingDetailedFeatures />
 
     <!-- How it Works Section -->
     <LandingHowItWorks />
@@ -30,20 +42,20 @@ const canonicalUrl = computed(() => 'https://tavira.com.co/')
 
 const metaTitle = computed(() =>
   locale.value === 'es'
-    ? 'Tavira - Software Líder para Administración de Conjuntos Residenciales en Colombia | Apps Móviles + Seguridad Bancaria'
-    : 'Tavira - Leading Software for Residential Complex Management in Colombia | Mobile Apps + Banking Security',
+    ? 'Tavira - La Red de Seguridad Inteligente para Tu Conjunto | 500+ Conjuntos Conectados'
+    : 'Tavira - The Intelligent Security Network for Your Complex | 500+ Connected Complexes',
 )
 
 const metaDescription = computed(() =>
   locale.value === 'es'
-    ? 'Software líder para administración de conjuntos residenciales en Colombia. Apps móviles iOS/Android, portería digital, citófonos, pases QR, facturación DIAN, contabilidad, marketplace comunitario. Base de datos exclusiva.'
-    : 'Leading software for residential complex management in Colombia. iOS/Android mobile apps, digital concierge, intercoms, QR passes, DIAN electronic invoicing, accounting, community marketplace. Exclusive database.',
+    ? '500+ conjuntos conectados compartiendo información en tiempo real. Red Tavira crea seguridad colectiva. Respuesta Rápida en 30 segundos. Apps iOS/Android, gestión completa y seguridad bancaria.'
+    : '500+ connected complexes sharing information in real-time. Tavira Network creates collective security. Fast Response in 30 seconds. iOS/Android apps, complete management and banking security.',
 )
 
 const metaKeywords = computed(() =>
   locale.value === 'es'
-    ? 'software administración conjuntos residenciales Colombia, aplicación móvil portería, citófonos digitales, pases QR temporal, facturación electrónica DIAN, contabilidad conjuntos, marketplace comunitario, sistema PQR digital, control acceso vehicular'
-    : 'residential complex management software Colombia, mobile concierge app, digital intercoms, temporary QR passes, DIAN electronic invoicing, condominium accounting, community marketplace, digital PQR system, vehicle access control',
+    ? 'red tavira, red neuronal seguridad, conjuntos conectados colombia, seguridad colectiva, respuesta rápida emergencias, software administración conjuntos, red inteligente seguridad, alertas tiempo real, 500 conjuntos conectados'
+    : 'tavira network, neural security network, connected complexes colombia, collective security, fast emergency response, residential complex software, intelligent security network, real-time alerts, 500 connected complexes',
 )
 
 // Structured Data - Organization
@@ -56,8 +68,8 @@ const organizationSchema = computed(() => ({
   logo: 'https://tavira.com.co/tavira_logo.svg',
   description:
     locale.value === 'es'
-      ? 'Plataforma líder en administración de conjuntos residenciales en Colombia con apps móviles, seguridad bancaria y base de datos exclusiva.'
-      : 'Leading platform for residential complex management in Colombia with mobile apps, banking security and exclusive database.',
+      ? 'La Red de Seguridad Inteligente con 500+ conjuntos conectados en Colombia. Red Tavira crea seguridad colectiva compartiendo información en tiempo real.'
+      : 'The Intelligent Security Network with 500+ connected complexes in Colombia. Tavira Network creates collective security by sharing information in real-time.',
   address: {
     '@type': 'PostalAddress',
     addressCountry: 'CO',
@@ -97,17 +109,17 @@ const softwareSchema = computed(() => ({
   },
   description:
     locale.value === 'es'
-      ? 'Software integral para administración de conjuntos residenciales en Colombia. Gestión financiera con facturación DIAN, contabilidad doble partida, apps móviles nativas iOS/Android, portería digital, comunicación institucional y marketplace comunitario.'
-      : 'Comprehensive software for residential complex management in Colombia. Financial management with DIAN invoicing, double-entry accounting, native iOS/Android mobile apps, digital concierge, institutional communication and community marketplace.',
+      ? 'La Red de Seguridad Inteligente para conjuntos residenciales en Colombia. 500+ conjuntos conectados compartiendo información en tiempo real. Red Tavira crea seguridad colectiva, Respuesta Rápida en 30 segundos, apps móviles iOS/Android y gestión completa.'
+      : 'The Intelligent Security Network for residential complexes in Colombia. 500+ connected complexes sharing information in real-time. Tavira Network creates collective security, Fast Response in 30 seconds, iOS/Android mobile apps and complete management.',
   featureList: [
-    locale.value === 'es' ? 'Gestión Financiera y Contabilidad' : 'Financial Management and Accounting',
-    locale.value === 'es' ? 'Facturación Electrónica DIAN' : 'DIAN Electronic Invoicing',
+    locale.value === 'es' ? 'Red Tavira - Red Neuronal de Seguridad' : 'Tavira Network - Neural Security Network',
+    locale.value === 'es' ? 'Respuesta Rápida en 30 Segundos' : 'Fast Response in 30 Seconds',
+    locale.value === 'es' ? '500+ Conjuntos Conectados' : '500+ Connected Complexes',
+    locale.value === 'es' ? 'Alertas en Tiempo Real' : 'Real-Time Alerts',
     locale.value === 'es' ? 'Apps Móviles iOS y Android' : 'iOS and Android Mobile Apps',
+    locale.value === 'es' ? 'Gestión Financiera y Contabilidad' : 'Financial Management and Accounting',
     locale.value === 'es' ? 'Portería Digital con Citófonos' : 'Digital Concierge with Intercoms',
-    locale.value === 'es' ? 'Sistema de Comunicación Institucional' : 'Institutional Communication System',
     locale.value === 'es' ? 'Marketplace Comunitario' : 'Community Marketplace',
-    locale.value === 'es' ? 'Control de Acceso y Pases QR' : 'Access Control and QR Passes',
-    locale.value === 'es' ? 'Gestión de Mantenimiento' : 'Maintenance Management',
   ],
 }))
 
