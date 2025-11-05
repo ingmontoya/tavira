@@ -96,10 +96,11 @@ jobs:
         run: |
           echo "🔄 Updating staging app deployment to ${{ steps.version.outputs.tag }}..."
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+            setup=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             -n ${{ env.K8S_NAMESPACE }} \
             --record
-          echo "✅ Main app deployment updated"
+          echo "✅ Main app deployment updated (init container + php-fpm)"
 
       # 🔟 Update queue worker deployment
       - name: Update Kubernetes deployment (queue worker)
