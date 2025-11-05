@@ -45,10 +45,11 @@
                     class="rounded-lg px-4 py-2 font-medium text-white/80 transition-colors duration-200 hover:bg-white/10 hover:text-secondary">
                     {{ $t('nav.login') }}
                 </a>
-                <a href="https://tavira.com.co/register"
+                <!-- Botón de registro oculto - formulario de leads al final de la página -->
+                <!-- <a href="https://tavira.com.co/register"
                     class="inline-flex flex-shrink-0 items-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-primary-700 hover:shadow-xl sm:px-6 sm:py-3 sm:text-base">
                     {{ $t('nav.register') }}
-                </a>
+                </a> -->
             </div>
         </div>
 
@@ -76,10 +77,11 @@
                         class="block rounded-lg px-4 py-2 text-center text-white/80 transition-colors hover:bg-white/10">
                         {{ $t('nav.login') }}
                     </a>
-                    <a href="https://tavira.com.co/register"
+                    <!-- Botón de registro oculto - formulario de leads al final de la página -->
+                    <!-- <a href="https://tavira.com.co/register"
                         class="block rounded-lg bg-primary px-4 py-2 text-center font-medium text-white">
                         {{ $t('nav.register') }}
-                    </a>
+                    </a> -->
                 </div>
             </div>
         </div>
