@@ -30,8 +30,8 @@
     <!-- How it Works Section -->
     <LandingHowItWorks />
 
-    <!-- CTA Section -->
-    <LandingCTA />
+    <!-- Lead Form Section -->
+    <LandingLeadForm />
   </div>
 </template>
 

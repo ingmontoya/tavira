@@ -311,6 +311,16 @@
       "implementation": "Implementación gratuita"
     }
   },
+  "leadForm": {
+    "title": "Solicita tu Demo Gratuita",
+    "description": "Completa el formulario y uno de nuestros expertos te contactará para mostrarte cómo Tavira puede transformar la administración de tu conjunto.",
+    "benefits": {
+      "trial": "Prueba gratuita 30 días",
+      "noCard": "Sin tarjeta de crédito",
+      "support": "Soporte incluido",
+      "implementation": "Implementación gratuita"
+    }
+  },
   "redTaviraPage": {
     "hero": {
       "badge": "⭐ La Red Más Inteligente de Colombia",

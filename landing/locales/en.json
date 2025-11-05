@@ -311,6 +311,16 @@
       "implementation": "Free implementation"
     }
   },
+  "leadForm": {
+    "title": "Request Your Free Demo",
+    "description": "Fill out the form and one of our experts will contact you to show you how Tavira can transform your complex management.",
+    "benefits": {
+      "trial": "30-day free trial",
+      "noCard": "No credit card required",
+      "support": "Support included",
+      "implementation": "Free implementation"
+    }
+  },
   "redTaviraPage": {
     "hero": {
       "badge": "⭐ Colombia's Most Intelligent Network",

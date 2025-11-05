@@ -46,7 +46,8 @@
         </div>
 
         <div class="flex flex-col gap-4 sm:flex-row">
-          <a
+          <!-- Botón de registro oculto - formulario de leads al final de la página -->
+          <!-- <a
             href="https://tavira.com.co/register"
             class="group flex-shrink-0 transform rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:bg-primary-700 hover:shadow-primary/40 md:px-8 md:py-4 md:text-lg"
           >
@@ -61,7 +62,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </span>
-          </a>
+          </a> -->
 
           <NuxtLink
             to="/red-tavira"
