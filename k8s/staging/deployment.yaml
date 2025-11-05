@@ -172,6 +172,44 @@ spec:
         - name: SESSION_SAME_SITE
           value: "lax"
 
+        # Reverb WebSocket Configuration
+        - name: BROADCAST_CONNECTION
+          value: reverb
+        - name: REVERB_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_ID
+        - name: REVERB_APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_KEY
+        - name: REVERB_APP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_SECRET
+        - name: REVERB_HOST
+          value: staging.tavira.com.co
+        - name: REVERB_PORT
+          value: "443"
+        - name: REVERB_SCHEME
+          value: https
+
+        # Vite Frontend Variables (available during build)
+        - name: VITE_REVERB_APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_KEY
+        - name: VITE_REVERB_HOST
+          value: staging.tavira.com.co
+        - name: VITE_REVERB_PORT
+          value: "443"
+        - name: VITE_REVERB_SCHEME
+          value: https
+
         envFrom:
         - secretRef:
             name: laravel-env-staging

@@ -65,11 +65,13 @@ export function usePanicAlerts() {
             if (response.ok) {
                 const data = await response.json();
                 activeAlerts.value = data.alerts || [];
-            } else if (response.status === 401) {
-                console.warn('Usuario no autenticado para ver alertas de seguridad');
+            } else if (response.status === 401 || response.status === 403) {
+                // User not authenticated or no permissions - silently set empty array
+                activeAlerts.value = [];
             }
         } catch (error) {
-            console.error('Error fetching security alerts:', error);
+            // Silently fail - WebSocket will handle real-time updates if user gets permissions later
+            activeAlerts.value = [];
         } finally {
             isLoading.value = false;
         }
