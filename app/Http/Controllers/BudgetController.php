@@ -86,12 +86,17 @@ class BudgetController extends Controller
             ->pluck('fiscal_year')
             ->toArray();
 
+        // Generate budget suggestions for next year
+        $suggestedYear = now()->year + 1;
+        $budgetSuggestions = Budget::generateBudgetSuggestions($conjunto->id, $suggestedYear);
+
         return Inertia::render('Accounting/Budgets/Create', [
             'incomeAccounts' => $incomeAccounts,
             'expenseAccounts' => $expenseAccounts,
             'previousBudget' => $previousBudget,
-            'suggestedYear' => now()->year + 1,
+            'suggestedYear' => $suggestedYear,
             'availablePreviousYears' => $availablePreviousYears,
+            'budgetSuggestions' => $budgetSuggestions,
         ]);
     }
 
