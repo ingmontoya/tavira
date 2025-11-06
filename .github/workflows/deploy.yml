@@ -91,8 +91,7 @@ jobs:
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
             setup=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
-            -n ${{ env.K8S_NAMESPACE }} \
-            --record
+            -n ${{ env.K8S_NAMESPACE }}
           echo "✅ Deployment updated (init container + php-fpm)"
 
       # 🔟 Wait for rollout
