@@ -135,6 +135,12 @@ data:
             log_not_found off;
         }
 
+        # Provider registration - always use Laravel (not landing)
+        location /provider-register {
+            root /var/www/html/public;
+            try_files $uri $uri/ /index.php?$query_string;
+        }
+
         # Main location - serve landing for main domain, Laravel for tenant subdomains
         location / {
             # Use root from map based on domain type
