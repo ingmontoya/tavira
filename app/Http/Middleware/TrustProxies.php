@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Middleware\TrustProxies as Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 class TrustProxies extends Middleware
 {
@@ -32,6 +33,11 @@ class TrustProxies extends Middleware
      */
     public function handle(Request $request, Closure $next): mixed
     {
+        // Force HTTPS scheme for URL generation in production/staging
+        if (in_array(app()->environment(), ['production', 'staging'])) {
+            URL::forceScheme('https');
+        }
+
         return parent::handle($request, $next);
     }
 }
