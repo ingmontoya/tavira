@@ -33,9 +33,10 @@ class TrustProxies extends Middleware
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        // Force HTTPS scheme for URL generation in production/staging
+        // Force HTTPS scheme and root URL for URL generation in production/staging
         if (in_array(app()->environment(), ['production', 'staging'])) {
             URL::forceScheme('https');
+            URL::forceRootUrl(config('app.url'));
         }
 
         return parent::handle($request, $next);
