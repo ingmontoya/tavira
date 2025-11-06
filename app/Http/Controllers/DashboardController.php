@@ -12,6 +12,7 @@ use App\Models\PaymentConcept;
 use App\Models\PaymentConceptAccountMapping;
 use App\Models\Resident;
 use App\Models\Visit;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -422,14 +423,22 @@ class DashboardController extends Controller
         }
 
         // Get all unpaid invoices from previous months
-        $overdueInvoices = Invoice::where(function ($query) use ($currentYear, $currentMonth) {
-            // Invoices from previous months (not current month)
+        // Use both billing_date and billing_period fields for flexibility
+        $currentMonthStart = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
+
+        $overdueInvoices = Invoice::where(function ($query) use ($currentYear, $currentMonth, $currentMonthStart) {
+            // Option 1: Use billing_period_year and billing_period_month if available
             $query->where(function ($q) use ($currentYear, $currentMonth) {
                 $q->where('billing_period_year', '<', $currentYear)
                     ->orWhere(function ($q2) use ($currentYear, $currentMonth) {
                         $q2->where('billing_period_year', '=', $currentYear)
                             ->where('billing_period_month', '<', $currentMonth);
                     });
+            })
+            // Option 2: Fallback to billing_date if period fields are not set
+            ->orWhere(function ($q) use ($currentMonthStart) {
+                $q->whereNull('billing_period_year')
+                    ->where('billing_date', '<', $currentMonthStart);
             });
         })
             ->whereIn('status', ['pendiente', 'vencido', 'pago_parcial'])

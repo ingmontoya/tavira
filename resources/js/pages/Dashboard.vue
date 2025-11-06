@@ -256,9 +256,10 @@
             <!-- Overdue Payments from Previous Months -->
             <div
                 v-if="
-                    overduePayments.total_overdue_apartments > 0 ||
-                    overduePayments.total_overdue_invoices > 0 ||
-                    overduePayments.total_overdue_amount > 0
+                    overduePayments &&
+                    (overduePayments.total_overdue_apartments > 0 ||
+                        overduePayments.total_overdue_invoices > 0 ||
+                        overduePayments.total_overdue_amount > 0)
                 "
             >
                 <Card class="border-red-200 bg-red-50">
