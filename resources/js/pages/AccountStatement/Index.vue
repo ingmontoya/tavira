@@ -141,6 +141,10 @@ const paidInvoices = computed(() => {
     return props.invoices?.filter((invoice) => invoice.status === 'pagado') || [];
 });
 
+const totalPendingAmount = computed(() => {
+    return pendingInvoices.value.reduce((sum, invoice) => sum + invoice.balance_amount, 0);
+});
+
 const updateDateRange = () => {
     router.get(
         route('account-statement.index'),
@@ -334,7 +338,19 @@ const downloadStatement = () => {
                     <TabsContent value="pending" class="space-y-4">
                         <Card>
                             <div class="p-6">
-                                <h3 class="mb-4 text-lg font-semibold">Facturas Pendientes</h3>
+                                <div class="mb-4 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">Facturas Pendientes</h3>
+                                    <div v-if="pendingInvoices.length > 0" class="flex items-center gap-4">
+                                        <div class="text-right">
+                                            <p class="text-sm text-gray-600">Total a Pagar</p>
+                                            <p class="text-xl font-bold text-red-600">{{ formatCurrency(totalPendingAmount) }}</p>
+                                        </div>
+                                        <Button @click="router.visit(route('finance.payments.create', { apartment_id: resident?.apartment?.id || 0 }))" class="bg-green-600 hover:bg-green-700">
+                                            <Icon name="dollar-sign" class="mr-2 h-4 w-4" />
+                                            Pagar Todas
+                                        </Button>
+                                    </div>
+                                </div>
                                 <div v-if="pendingInvoices.length === 0" class="py-8 text-center text-gray-500">
                                     <Icon name="check-circle" class="mx-auto mb-4 h-12 w-12 text-green-500" />
                                     <p>¡Excelente! No tienes facturas pendientes.</p>
@@ -368,12 +384,23 @@ const downloadStatement = () => {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Link
-                                                    :href="route('account-statement.invoice', invoice.id)"
-                                                    class="text-blue-600 hover:text-blue-800"
-                                                >
-                                                    <Icon name="eye" class="h-4 w-4" />
-                                                </Link>
+                                                <div class="flex items-center gap-2">
+                                                    <Button
+                                                        @click="router.visit(route('finance.payments.create', { apartment_id: resident?.apartment?.id || 0, invoice_id: invoice.id }))"
+                                                        size="sm"
+                                                        variant="outline"
+                                                        class="text-green-600 hover:bg-green-50 hover:text-green-700"
+                                                    >
+                                                        <Icon name="dollar-sign" class="mr-1 h-3 w-3" />
+                                                        Pagar
+                                                    </Button>
+                                                    <Link
+                                                        :href="route('account-statement.invoice', invoice.id)"
+                                                        class="text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        <Icon name="eye" class="h-4 w-4" />
+                                                    </Link>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     </TableBody>

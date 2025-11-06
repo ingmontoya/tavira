@@ -370,37 +370,8 @@ class Budget extends Model
     private function getDefaultBudgetAccountsTemplate(): array
     {
         return [
-            // Income Accounts
-            [
-                'code' => '413501',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por cuotas ordinarias de administración',
-            ],
-            [
-                'code' => '413502',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por cuotas extraordinarias',
-            ],
-            [
-                'code' => '413503',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por concepto de parqueaderos',
-            ],
-            [
-                'code' => '413505',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por multas y sanciones',
-            ],
-            [
-                'code' => '413506',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por intereses de mora',
-            ],
+            // Note: Income accounts removed - users should add them manually
+            // This allows for flexible income configuration per residential complex
 
             // Fixed Expense Accounts
             [
