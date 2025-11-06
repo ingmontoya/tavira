@@ -89,7 +89,7 @@ jobs:
         run: |
           echo "🔄 Updating deployment to ${{ steps.version.outputs.tag }}..."
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
-            setup=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
+            copy-app=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             -n ${{ env.K8S_NAMESPACE }}
           echo "✅ Deployment updated (init container + php-fpm)"
