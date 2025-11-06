@@ -298,19 +298,17 @@ function getEnabledFeaturesCount(tenant: Tenant): number {
 }
 
 function toggleFeature(tenantId: string, feature: string, enabled: boolean) {
-    console.log('toggleFeature called:', { tenantId, feature, enabled });
+    // Use relative URLs to avoid origin issues in K8s/proxied environments
+    const url = route('tenant-features.update-feature', { tenant: tenantId, feature }, false);
 
     router.put(
-        route('tenant-features.update-feature', { tenant: tenantId, feature }),
+        url,
         {
             enabled,
         },
         {
             preserveState: false, // Force complete reload of data from server
             preserveScroll: true,
-            onSuccess: () => {
-                console.log('Feature toggled successfully');
-            },
             onError: (errors) => {
                 console.error('Error toggling feature:', errors);
             },
@@ -329,9 +327,6 @@ function applyTemplate(tenantId: string, template: string) {
         {
             preserveState: false, // Cambiado a false para refrescar los datos
             preserveScroll: true,
-            onSuccess: () => {
-                console.log(`Template ${template} aplicado al tenant ${tenantId}`);
-            },
         },
     );
 }

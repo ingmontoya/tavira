@@ -49,7 +49,7 @@ export function useNavigation() {
     const isCentralDashboard = computed(() => {
         // Check if we're on a central domain (not a subdomain tenant)
         const currentHost = window.location.hostname;
-        const centralDomains = ['127.0.0.1', 'localhost', 'tavira.com.co'];
+        const centralDomains = ['127.0.0.1', 'localhost', 'tavira.com.co', 'staging.tavira.com.co'];
         const isOnCentralDomain = centralDomains.includes(currentHost);
 
         // Must be superadmin and on central domain
@@ -243,6 +243,13 @@ export function useNavigation() {
                             visible: hasPermission('view_payments'),
                         },
                     ],
+                },
+                {
+                    title: 'Cuotas Extraordinarias',
+                    href: '/extraordinary-assessments',
+                    icon: TrendingUp,
+                    tourId: 'nav-extraordinary-assessments',
+                    visible: hasPermission('view_payments'),
                 },
                 {
                     title: 'Gastos',

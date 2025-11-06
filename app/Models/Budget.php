@@ -127,7 +127,9 @@ class Budget extends Model
 
     public function getCanBeApprovedAttribute(): bool
     {
-        return $this->status === 'draft' && $this->items()->count() > 0;
+        // Use items_count if available (from withCount), otherwise fallback to query
+        $itemsCount = $this->items_count ?? $this->items()->count();
+        return $this->status === 'draft' && $itemsCount > 0;
     }
 
     public function getCanBeActivatedAttribute(): bool
@@ -142,8 +144,11 @@ class Budget extends Model
             return false;
         }
 
+        // Use items_count if available (from withCount), otherwise fallback to query
+        $itemsCount = $this->items_count ?? $this->items()->count();
+
         // Only users with 'concejo' role can approve budgets
-        return $user->hasRole('concejo') && $this->status === 'draft' && $this->items()->count() > 0;
+        return $user->hasRole('concejo') && $this->status === 'draft' && $itemsCount > 0;
     }
 
     public function calculateTotals(): void

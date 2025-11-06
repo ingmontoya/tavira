@@ -62,13 +62,39 @@ RUN npm ci --only=production=false
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
 
-# Build production assets
-RUN npm run build && \
+# Set APP_URL for build (will be overridden by env at runtime)
+# Use ARG to allow build-time configuration
+ARG APP_URL=http://localhost
+ARG BUILD_ID=unknown
+ENV APP_URL=${APP_URL}
+
+# Build production assets - BUILD_ID cache-busting ensures fresh build each time
+RUN echo "Building with APP_URL: ${APP_URL}, BUILD_ID: ${BUILD_ID}" && \
+    npm run build && \
     rm -rf node_modules && \
     npm cache clean --force
 
 # =============================================================================
-# Stage 3: Production Image (PHP-FPM Only)
+# Stage 3: Build Landing Page (Nuxt SSG)
+# =============================================================================
+FROM node:20-alpine AS landing
+
+WORKDIR /app/landing
+
+# Copy landing package files
+COPY landing/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy landing source files
+COPY landing/ ./
+
+# Generate static site
+RUN npm run generate
+
+# =============================================================================
+# Stage 4: Production Image (PHP-FPM Only)
 # =============================================================================
 FROM php:8.3-fpm-alpine
 
@@ -94,6 +120,9 @@ COPY --from=vendor --chown=www-data:www-data /app ./
 # Copy built assets from frontend stage
 COPY --from=frontend --chown=www-data:www-data /app/public/build ./public/build
 
+# Copy landing page static files
+COPY --from=landing --chown=www-data:www-data /app/landing/.output/public ./public/landing
+
 # Copy entrypoint script
 COPY --chown=www-data:www-data docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
@@ -111,11 +140,13 @@ RUN sed -i 's/listen = .*/listen = 9000/' /usr/local/etc/php-fpm.d/www.conf
 
 # Configure PHP for production
 RUN { \
+    echo 'memory_limit=256M'; \
     echo 'opcache.enable=1'; \
     echo 'opcache.memory_consumption=256'; \
     echo 'opcache.interned_strings_buffer=16'; \
     echo 'opcache.max_accelerated_files=10000'; \
     echo 'opcache.validate_timestamps=0'; \
+    echo 'opcache.revalidate_freq=0'; \
     echo 'opcache.save_comments=1'; \
     echo 'opcache.fast_shutdown=1'; \
     } > /usr/local/etc/php/conf.d/opcache-production.ini

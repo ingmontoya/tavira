@@ -26,40 +26,68 @@ spec:
         environment: staging
         version: v1
     spec:
+      # Init container for one-time setup operations
       initContainers:
-      - name: copy-app
+      - name: setup
         image: ingmontoyav/tavira-app:staging
         imagePullPolicy: Always
         command:
         - sh
         - -c
         - |
-          echo "Copying application files..."
-          cp -r /var/www/html/* /app-code/
+          echo "🔧 Running one-time setup..."
 
-          echo "Creating storage directories..."
-          mkdir -p /app-code/storage/app/public
-          mkdir -p /app-code/storage/framework/cache
-          mkdir -p /app-code/storage/framework/cache/data
-          mkdir -p /app-code/storage/framework/sessions
-          mkdir -p /app-code/storage/framework/testing
-          mkdir -p /app-code/storage/framework/views
-          mkdir -p /app-code/storage/logs
+          # Create storage directories
+          mkdir -p /var/www/html/storage/framework/cache/data
+          mkdir -p /var/www/html/storage/framework/sessions
+          mkdir -p /var/www/html/storage/framework/testing
+          mkdir -p /var/www/html/storage/framework/views
+          mkdir -p /var/www/html/storage/app/public
+          chmod -R 775 /var/www/html/storage
 
-          echo "Setting permissions..."
-          chmod -R 775 /app-code/storage
-          chmod -R 775 /app-code/bootstrap/cache
+          # Copy public assets to shared volume for nginx
+          echo "📦 Copying public assets..."
+          cp -r /var/www/html/public/* /shared-public/ 2>/dev/null || true
+          touch /shared-public/.initialized
 
-          echo "Verifying directories..."
-          ls -la /app-code/storage/framework/
+          # Run Laravel cache warming (expensive operations)
+          echo "🔥 Warming up Laravel caches..."
+          php artisan config:cache || true
+          php artisan view:cache || true
 
-          echo "Init container completed successfully"
+          echo "✅ Setup complete"
+
+        env:
+        - name: APP_ENV
+          value: staging
+        - name: APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: APP_KEY
+
+        envFrom:
+        - secretRef:
+            name: laravel-env-staging
+
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
         securityContext:
-          runAsUser: 0
-          runAsGroup: 0
+          runAsUser: 82
+          runAsGroup: 82
+          allowPrivilegeEscalation: false
+
         volumeMounts:
-        - name: app-code
-          mountPath: /app-code
+        - name: app-storage
+          mountPath: /var/www/html/storage
+        - name: app-public
+          mountPath: /shared-public
 
       containers:
       # PHP-FPM Container
@@ -77,7 +105,7 @@ spec:
         - name: APP_ENV
           value: staging
         - name: APP_DEBUG
-          value: "true"
+          value: "false"
         - name: APP_KEY
           valueFrom:
             secretKeyRef:
@@ -106,65 +134,108 @@ spec:
             secretKeyRef:
               name: laravel-env-staging
               key: DB_PASSWORD
+        # Cache Configuration (Redis required for performance)
         - name: CACHE_DRIVER
-          valueFrom:
-            secretKeyRef:
-              name: laravel-env-staging
-              key: CACHE_DRIVER
-              optional: true
+          value: redis
         - name: REDIS_HOST
           valueFrom:
             secretKeyRef:
               name: laravel-env-staging
               key: REDIS_HOST
-              optional: true
         - name: REDIS_PORT
           valueFrom:
             secretKeyRef:
               name: laravel-env-staging
               key: REDIS_PORT
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging
+              key: REDIS_PASSWORD
               optional: true
+        - name: REDIS_CLIENT
+          value: phpredis
+        - name: REDIS_PREFIX
+          value: tavira_staging_
+
+        # Queue Configuration
         - name: QUEUE_CONNECTION
-          valueFrom:
-            secretKeyRef:
-              name: laravel-env-staging
-              key: QUEUE_CONNECTION
-              optional: true
+          value: redis
+
+        # Session Configuration
         - name: SESSION_DRIVER
-          valueFrom:
-            secretKeyRef:
-              name: laravel-env-staging
-              key: SESSION_DRIVER
-              optional: true
+          value: redis
         - name: SESSION_LIFETIME
           value: "120"
+        - name: SESSION_SECURE_COOKIE
+          value: "true"
+        - name: SESSION_SAME_SITE
+          value: "lax"
+
+        # Reverb WebSocket Configuration
+        - name: BROADCAST_CONNECTION
+          value: reverb
+        - name: REVERB_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_ID
+        - name: REVERB_APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_KEY
+        - name: REVERB_APP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_SECRET
+        - name: REVERB_HOST
+          value: staging.tavira.com.co
+        - name: REVERB_PORT
+          value: "443"
+        - name: REVERB_SCHEME
+          value: https
+
+        # Vite Frontend Variables (available during build)
+        - name: VITE_REVERB_APP_KEY
+          valueFrom:
+            secretKeyRef:
+              name: laravel-env-staging-reverb
+              key: REVERB_APP_KEY
+        - name: VITE_REVERB_HOST
+          value: staging.tavira.com.co
+        - name: VITE_REVERB_PORT
+          value: "443"
+        - name: VITE_REVERB_SCHEME
+          value: https
 
         envFrom:
         - secretRef:
             name: laravel-env-staging
 
-        # Reduced resources for staging
+        # Optimized resources for staging (increased for better performance)
         resources:
           requests:
-            cpu: 50m        # Reduced from 100m
-            memory: 128Mi   # Reduced from 256Mi
+            cpu: 500m       # Sufficient for Laravel multitenancy
+            memory: 512Mi   # Comfortable memory for Laravel + cache
           limits:
-            cpu: 300m       # Reduced from 500m
-            memory: 256Mi   # Reduced from 512Mi
+            cpu: 1000m      # Allow full CPU core for bursts
+            memory: 1Gi     # Prevent OOM with comfortable headroom
 
         livenessProbe:
           tcpSocket:
             port: 9000
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 45
+          periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 3
 
         readinessProbe:
           tcpSocket:
             port: 9000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+          initialDelaySeconds: 20
+          periodSeconds: 10
           timeoutSeconds: 3
           failureThreshold: 3
 
@@ -174,26 +245,11 @@ spec:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
 
-        # Lifecycle hook to create storage directories after PVC is mounted
-        lifecycle:
-          postStart:
-            exec:
-              command:
-              - sh
-              - -c
-              - |
-                mkdir -p /var/www/html/storage/framework/cache/data
-                mkdir -p /var/www/html/storage/framework/sessions
-                mkdir -p /var/www/html/storage/framework/testing
-                mkdir -p /var/www/html/storage/framework/views
-                mkdir -p /var/www/html/storage/app/public
-                chmod -R 775 /var/www/html/storage
-
         volumeMounts:
-        - name: app-code
-          mountPath: /var/www/html
         - name: app-storage
           mountPath: /var/www/html/storage
+        - name: app-public
+          mountPath: /shared-public
 
       # Nginx Container
       - name: nginx
@@ -204,21 +260,21 @@ spec:
           name: http
           protocol: TCP
 
-        # Reduced resources for staging
+        # Optimized resources for staging (increased with FastCGI cache)
         resources:
           requests:
-            cpu: 25m        # Reduced from 50m
-            memory: 32Mi    # Reduced from 64Mi
+            cpu: 100m       # Sufficient for proxy + cache operations
+            memory: 128Mi   # Adequate for nginx with cache
           limits:
-            cpu: 100m       # Reduced from 200m
-            memory: 64Mi    # Reduced from 128Mi
+            cpu: 300m       # Allow bursts during traffic spikes
+            memory: 256Mi   # Comfortable headroom for cache
 
         livenessProbe:
           httpGet:
             path: /health
             port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
+          initialDelaySeconds: 15
+          periodSeconds: 15
           timeoutSeconds: 3
           failureThreshold: 3
 
@@ -226,8 +282,8 @@ spec:
           httpGet:
             path: /health
             port: 80
-          initialDelaySeconds: 5
-          periodSeconds: 5
+          initialDelaySeconds: 10
+          periodSeconds: 10
           timeoutSeconds: 2
           failureThreshold: 3
 
@@ -238,8 +294,8 @@ spec:
           readOnlyRootFilesystem: true
 
         volumeMounts:
-        - name: app-code
-          mountPath: /var/www/html
+        - name: app-public
+          mountPath: /var/www/html/public
           readOnly: true
         - name: nginx-config
           mountPath: /etc/nginx/conf.d
@@ -253,8 +309,6 @@ spec:
         fsGroup: 82
 
       volumes:
-      - name: app-code
-        emptyDir: {}
       - name: app-storage
         persistentVolumeClaim:
           claimName: tavira-storage-pvc-staging
@@ -264,4 +318,6 @@ spec:
       - name: nginx-cache
         emptyDir: {}
       - name: nginx-run
+        emptyDir: {}
+      - name: app-public
         emptyDir: {}

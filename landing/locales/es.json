@@ -1,0 +1,479 @@
+{
+  "nav": {
+    "features": "Características",
+    "network": "Red Tavira",
+    "pricing": "Planes",
+    "security": "Seguridad",
+    "providers": "¿Eres Proveedor?",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "demo": "Solicitar Demo",
+    "dashboard": "Dashboard"
+  },
+  "hero": {
+    "badge": "🔗 Red Neuronal de Seguridad",
+    "title": "La Red de Seguridad",
+    "titleHighlight": "Inteligente",
+    "titleEnd": "para Tu Conjunto",
+    "subtitle": "500+ conjuntos conectados compartiendo información en tiempo real. Así como neuronas crean inteligencia, los conjuntos en Red Tavira crean seguridad colectiva.",
+    "description": "Tu conjunto no está solo. Está conectado.",
+    "cta": "Solicitar Demo Gratuita",
+    "ctaSecondary": "Ver Cómo Funciona la Red",
+    "demo": "Ver Red en Acción"
+  },
+  "socialProof": {
+    "complexes": "500+ conjuntos conectados",
+    "residents": "127,000 residentes protegidos",
+    "rating": "4.8★ de 5.0 (1,200+ reseñas)"
+  },
+  "stats": {
+    "complexes": "Conjuntos Conectados",
+    "complexesValue": "500+",
+    "residents": "Residentes Protegidos",
+    "residentsValue": "127,000",
+    "uptime": "Disponibilidad",
+    "uptimeValue": "99.9%",
+    "support": "Soporte",
+    "supportValue": "24/7",
+    "alertsToday": "Alertas Compartidas Hoy",
+    "responseTime": "Tiempo de Respuesta",
+    "responseTimeValue": "30 seg"
+  },
+  "problem": {
+    "title": "La Administración Tradicional Deja Tu Conjunto Vulnerable",
+    "pain1": {
+      "icon": "🚨",
+      "title": "Seguridad Aislada",
+      "description": "Tu conjunto es una isla sin información. No sabes qué pasa en conjuntos vecinos hasta que es tarde."
+    },
+    "pain2": {
+      "icon": "💸",
+      "title": "Cartera Vencida",
+      "description": "18% promedio sin cobrar. Excel y WhatsApp no son suficientes."
+    },
+    "pain3": {
+      "icon": "⏰",
+      "title": "Tiempo Perdido",
+      "description": "15+ horas semanales en tareas que deberían ser automáticas."
+    },
+    "pain4": {
+      "icon": "🆘",
+      "title": "Emergencias Lentas",
+      "description": "8-15 minutos desde llamada hasta llegada de policía. Cada segundo cuenta."
+    }
+  },
+  "redTavira": {
+    "badge": "⭐ Diferenciador Único",
+    "title": "Red Tavira: La Sinapsis de Seguridad",
+    "subtitle": "Así como tu cerebro tiene 100 mil millones de neuronas conectadas creando inteligencia, Red Tavira conecta 500+ conjuntos residenciales creando seguridad colectiva.",
+    "howItWorks": "Cómo Funciona",
+    "step1": {
+      "number": "1",
+      "title": "Un Incidente Aquí",
+      "description": "Intento de robo en Conjunto Los Arrayanes, 2:30 AM"
+    },
+    "step2": {
+      "number": "2",
+      "title": "Se Propaga Allá",
+      "description": "12 conjuntos en radio 2km reciben alerta instantánea con descripción, foto, dirección de huida"
+    },
+    "step3": {
+      "number": "3",
+      "title": "Todos Actúan",
+      "description": "Vigilancias refuerzan seguridad, policía patrulla área, residentes informados"
+    },
+    "realCase": {
+      "badge": "Caso Real",
+      "story": "30 segundos después de la alerta, Conjunto Los Pinos (1.2km) detecta moto sospechosa en su entrada. Gracias a Red Tavira, vigilante toma placa y policía captura a la banda en menos de 5 minutos."
+    },
+    "stats": {
+      "speed": "5X más rápido que métodos tradicionales",
+      "reduction": "40% reducción en incidentes de seguridad",
+      "satisfaction": "100% de conjuntos en Red reportan mayor tranquilidad"
+    },
+    "cta": "Ver Red Tavira en Acción"
+  },
+  "fastResponse": {
+    "title": "De Emergencia a Patrulla en 30 Segundos",
+    "subtitle": "En emergencias médicas, cada minuto reduce supervivencia en 10%. En robos, 30 segundos es la diferencia entre captura y escape.",
+    "before": {
+      "title": "ANTES (Método Tradicional)",
+      "step1": "Llamar al 123 → 30-60 seg",
+      "step2": "Operador ubica → 2-3 min",
+      "step3": "Despacho patrulla → 1-2 min",
+      "step4": "Patrulla busca dirección → 4-8 min",
+      "total": "TOTAL: 8-15 MINUTOS",
+      "status": "❌"
+    },
+    "after": {
+      "title": "AHORA (Respuesta Rápida Tavira)",
+      "step1": "Presionar botón en app → 2 seg",
+      "step2": "GPS exacto a policía → Instantáneo",
+      "step3": "Despacho inmediato → 10-20 seg",
+      "step4": "Llegada directa → 1-3 min",
+      "total": "TOTAL: 30-90 SEGUNDOS",
+      "status": "✅"
+    },
+    "included": "Incluido en: Plan Esencial, Profesional y Empresa"
+  },
+  "features": {
+    "title": "19 Módulos Integrados + La Red",
+    "subtitle": "19 módulos vs. 8-12 de competencia. Todo en una plataforma.",
+    "tierS": {
+      "title": "Diferenciadores Únicos",
+      "feature1": {
+        "icon": "🔗",
+        "name": "Red Tavira",
+        "description": "Conexión inteligente entre 500+ conjuntos"
+      },
+      "feature2": {
+        "icon": "🚨",
+        "name": "Respuesta Rápida",
+        "description": "Emergencias en 30 segundos"
+      }
+    },
+    "tierA": {
+      "title": "Features Core",
+      "feature1": {
+        "icon": "💰",
+        "name": "Cartera Inteligente",
+        "description": "Reduce cartera vencida 40%"
+      },
+      "feature2": {
+        "icon": "📱",
+        "name": "Comunicación Multicanal",
+        "description": "Push, email, SMS"
+      },
+      "feature3": {
+        "icon": "🔧",
+        "name": "Mantenimiento",
+        "description": "Tickets automatizados"
+      },
+      "feature4": {
+        "icon": "📅",
+        "name": "Reservas",
+        "description": "Zonas comunes sin conflictos"
+      }
+    },
+    "sectionTitle": "Todo lo que necesitas para una administración exitosa",
+    "sectionDescription": "Sistema integral diseñado específicamente para conjuntos residenciales en Colombia. Desde finanzas hasta comunicación, todo en una plataforma segura.",
+    "pageTitle": "Características",
+    "pageTitleHighlight": "Completas",
+    "pageSubtitle": "Todo lo que necesitas para una administración moderna y eficiente de conjuntos residenciales"
+  },
+  "pricing": {
+    "title": "Planes Transparentes, Seguridad Incluida",
+    "subtitle": "Setup en 24 horas • Sin tarjeta de crédito para demo • Capacitación incluida • Cambio de plan en cualquier momento",
+    "inicial": {
+      "name": "INICIAL",
+      "price": "$149K",
+      "period": "/mes",
+      "units": "Hasta 100 unidades",
+      "modules": "11 módulos básicos",
+      "redTavira": "❌",
+      "fastResponse": "❌",
+      "support": "Email",
+      "cta": "Empezar"
+    },
+    "esencial": {
+      "name": "ESENCIAL",
+      "badge": "MÁS POPULAR",
+      "price": "$349K",
+      "period": "/mes",
+      "units": "Hasta 200 unidades",
+      "modules": "16 módulos",
+      "redTavira": "✅ Recibir alertas",
+      "fastResponse": "✅ Incluido",
+      "support": "Prioritario",
+      "cta": "Solicitar Demo"
+    },
+    "profesional": {
+      "name": "PROFESIONAL",
+      "price": "$649K",
+      "period": "/mes",
+      "units": "Hasta 500 unidades",
+      "modules": "18 módulos",
+      "redTavira": "✅ Enviar y recibir",
+      "fastResponse": "✅ Pro",
+      "support": "Account Manager",
+      "cta": "Solicitar Demo"
+    },
+    "empresa": {
+      "name": "EMPRESA",
+      "price": "$1.28M",
+      "period": "/mes",
+      "units": "500+ unidades",
+      "modules": "19 módulos (todo)",
+      "redTavira": "✅ IA Predictiva",
+      "fastResponse": "✅ Pro",
+      "support": "24/7",
+      "cta": "Contactar Ventas"
+    },
+    "compareLink": "Ver comparativa completa de planes >"
+  },
+  "benefits": {
+    "sectionTitle": "Resultados que Impactan",
+    "sectionDescription": "Más de 500 conjuntos en Colombia ya confían en Tavira. Con aplicaciones móviles nativas para iOS y Android, estos son los resultados reales que obtienen nuestros clientes."
+  },
+  "testimonials": {
+    "title": "Resultados Reales en Conjuntos Reales",
+    "testimonial1": {
+      "quote": "Red Tavira nos avisó de banda activa en zona. Evitamos 2 intentos de robo. Cartera vencida bajó de 18% a 4% en 3 meses.",
+      "author": "María Rodríguez",
+      "role": "Administradora",
+      "complex": "Conjunto Valle Verde, 240 unidades, Medellín",
+      "rating": "⭐⭐⭐⭐⭐"
+    },
+    "testimonial2": {
+      "quote": "Respuesta Rápida salvó a mi papá. Infarto, presioné botón, patrulla llegó en 2 minutos. Cada segundo contó.",
+      "author": "Ana Gómez",
+      "role": "Residente",
+      "complex": "Conjunto Portal del Norte, 320 unidades, Bogotá",
+      "rating": "⭐⭐⭐⭐⭐"
+    },
+    "testimonial3": {
+      "quote": "Antes 20 horas/semana en admin. Ahora 5 horas. Tavira me dio mi vida de vuelta.",
+      "author": "Carlos Pérez",
+      "role": "Administrador",
+      "complex": "Conjunto Los Arrayanes, 180 unidades, Barranquilla",
+      "rating": "⭐⭐⭐⭐⭐"
+    },
+    "sectionTitle": "Lo que dicen nuestros Clientes",
+    "sectionDescription": "Administradores, concejales y residentes de toda Colombia confían en Tavira para transformar sus conjuntos.",
+    "cta": "Lee Más Casos de Éxito >"
+  },
+  "whyTavira": {
+    "title": "Lo Que Nos Hace Diferentes",
+    "reason1": {
+      "icon": "✅",
+      "title": "Red Imposible de Replicar",
+      "description": "Ningún competidor tiene 500+ conjuntos conectados. Necesitarían 2+ años para igualarnos."
+    },
+    "reason2": {
+      "icon": "✅",
+      "title": "19 Módulos vs. 8-12",
+      "description": "La solución más completa del mercado."
+    },
+    "reason3": {
+      "icon": "✅",
+      "title": "Hecho para Colombia",
+      "description": "Diseñado para Ley 675 y realidad colombiana desde día 1."
+    },
+    "reason4": {
+      "icon": "✅",
+      "title": "Soporte Real 24/7",
+      "description": "Equipo local que entiende tus necesidades."
+    },
+    "reason5": {
+      "icon": "✅",
+      "title": "Sin Costos Ocultos",
+      "description": "Todo incluido. Sin letra pequeña."
+    },
+    "reason6": {
+      "icon": "✅",
+      "title": "ROI Garantizado",
+      "description": "Recuperación de inversión en 3-5 meses o ajustamos plan."
+    }
+  },
+  "detailedFeatures": {
+    "sectionTitle": "Funcionalidades Detalladas para cada Usuario",
+    "sectionDescription": "Desde aplicaciones móviles nativas hasta gestión avanzada, cada usuario tiene herramientas específicas para sus necesidades."
+  },
+  "howItWorks": {
+    "sectionTitle": "Cómo",
+    "sectionTitleHighlight": "Funciona",
+    "sectionTitleEnd": "",
+    "sectionDescription": "Implementar Tavira en tu conjunto es rápido y sencillo. En menos de una semana estarás operando completamente.",
+    "step1": {
+      "title": "Regístrate y Configura",
+      "description": "Crea tu cuenta, configura tu conjunto y personaliza el sistema según tus necesidades específicas."
+    },
+    "step2": {
+      "title": "Migra tus Datos",
+      "description": "Nuestro equipo te ayuda a migrar toda tu información existente de forma segura y sin interrupciones."
+    },
+    "step3": {
+      "title": "Capacita y Opera",
+      "description": "Capacitamos a tu equipo y residentes. En pocos días estarás operando con máxima eficiencia."
+    }
+  },
+  "cta": {
+    "title": "Transforma la Seguridad de Tu Conjunto Hoy",
+    "subtitle": "Únete a 500+ conjuntos que ya confían en la Red Más Inteligente de Colombia",
+    "description": "Únete a más de 500 conjuntos en Colombia que ya confían en Tavira. Comienza hoy mismo con nuestra prueba gratuita de 30 días.",
+    "register": "Solicitar Demo Gratuita",
+    "demo": "Hablar con Ventas",
+    "microcopy": "Setup en 24 horas • Sin tarjeta de crédito • Capacitación incluida",
+    "benefits": {
+      "trial": "Prueba gratuita 30 días",
+      "noCard": "Sin tarjeta de crédito",
+      "support": "Soporte incluido",
+      "implementation": "Implementación gratuita"
+    }
+  },
+  "leadForm": {
+    "title": "Solicita tu Demo Gratuita",
+    "description": "Completa el formulario y uno de nuestros expertos te contactará para mostrarte cómo Tavira puede transformar la administración de tu conjunto.",
+    "benefits": {
+      "trial": "Prueba gratuita 30 días",
+      "noCard": "Sin tarjeta de crédito",
+      "support": "Soporte incluido",
+      "implementation": "Implementación gratuita"
+    }
+  },
+  "redTaviraPage": {
+    "hero": {
+      "badge": "⭐ La Red Más Inteligente de Colombia",
+      "title": "Red Tavira: La ",
+      "titleHighlight": "Sinapsis de Seguridad",
+      "subtitle": "Así como tu cerebro tiene 100 mil millones de neuronas conectadas creando inteligencia, Red Tavira conecta 500+ conjuntos residenciales creando seguridad colectiva. Conoce cómo funciona la primera red neuronal de seguridad de Colombia."
+    },
+    "stats": {
+      "liveStatus": "En Vivo",
+      "connectedComplexes": "Conjuntos Conectados",
+      "protectedResidents": "Residentes Protegidos",
+      "avgResponse": "Tiempo Promedio de Respuesta"
+    },
+    "concept": {
+      "title": "El Concepto de Red Neuronal de Seguridad",
+      "subtitle": "Entender cómo funcionan las neuronas nos ayuda a comprender por qué Red Tavira es revolucionaria.",
+      "brain": {
+        "title": "Tu Cerebro (100 mil millones de neuronas)",
+        "point1": "Una neurona sola no piensa, no recuerda, no crea",
+        "point2": "Conectadas forman sinapsis: intercambian señales eléctricas",
+        "point3": "Más conexiones = Mayor inteligencia",
+        "point4": "El poder está en la red, no en la neurona individual"
+      },
+      "network": {
+        "title": "Red Tavira (500+ conjuntos conectados)",
+        "point1": "Un conjunto solo es vulnerable: no sabe qué pasa alrededor",
+        "point2": "Conectados comparten alertas instantáneas: robo aquí, todos saben allá",
+        "point3": "Más conjuntos conectados = Mayor seguridad colectiva",
+        "point4": "El poder está en la red, no en el conjunto individual"
+      }
+    },
+    "technical": {
+      "title": "Cómo Funciona Técnicamente",
+      "subtitle": "Desde el momento en que ocurre un incidente hasta que toda la red responde: 30 segundos.",
+      "step1": {
+        "badge": "Detección",
+        "title": "Incidente Detectado",
+        "description": "Un vigilante, residente o sensor detecta una situación de seguridad en cualquier conjunto de la red.",
+        "detail1": "Foto o video opcional desde app móvil",
+        "detail2": "GPS automático del punto exacto",
+        "detail3": "Descripción rápida: qué, quién, hacia dónde"
+      },
+      "step2": {
+        "badge": "Propagación",
+        "title": "Alerta Propagada Instantáneamente",
+        "description": "La alerta se propaga automáticamente por la red a todos los conjuntos en radio configurable (500m - 5km).",
+        "detail1": "Algoritmo de proximidad geográfica",
+        "detail2": "Push notifications a vigilantes y administradores",
+        "detail3": "Dashboard en tiempo real con mapa de propagación"
+      },
+      "step3": {
+        "badge": "Acción",
+        "title": "Acción Coordinada",
+        "description": "Cada conjunto conectado toma acción inmediata basada en la información compartida.",
+        "detail1": "Vigilantes refuerzan puntos de entrada",
+        "detail2": "Cámaras buscan coincidencias",
+        "detail3": "Residentes informados vía app"
+      },
+      "step4": {
+        "badge": "Respuesta",
+        "title": "Respuesta Policial",
+        "description": "Si se activa Respuesta Rápida, policía recibe GPS exacto y contexto completo en tiempo real.",
+        "detail1": "Coordinación con 12+ estaciones de policía",
+        "detail2": "Historial de incidentes en la zona",
+        "detail3": "Tiempo promedio de llegada: 90 segundos"
+      }
+    },
+    "cases": {
+      "title": "Cómo Funciona en la Práctica",
+      "subtitle": "Así es como Red Tavira transformará la seguridad de tu conjunto y los conjuntos vecinos. Estos son escenarios diseñados para maximizar la protección colectiva.",
+      "result": "Resultado Esperado",
+      "case1": {
+        "badge": "Escenario: Robo",
+        "title": "Captura Coordinada en Menos de 5 Minutos",
+        "description": "Intento de robo en un conjunto a las 2:30 AM. Alerta propagada a 12 conjuntos cercanos. Un conjunto vecino detecta moto sospechosa 30 segundos después. Vigilante toma placa y policía responde.",
+        "result": "Captura en 5 minutos"
+      },
+      "case2": {
+        "badge": "Escenario: Prevención",
+        "title": "Prevención de Múltiples Intentos",
+        "description": "Red Tavira alerta sobre banda activa en la zona. Múltiples conjuntos refuerzan seguridad simultáneamente. Todos prevenidos gracias a coordinación en tiempo real.",
+        "result": "Prevención efectiva"
+      },
+      "case3": {
+        "badge": "Escenario: Emergencia Médica",
+        "title": "Respuesta Rápida Puede Salvar Vidas",
+        "description": "Residente sufre emergencia médica. Familiar presiona botón de emergencia en app. Respuesta Rápida coordina con ambulancia y patrulla más cercana.",
+        "result": "Llegada en 2 minutos"
+      }
+    },
+    "impact": {
+      "title": "El Impacto de la Red",
+      "subtitle": "Los números hablan por sí solos. Red Tavira ha transformado la seguridad de miles de familias en Colombia.",
+      "metric1": "Más rápido que métodos tradicionales",
+      "metric2": "Reducción en incidentes de seguridad",
+      "metric3": "Mayor tranquilidad reportada",
+      "metric4": "Ventaja competitiva imposible de replicar"
+    },
+    "cta": {
+      "title": "Únete a la Red Más Inteligente de Colombia",
+      "subtitle": "Cada conjunto que se une fortalece la seguridad de todos. Así como las neuronas, juntos somos más fuertes.",
+      "primary": "Solicitar Demo Gratuita",
+      "secondary": "Volver al Inicio"
+    }
+  },
+  "footer": {
+    "tagline": "La Red de Seguridad Inteligente",
+    "subtitle": "500+ Conjuntos | 127,000 Residentes | 1 Red Neuronal",
+    "description": "Plataforma líder en administración de conjuntos residenciales en Colombia. Transformamos la gestión inmobiliaria con tecnología de punta y seguridad bancaria.",
+    "newsletter": {
+      "title": "Recibe tips mensuales de administración",
+      "placeholder": "Tu email",
+      "button": "Suscribir"
+    },
+    "email": "hola{'@'}tavira.com.co",
+    "phone": "+44 7447 313219",
+    "product": "Producto",
+    "productLinks": {
+      "redTavira": "Red Tavira",
+      "fastResponse": "Respuesta Rápida",
+      "modules": "Todos los Módulos",
+      "integrations": "Integraciones",
+      "security": "Seguridad y Privacidad"
+    },
+    "solutions": "Soluciones",
+    "solutionsLinks": {
+      "administrators": "Para Administradores",
+      "residents": "Para Residentes",
+      "companies": "Para Administradoras",
+      "providers": "Para Proveedores",
+      "marketplace": "Marketplace"
+    },
+    "resources": "Recursos",
+    "resourcesLinks": {
+      "blog": "Blog",
+      "cases": "Casos de Éxito",
+      "help": "Centro de Ayuda",
+      "academy": "Academia Tavira",
+      "docs": "Documentación API"
+    },
+    "company": "Empresa",
+    "companyLinks": {
+      "about": "Sobre Nosotros",
+      "careers": "Careers",
+      "press": "Prensa",
+      "contact": "Contacto"
+    },
+    "support": "Soporte",
+    "legal": "Legal",
+    "legalLinks": {
+      "terms": "Términos y Privacidad"
+    },
+    "copyright": "© 2025 Tavira. Todos los derechos reservados.",
+    "compliance": "Cumplimiento DIAN • Seguridad Bancaria • Base de Datos Exclusiva por Conjunto"
+  }
+}

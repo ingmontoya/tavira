@@ -1,0 +1,123 @@
+<template>
+  <section id="detailed-features" class="bg-white px-6 py-16 md:py-20">
+    <div class="mx-auto max-w-7xl">
+      <div class="mb-16 text-center">
+        <h2 class="mb-6 text-3xl font-bold text-accent md:text-4xl lg:text-5xl">
+          Funcionalidades
+          <span class="text-primary">Detalladas</span>
+          para cada Usuario
+        </h2>
+        <p class="mx-auto max-w-3xl text-lg text-gray-700 md:text-xl">
+          {{ $t('detailedFeatures.sectionDescription') }}
+        </p>
+      </div>
+
+      <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+        <div
+          v-for="(feature, index) in features"
+          :key="index"
+          class="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-secondary/30 hover:shadow-xl md:p-8"
+        >
+          <div class="mb-6 text-4xl">{{ feature.icon }}</div>
+          <h3 class="mb-3 text-xl font-bold text-accent md:text-2xl">{{ feature.title }}</h3>
+          <p class="mb-6 text-gray-600">{{ feature.description }}</p>
+          <ul class="space-y-2">
+            <li v-for="(item, idx) in feature.features" :key="idx" class="flex items-center space-x-3">
+              <svg class="h-5 w-5 flex-shrink-0 text-secondary" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span class="text-gray-700">{{ item }}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+const features = [
+  {
+    icon: '📱',
+    title: 'App para Residentes',
+    description: 'Aplicación nativa iOS y Android con todas las funcionalidades que necesita cada residente.',
+    features: [
+      'Estado de cuenta en tiempo real',
+      'Pagos en línea seguros',
+      'Enviar pases QR a visitas',
+      'Marketplace comunitario',
+      'Reservar espacios comunes',
+      'Recibir comunicados instantáneos',
+    ],
+  },
+  {
+    icon: '🏢',
+    title: 'App para Portería',
+    description: 'Herramienta profesional para el control total de acceso y gestión de seguridad.',
+    features: [
+      'Citófonos integrados al celular',
+      'Escaneo automático de QR',
+      'Gestión de paquetes con fotos',
+      'Registro de visitas y proveedores',
+      'Control de acceso vehicular',
+      'Historial completo de accesos',
+    ],
+  },
+  {
+    icon: '💳',
+    title: 'Sistema Financiero',
+    description: 'Contabilidad profesional que cumple con toda la normatividad colombiana.',
+    features: [
+      'Contabilidad doble partida',
+      'Facturación DIAN (opcional)',
+      'Conciliación bancaria automática',
+      'Reportes ejecutivos completos',
+      'Control de morosidad',
+      'Presupuestos anuales',
+    ],
+  },
+  {
+    icon: '✅',
+    title: 'Flujo de Aprobaciones',
+    description: 'Control total de procesos desde proveedores hasta ejecución con trazabilidad completa.',
+    features: [
+      'Workflow Proveedor → Concejo → Admin',
+      'Trazabilidad 100% de decisiones',
+      'Notificaciones automáticas',
+      'Control presupuestal integrado',
+      'Historial permanente',
+      'Aprobaciones por niveles',
+    ],
+  },
+  {
+    icon: '📧',
+    title: 'Correos Institucionales',
+    description: 'Sistema de emails que pertenece al conjunto, garantizando continuidad institucional.',
+    features: [
+      'Direcciones @tuconjunto.com',
+      'Memoria institucional permanente',
+      'Independiente de administraciones',
+      'Templates oficiales',
+      'Historial completo conservado',
+      'Comunicación profesional',
+    ],
+  },
+  {
+    icon: '🛍️',
+    title: 'Marketplace Comunitario',
+    description: 'Plataforma de confianza entre vecinos con sistema de calificaciones y experiencias.',
+    features: [
+      'Compra-venta entre residentes',
+      'Sistema de calificaciones reales',
+      'Servicios profesionales',
+      'Solo residentes verificados',
+      'Categorías variadas',
+      'Ambiente de confianza mutua',
+    ],
+  },
+]
+</script>

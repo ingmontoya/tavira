@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\SupportTicket;
+use App\Notifications\Concerns\GeneratesTenantUrls;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,7 +11,7 @@ use Illuminate\Notifications\Notification;
 
 class SupportTicketCreated extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, GeneratesTenantUrls;
 
     public function __construct(
         private SupportTicket $ticket
@@ -31,7 +32,7 @@ class SupportTicketCreated extends Notification implements ShouldQueue
             ->line('**Categoría:** '.ucfirst($this->ticket->category))
             ->line('**Prioridad:** '.ucfirst($this->ticket->priority))
             ->line('**Usuario:** '.$this->ticket->user->name)
-            ->action('Ver Ticket', route('support.show', $this->ticket->id))
+            ->action('Ver Ticket', $this->tenantRoute('support.show', $this->ticket->id))
             ->line('Por favor revisa y responde al ticket cuando sea posible.');
     }
 
@@ -44,7 +45,7 @@ class SupportTicketCreated extends Notification implements ShouldQueue
             'priority' => $this->ticket->priority,
             'user_name' => $this->ticket->user->name,
             'message' => 'Nuevo ticket de soporte creado: '.$this->ticket->title,
-            'action_url' => route('support.show', $this->ticket->id),
+            'action_url' => $this->tenantRoute('support.show', $this->ticket->id),
         ];
     }
 }

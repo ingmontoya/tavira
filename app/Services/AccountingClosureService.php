@@ -639,9 +639,9 @@ class AccountingClosureService
     public function getClosureHistory(?int $fiscalYear = null): array
     {
         $query = AccountingPeriodClosure::forConjunto($this->conjuntoConfigId)
-            ->where('period_type', 'annual')
             ->with(['closedByUser', 'closingTransaction'])
-            ->orderBy('fiscal_year', 'desc');
+            ->orderBy('fiscal_year', 'desc')
+            ->orderBy('period_start_date', 'desc');
 
         if ($fiscalYear) {
             $query->byFiscalYear($fiscalYear);

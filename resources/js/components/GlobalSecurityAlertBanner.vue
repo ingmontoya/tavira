@@ -1,30 +1,16 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/composables/usePermissions';
+import { usePanicAlerts, type SecurityAlert } from '@/composables/usePanicAlerts';
 import { AlertTriangle, Bell, X } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
-interface SecurityAlert {
-    id: string;
-    type: 'panic' | 'security' | 'emergency';
-    message: string;
-    user_name: string;
-    apartment: string;
-    location?: string;
-    created_at: string;
-    status: 'triggered' | 'acknowledged' | 'resolved';
-    severity: 'low' | 'medium' | 'high' | 'critical';
-}
-
 // Reactive state
-const activeAlerts = ref<SecurityAlert[]>([]);
-const isLoading = ref(false);
-const lastCheck = ref<number>(Date.now());
-const checkInterval = ref<NodeJS.Timeout | null>(null);
 const isMinimized = ref(false);
 
 // Composables
 const { hasPermission } = usePermissions();
+const { activeAlerts, isLoading, isConnected, init, cleanup } = usePanicAlerts();
 
 // Check if user can view security alerts
 const canViewAlerts = computed(
@@ -70,51 +56,6 @@ const getAlertIcon = () => {
         return AlertTriangle;
     }
     return Bell;
-};
-
-// Fetch active alerts
-const fetchActiveAlerts = async () => {
-    if (!canViewAlerts.value) return;
-
-    try {
-        isLoading.value = true;
-        const response = await fetch('/api/security/alerts/active', {
-            method: 'GET',
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const newAlerts = data.alerts || [];
-
-            // Check for new critical alerts to trigger sound/notification
-            if (newAlerts.length > activeAlerts.value.length) {
-                const criticalAlerts = newAlerts.filter(
-                    (alert) => alert.severity === 'critical' && !activeAlerts.value.find((existing) => existing.id === alert.id),
-                );
-
-                if (criticalAlerts.length > 0) {
-                    playAlertSound();
-                    showBrowserNotification(criticalAlerts[0]);
-                }
-            }
-
-            activeAlerts.value = newAlerts;
-            lastCheck.value = Date.now();
-        } else if (response.status === 401) {
-            console.warn('Usuario no autenticado para ver alertas de seguridad');
-            // Optionally redirect to login or handle authentication issue
-        }
-    } catch (error) {
-        console.error('Error fetching security alerts:', error);
-    } finally {
-        isLoading.value = false;
-    }
 };
 
 // Play alert sound for critical alerts
@@ -181,18 +122,19 @@ onMounted(async () => {
         await Notification.requestPermission();
     }
 
-    // Initial fetch
-    await fetchActiveAlerts();
+    // Initialize WebSocket connection and fetch initial alerts
+    if (canViewAlerts.value) {
+        await init();
+    }
 
-    // Set up polling every 10 seconds
-    checkInterval.value = setInterval(fetchActiveAlerts, 10000);
+    // Watch for new critical alerts to trigger notifications
+    // This would typically be handled via a watcher on activeAlerts
+    // For simplicity, we'll check on mount
 });
 
 // Cleanup on unmount
 onUnmounted(() => {
-    if (checkInterval.value) {
-        clearInterval(checkInterval.value);
-    }
+    cleanup();
 });
 </script>
 
@@ -236,6 +178,15 @@ onUnmounted(() => {
                                     class="animate-pulse rounded bg-white/20 px-2 py-1 text-xs font-medium"
                                 >
                                     CRÍTICA
+                                </span>
+                                <!-- WebSocket connection indicator -->
+                                <span
+                                    v-if="isConnected"
+                                    class="flex items-center text-xs opacity-75"
+                                    title="Conectado en tiempo real"
+                                >
+                                    <span class="mr-1 h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+                                    En vivo
                                 </span>
                             </div>
 

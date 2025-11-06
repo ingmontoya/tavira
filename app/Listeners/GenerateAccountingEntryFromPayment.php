@@ -136,7 +136,7 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
         ]);
 
         $cashAccount = $this->getCashAccountForPaymentMethod($conjuntoConfigId, $paymentMethod);
-        $carteraAccount = $this->getAccountByCode($conjuntoConfigId, '130501');
+        $carteraAccount = $this->getAccountByCode($conjuntoConfigId, '13050505');
 
         $transaction->addEntry([
             'account_id' => $cashAccount->id,
@@ -181,19 +181,25 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
         // Mapeo por defecto basado en el tipo
         $defaultMappings = [
             'common_expense' => [
-                'receivable_code' => '130501', // Cartera Administración
+                'receivable_code' => '13050505', // Cartera Administración
+            ],
+            'monthly_administration' => [
+                'receivable_code' => '13050505', // Cartera Administración
             ],
             'sanction' => [
-                'receivable_code' => '130501', // Cartera Administración
+                'receivable_code' => '13050505', // Cartera Administración
             ],
             'parking' => [
-                'receivable_code' => '130501', // Cartera Administración
+                'receivable_code' => '13050505', // Cartera Administración
             ],
             'late_fee' => [
-                'receivable_code' => '130503', // Cartera Intereses Mora
+                'receivable_code' => '13050510', // Cartera Intereses Mora
+            ],
+            'extraordinary_assessment' => [
+                'receivable_code' => '13050545', // Cartera Cuotas Extraordinarias
             ],
             'special' => [
-                'receivable_code' => '130502', // Cartera Cuotas Extraordinarias
+                'receivable_code' => '13050545', // Cartera Cuotas Extraordinarias
             ],
         ];
 
@@ -208,9 +214,11 @@ class GenerateAccountingEntryFromPayment implements ShouldQueue
     {
         $labels = [
             'common_expense' => 'Cuotas Administración',
+            'monthly_administration' => 'Cuotas Administración',
             'sanction' => 'Multas y Sanciones',
             'parking' => 'Parqueaderos',
             'late_fee' => 'Intereses de Mora',
+            'extraordinary_assessment' => 'Cuotas Extraordinarias',
             'special' => 'Cuotas Extraordinarias',
         ];
 

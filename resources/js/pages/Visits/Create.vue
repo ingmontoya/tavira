@@ -8,18 +8,24 @@ import { Textarea } from '@/components/ui/textarea';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, Clock, FileText, Save, UserPlus } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { ArrowLeft, Calendar, Clock, FileText, Save, UserPlus, Trash2, Plus, Car } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+
+interface Guest {
+    guest_name: string;
+    document_type: string;
+    document_number: string;
+    phone: string;
+    vehicle_plate: string;
+    vehicle_color: string;
+}
 
 interface VisitFormData {
     apartment_id: number | null;
-    visitor_name: string;
-    visitor_document_type: string;
-    visitor_document_number: string;
-    visitor_phone: string;
     visit_reason: string;
     valid_from: string;
     valid_until: string;
+    guests: Guest[];
 }
 
 interface Apartment {
@@ -35,13 +41,19 @@ const props = defineProps<{
 
 const form = useForm<VisitFormData>({
     apartment_id: null,
-    visitor_name: '',
-    visitor_document_type: 'CC',
-    visitor_document_number: '',
-    visitor_phone: '',
     visit_reason: '',
     valid_from: '',
     valid_until: '',
+    guests: [
+        {
+            guest_name: '',
+            document_type: 'CC',
+            document_number: '',
+            phone: '',
+            vehicle_plate: '',
+            vehicle_color: '',
+        },
+    ],
 });
 
 const selectedApartment = computed(() => {
@@ -83,6 +95,23 @@ const dateValidation = computed(() => {
     };
 });
 
+const addGuest = () => {
+    form.guests.push({
+        guest_name: '',
+        document_type: 'CC',
+        document_number: '',
+        phone: '',
+        vehicle_plate: '',
+        vehicle_color: '',
+    });
+};
+
+const removeGuest = (index: number) => {
+    if (form.guests.length > 1) {
+        form.guests.splice(index, 1);
+    }
+};
+
 const submit = () => {
     // Ensure dates are valid before submitting
     const now = new Date();
@@ -113,7 +142,7 @@ const submit = () => {
     <Head title="Nueva Visita" />
 
     <AppLayout>
-        <div class="container mx-auto max-w-2xl px-6 py-8">
+        <div class="container mx-auto max-w-4xl px-6 py-8">
             <div class="mb-8">
                 <div class="mb-4 flex items-center gap-4">
                     <Link :href="route('visits.index')" class="text-gray-500 hover:text-gray-700">
@@ -121,7 +150,7 @@ const submit = () => {
                     </Link>
                     <div>
                         <h1 class="text-3xl font-bold text-gray-900">Nueva Visita</h1>
-                        <p class="text-gray-600">Registra una nueva visita y genera el código QR de acceso</p>
+                        <p class="text-gray-600">Registra una nueva visita con uno o más invitados y genera el código QR de acceso</p>
                     </div>
                 </div>
             </div>
@@ -162,56 +191,101 @@ const submit = () => {
                     </CardContent>
                 </Card>
 
-                <!-- Visitor Information -->
+                <!-- Guests Information -->
                 <Card>
                     <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <UserPlus class="h-5 w-5" />
-                            Información del Visitante
-                        </CardTitle>
-                        <CardDescription> Datos de identificación del visitante </CardDescription>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <CardTitle class="flex items-center gap-2">
+                                    <UserPlus class="h-5 w-5" />
+                                    Invitados
+                                </CardTitle>
+                                <CardDescription> Información de los visitantes ({{ form.guests.length }} invitado{{ form.guests.length !== 1 ? 's' : '' }}) </CardDescription>
+                            </div>
+                            <Button type="button" @click="addGuest" variant="outline" size="sm">
+                                <Plus class="mr-2 h-4 w-4" />
+                                Agregar Invitado
+                            </Button>
+                        </div>
                     </CardHeader>
-                    <CardContent class="space-y-4">
-                        <div>
-                            <Label for="visitor_name">Nombre completo <span class="text-red-500">*</span></Label>
-                            <Input id="visitor_name" v-model="form.visitor_name" placeholder="Nombre completo del visitante" required />
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
-                                <Label for="visitor_document_type">Tipo de documento <span class="text-red-500">*</span></Label>
-                                <Select v-model="form.visitor_document_type" required>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="CC">Cédula de Ciudadanía</SelectItem>
-                                        <SelectItem value="CE">Cédula de Extranjería</SelectItem>
-                                        <SelectItem value="PP">Pasaporte</SelectItem>
-                                        <SelectItem value="TI">Tarjeta de Identidad</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                    <CardContent class="space-y-6">
+                        <div
+                            v-for="(guest, index) in form.guests"
+                            :key="index"
+                            class="space-y-4 rounded-lg border p-4"
+                        >
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-semibold text-gray-900">Invitado {{ index + 1 }}</h3>
+                                <Button
+                                    v-if="form.guests.length > 1"
+                                    type="button"
+                                    @click="removeGuest(index)"
+                                    variant="ghost"
+                                    size="sm"
+                                >
+                                    <Trash2 class="h-4 w-4 text-red-600" />
+                                </Button>
                             </div>
 
                             <div>
-                                <Label for="visitor_document_number">Número de documento <span class="text-red-500">*</span></Label>
-                                <Input id="visitor_document_number" v-model="form.visitor_document_number" placeholder="123456789" required />
+                                <Label :for="`guest_name_${index}`">Nombre completo <span class="text-red-500">*</span></Label>
+                                <Input :id="`guest_name_${index}`" v-model="guest.guest_name" placeholder="Nombre completo del invitado" required />
                             </div>
-                        </div>
 
-                        <div>
-                            <Label for="visitor_phone">Teléfono</Label>
-                            <Input id="visitor_phone" v-model="form.visitor_phone" placeholder="+ +44 7447 313219" type="tel" />
-                        </div>
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label :for="`document_type_${index}`">Tipo de documento <span class="text-red-500">*</span></Label>
+                                    <Select v-model="guest.document_type" required>
+                                        <SelectTrigger :id="`document_type_${index}`">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="CC">Cédula de Ciudadanía</SelectItem>
+                                            <SelectItem value="CE">Cédula de Extranjería</SelectItem>
+                                            <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                                            <SelectItem value="TI">Tarjeta de Identidad</SelectItem>
+                                            <SelectItem value="Otro">Otro</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                        <div>
-                            <Label for="visit_reason">Motivo de la visita</Label>
-                            <Textarea
-                                id="visit_reason"
-                                v-model="form.visit_reason"
-                                placeholder="Describe brevemente el motivo de la visita..."
-                                rows="3"
-                            />
+                                <div>
+                                    <Label :for="`document_number_${index}`">Número de documento <span class="text-red-500">*</span></Label>
+                                    <Input :id="`document_number_${index}`" v-model="guest.document_number" placeholder="123456789" required />
+                                </div>
+                            </div>
+
+                            <div>
+                                <Label :for="`phone_${index}`">Teléfono</Label>
+                                <Input :id="`phone_${index}`" v-model="guest.phone" placeholder="+57 300 123 4567" type="tel" />
+                            </div>
+
+                            <!-- Vehicle Info -->
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <div class="mb-3 flex items-center gap-2">
+                                    <Car class="h-4 w-4 text-gray-500" />
+                                    <Label class="mb-0 text-sm font-medium">Información del Vehículo (Opcional)</Label>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                        <Label :for="`vehicle_plate_${index}`" class="text-sm">Placa</Label>
+                                        <Input
+                                            :id="`vehicle_plate_${index}`"
+                                            v-model="guest.vehicle_plate"
+                                            placeholder="ABC123"
+                                            class="uppercase"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label :for="`vehicle_color_${index}`" class="text-sm">Color</Label>
+                                        <Input
+                                            :id="`vehicle_color_${index}`"
+                                            v-model="guest.vehicle_color"
+                                            placeholder="Blanco, Negro, Rojo..."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -236,6 +310,16 @@ const submit = () => {
                                 <Label for="valid_until">Válida hasta <span class="text-red-500">*</span></Label>
                                 <Input id="valid_until" v-model="form.valid_until" type="datetime-local" required />
                             </div>
+                        </div>
+
+                        <div>
+                            <Label for="visit_reason">Motivo de la visita</Label>
+                            <Textarea
+                                id="visit_reason"
+                                v-model="form.visit_reason"
+                                placeholder="Describe brevemente el motivo de la visita..."
+                                rows="3"
+                            />
                         </div>
 
                         <!-- Date validation warnings -->

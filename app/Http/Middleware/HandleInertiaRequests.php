@@ -28,6 +28,28 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
+     * Get the base URL for Ziggy route generation.
+     * In tenant context, use the tenant's domain. Otherwise use APP_URL.
+     */
+    protected function getBaseUrl(Request $request): string
+    {
+        // Get the current host
+        $host = $request->getHost();
+
+        // List of central domains that should use APP_URL
+        $centralDomains = ['127.0.0.1', 'localhost', 'tavira.com.co', 'staging.tavira.com.co'];
+
+        // If we're on a central domain, use APP_URL
+        if (in_array($host, $centralDomains)) {
+            return config('app.url') ?: $request->getSchemeAndHttpHost();
+        }
+
+        // For tenant domains, use the current scheme and host
+        // This ensures tenant-specific URLs are generated correctly
+        return $request->getSchemeAndHttpHost();
+    }
+
+    /**
      * Define the props that are shared by default.
      *
      * @see https://inertiajs.com/shared-data
@@ -45,9 +67,16 @@ class HandleInertiaRequests extends Middleware
                 'tenant_name' => session('tenant_name'),
                 'original_admin_id' => session('original_admin_id'),
             ],
-            'ziggy' => [
+            'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
+                // Use APP_URL as base for location to ensure correct URL in K8s/proxied environments
+                // This prevents Ziggy from using internal pod IPs (127.0.0.1) for route generation
+                'location' => rtrim($this->getBaseUrl($request), '/').$request->getRequestUri(),
+                // Override URL and port to use APP_URL instead of internal request URL
+                // This fixes issues with Ziggy generating 127.0.0.1 URLs in K8s environments
+                // For tenants, use the current domain instead of central APP_URL
+                'url' => $this->getBaseUrl($request),
+                'port' => null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [

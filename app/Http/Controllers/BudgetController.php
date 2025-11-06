@@ -17,7 +17,8 @@ class BudgetController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $query = Budget::forConjunto($conjunto->id)
-            ->with(['approvedBy']);
+            ->with(['approvedBy'])
+            ->withCount('items'); // Optimize N+1 query for can_be_approved and can_approve
 
         if ($request->filled('status')) {
             $query->byStatus($request->status);

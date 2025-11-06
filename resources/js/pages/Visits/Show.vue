@@ -7,6 +7,16 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Download, QrCode, Share, Shield, User } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 
+interface VisitGuest {
+    id: number;
+    guest_name: string;
+    document_type: string;
+    document_number: string;
+    phone?: string;
+    vehicle_plate?: string;
+    vehicle_color?: string;
+}
+
 interface Visit {
     id: number;
     visitor_name: string;
@@ -19,6 +29,7 @@ interface Visit {
     qr_code: string;
     status: 'pending' | 'active' | 'used' | 'expired' | 'cancelled';
     entry_time: string | null;
+    guests?: VisitGuest[];
     apartment: {
         id: number;
         number: string;
@@ -390,7 +401,61 @@ onMounted(() => {
 
                 <!-- Visit Details -->
                 <div class="space-y-6">
-                    <Card>
+                    <!-- Multiple Guests Section -->
+                    <Card v-if="visit.guests && visit.guests.length > 0">
+                        <CardHeader>
+                            <CardTitle class="flex items-center gap-2">
+                                <User class="h-5 w-5" />
+                                Invitados ({{ visit.guests.length }})
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-4">
+                            <div v-for="(guest, index) in visit.guests" :key="guest.id" class="rounded-lg border p-4">
+                                <div class="mb-3 flex items-center justify-between">
+                                    <h3 class="font-semibold text-gray-900">Invitado {{ index + 1 }}</h3>
+                                </div>
+
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-500">Nombre completo</label>
+                                        <div class="text-base font-medium">{{ guest.guest_name }}</div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="text-sm font-medium text-gray-500">Documento</label>
+                                            <div class="text-base">{{ guest.document_type }}</div>
+                                        </div>
+                                        <div>
+                                            <label class="text-sm font-medium text-gray-500">Número</label>
+                                            <div class="font-mono text-base">{{ guest.document_number }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="guest.phone">
+                                        <label class="text-sm font-medium text-gray-500">Teléfono</label>
+                                        <div class="text-base">{{ guest.phone }}</div>
+                                    </div>
+
+                                    <div v-if="guest.vehicle_plate" class="rounded-lg bg-gray-50 p-3">
+                                        <label class="text-sm font-medium text-gray-500">Vehículo</label>
+                                        <div class="mt-1 flex items-center gap-2">
+                                            <span class="font-mono text-base font-semibold">{{ guest.vehicle_plate }}</span>
+                                            <span v-if="guest.vehicle_color" class="text-base text-gray-600">- {{ guest.vehicle_color }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="visit.visit_reason" class="border-t pt-4">
+                                <label class="text-sm font-medium text-gray-500">Motivo de la visita</label>
+                                <div class="text-base">{{ visit.visit_reason }}</div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Single Visitor Section (backward compatibility) -->
+                    <Card v-else>
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <User class="h-5 w-5" />

@@ -15,7 +15,7 @@ class VisitController extends Controller
     public function index(Request $request): Response
     {
         $user = Auth::user();
-        $query = Visit::with(['apartment', 'creator']);
+        $query = Visit::with(['apartment', 'creator', 'guests']);
 
         if ($user->hasRole('residente') || $user->hasRole('propietario')) {
             $apartment = $user->residents->first()?->apartment;
@@ -31,7 +31,12 @@ class VisitController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('visitor_name', 'like', "%{$search}%")
                     ->orWhere('visitor_document_number', 'like', "%{$search}%")
-                    ->orWhere('qr_code', 'like', "%{$search}%");
+                    ->orWhere('qr_code', 'like', "%{$search}%")
+                    ->orWhereHas('guests', function ($gq) use ($search) {
+                        $gq->where('guest_name', 'like', "%{$search}%")
+                            ->orWhere('document_number', 'like', "%{$search}%")
+                            ->orWhere('vehicle_plate', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -79,27 +84,57 @@ class VisitController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
-            'apartment_id' => ['required', 'exists:apartments,id'],
-            'visitor_name' => ['required', 'string', 'max:255'],
-            'visitor_document_type' => ['required', 'in:CC,CE,PP,TI'],
-            'visitor_document_number' => ['required', 'string', 'max:20'],
-            'visitor_phone' => ['nullable', 'string', 'max:20'],
-            'visit_reason' => ['nullable', 'string', 'max:500'],
-            'valid_from' => [
-                'required',
-                'date',
-                function ($attribute, $value, $fail) {
-                    $validFrom = \Carbon\Carbon::parse($value);
-                    $now = \Carbon\Carbon::now()->subMinutes(5); // Allow 5 minutes tolerance
+        // Support both old single-visitor format and new multi-guest format
+        $isMultiGuest = $request->has('guests') && is_array($request->guests);
 
-                    if ($validFrom->lt($now)) {
-                        $fail('La fecha de inicio debe ser posterior o igual al momento actual.');
-                    }
-                },
-            ],
-            'valid_until' => ['required', 'date', 'after:valid_from'],
-        ]);
+        if ($isMultiGuest) {
+            $request->validate([
+                'apartment_id' => ['required', 'exists:apartments,id'],
+                'visit_reason' => ['nullable', 'string', 'max:500'],
+                'valid_from' => [
+                    'required',
+                    'date',
+                    function ($attribute, $value, $fail) {
+                        $validFrom = \Carbon\Carbon::parse($value);
+                        $now = \Carbon\Carbon::now()->subMinutes(5);
+
+                        if ($validFrom->lt($now)) {
+                            $fail('La fecha de inicio debe ser posterior o igual al momento actual.');
+                        }
+                    },
+                ],
+                'valid_until' => ['required', 'date', 'after:valid_from'],
+                'guests' => ['required', 'array', 'min:1'],
+                'guests.*.guest_name' => ['required', 'string', 'max:255'],
+                'guests.*.document_type' => ['required', 'in:CC,CE,Pasaporte,TI,Otro'],
+                'guests.*.document_number' => ['required', 'string', 'max:255'],
+                'guests.*.phone' => ['nullable', 'string', 'max:20'],
+                'guests.*.vehicle_plate' => ['nullable', 'string', 'max:10'],
+                'guests.*.vehicle_color' => ['nullable', 'string', 'max:50'],
+            ]);
+        } else {
+            $request->validate([
+                'apartment_id' => ['required', 'exists:apartments,id'],
+                'visitor_name' => ['required', 'string', 'max:255'],
+                'visitor_document_type' => ['required', 'in:CC,CE,PP,TI'],
+                'visitor_document_number' => ['required', 'string', 'max:20'],
+                'visitor_phone' => ['nullable', 'string', 'max:20'],
+                'visit_reason' => ['nullable', 'string', 'max:500'],
+                'valid_from' => [
+                    'required',
+                    'date',
+                    function ($attribute, $value, $fail) {
+                        $validFrom = \Carbon\Carbon::parse($value);
+                        $now = \Carbon\Carbon::now()->subMinutes(5);
+
+                        if ($validFrom->lt($now)) {
+                            $fail('La fecha de inicio debe ser posterior o igual al momento actual.');
+                        }
+                    },
+                ],
+                'valid_until' => ['required', 'date', 'after:valid_from'],
+            ]);
+        }
 
         if ($user->hasRole('residente') || $user->hasRole('propietario')) {
             $apartment = $user->residents->first()?->apartment;
@@ -108,18 +143,25 @@ class VisitController extends Controller
             }
         }
 
-        Visit::create([
+        $visit = Visit::create([
             'apartment_id' => $request->apartment_id,
             'created_by' => $user->id,
-            'visitor_name' => $request->visitor_name,
-            'visitor_document_type' => $request->visitor_document_type,
-            'visitor_document_number' => $request->visitor_document_number,
-            'visitor_phone' => $request->visitor_phone,
+            'visitor_name' => $isMultiGuest ? $request->guests[0]['guest_name'] : $request->visitor_name,
+            'visitor_document_type' => $isMultiGuest ? $request->guests[0]['document_type'] : $request->visitor_document_type,
+            'visitor_document_number' => $isMultiGuest ? $request->guests[0]['document_number'] : $request->visitor_document_number,
+            'visitor_phone' => $isMultiGuest ? ($request->guests[0]['phone'] ?? null) : $request->visitor_phone,
             'visit_reason' => $request->visit_reason,
             'valid_from' => $request->valid_from,
             'valid_until' => $request->valid_until,
             'status' => 'pending',
         ]);
+
+        // Create multiple guests if provided
+        if ($isMultiGuest) {
+            foreach ($request->guests as $guestData) {
+                $visit->guests()->create($guestData);
+            }
+        }
 
         return redirect()->route('visits.index')
             ->with('success', 'Visita creada exitosamente.');
@@ -136,7 +178,7 @@ class VisitController extends Controller
             }
         }
 
-        $visit->load(['apartment', 'creator', 'authorizer']);
+        $visit->load(['apartment', 'creator', 'authorizer', 'guests']);
 
         return Inertia::render('Visits/Show', [
             'visit' => $visit,

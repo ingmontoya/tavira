@@ -10,6 +10,7 @@ use App\Listeners\GenerateAccountingEntryFromInvoice;
 use App\Listeners\GenerateAccountingEntryFromLateFee;
 use App\Listeners\GenerateAccountingEntryFromPayment;
 use App\Listeners\SendWelcomeEmail;
+use App\Listeners\UpdateExtraordinaryAssessmentProgress;
 use App\Listeners\SyncProvidersToNewTenant;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
 use App\Models\ConjuntoConfig;
@@ -38,10 +39,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS scheme in production
+        // Force HTTPS scheme in production and staging
         // The TrustProxies middleware handles X-Forwarded-Host for proper domain detection
-        if (config('app.env') === 'production') {
+        if (in_array(config('app.env'), ['production', 'staging'])) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
+
+            // IMPORTANT: Do NOT force root URL here because it breaks tenant domains
+            // The TrustProxies middleware will correctly detect the domain from X-Forwarded-Host
+            // Only the HTTPS scheme needs to be forced
         }
 
         // Configurar mapa de morfos para relaciones polimórficas
@@ -68,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
         // Eventos contables
         Event::listen(InvoiceCreated::class, GenerateAccountingEntryFromInvoice::class);
         Event::listen(PaymentReceived::class, GenerateAccountingEntryFromPayment::class);
+        Event::listen(PaymentReceived::class, UpdateExtraordinaryAssessmentProgress::class);
         Event::listen(LateFeeApplied::class, GenerateAccountingEntryFromLateFee::class);
         Event::listen(AccountingTransactionPosted::class, UpdateBudgetExecutionFromTransaction::class);
 

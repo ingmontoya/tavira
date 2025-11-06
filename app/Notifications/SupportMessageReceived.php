@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\SupportMessage;
 use App\Models\SupportTicket;
+use App\Notifications\Concerns\GeneratesTenantUrls;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,7 +12,7 @@ use Illuminate\Notifications\Notification;
 
 class SupportMessageReceived extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, GeneratesTenantUrls;
 
     public function __construct(
         private SupportTicket $ticket,
@@ -41,7 +42,7 @@ class SupportMessageReceived extends Notification implements ShouldQueue
             ->line('**De:** '.$this->message->user->name)
             ->line('**Mensaje:**')
             ->line($this->message->message)
-            ->action('Ver Ticket Completo', route('support.show', $this->ticket->id))
+            ->action('Ver Ticket Completo', $this->tenantRoute('support.show', $this->ticket->id))
             ->line('Puedes responder directamente desde la plataforma.');
     }
 
@@ -56,7 +57,7 @@ class SupportMessageReceived extends Notification implements ShouldQueue
             'message' => $this->message->is_admin_reply
                 ? 'Respuesta recibida en: '.$this->ticket->title
                 : 'Nuevo mensaje en: '.$this->ticket->title,
-            'action_url' => route('support.show', $this->ticket->id),
+            'action_url' => $this->tenantRoute('support.show', $this->ticket->id),
         ];
     }
 }

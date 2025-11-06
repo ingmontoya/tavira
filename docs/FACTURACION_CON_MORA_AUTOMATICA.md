@@ -39,8 +39,9 @@ El sistema de facturación mensual ha sido actualizado para incluir automáticam
 3. **Mes 3 (Marzo)**: Si tampoco se pagó Febrero:
    - Conceptos:
      - Administración Mensual (Marzo): $250,000
-     - Interés de Mora (por Febrero impago): $5,100 (2% de $255,000)
-   - Total: $255,100
+     - Interés de Mora (por Febrero impago): $5,000 (2% de $250,000 - **NO se cobra interés sobre interés**)
+   - Total: $255,000
+   - **IMPORTANTE**: La mora siempre se calcula sobre el capital adeudado ($250,000), nunca sobre el balance que incluye moras previas
 
 ## Configuración
 
@@ -116,30 +117,52 @@ La mora se aplica **solo si**:
 2. La factura del mes anterior NO está pagada (status != 'pagado')
 3. El período de gracia ha finalizado
 4. Las moras están habilitadas en la configuración
-5. El balance pendiente es mayor a 0
+5. El balance de capital pendiente es mayor a 0
 
 ### Cálculo del Monto
 
+**REGLA FUNDAMENTAL**: La mora se calcula ÚNICAMENTE sobre el **capital adeudado**, excluyendo cualquier interés de mora previo. No se permite cobrar intereses sobre intereses (anatocismo).
+
 ```php
-// Base de cálculo: balance pendiente de la factura anterior
-$baseAmount = $previousInvoice->balance_amount;
+// Base de cálculo: balance de capital (excluyendo moras previas)
+$capitalBalance = $previousInvoice->getCapitalBalance();
 
 // Cálculo de mora
-$lateFeeAmount = round($baseAmount * ($late_fee_percentage / 100), 2);
+$lateFeeAmount = round($capitalBalance * ($late_fee_percentage / 100), 2);
 ```
 
 ### Ejemplo de Cálculo
 
+**Escenario 1 - Sin pagos parciales:**
+
 Si la factura de Enero tiene:
 - Subtotal: $250,000
+- Moras acumuladas: $0
+- Balance de capital: $250,000
+- Porcentaje de mora: 2%
+
+Entonces la mora en Febrero será:
+```
+Mora = $250,000 * (2 / 100) = $5,000
+```
+
+**Escenario 2 - Con pagos parciales:**
+
+Si la factura de Enero tiene:
+- Subtotal original: $250,000
+- Moras aplicadas previamente: $5,000
+- Total adeudado: $255,000
 - Pagos parciales: $100,000
-- Balance pendiente: $150,000
+- Balance total pendiente: $155,000
+- Balance de capital: $150,000 ($155,000 - $5,000 de moras)
 - Porcentaje de mora: 2%
 
 Entonces la mora en Febrero será:
 ```
 Mora = $150,000 * (2 / 100) = $3,000
 ```
+
+**Nota**: La mora se calcula sobre $150,000 (capital), NO sobre $155,000 (balance total que incluye moras).
 
 ## Diferencias con el Sistema Anterior
 
@@ -176,11 +199,16 @@ Total factura: $255,000
 
 2. **Cambio de Año**: El sistema maneja correctamente el cambio de año. Si se generan facturas de Enero 2025, buscará facturas de Diciembre 2024.
 
-3. **Pagos Parciales**: Si una factura tiene pagos parciales, la mora se calcula sobre el `balance_amount`, no sobre el total original.
+3. **Pagos Parciales**: Si una factura tiene pagos parciales, la mora se calcula sobre el balance de capital (excluyendo moras previas), no sobre el balance total.
 
-4. **Múltiples Moras**: Si un apartamento acumula varios meses sin pagar, cada mes generará su propia mora basada en el balance del mes anterior.
+4. **Múltiples Moras**: Si un apartamento acumula varios meses sin pagar, cada mes generará su propia mora basada en el **capital pendiente** (NO sobre el balance total que incluye moras previas).
 
-5. **Desactivación de Moras**: Si se desactivan las moras en la configuración (`late_fees_enabled = false`), las nuevas facturas no incluirán ítems de mora, pero las facturas ya generadas conservan sus moras.
+5. **No Anatocismo**: El sistema implementa la prohibición de cobrar intereses sobre intereses. Esto significa que:
+   - Las moras se calculan SIEMPRE sobre el saldo de capital
+   - Nunca se incluyen moras previas en la base de cálculo
+   - Esta es una práctica legal estándar en Colombia y protege al deudor
+
+6. **Desactivación de Moras**: Si se desactivan las moras en la configuración (`late_fees_enabled = false`), las nuevas facturas no incluirán ítems de mora, pero las facturas ya generadas conservan sus moras.
 
 ## Migración desde el Sistema Anterior
 
@@ -229,4 +257,8 @@ php artisan invoices:generate-monthly --year=2025 --month=2 --force
 
 ### ¿La mora se calcula sobre el subtotal o sobre el total con descuentos?
 
-La mora se calcula sobre el `balance_amount`, que es el saldo pendiente después de aplicar descuentos y pagos parciales.
+La mora se calcula sobre el **balance de capital**, que es el saldo pendiente después de aplicar descuentos y pagos parciales, pero **EXCLUYENDO las moras previas acumuladas**. Esto asegura que no se cobren intereses sobre intereses.
+
+### ¿Por qué no se calculan intereses sobre intereses?
+
+El sistema está diseñado para cumplir con la prohibición de anatocismo (capitalización de intereses). Cobrar intereses sobre intereses sin consentimiento expreso es una práctica cuestionable legalmente en Colombia. Por eso, las moras siempre se calculan únicamente sobre el capital adeudado.

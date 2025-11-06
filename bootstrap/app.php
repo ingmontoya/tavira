@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     ->withSchedule(function ($schedule) {
@@ -36,6 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Process late fees on the 1st of each month at 09:00
         $schedule->command('invoices:process-late-fees')->monthlyOn(1, '09:00');
+
+        // Update apartment payment statuses daily at 03:00 (runs for all tenants)
+        $schedule->command('tenants:run apartments:update-payment-status')->dailyAt('03:00');
 
         // Sync tenant subscription status every hour
         $schedule->command('tenants:sync-subscription-status')->hourly();
@@ -46,8 +50,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        $middleware->web(prepend: [
+            TrustProxies::class, // Must be first to handle X-Forwarded-* headers
+        ]);
+
         $middleware->web(append: [
-            TrustProxies::class,
             HandleCors::class,
             VerifyCsrfToken::class,
             // SecurityHeadersMiddleware::class, // Temporarily disabled for testing

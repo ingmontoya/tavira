@@ -300,6 +300,30 @@ class Invoice extends Model
         return (float) $this->balance_amount;
     }
 
+    /**
+     * Calcula el balance de capital (excluyendo intereses de mora)
+     * Este método es fundamental para asegurar que no se cobren intereses sobre intereses
+     */
+    public function getCapitalBalance(): float
+    {
+        // Calcular el total de moras en esta factura
+        // 1. Moras acumuladas en el campo late_fees (sistema antiguo/acumulativo)
+        $accumulatedLateFees = (float) $this->late_fees;
+
+        // 2. Moras como ítems en la factura (sistema nuevo de ítems)
+        $itemLateFees = $this->items()
+            ->whereHas('paymentConcept', function ($query) {
+                $query->where('type', 'late_fee');
+            })
+            ->sum('total_price');
+
+        // El balance de capital es el balance total menos todas las moras
+        $capitalBalance = $this->balance_amount - $accumulatedLateFees - $itemLateFees;
+
+        // Asegurar que no sea negativo
+        return max(0, $capitalBalance);
+    }
+
     protected static function boot()
     {
         parent::boot();

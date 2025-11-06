@@ -144,6 +144,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['13050530', 'USO ZONAS COMUNES (Se sugiere una cuenta para cada servicio: BBQ, Salón, Squash, fichas, etc.)', 5],
             ['13050535', 'HONORARIOS DE ABOGADO', 5],
             ['13050540', 'COSTOS Y GASTOS DE COBRANZA (Certificados libertad o vehículo, pólizas, fotocopias, etc.)', 5],
+            ['13050545', 'CUOTAS EXTRAORDINARIAS', 5],
             ['1330', 'ANTICIPOS Y AVANCES', 3],
             ['133005', 'A PROVEEDORES', 4],
             ['133010', 'A CONTRATISTAS', 4],

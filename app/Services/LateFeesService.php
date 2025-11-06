@@ -85,6 +85,9 @@ class LateFeesService
 
     /**
      * Calcula el monto de mora mensual
+     *
+     * IMPORTANTE: La mora se calcula SOLO sobre el capital adeudado (saldo sin moras previas).
+     * No se permite cobrar intereses sobre intereses (anatocismo).
      */
     private function calculateMonthlyLateFee(Invoice $invoice, Carbon $processDate): float
     {
@@ -92,18 +95,17 @@ class LateFeesService
             return 0;
         }
 
-        // Determinar sobre qué monto calcular la mora
-        // Si es la primera vez, usar el subtotal original
-        // Si ya tiene moras aplicadas, usar el balance actual
-        $baseAmount = $invoice->original_base_amount ?? $invoice->balance_amount;
+        // Calcular el balance de capital (excluyendo moras previas)
+        // Este método asegura que NO se calculen intereses sobre intereses
+        $capitalBalance = $invoice->getCapitalBalance();
 
-        // Si no hay original_base_amount, es la primera vez - guardarlo
-        if (is_null($invoice->original_base_amount)) {
-            $baseAmount = $invoice->subtotal; // Usar subtotal sin descuentos ni moras previas
+        // Si no hay balance de capital, no hay mora
+        if ($capitalBalance <= 0) {
+            return 0;
         }
 
         $monthlyRate = $this->paymentSettings->late_fee_percentage / 100;
-        $lateFeeAmount = $baseAmount * $monthlyRate;
+        $lateFeeAmount = $capitalBalance * $monthlyRate;
 
         return round($lateFeeAmount, 2);
     }
@@ -127,7 +129,8 @@ class LateFeesService
             $lateFeesHistory[] = [
                 'date' => $processDate->format('Y-m-d'),
                 'amount' => $lateFeeAmount,
-                'base_amount' => $invoice->balance_amount,
+                'base_amount' => $invoice->getCapitalBalance(), // Usar balance de capital, no balance total
+                'balance_amount' => $invoice->balance_amount, // Guardar también el balance total para referencia
                 'rate' => $this->paymentSettings->late_fee_percentage,
                 'month' => $processDate->format('Y-m'),
             ];
