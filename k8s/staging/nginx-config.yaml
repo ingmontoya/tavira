@@ -120,8 +120,8 @@ data:
         }
 
         # Vite build assets - always serve from main public directory
-        location /build/ {
-            root /var/www/html/public;
+        location ^~ /build {
+            alias /var/www/html/public/build;
             expires 7d;
             add_header Cache-Control "public";
             access_log off;
