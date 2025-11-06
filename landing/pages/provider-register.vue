@@ -153,7 +153,7 @@
             </div>
 
             <a
-              href="https://tavira.com.co/provider-register"
+              :href="registrationUrl"
               class="block w-full rounded-lg bg-accent px-8 py-4 text-center text-lg font-semibold text-white transition-all hover:bg-accent/90"
             >
               Ir al Formulario de Registro
@@ -180,6 +180,22 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
+// Determine registration URL based on environment
+const config = useRuntimeConfig()
+const registrationUrl = computed(() => {
+  // In development/staging, use current host
+  if (typeof window !== 'undefined') {
+    const currentHost = window.location.hostname
+    if (currentHost.includes('staging') || currentHost === 'localhost' || currentHost === '127.0.0.1') {
+      return `${window.location.protocol}//${currentHost}/provider-register-form`
+    }
+  }
+  // In production, use main domain
+  return 'https://tavira.com.co/provider-register-form'
+})
+
 // SEO
 useHead({
   title: 'Registro de Proveedores - Tavira',

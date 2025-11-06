@@ -22,6 +22,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
             ->name('provider-register');
 
+        // Direct form access (bypasses landing page)
+        Route::get('/provider-register-form', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
+            ->name('provider-register-form');
+
         Route::post('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'store'])
             ->name('provider-register.store');
 
