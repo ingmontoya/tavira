@@ -119,6 +119,15 @@ data:
             add_header Content-Type text/plain;
         }
 
+        # Vite build assets - always serve from main public directory
+        location /build/ {
+            root /var/www/html/public;
+            expires 7d;
+            add_header Cache-Control "public";
+            access_log off;
+            try_files $uri =404;
+        }
+
         # Static files - cache for shorter time in staging
         location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
             root $app_root;  # Use correct root based on domain type
