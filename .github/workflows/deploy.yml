@@ -89,10 +89,11 @@ jobs:
         run: |
           echo "🔄 Updating deployment to ${{ steps.version.outputs.tag }}..."
           kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+            setup=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             php-fpm=${{ env.DOCKER_IMAGE_PHP }}:${{ steps.version.outputs.tag }} \
             -n ${{ env.K8S_NAMESPACE }} \
             --record
-          echo "✅ Deployment updated"
+          echo "✅ Deployment updated (init container + php-fpm)"
 
       # 🔟 Wait for rollout
       - name: Wait for rollout to complete
