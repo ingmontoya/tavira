@@ -76,6 +76,11 @@ Route::middleware([
 
     // Settings routes for tenants
     require __DIR__.'/settings.php';
+
+    // Debug routes (only loaded when APP_DEBUG=true)
+    if (config('app.debug')) {
+        require __DIR__.'/debug-income-accounts.php';
+    }
 });
 
 Route::middleware([
