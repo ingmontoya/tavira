@@ -12,7 +12,6 @@ use App\Models\PaymentConcept;
 use App\Models\PaymentConceptAccountMapping;
 use App\Models\Resident;
 use App\Models\Visit;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -93,15 +92,6 @@ class DashboardController extends Controller
         // Tendencia de recaudo - Datos reales de pagos (only for users with payment permissions)
         $paymentTrend = $canViewPayments ? $this->getPaymentTrend() : collect();
 
-        // Pagos vencidos de meses anteriores (only for users with payment permissions)
-        $overduePayments = $canViewPayments ? $this->getOverduePaymentsFromPreviousMonths($selectedYear, $selectedMonthNum) : [
-            'total_overdue_apartments' => 0,
-            'total_overdue_amount' => 0,
-            'total_overdue_invoices' => 0,
-            'average_days_overdue' => 0,
-            'overdue_by_range' => [],
-        ];
-
         // Notificaciones pendientes - Datos reales del sistema
         $pendingNotifications = $this->getPendingNotifications();
 
@@ -119,7 +109,6 @@ class DashboardController extends Controller
                 'monthlyExpenses' => $monthlyExpenses,
                 'paymentTrend' => $paymentTrend,
             ],
-            'overduePayments' => $overduePayments,
             'pendingNotifications' => $pendingNotifications,
             'recentActivity' => $canViewFullAdmin ? $this->getRecentActivity() : collect(),
             'selectedMonth' => $selectedMonth,
@@ -403,107 +392,6 @@ class DashboardController extends Controller
             ['status' => '90 días de mora', 'count' => $overdue90, 'color' => '#dc2626'],
             ['status' => '+90 días de mora', 'count' => $overdue90Plus, 'color' => '#7f1d1d'],
         ])->filter(fn ($item) => $item['count'] > 0)->values();
-    }
-
-    /**
-     * Get overdue payments from previous months
-     * This tracks invoices that were generated in previous months but remain unpaid
-     */
-    private function getOverduePaymentsFromPreviousMonths(int $currentYear, int $currentMonth): array
-    {
-        $conjuntoConfig = ConjuntoConfig::first();
-        if (! $conjuntoConfig) {
-            return [
-                'total_overdue_apartments' => 0,
-                'total_overdue_amount' => 0,
-                'total_overdue_invoices' => 0,
-                'average_days_overdue' => 0,
-                'overdue_by_range' => [],
-            ];
-        }
-
-        // Get all unpaid invoices from previous months
-        // Use both billing_date and billing_period fields for flexibility
-        $currentMonthStart = Carbon::create($currentYear, $currentMonth, 1)->startOfMonth();
-
-        $overdueInvoices = Invoice::where(function ($query) use ($currentYear, $currentMonth, $currentMonthStart) {
-            // Option 1: Use billing_period_year and billing_period_month if available
-            $query->where(function ($q) use ($currentYear, $currentMonth) {
-                $q->where('billing_period_year', '<', $currentYear)
-                    ->orWhere(function ($q2) use ($currentYear, $currentMonth) {
-                        $q2->where('billing_period_year', '=', $currentYear)
-                            ->where('billing_period_month', '<', $currentMonth);
-                    });
-            })
-            // Option 2: Fallback to billing_date if period fields are not set
-            ->orWhere(function ($q) use ($currentMonthStart) {
-                $q->whereNull('billing_period_year')
-                    ->where('billing_date', '<', $currentMonthStart);
-            });
-        })
-            ->whereIn('status', ['pendiente', 'vencido', 'pago_parcial'])
-            ->where('balance_amount', '>', 0)
-            ->with('apartment')
-            ->get();
-
-        if ($overdueInvoices->isEmpty()) {
-            return [
-                'total_overdue_apartments' => 0,
-                'total_overdue_amount' => 0,
-                'total_overdue_invoices' => 0,
-                'average_days_overdue' => 0,
-                'overdue_by_range' => [],
-            ];
-        }
-
-        $totalOverdueAmount = 0;
-        $totalDaysOverdue = 0;
-        $overdueCount = 0;
-        $overdueApartments = [];
-        $overdueByRange = [
-            '0-30' => ['count' => 0, 'amount' => 0],
-            '30-60' => ['count' => 0, 'amount' => 0],
-            '60-90' => ['count' => 0, 'amount' => 0],
-            '90+' => ['count' => 0, 'amount' => 0],
-        ];
-
-        foreach ($overdueInvoices as $invoice) {
-            $totalOverdueAmount += $invoice->balance_amount;
-            $overdueApartments[$invoice->apartment_id] = true;
-
-            // Calculate days overdue
-            $today = now()->startOfDay();
-            $dueDate = $invoice->due_date->startOfDay();
-            $daysOverdue = $today->greaterThan($dueDate) ? $dueDate->diffInDays($today) : 0;
-
-            if ($daysOverdue > 0) {
-                $totalDaysOverdue += $daysOverdue;
-                $overdueCount++;
-
-                // Categorize by range
-                if ($daysOverdue <= 30) {
-                    $overdueByRange['0-30']['count']++;
-                    $overdueByRange['0-30']['amount'] += $invoice->balance_amount;
-                } elseif ($daysOverdue <= 60) {
-                    $overdueByRange['30-60']['count']++;
-                    $overdueByRange['30-60']['amount'] += $invoice->balance_amount;
-                } elseif ($daysOverdue <= 90) {
-                    $overdueByRange['60-90']['count']++;
-                    $overdueByRange['60-90']['amount'] += $invoice->balance_amount;
-                } else {
-                    $overdueByRange['90+']['count']++;
-                    $overdueByRange['90+']['amount'] += $invoice->balance_amount;
-                }
-            }
-        }
-
-        return [
-            'total_overdue_apartments' => count($overdueApartments),
-            'total_overdue_amount' => $totalOverdueAmount,
-            'total_overdue_invoices' => $overdueInvoices->count(),
-            'average_days_overdue' => $overdueCount > 0 ? round($totalDaysOverdue / $overdueCount) : 0,
-            'overdue_by_range' => $overdueByRange,
-        ];
     }
 
     private function getAvailableMonths(): array

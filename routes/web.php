@@ -19,7 +19,6 @@ foreach (config('tenancy.central_domains') as $domain) {
             return Inertia::render('Security');
         })->name('security.page');
 
-        // Provider registration form
         Route::get('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
             ->name('provider-register');
 

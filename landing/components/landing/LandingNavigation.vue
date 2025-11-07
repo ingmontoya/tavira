@@ -35,10 +35,10 @@
                         class="font-medium text-white/80 transition-colors duration-200 hover:text-secondary">
                         {{ $t('nav.security') }}
                     </NuxtLink>
-                    <a :href="providerRegisterUrl"
+                    <NuxtLink to="/provider-register"
                         class="font-medium text-white/80 transition-colors duration-200 hover:text-secondary">
                         {{ $t('nav.providers') }}
-                    </a>
+                    </NuxtLink>
                 </div>
 
                 <a href="https://tavira.com.co/login"
@@ -66,11 +66,11 @@
                     @click="mobileMenuOpen = false">
                     {{ $t('nav.security') }}
                 </NuxtLink>
-                <a :href="providerRegisterUrl"
+                <NuxtLink to="/provider-register"
                     class="block rounded-lg px-4 py-2 text-white/80 transition-colors hover:bg-white/10"
                     @click="mobileMenuOpen = false">
                     {{ $t('nav.providers') }}
-                </a>
+                </NuxtLink>
 
                 <div class="space-y-2 border-t border-white/10 pt-4">
                     <a href="https://tavira.com.co/login"
@@ -90,15 +90,4 @@
 
 <script setup lang="ts">
 const mobileMenuOpen = ref(false)
-
-// Determine provider registration URL based on environment
-const providerRegisterUrl = computed(() => {
-  if (typeof window !== 'undefined') {
-    const currentHost = window.location.hostname
-    if (currentHost.includes('staging') || currentHost === 'localhost' || currentHost === '127.0.0.1') {
-      return `${window.location.protocol}//${currentHost}/provider-register`
-    }
-  }
-  return 'https://tavira.com.co/provider-register'
-})
 </script>

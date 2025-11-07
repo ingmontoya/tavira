@@ -109,38 +109,10 @@ kubectl get pods -n ${NAMESPACE} -l app=tavira
 
 echo ""
 
-# Step 7: Run database migrations and seeders
-echo -e "${YELLOW}🗄️  Step 7: Running database migrations and seeders...${NC}"
+# Step 7: Show recent logs
+echo -e "${YELLOW}📋 Step 7: Recent application logs:${NC}"
 POD_NAME=$(kubectl get pods -n ${NAMESPACE} -l app=tavira -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 
-if [ -n "$POD_NAME" ]; then
-    echo -e "   Using pod: ${POD_NAME}"
-
-    # Run central migrations
-    echo -e "   • Running central migrations..."
-    kubectl exec ${POD_NAME} -c php-fpm -n ${NAMESPACE} -- php artisan migrate --force
-
-    # Run central seeders (idempotent - safe to run multiple times)
-    echo -e "   • Running central seeders..."
-    kubectl exec ${POD_NAME} -c php-fpm -n ${NAMESPACE} -- php artisan db:seed --force
-
-    # Run tenant migrations
-    echo -e "   • Running tenant migrations..."
-    kubectl exec ${POD_NAME} -c php-fpm -n ${NAMESPACE} -- php artisan tenants:migrate --force
-
-    # Run tenant seeders
-    echo -e "   • Running tenant seeders..."
-    kubectl exec ${POD_NAME} -c php-fpm -n ${NAMESPACE} -- php artisan tenants:seed --force
-
-    echo -e "${GREEN}✅ Database migrations and seeders completed${NC}"
-else
-    echo -e "${RED}⚠️  No pods found - skipping migrations${NC}"
-fi
-
-echo ""
-
-# Step 8: Show recent logs
-echo -e "${YELLOW}📋 Step 8: Recent application logs:${NC}"
 if [ -n "$POD_NAME" ]; then
     kubectl logs -n ${NAMESPACE} ${POD_NAME} -c php-fpm --tail=20
 else

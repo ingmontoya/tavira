@@ -128,7 +128,7 @@ class PaymentManagementController extends Controller
 
             if ($preSelectedApartment) {
                 $preSelectedInvoices = Invoice::where('apartment_id', $request->apartment_id)
-                    ->whereIn('status', ['pendiente', 'pago_parcial', 'vencido'])
+                    ->whereIn('status', ['pending', 'partial_payment', 'overdue'])
                     ->with(['items.paymentConcept'])
                     ->orderBy('billing_date', 'asc')
                     ->orderBy('id', 'asc')
