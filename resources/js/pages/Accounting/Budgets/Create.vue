@@ -52,7 +52,14 @@ const form = useForm<FormData>({
     fiscal_year: props.suggestedYear,
     start_date: '',
     end_date: '',
-    items: [], // Start with empty items array - user must add accounts manually
+    items: [
+        {
+            account_id: props.incomeAccounts[0]?.id || '',
+            category: 'income',
+            budgeted_amount: 0,
+            notes: '',
+        },
+    ],
     copy_from_previous: false,
     previous_year: undefined,
 });

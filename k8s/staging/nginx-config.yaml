@@ -46,7 +46,7 @@ data:
 
     map $http_x_forwarded_host $forwarded_host {
         default $http_x_forwarded_host;
-        "" $http_host;
+        "" $host;
     }
 
     map $http_x_forwarded_port $forwarded_port {
@@ -119,15 +119,6 @@ data:
             add_header Content-Type text/plain;
         }
 
-        # Vite build assets - always serve from main public directory
-        location ^~ /build {
-            alias /var/www/html/public/build;
-            expires 7d;
-            add_header Cache-Control "public";
-            access_log off;
-            try_files $uri =404;
-        }
-
         # Static files - cache for shorter time in staging
         location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
             root $app_root;  # Use correct root based on domain type
@@ -142,12 +133,6 @@ data:
             deny all;
             access_log off;
             log_not_found off;
-        }
-
-        # Provider registration - always use Laravel (not landing)
-        location /provider-register {
-            root /var/www/html/public;
-            try_files $uri $uri/ /index.php?$query_string;
         }
 
         # Main location - serve landing for main domain, Laravel for tenant subdomains
