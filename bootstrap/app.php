@@ -4,7 +4,6 @@ use App\Http\Middleware\AuditLogMiddleware;
 use App\Http\Middleware\EnsureCanCreateMultipleConjuntos;
 use App\Http\Middleware\EnsureConjuntoConfigured;
 use App\Http\Middleware\EnsureUserIsCompany;
-use App\Http\Middleware\ForceHttpsInProduction;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\InputSanitizationMiddleware;
@@ -53,7 +52,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(prepend: [
             TrustProxies::class, // Must be first to handle X-Forwarded-* headers
-            ForceHttpsInProduction::class, // Force HTTPS in production/staging
         ]);
 
         $middleware->web(append: [
