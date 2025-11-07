@@ -22,9 +22,6 @@ class SyncProvidersToNewTenant implements ShouldQueue
 
     /**
      * Handle the event.
-     *
-     * @param  \Stancl\Tenancy\Events\TenantCreated  $event
-     * @return void
      */
     public function handle(TenantCreated $event): void
     {

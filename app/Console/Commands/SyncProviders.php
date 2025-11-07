@@ -6,7 +6,6 @@ use App\Models\Central\Provider as CentralProvider;
 use App\Models\Provider;
 use App\Models\Tenant;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class SyncProviders extends Command
 {

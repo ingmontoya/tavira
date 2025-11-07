@@ -21,6 +21,7 @@ class ExpenseCategorySeeder extends Seeder
 
         if (! $conjunto) {
             $this->command->warn('No active conjunto found. Skipping ExpenseCategorySeeder.');
+
             return;
         }
 
@@ -143,13 +144,13 @@ class ExpenseCategorySeeder extends Seeder
         foreach ($categories as $categoryData) {
             // Find the debit account (expense account)
             $debitAccount = ChartOfAccounts::forConjunto($conjunto->id)
-                ->where('code', 'LIKE', $categoryData['debit_code'] . '%')
+                ->where('code', 'LIKE', $categoryData['debit_code'].'%')
                 ->postable()
                 ->first();
 
             // Find the credit account (liability or asset account)
             $creditAccount = ChartOfAccounts::forConjunto($conjunto->id)
-                ->where('code', 'LIKE', $categoryData['credit_code'] . '%')
+                ->where('code', 'LIKE', $categoryData['credit_code'].'%')
                 ->postable()
                 ->first();
 
@@ -157,18 +158,20 @@ class ExpenseCategorySeeder extends Seeder
             $taxAccount = null;
             if (isset($categoryData['tax_code'])) {
                 $taxAccount = ChartOfAccounts::forConjunto($conjunto->id)
-                    ->where('code', 'LIKE', $categoryData['tax_code'] . '%')
+                    ->where('code', 'LIKE', $categoryData['tax_code'].'%')
                     ->postable()
                     ->first();
             }
 
             if (! $debitAccount) {
                 $this->command->warn("Debit account {$categoryData['debit_code']} not found for category: {$categoryData['name']}");
+
                 continue;
             }
 
             if (! $creditAccount) {
                 $this->command->warn("Credit account {$categoryData['credit_code']} not found for category: {$categoryData['name']}");
+
                 continue;
             }
 

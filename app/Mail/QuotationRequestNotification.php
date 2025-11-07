@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Central\Provider;
 use App\Models\QuotationRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -20,8 +19,7 @@ class QuotationRequestNotification extends Mailable
     public function __construct(
         public QuotationRequest $quotationRequest,
         public \App\Models\Central\Provider $provider
-    ) {
-    }
+    ) {}
 
     /**
      * Get the message envelope.

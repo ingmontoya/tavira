@@ -58,8 +58,6 @@ class Provider extends Model
 
     /**
      * Get the central model class name for syncing.
-     *
-     * @return string
      */
     public function getCentralModelName(): string
     {
@@ -68,8 +66,6 @@ class Provider extends Model
 
     /**
      * Get the foreign key name for the central model.
-     *
-     * @return string
      */
     public function getSyncedAttributeName(): string
     {
@@ -78,8 +74,6 @@ class Provider extends Model
 
     /**
      * Get the name of the column that stores the global identifier.
-     *
-     * @return string
      */
     public function getGlobalIdentifierKeyName(): string
     {
@@ -98,8 +92,6 @@ class Provider extends Model
 
     /**
      * Get the synced attribute names.
-     *
-     * @return array
      */
     public function getSyncedAttributeNames(): array
     {
@@ -144,6 +136,11 @@ class Provider extends Model
     public function maintenanceRequests(): HasMany
     {
         return $this->hasMany(MaintenanceRequest::class, 'provider_id');
+    }
+
+    public function withholdingCertificates(): HasMany
+    {
+        return $this->hasMany(WithholdingCertificate::class);
     }
 
     /**
@@ -232,8 +229,6 @@ class Provider extends Model
 
     /**
      * Determine if the provider is synced from central.
-     *
-     * @return bool
      */
     public function isSynced(): bool
     {

@@ -31,17 +31,17 @@ class DiagnoseSignatureIssue extends Command
         // 1. Check APP_KEY
         $this->info('1. APP_KEY Configuration:');
         $appKey = config('app.key');
-        $this->line('   Configured: ' . (!empty($appKey) ? '✓ Yes' : '✗ No'));
-        $this->line('   Starts with base64: ' . (str_starts_with($appKey, 'base64:') ? '✓ Yes' : '✗ No'));
-        $this->line('   Length: ' . strlen($appKey) . ' chars');
+        $this->line('   Configured: '.(! empty($appKey) ? '✓ Yes' : '✗ No'));
+        $this->line('   Starts with base64: '.(str_starts_with($appKey, 'base64:') ? '✓ Yes' : '✗ No'));
+        $this->line('   Length: '.strlen($appKey).' chars');
         $this->newLine();
 
         // 2. Check URL configuration
         $this->info('2. URL Configuration:');
-        $this->line('   APP_URL: ' . config('app.url'));
-        $this->line('   Current URL: ' . url('/'));
-        $this->line('   Environment: ' . config('app.env'));
-        $this->line('   Force HTTPS: ' . (config('app.env') === 'production' ? '✓ Yes' : '✗ No'));
+        $this->line('   APP_URL: '.config('app.url'));
+        $this->line('   Current URL: '.url('/'));
+        $this->line('   Environment: '.config('app.env'));
+        $this->line('   Force HTTPS: '.(config('app.env') === 'production' ? '✓ Yes' : '✗ No'));
         $this->newLine();
 
         // 3. Check proxy configuration
@@ -58,25 +58,25 @@ class DiagnoseSignatureIssue extends Command
             ['id' => 1, 'hash' => sha1('test@example.com')]
         );
         $this->line('   Generated URL:');
-        $this->line('   ' . $testUrl);
+        $this->line('   '.$testUrl);
         $this->newLine();
 
         // 5. Parse the URL and show components
         $parsedUrl = parse_url($testUrl);
         $this->info('5. URL Components:');
-        $this->line('   Scheme: ' . ($parsedUrl['scheme'] ?? 'N/A'));
-        $this->line('   Host: ' . ($parsedUrl['host'] ?? 'N/A'));
-        $this->line('   Port: ' . ($parsedUrl['port'] ?? 'default'));
-        $this->line('   Path: ' . ($parsedUrl['path'] ?? 'N/A'));
+        $this->line('   Scheme: '.($parsedUrl['scheme'] ?? 'N/A'));
+        $this->line('   Host: '.($parsedUrl['host'] ?? 'N/A'));
+        $this->line('   Port: '.($parsedUrl['port'] ?? 'default'));
+        $this->line('   Path: '.($parsedUrl['path'] ?? 'N/A'));
 
         if (isset($parsedUrl['query'])) {
             parse_str($parsedUrl['query'], $queryParams);
             $this->line('   Query params:');
             foreach ($queryParams as $key => $value) {
                 if ($key === 'signature') {
-                    $this->line('     - ' . $key . ': ' . substr($value, 0, 20) . '...');
+                    $this->line('     - '.$key.': '.substr($value, 0, 20).'...');
                 } else {
-                    $this->line('     - ' . $key . ': ' . $value);
+                    $this->line('     - '.$key.': '.$value);
                 }
             }
         }
@@ -85,18 +85,18 @@ class DiagnoseSignatureIssue extends Command
         // 6. If a URL was provided, validate it
         if ($url = $this->argument('url')) {
             $this->info('6. Validating Provided URL:');
-            $this->line('   URL: ' . $url);
+            $this->line('   URL: '.$url);
 
             // Create a fake request with the URL
             $request = \Illuminate\Http\Request::create($url);
 
             // Try relative signature validation
             $relativeValid = \Illuminate\Support\Facades\URL::hasValidRelativeSignature($request);
-            $this->line('   Relative Signature Valid: ' . ($relativeValid ? '✓ Yes' : '✗ No'));
+            $this->line('   Relative Signature Valid: '.($relativeValid ? '✓ Yes' : '✗ No'));
 
             // Try absolute signature validation
             $absoluteValid = \Illuminate\Support\Facades\URL::hasValidSignature($request);
-            $this->line('   Absolute Signature Valid: ' . ($absoluteValid ? '✓ Yes' : '✗ No'));
+            $this->line('   Absolute Signature Valid: '.($absoluteValid ? '✓ Yes' : '✗ No'));
 
             $this->newLine();
         }

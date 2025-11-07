@@ -114,7 +114,7 @@ class BudgetItem extends Model
 
     public function getExpenseTypeLabelAttribute(): ?string
     {
-        if ($this->category !== 'expense' || !$this->expense_type) {
+        if ($this->category !== 'expense' || ! $this->expense_type) {
             return null;
         }
 

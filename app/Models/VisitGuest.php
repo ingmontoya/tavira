@@ -33,7 +33,7 @@ class VisitGuest extends Model
      */
     public function hasVehicle(): bool
     {
-        return !empty($this->vehicle_plate);
+        return ! empty($this->vehicle_plate);
     }
 
     /**

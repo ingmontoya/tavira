@@ -23,20 +23,12 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // Central database seeders (always run)
         $this->call([
-            CentralProviderCategorySeeder::class,
+            SecuritySettingsSeeder::class,
+            RolePermissionSeeder::class,
+            MaintenancePermissionsSeeder::class,
+            ConjuntoConfigSeeder::class,
+            ResidentSeeder::class,
         ]);
-
-        // Tenant database seeders (only in local/development)
-        if (app()->environment('local', 'development')) {
-            $this->call([
-                SecuritySettingsSeeder::class,
-                RolePermissionSeeder::class,
-                MaintenancePermissionsSeeder::class,
-                ConjuntoConfigSeeder::class,
-                ResidentSeeder::class,
-            ]);
-        }
     }
 }

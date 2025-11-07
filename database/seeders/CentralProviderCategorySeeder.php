@@ -122,15 +122,13 @@ class CentralProviderCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            ProviderCategory::updateOrCreate(
-                ['slug' => Str::slug($category['name'])],
-                [
-                    'name' => $category['name'],
-                    'description' => $category['description'],
-                    'is_active' => true,
-                    'sort_order' => $category['sort_order'],
-                ]
-            );
+            ProviderCategory::create([
+                'name' => $category['name'],
+                'slug' => Str::slug($category['name']),
+                'description' => $category['description'],
+                'is_active' => true,
+                'sort_order' => $category['sort_order'],
+            ]);
         }
     }
 }

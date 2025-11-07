@@ -86,6 +86,7 @@ class InitializeTenantAccounting implements ShouldQueue
 
             if (! $cashAccount || ! $bankAccount) {
                 Log::warning("Required accounts not found for conjunto {$conjuntoConfig->id}, skipping payment method mappings");
+
                 continue;
             }
 
