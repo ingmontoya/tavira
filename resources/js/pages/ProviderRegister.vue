@@ -61,17 +61,17 @@ const submit = () => {
 <template>
     <Head title="Registro de Proveedores - Tavira" />
 
-    <div class="min-h-screen bg-gradient-to-br from-[#1D3557] via-[#457B9D] to-[#06D6A0]">
+    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-tavira-blue to-sky-900">
         <!-- Navigation -->
-        <nav class="relative z-50 bg-[#1D3557]/80 px-6 py-4 backdrop-blur-sm">
+        <nav class="relative z-50 border-b border-white/10 bg-tavira-blue/95 px-6 py-4 backdrop-blur-sm">
             <div class="mx-auto flex max-w-7xl items-center justify-between">
                 <Link :href="route('home')" class="flex items-center">
-                    <span class="text-2xl font-bold text-white">Tavira</span>
+                    <span class="font-brand text-2xl font-bold text-white">Tavira</span>
                 </Link>
                 <div class="flex items-center space-x-4">
-                    <Link :href="route('login')" class="text-white/80 transition-colors hover:text-white"> Iniciar Sesión </Link>
+                    <Link :href="route('login')" class="font-medium text-white transition-colors hover:text-tavira-turquoise"> Iniciar Sesión </Link>
                     <Link :href="route('register')">
-                        <Button variant="outline" class="border-white/20 bg-white/10 text-white hover:bg-white/20"> Registro Clientes </Button>
+                        <Button variant="outline" class="border-tavira-turquoise/50 bg-tavira-turquoise/10 font-medium text-white transition-all hover:bg-tavira-turquoise hover:border-tavira-turquoise"> Registro Clientes </Button>
                     </Link>
                 </div>
             </div>
@@ -81,55 +81,55 @@ const submit = () => {
         <div class="container mx-auto px-4 py-12">
             <div class="mx-auto max-w-6xl">
                 <div class="mb-12 text-center">
-                    <h1 class="mb-4 text-4xl font-bold text-white md:text-5xl">¿Eres un Proveedor de Servicios?</h1>
-                    <p class="mb-8 text-xl text-white/80">Conecta con cientos de conjuntos residenciales y aumenta tu cartera de clientes</p>
+                    <h1 class="font-brand mb-4 text-4xl font-bold text-white md:text-5xl">¿Eres un Proveedor de Servicios?</h1>
+                    <p class="mb-8 text-xl text-white/90">Conecta con cientos de conjuntos residenciales y aumenta tu cartera de clientes</p>
                 </div>
 
                 <div class="grid gap-8 md:grid-cols-2">
                     <!-- Benefits Section -->
                     <div class="space-y-6">
-                        <Card class="border-white/20 bg-white/10 backdrop-blur-lg">
+                        <Card class="border-white/10 bg-slate-800/50 backdrop-blur-lg shadow-2xl">
                             <CardHeader>
-                                <CardTitle class="text-2xl text-white">Beneficios de Unirte</CardTitle>
+                                <CardTitle class="font-brand text-2xl text-white">Beneficios de Unirte</CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
                                 <div class="flex items-start space-x-3">
-                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-[#06D6A0]" />
+                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-tavira-turquoise" />
                                     <div>
                                         <h3 class="font-semibold text-white">Visibilidad Aumentada</h3>
-                                        <p class="text-sm text-white/70">Accede a una red de conjuntos residenciales buscando servicios de calidad</p>
+                                        <p class="text-sm text-gray-300">Accede a una red de conjuntos residenciales buscando servicios de calidad</p>
                                     </div>
                                 </div>
                                 <div class="flex items-start space-x-3">
-                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-[#06D6A0]" />
+                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-tavira-turquoise" />
                                     <div>
                                         <h3 class="font-semibold text-white">Gestión Simplificada</h3>
-                                        <p class="text-sm text-white/70">Administra tus servicios, cotizaciones y pagos desde una sola plataforma</p>
+                                        <p class="text-sm text-gray-300">Administra tus servicios, cotizaciones y pagos desde una sola plataforma</p>
                                     </div>
                                 </div>
                                 <div class="flex items-start space-x-3">
-                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-[#06D6A0]" />
+                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-tavira-turquoise" />
                                     <div>
                                         <h3 class="font-semibold text-white">Pagos Seguros</h3>
-                                        <p class="text-sm text-white/70">Sistema de pagos confiable y transparente</p>
+                                        <p class="text-sm text-gray-300">Sistema de pagos confiable y transparente</p>
                                     </div>
                                 </div>
                                 <div class="flex items-start space-x-3">
-                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-[#06D6A0]" />
+                                    <CheckCircle class="mt-1 h-6 w-6 flex-shrink-0 text-tavira-turquoise" />
                                     <div>
                                         <h3 class="font-semibold text-white">Sin Comisiones Iniciales</h3>
-                                        <p class="text-sm text-white/70">Regístrate gratis y empieza a recibir solicitudes de servicios</p>
+                                        <p class="text-sm text-gray-300">Regístrate gratis y empieza a recibir solicitudes de servicios</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card class="border-white/20 bg-white/10 backdrop-blur-lg">
+                        <Card class="border-white/10 bg-slate-800/50 backdrop-blur-lg shadow-2xl">
                             <CardHeader>
-                                <CardTitle class="text-white">Servicios que Buscamos</CardTitle>
+                                <CardTitle class="font-brand text-white">Servicios que Buscamos</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div class="grid grid-cols-2 gap-3 text-sm text-white/80">
+                                <div class="grid grid-cols-2 gap-3 text-sm text-gray-200">
                                     <div>• Plomería</div>
                                     <div>• Electricidad</div>
                                     <div>• Jardinería</div>
@@ -144,19 +144,19 @@ const submit = () => {
                     </div>
 
                     <!-- Registration Form -->
-                    <Card class="bg-white shadow-2xl">
-                        <CardHeader>
-                            <CardTitle class="text-2xl">Registro de Proveedor</CardTitle>
-                            <CardDescription> Completa el formulario y nuestro equipo se pondrá en contacto contigo </CardDescription>
+                    <Card class="bg-white shadow-2xl border-0 overflow-hidden">
+                        <CardHeader class="bg-tavira-blue text-white py-6 px-6">
+                            <CardTitle class="font-brand text-2xl text-white mb-2">Registro de Proveedor</CardTitle>
+                            <CardDescription class="text-white"> Completa el formulario y nuestro equipo se pondrá en contacto contigo </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <!-- Flash Messages -->
-                            <div v-if="flashSuccess" class="mb-4 flex items-start space-x-3 rounded-lg border border-green-200 bg-green-50 p-4">
-                                <CheckCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
-                                <p class="text-sm text-green-800">{{ flashSuccess }}</p>
+                            <div v-if="flashSuccess" class="mb-4 flex items-start space-x-3 rounded-lg border border-tavira-turquoise/30 bg-emerald-50 p-4">
+                                <CheckCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-tavira-turquoise" />
+                                <p class="text-sm text-emerald-800">{{ flashSuccess }}</p>
                             </div>
-                            <div v-if="flashError" class="mb-4 flex items-start space-x-3 rounded-lg border border-red-200 bg-red-50 p-4">
-                                <AlertCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+                            <div v-if="flashError" class="mb-4 flex items-start space-x-3 rounded-lg border border-tavira-coral/30 bg-red-50 p-4">
+                                <AlertCircle class="mt-0.5 h-5 w-5 flex-shrink-0 text-tavira-coral" />
                                 <p class="text-sm text-red-800">{{ flashError }}</p>
                             </div>
 
@@ -224,7 +224,7 @@ const submit = () => {
                                                 :value="category.id"
                                                 :checked="isCategorySelected(category.id)"
                                                 @change="toggleCategory(category.id)"
-                                                class="mt-1 h-4 w-4 cursor-pointer rounded border-gray-300 text-[#1D3557] focus:ring-2 focus:ring-[#1D3557]"
+                                                class="mt-1 h-4 w-4 cursor-pointer rounded border-gray-300 text-tavira-blue focus:ring-2 focus:ring-tavira-turquoise"
                                             />
                                             <div class="flex-1">
                                                 <label :for="`category-${category.id}`" class="cursor-pointer font-medium">
@@ -251,7 +251,7 @@ const submit = () => {
                                     />
                                 </div>
 
-                                <Button type="submit" class="w-full bg-[#1D3557] hover:bg-[#2a4870]" :disabled="form.processing">
+                                <Button type="submit" class="w-full bg-tavira-blue hover:bg-slate-700 text-white transition-all shadow-lg hover:shadow-xl font-semibold text-base py-6" :disabled="form.processing">
                                     {{ form.processing ? 'Enviando...' : 'Enviar Solicitud' }}
                                 </Button>
 
@@ -265,9 +265,9 @@ const submit = () => {
 
                 <!-- Footer Note -->
                 <div class="mt-12 text-center">
-                    <p class="text-sm text-white/60">
+                    <p class="text-base text-gray-200">
                         ¿Eres un conjunto residencial?
-                        <Link :href="route('register')" class="font-medium text-[#06D6A0] hover:underline"> Regístrate aquí </Link>
+                        <Link :href="route('register')" class="font-semibold text-tavira-turquoise underline hover:text-white transition-colors"> Regístrate aquí </Link>
                     </p>
                 </div>
             </div>

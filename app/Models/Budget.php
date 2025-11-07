@@ -370,37 +370,8 @@ class Budget extends Model
     private function getDefaultBudgetAccountsTemplate(): array
     {
         return [
-            // Income Accounts
-            [
-                'code' => '413501',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por cuotas ordinarias de administración',
-            ],
-            [
-                'code' => '413502',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por cuotas extraordinarias',
-            ],
-            [
-                'code' => '413503',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por concepto de parqueaderos',
-            ],
-            [
-                'code' => '413505',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por multas y sanciones',
-            ],
-            [
-                'code' => '413506',
-                'category' => 'income',
-                'default_amount' => 0,
-                'notes' => 'Ingresos por intereses de mora',
-            ],
+            // Note: Income accounts removed - users should add them manually
+            // This allows for flexible income configuration per residential complex
 
             // Fixed Expense Accounts
             [
@@ -495,5 +466,217 @@ class Budget extends Model
             'danger' => count(array_filter($alerts, fn ($alert) => $alert['type'] === 'danger')),
             'warning' => count(array_filter($alerts, fn ($alert) => $alert['type'] === 'warning')),
         ];
+    }
+
+    /**
+     * Generate intelligent budget suggestions based on historical data
+     * Returns suggested amounts for each account with explanation
+     */
+    public static function generateBudgetSuggestions(int $conjuntoConfigId, int $fiscalYear): array
+    {
+        $previousYear = $fiscalYear - 1;
+
+        // Get previous budget if exists
+        $previousBudget = self::forConjunto($conjuntoConfigId)
+            ->byYear($previousYear)
+            ->with('items.account')
+            ->first();
+
+        // Get actual accounting transactions from previous year
+        $previousYearTransactions = AccountingTransaction::forConjunto($conjuntoConfigId)
+            ->whereYear('posted_at', $previousYear)
+            ->where('status', 'posted')
+            ->with('entries.account')
+            ->get();
+
+        // Get budget execution data from previous year
+        $previousExecution = null;
+        if ($previousBudget) {
+            $previousExecution = BudgetExecution::whereHas('budgetItem', function ($query) use ($previousBudget) {
+                $query->where('budget_id', $previousBudget->id);
+            })
+                ->where('period_year', $previousYear)
+                ->with('budgetItem.account')
+                ->get();
+        }
+
+        $suggestions = [
+            'income_accounts' => [],
+            'expense_accounts' => [],
+            'summary' => [
+                'total_income_suggested' => 0,
+                'total_expense_suggested' => 0,
+                'net_surplus_suggested' => 0,
+                'confidence_level' => 'high', // high, medium, low
+            ],
+            'methodology' => [],
+        ];
+
+        // Get all accounts
+        $incomeAccounts = ChartOfAccounts::forConjunto($conjuntoConfigId)
+            ->byType('income')
+            ->postable()
+            ->active()
+            ->get();
+
+        $expenseAccounts = ChartOfAccounts::forConjunto($conjuntoConfigId)
+            ->byType('expense')
+            ->postable()
+            ->active()
+            ->get();
+
+        // Calculate suggestions for income accounts
+        foreach ($incomeAccounts as $account) {
+            $suggestion = self::calculateAccountSuggestion(
+                $account,
+                $previousBudget,
+                $previousExecution,
+                $previousYearTransactions,
+                'income'
+            );
+
+            if ($suggestion['suggested_amount'] > 0) {
+                $suggestions['income_accounts'][] = $suggestion;
+                $suggestions['summary']['total_income_suggested'] += $suggestion['suggested_amount'];
+            }
+        }
+
+        // Calculate suggestions for expense accounts
+        foreach ($expenseAccounts as $account) {
+            $suggestion = self::calculateAccountSuggestion(
+                $account,
+                $previousBudget,
+                $previousExecution,
+                $previousYearTransactions,
+                'expense'
+            );
+
+            if ($suggestion['suggested_amount'] > 0) {
+                $suggestions['expense_accounts'][] = $suggestion;
+                $suggestions['summary']['total_expense_suggested'] += $suggestion['suggested_amount'];
+            }
+        }
+
+        $suggestions['summary']['net_surplus_suggested'] =
+            $suggestions['summary']['total_income_suggested'] -
+            $suggestions['summary']['total_expense_suggested'];
+
+        // Determine confidence level
+        $hasHistoricalData = $previousBudget !== null || $previousYearTransactions->isNotEmpty();
+        $suggestions['summary']['confidence_level'] = $hasHistoricalData ? 'high' : 'low';
+
+        // Add methodology explanation
+        if ($previousBudget && $previousExecution && $previousExecution->isNotEmpty()) {
+            $suggestions['methodology'][] = '✓ Basado en ejecución presupuestal del año anterior';
+        }
+        if ($previousYearTransactions->isNotEmpty()) {
+            $suggestions['methodology'][] = '✓ Basado en transacciones contables reales del año anterior';
+        }
+        if ($previousBudget) {
+            $suggestions['methodology'][] = '✓ Ajustado por inflación estimada (5%)';
+        }
+        if (! $hasHistoricalData) {
+            $suggestions['methodology'][] = '⚠ Sin datos históricos - sugerencias basadas en estructura típica de P.H.';
+        }
+
+        return $suggestions;
+    }
+
+    /**
+     * Calculate suggestion for a specific account
+     */
+    private static function calculateAccountSuggestion(
+        ChartOfAccounts $account,
+        ?Budget $previousBudget,
+        ?\Illuminate\Support\Collection $previousExecution,
+        \Illuminate\Support\Collection $previousTransactions,
+        string $category
+    ): array {
+        $suggestion = [
+            'account_id' => $account->id,
+            'account_code' => $account->code,
+            'account_name' => $account->name,
+            'category' => $category,
+            'suggested_amount' => 0,
+            'previous_budgeted' => 0,
+            'previous_actual' => 0,
+            'variance_percentage' => 0,
+            'explanation' => '',
+            'confidence' => 'medium',
+        ];
+
+        // Get previous budget amount for this account
+        if ($previousBudget) {
+            $previousItem = $previousBudget->items()
+                ->where('account_id', $account->id)
+                ->first();
+
+            if ($previousItem) {
+                $suggestion['previous_budgeted'] = $previousItem->budgeted_amount;
+            }
+        }
+
+        // Get previous execution/actual amount
+        if ($previousExecution) {
+            $actualAmount = $previousExecution
+                ->where('budgetItem.account_id', $account->id)
+                ->sum('actual_amount');
+
+            $suggestion['previous_actual'] = $actualAmount;
+        }
+
+        // Get actual transactions amount
+        $transactionAmount = 0;
+        foreach ($previousTransactions as $transaction) {
+            foreach ($transaction->entries as $entry) {
+                if ($entry->account_id == $account->id) {
+                    // For income, credits increase; for expenses, debits increase
+                    if ($category === 'income') {
+                        $transactionAmount += $entry->credit_amount;
+                    } else {
+                        $transactionAmount += $entry->debit_amount;
+                    }
+                }
+            }
+        }
+
+        // Determine best source for suggestion
+        $inflationRate = 1.05; // 5% inflation adjustment
+
+        if ($suggestion['previous_actual'] > 0) {
+            // Use actual execution as primary source
+            $suggestion['suggested_amount'] = round($suggestion['previous_actual'] * $inflationRate, 2);
+            $suggestion['confidence'] = 'high';
+            $suggestion['explanation'] = sprintf(
+                'Basado en ejecución real año anterior ($%s) + 5%% inflación',
+                number_format($suggestion['previous_actual'], 0)
+            );
+        } elseif ($transactionAmount > 0) {
+            // Use transactions as secondary source
+            $suggestion['suggested_amount'] = round($transactionAmount * $inflationRate, 2);
+            $suggestion['confidence'] = 'high';
+            $suggestion['explanation'] = sprintf(
+                'Basado en transacciones contables año anterior ($%s) + 5%% inflación',
+                number_format($transactionAmount, 0)
+            );
+        } elseif ($suggestion['previous_budgeted'] > 0) {
+            // Use previous budget as tertiary source
+            $suggestion['suggested_amount'] = round($suggestion['previous_budgeted'] * $inflationRate, 2);
+            $suggestion['confidence'] = 'medium';
+            $suggestion['explanation'] = sprintf(
+                'Basado en presupuesto año anterior ($%s) + 5%% inflación',
+                number_format($suggestion['previous_budgeted'], 0)
+            );
+        }
+
+        // Calculate variance if we have both budgeted and actual
+        if ($suggestion['previous_budgeted'] > 0 && $suggestion['previous_actual'] > 0) {
+            $suggestion['variance_percentage'] = round(
+                (($suggestion['previous_actual'] - $suggestion['previous_budgeted']) / $suggestion['previous_budgeted']) * 100,
+                1
+            );
+        }
+
+        return $suggestion;
     }
 }

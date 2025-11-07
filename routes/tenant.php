@@ -76,6 +76,11 @@ Route::middleware([
 
     // Settings routes for tenants
     require __DIR__.'/settings.php';
+
+    // Debug routes (temporary - remove after testing)
+    if (config('app.debug')) {
+        require __DIR__.'/debug-overdue.php';
+    }
 });
 
 Route::middleware([

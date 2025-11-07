@@ -169,7 +169,7 @@ deploy_ingress() {
 
 # Función para ejecutar migraciones
 run_migrations() {
-    print_header "Ejecutando Migraciones"
+    print_header "Ejecutando Migraciones y Seeders"
 
     POD=$(kubectl get pods -l app=tavira-staging -n "$NAMESPACE" -o jsonpath='{.items[0].metadata.name}')
 
@@ -191,11 +191,19 @@ run_migrations() {
     print_info "Ejecutando migraciones centrales..."
     kubectl exec "$POD" -c php-fpm -n "$NAMESPACE" -- php artisan migrate --force
 
+    # Seeders centrales
+    print_info "Ejecutando seeders centrales..."
+    kubectl exec "$POD" -c php-fpm -n "$NAMESPACE" -- php artisan db:seed --force
+
     # Migraciones de tenants
     print_info "Ejecutando migraciones de tenants..."
     kubectl exec "$POD" -c php-fpm -n "$NAMESPACE" -- php artisan tenants:migrate --force
 
-    print_success "Migraciones completadas"
+    # Seeders de tenants
+    print_info "Ejecutando seeders de tenants..."
+    kubectl exec "$POD" -c php-fpm -n "$NAMESPACE" -- php artisan tenants:seed --force
+
+    print_success "Migraciones y seeders completados"
 }
 
 # Función para mostrar estado
