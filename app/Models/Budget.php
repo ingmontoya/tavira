@@ -129,6 +129,7 @@ class Budget extends Model
     {
         // Use items_count if available (from withCount), otherwise fallback to query
         $itemsCount = $this->items_count ?? $this->items()->count();
+
         return $this->status === 'draft' && $itemsCount > 0;
     }
 

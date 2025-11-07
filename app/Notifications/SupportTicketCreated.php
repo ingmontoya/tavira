@@ -11,7 +11,7 @@ use Illuminate\Notifications\Notification;
 
 class SupportTicketCreated extends Notification implements ShouldQueue
 {
-    use Queueable, GeneratesTenantUrls;
+    use GeneratesTenantUrls, Queueable;
 
     public function __construct(
         private SupportTicket $ticket

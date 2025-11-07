@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware([
             \App\Http\Middleware\ValidateSignatureWithProxy::class,
-            'throttle:6,1'
+            'throttle:6,1',
         ])
         ->name('verification.verify');
 

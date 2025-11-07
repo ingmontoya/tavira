@@ -40,10 +40,12 @@ class QueueHealthCheck extends Command
             Queue::connection($connection)->size();
 
             $this->info('Queue system is healthy');
+
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error('Queue system is unhealthy: ' . $e->getMessage());
+            $this->error('Queue system is unhealthy: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

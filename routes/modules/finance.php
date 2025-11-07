@@ -12,6 +12,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentManagementController;
 use App\Http\Controllers\PaymentMethodAccountMappingController;
 use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\WithholdingTaxReportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -151,3 +152,19 @@ Route::get('account-statement', [\App\Http\Controllers\AccountStatementControlle
 Route::get('account-statement/invoice/{invoice}', [\App\Http\Controllers\AccountStatementController::class, 'showInvoice'])
     ->name('account-statement.invoice')
     ->middleware('can:view_account_statement');
+
+// Withholding Tax (Retenciones en la Fuente) Management
+Route::prefix('retenciones')->name('retenciones.')->group(function () {
+    Route::get('/', [WithholdingTaxReportController::class, 'index'])
+        ->name('index')
+        ->middleware('can:view_expenses');
+    Route::get('certificates', [WithholdingTaxReportController::class, 'certificates'])
+        ->name('certificates')
+        ->middleware('can:view_expenses');
+    Route::post('certificates/generate', [WithholdingTaxReportController::class, 'generateCertificate'])
+        ->name('certificates.generate')
+        ->middleware('can:edit_expenses');
+    Route::get('certificates/{certificate}/download', [WithholdingTaxReportController::class, 'downloadCertificate'])
+        ->name('certificates.download')
+        ->middleware('can:view_expenses');
+});

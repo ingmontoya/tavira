@@ -291,7 +291,7 @@ class GenerateMonthlyInvoices extends Command
                     // Add extraordinary assessment items if applicable
                     foreach ($extraordinaryAssessments as $assessment) {
                         // Verificar si debe generar cuota para este mes
-                        if (!$assessment->shouldGenerateInstallmentForMonth($periodStart)) {
+                        if (! $assessment->shouldGenerateInstallmentForMonth($periodStart)) {
                             continue;
                         }
 
@@ -304,8 +304,8 @@ class GenerateMonthlyInvoices extends Command
                             InvoiceItem::create([
                                 'invoice_id' => $invoice->id,
                                 'payment_concept_id' => $extraordinaryConcept->id,
-                                'description' => "Cuota Extraordinaria - {$assessment->name} (Cuota " .
-                                    ($assessment->installments_generated + 1) . "/{$assessment->number_of_installments})",
+                                'description' => "Cuota Extraordinaria - {$assessment->name} (Cuota ".
+                                    ($assessment->installments_generated + 1)."/{$assessment->number_of_installments})",
                                 'quantity' => 1,
                                 'unit_price' => $assessmentApartment->installment_amount,
                                 'period_start' => $periodStart,
@@ -314,7 +314,7 @@ class GenerateMonthlyInvoices extends Command
 
                             $extraordinaryItemsCount++;
 
-                            $this->line("  → Cuota extraordinaria agregada a Apt {$apartment->number}: $".number_format($assessmentApartment->installment_amount, 2) . " ({$assessment->name})");
+                            $this->line("  → Cuota extraordinaria agregada a Apt {$apartment->number}: $".number_format($assessmentApartment->installment_amount, 2)." ({$assessment->name})");
                         }
                     }
 

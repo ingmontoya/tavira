@@ -181,7 +181,7 @@ class CentralProviderController extends Controller
     {
         try {
             $provider->update([
-                'is_active' => !$provider->is_active,
+                'is_active' => ! $provider->is_active,
             ]);
 
             $status = $provider->is_active ? 'activado' : 'desactivado';

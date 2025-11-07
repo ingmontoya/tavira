@@ -84,11 +84,11 @@ return new class extends Migration
         });
 
         // Agregar tipo 'extraordinary' a la tabla de invoices (PostgreSQL syntax)
-        DB::statement("ALTER TABLE invoices DROP CONSTRAINT invoices_type_check");
+        DB::statement('ALTER TABLE invoices DROP CONSTRAINT invoices_type_check');
         DB::statement("ALTER TABLE invoices ADD CONSTRAINT invoices_type_check CHECK (type IN ('monthly', 'individual', 'late_fee', 'extraordinary'))");
 
         // Agregar tipo 'extraordinary_assessment' a payment_concepts (PostgreSQL syntax)
-        DB::statement("ALTER TABLE payment_concepts DROP CONSTRAINT payment_concepts_type_check");
+        DB::statement('ALTER TABLE payment_concepts DROP CONSTRAINT payment_concepts_type_check');
         DB::statement("ALTER TABLE payment_concepts ADD CONSTRAINT payment_concepts_type_check CHECK (type IN ('common_expense', 'sanction', 'parking', 'special', 'late_fee', 'extraordinary_assessment', 'monthly_administration', 'other'))");
     }
 
@@ -98,11 +98,11 @@ return new class extends Migration
     public function down(): void
     {
         // Revertir cambios en payment_concepts (PostgreSQL syntax)
-        DB::statement("ALTER TABLE payment_concepts DROP CONSTRAINT payment_concepts_type_check");
+        DB::statement('ALTER TABLE payment_concepts DROP CONSTRAINT payment_concepts_type_check');
         DB::statement("ALTER TABLE payment_concepts ADD CONSTRAINT payment_concepts_type_check CHECK (type IN ('common_expense', 'sanction', 'parking', 'special', 'late_fee', 'monthly_administration', 'other'))");
 
         // Revertir cambios en invoices (PostgreSQL syntax)
-        DB::statement("ALTER TABLE invoices DROP CONSTRAINT invoices_type_check");
+        DB::statement('ALTER TABLE invoices DROP CONSTRAINT invoices_type_check');
         DB::statement("ALTER TABLE invoices ADD CONSTRAINT invoices_type_check CHECK (type IN ('monthly', 'individual', 'late_fee'))");
 
         Schema::dropIfExists('extraordinary_assessment_apartments');

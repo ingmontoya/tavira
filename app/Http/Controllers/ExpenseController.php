@@ -56,6 +56,26 @@ class ExpenseController extends Controller
             });
         }
 
+        // Filter by retention type (tax_account_id)
+        if ($request->filled('retention_type')) {
+            $query->where('tax_account_id', $request->retention_type);
+        }
+
+        // Filter by provider (exact match)
+        if ($request->filled('provider_id')) {
+            $query->where('provider_id', $request->provider_id);
+        }
+
+        // Filter by provider name (partial search)
+        if ($request->filled('provider_search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('vendor_name', 'LIKE', '%'.$request->provider_search.'%')
+                    ->orWhereHas('provider', function ($providerQuery) use ($request) {
+                        $providerQuery->where('name', 'LIKE', '%'.$request->provider_search.'%');
+                    });
+            });
+        }
+
         $expenses = $query->forConjunto($conjunto->id)
             ->orderBy('expense_date', 'desc')
             ->paginate(25);
@@ -64,6 +84,19 @@ class ExpenseController extends Controller
             ->active()
             ->orderBy('name')
             ->get();
+
+        // Get providers for filter dropdown
+        $providers = \App\Models\Provider::active()
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        // Get retention accounts for filter dropdown (2365xx)
+        $retentionAccounts = \App\Models\ChartOfAccounts::forConjunto($conjunto->id)
+            ->where('code', 'LIKE', '2365%')
+            ->where('accepts_posting', true)
+            ->where('is_active', true)
+            ->orderBy('code')
+            ->get(['id', 'code', 'name']);
 
         // Summary stats
         $stats = [
@@ -76,8 +109,10 @@ class ExpenseController extends Controller
         return Inertia::render('Expenses/Index', [
             'expenses' => $expenses,
             'categories' => $categories,
+            'providers' => $providers,
+            'retentionAccounts' => $retentionAccounts,
             'stats' => $stats,
-            'filters' => $request->only(['status', 'category_id', 'date_from', 'date_to', 'vendor', 'search']),
+            'filters' => $request->only(['status', 'category_id', 'date_from', 'date_to', 'vendor', 'search', 'retention_type', 'provider_id', 'provider_search']),
         ]);
     }
 

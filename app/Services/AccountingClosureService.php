@@ -260,8 +260,12 @@ class AccountingClosureService
 
         if (! $account3605 || ! $account3610) {
             $cuentasFaltantes = [];
-            if (! $account3605) $cuentasFaltantes[] = '360505 (Excedente del Ejercicio)';
-            if (! $account3610) $cuentasFaltantes[] = '361005 (Déficit del Ejercicio)';
+            if (! $account3605) {
+                $cuentasFaltantes[] = '360505 (Excedente del Ejercicio)';
+            }
+            if (! $account3610) {
+                $cuentasFaltantes[] = '361005 (Déficit del Ejercicio)';
+            }
 
             throw new \Exception('No se encontraron las cuentas de patrimonio: '.implode(', ', $cuentasFaltantes)." para el conjunto {$this->conjuntoConfigId}. Ejecute: php artisan tenants:seed --class=ChartOfAccountsSeeder");
         }
@@ -503,7 +507,7 @@ class AccountingClosureService
         $transaction = AccountingTransaction::create([
             'conjunto_config_id' => $this->conjuntoConfigId,
             'transaction_date' => $closureDate,
-            'description' => "Traslado de ".($isProfitable ? 'excedente' : 'déficit')." del ejercicio {$fiscalYear} a patrimonio",
+            'description' => 'Traslado de '.($isProfitable ? 'excedente' : 'déficit')." del ejercicio {$fiscalYear} a patrimonio",
             'reference_type' => 'accounting_closure',
             'reference_id' => null,
             'status' => 'borrador',
@@ -557,7 +561,7 @@ class AccountingClosureService
             'net_result' => $netResult,
             'is_profitable' => $isProfitable,
             'equity_account' => $equityAccount->code.' - '.$equityAccount->name,
-            'message' => ($isProfitable ? 'Excedente' : 'Déficit')." de $".number_format(abs($netResult), 2)." trasladado a ".$equityAccount->code,
+            'message' => ($isProfitable ? 'Excedente' : 'Déficit').' de $'.number_format(abs($netResult), 2).' trasladado a '.$equityAccount->code,
         ];
     }
 

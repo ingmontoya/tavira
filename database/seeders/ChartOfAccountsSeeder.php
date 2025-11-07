@@ -92,6 +92,7 @@ class ChartOfAccountsSeeder extends Seeder
         // Helper function to calculate level based on code length
         $calculateLevel = function ($code) {
             $length = strlen($code);
+
             return match ($length) {
                 1 => 1,
                 2 => 2,
@@ -105,11 +106,22 @@ class ChartOfAccountsSeeder extends Seeder
         // Helper function to get parent code
         $getParentCode = function ($code) {
             $length = strlen($code);
-            if ($length == 1) return null;
-            if ($length == 2) return substr($code, 0, 1);
-            if ($length == 4) return substr($code, 0, 2);
-            if ($length == 6) return substr($code, 0, 4);
-            if ($length == 8) return substr($code, 0, 6);
+            if ($length == 1) {
+                return null;
+            }
+            if ($length == 2) {
+                return substr($code, 0, 1);
+            }
+            if ($length == 4) {
+                return substr($code, 0, 2);
+            }
+            if ($length == 6) {
+                return substr($code, 0, 4);
+            }
+            if ($length == 8) {
+                return substr($code, 0, 6);
+            }
+
             return null;
         };
 
@@ -463,7 +475,7 @@ class ChartOfAccountsSeeder extends Seeder
             $parentCode = $getParentCode($code);
 
             // Determine if account accepts posting (only level 4 and 5 for most accounts)
-            $acceptsPosting = in_array($level, [4, 5]) && !empty($name);
+            $acceptsPosting = in_array($level, [4, 5]) && ! empty($name);
 
             // Determine if requires third party (deudores and proveedores)
             $requiresThirdParty = in_array(substr($code, 0, 2), ['13', '23']) && $level >= 3;

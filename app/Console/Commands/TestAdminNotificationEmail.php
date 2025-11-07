@@ -33,8 +33,9 @@ class TestAdminNotificationEmail extends Command
         // Get first pending registration for test data
         $registration = ProviderRegistration::pending()->first();
 
-        if (!$registration) {
+        if (! $registration) {
             $this->error('No pending registrations found to use as test data.');
+
             return 1;
         }
 
@@ -52,7 +53,8 @@ class TestAdminNotificationEmail extends Command
 
             return 0;
         } catch (\Exception $e) {
-            $this->error('✗ Failed to queue email: ' . $e->getMessage());
+            $this->error('✗ Failed to queue email: '.$e->getMessage());
+
             return 1;
         }
     }

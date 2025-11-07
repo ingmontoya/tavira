@@ -32,7 +32,7 @@ class SubscriptionPaymentController extends Controller
                 'billing' => 'mensual',
                 'max_units' => $planConfigs['basic']['max_units'],
                 'features' => [
-                    'Hasta ' . $planConfigs['basic']['max_units'] . ' apartamentos',
+                    'Hasta '.$planConfigs['basic']['max_units'].' apartamentos',
                     'Correspondencia',
                     'Anuncios',
                     'Tickets de soporte (PQRS)',
@@ -52,7 +52,7 @@ class SubscriptionPaymentController extends Controller
                 'billing' => 'mensual',
                 'max_units' => $planConfigs['standard']['max_units'],
                 'features' => [
-                    'Hasta ' . $planConfigs['standard']['max_units'] . ' apartamentos',
+                    'Hasta '.$planConfigs['standard']['max_units'].' apartamentos',
                     'Todo lo del plan Básico',
                     'Solicitudes de mantenimiento (50/mes)',
                     'Correo institucional',
@@ -72,7 +72,7 @@ class SubscriptionPaymentController extends Controller
                 'billing' => 'mensual',
                 'max_units' => $planConfigs['premium']['max_units'],
                 'features' => [
-                    'Hasta ' . $planConfigs['premium']['max_units'] . ' apartamentos',
+                    'Hasta '.$planConfigs['premium']['max_units'].' apartamentos',
                     'Todo lo del plan Estándar',
                     'Gestión de visitantes',
                     'Contabilidad completa',

@@ -79,6 +79,7 @@ class UpdateExtraordinaryAssessmentProgress implements ShouldQueue
         // Si solo hay un ítem, es más simple
         if ($items->count() === 1) {
             $this->applyPaymentToAssessment($apartmentId, $totalPayment, $items->first());
+
             return;
         }
 
@@ -112,12 +113,14 @@ class UpdateExtraordinaryAssessmentProgress implements ShouldQueue
                 'apartment_id' => $apartmentId,
                 'item_description' => $item->description,
             ]);
+
             return;
         }
 
         // Si hay solo una, aplicar el pago ahí
         if ($assessmentApartments->count() === 1) {
             $assessmentApartments->first()->registerPayment($payment);
+
             return;
         }
 
@@ -128,6 +131,7 @@ class UpdateExtraordinaryAssessmentProgress implements ShouldQueue
 
             if (str_contains($item->description, $extraordinaryName)) {
                 $assessmentApartment->registerPayment($payment);
+
                 return;
             }
         }

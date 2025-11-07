@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Mail\NewProviderRegistration;
 use App\Mail\ProviderAccountCreated;
-use App\Mail\ProviderApproved;
 use App\Models\Central\Provider;
 use App\Models\Central\ProviderCategory;
 use App\Models\ProviderRegistration;

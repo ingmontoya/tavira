@@ -19,7 +19,7 @@ class ProviderServiceController extends Controller
     {
         $provider = Provider::find($request->user()->provider_id);
 
-        if (!$provider) {
+        if (! $provider) {
             abort(403, 'No tienes un perfil de proveedor asociado.');
         }
 
@@ -49,7 +49,7 @@ class ProviderServiceController extends Controller
         if ($request->has('search') && $request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%'.$request->search.'%')
-                  ->orWhere('description', 'like', '%'.$request->search.'%');
+                    ->orWhere('description', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -264,7 +264,7 @@ class ProviderServiceController extends Controller
         }
 
         try {
-            $service->update(['is_active' => !$service->is_active]);
+            $service->update(['is_active' => ! $service->is_active]);
 
             $status = $service->is_active ? 'activado' : 'desactivado';
 

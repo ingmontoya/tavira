@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notification;
 
 class PaymentReceived extends Notification implements ShouldQueue
 {
-    use Queueable, GeneratesTenantUrls;
+    use GeneratesTenantUrls, Queueable;
 
     public function __construct(
         private $payment
