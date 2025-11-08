@@ -80,6 +80,7 @@ Route::middleware([
     // Debug routes (only loaded when APP_DEBUG=true)
     if (config('app.debug')) {
         require __DIR__.'/debug-income-accounts.php';
+        require __DIR__.'/debug-retenciones.php';
     }
 });
 
