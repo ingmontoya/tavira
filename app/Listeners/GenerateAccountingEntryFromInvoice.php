@@ -135,7 +135,7 @@ class GenerateAccountingEntryFromInvoice
         ]);
 
         $carteraAccount = $this->getAccountByCode($conjuntoConfigId, '13050505');
-        $ingresoAccount = $this->getAccountByCode($conjuntoConfigId, '417005');
+        $ingresoAccount = $this->getAccountByCode($conjuntoConfigId, '413501'); // Cambio de 417005 a 413501
 
         $transaction->addEntry([
             'account_id' => $carteraAccount->id,
@@ -166,30 +166,30 @@ class GenerateAccountingEntryFromInvoice
             }
         }
 
-        // Mapeo por defecto basado en el tipo (usando códigos PUC correctos del seeder)
+        // Mapeo por defecto basado en el tipo (usando códigos PUC correctos)
         $defaultMappings = [
             'monthly_administration' => [
-                'income_code' => '417005', // Cuotas de Administración
+                'income_code' => '413501', // Cuotas Ordinarias de Administración
                 'receivable_code' => '13050505', // Cartera Administración
             ],
             'common_expense' => [
-                'income_code' => '417005', // Cuotas de Administración
+                'income_code' => '413501', // Cuotas Ordinarias de Administración
                 'receivable_code' => '13050505', // Cartera Administración
             ],
             'sanction' => [
-                'income_code' => '417005', // Cuotas de Administración (Multas se incluyen aquí)
+                'income_code' => '413505', // Multas y Sanciones
                 'receivable_code' => '13050525', // Sanciones Asamblea
             ],
             'parking' => [
-                'income_code' => '417005', // Cuotas de Administración (incluye parqueaderos)
+                'income_code' => '413503', // Parqueaderos
                 'receivable_code' => '13050530', // Uso Zonas Comunes
             ],
             'late_fee' => [
-                'income_code' => '417010', // Intereses de Mora Cuotas de Administración
+                'income_code' => '413506', // Intereses de Mora
                 'receivable_code' => '13050510', // Intereses de Mora Cuotas de Administración
             ],
             'special' => [
-                'income_code' => '417015', // Cuota Extra para Fachadas
+                'income_code' => '413502', // Cuotas Extraordinarias
                 'receivable_code' => '13050515', // Cuota Extra para Fachadas
             ],
         ];
