@@ -109,6 +109,11 @@ class Expense extends Model
         return $this->belongsTo(ChartOfAccounts::class, 'credit_account_id');
     }
 
+    public function taxAccount(): BelongsTo
+    {
+        return $this->belongsTo(ChartOfAccounts::class, 'tax_account_id');
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
