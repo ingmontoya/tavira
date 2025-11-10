@@ -22,107 +22,144 @@ class WithholdingTaxReportController extends Controller
         $conjunto = ConjuntoConfig::first();
 
         // Filtros de fecha
-        $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
+        $startDate = $request->input('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('end_date', now()->endOfYear()->format('Y-m-d'));
 
         // Build query for expenses with retention
         $query = Expense::forConjunto($conjunto->id)
             ->whereBetween('expense_date', [$startDate, $endDate])
             ->where('tax_amount', '>', 0)
             ->whereNotNull('tax_account_id')
+            ->whereNotNull('provider_id')
             ->with(['provider', 'taxAccount', 'expenseCategory']);
-
-        // Filter by retention type (tax_account_id)
-        if ($request->filled('retention_type')) {
-            $query->where('tax_account_id', $request->retention_type);
-        }
-
-        // Filter by provider
-        if ($request->filled('provider_id')) {
-            $query->where('provider_id', $request->provider_id);
-        }
 
         // Filter by provider name (search)
         if ($request->filled('provider_search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('vendor_name', 'LIKE', '%'.$request->provider_search.'%')
-                    ->orWhereHas('provider', function ($providerQuery) use ($request) {
-                        $providerQuery->where('name', 'LIKE', '%'.$request->provider_search.'%');
-                    });
+            $query->whereHas('provider', function ($providerQuery) use ($request) {
+                $providerQuery->where('name', 'LIKE', '%'.$request->provider_search.'%');
             });
         }
 
         $expenses = $query->get();
 
-        // Group by retention account (2365xx subaccounts)
-        $retentionsByAccount = $expenses->groupBy('tax_account_id')
+        // Group by provider
+        $providersSummary = $expenses->groupBy('provider_id')
             ->map(function ($group) {
-                $account = $group->first()->taxAccount;
+                $provider = $group->first()->provider;
 
                 return [
-                    'account_id' => $account->id,
-                    'account_code' => $account->code,
-                    'account_name' => $account->name,
-                    'count' => $group->count(),
+                    'id' => $provider->id,
+                    'name' => $provider->name,
+                    'document_type' => $provider->document_type,
+                    'document_number' => $provider->document_number,
+                    'expenses_count' => $group->count(),
                     'total_retained' => $group->sum('tax_amount'),
-                    'expenses' => $group->map(function ($expense) {
-                        return [
-                            'id' => $expense->id,
-                            'expense_number' => $expense->expense_number,
-                            'vendor_name' => $expense->vendor_name ?? $expense->provider?->name,
-                            'expense_date' => $expense->expense_date->format('Y-m-d'),
-                            'subtotal' => $expense->subtotal,
-                            'tax_amount' => $expense->tax_amount,
-                            'category' => $expense->expenseCategory?->name,
-                            'provider_id' => $expense->provider_id,
-                        ];
-                    })->values(),
                 ];
             })
+            ->sortByDesc('total_retained')
             ->values();
 
-        // Total general (account 2365 total)
+        // Total general
         $totalRetentions = $expenses->sum('tax_amount');
 
-        // Get main account 2365
-        $mainAccount = ChartOfAccounts::forConjunto($conjunto->id)
-            ->where('code', '2365')
-            ->first();
-
-        // Get all retention accounts for filter dropdown
-        $retentionAccounts = ChartOfAccounts::forConjunto($conjunto->id)
-            ->where('code', 'LIKE', '2365%')
-            ->where('accepts_posting', true)
-            ->where('is_active', true)
-            ->orderBy('code')
-            ->get(['id', 'code', 'name']);
-
-        // Get providers with retentions for filter dropdown
-        $providers = Provider::whereHas('expenses', function ($query) use ($conjunto) {
-            $query->where('conjunto_config_id', $conjunto->id)
-                ->where('tax_amount', '>', 0)
-                ->whereNotNull('tax_account_id');
-        })->get(['id', 'name']);
-
         return Inertia::render('Reports/WithholdingTaxReport', [
-            'retentionsByAccount' => $retentionsByAccount,
+            'providers' => $providersSummary,
             'totalRetentions' => $totalRetentions,
-            'mainAccount' => $mainAccount,
-            'retentionAccounts' => $retentionAccounts,
-            'providers' => $providers,
             'filters' => [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-                'retention_type' => $request->input('retention_type'),
-                'provider_id' => $request->input('provider_id'),
                 'provider_search' => $request->input('provider_search'),
             ],
             'summary' => [
                 'total_expenses_with_retention' => $expenses->count(),
-                'total_providers' => $expenses->pluck('provider_id')->unique()->filter()->count(),
+                'total_providers' => $providersSummary->count(),
                 'average_retention_rate' => $expenses->isEmpty() ? 0 : $expenses->avg(function ($expense) {
                     return ($expense->tax_amount / $expense->subtotal) * 100;
                 }),
+            ],
+        ]);
+    }
+
+    public function showProvider(Request $request, Provider $provider)
+    {
+        $conjunto = ConjuntoConfig::first();
+
+        // Filtros de fecha
+        $startDate = $request->input('start_date', now()->startOfYear()->format('Y-m-d'));
+        $endDate = $request->input('end_date', now()->endOfYear()->format('Y-m-d'));
+
+        // Get expenses with retention for this provider
+        $expenses = Expense::forConjunto($conjunto->id)
+            ->where('provider_id', $provider->id)
+            ->whereBetween('expense_date', [$startDate, $endDate])
+            ->where('tax_amount', '>', 0)
+            ->whereNotNull('tax_account_id')
+            ->with(['taxAccount', 'expenseCategory'])
+            ->orderBy('expense_date', 'desc')
+            ->get();
+
+        // Group by retention type (tax account)
+        $retentionsByType = $expenses->groupBy('tax_account_id')
+            ->map(function ($group) {
+                $account = $group->first()->taxAccount;
+
+                return [
+                    'account_code' => $account->code,
+                    'account_name' => $account->name,
+                    'count' => $group->count(),
+                    'total_retained' => $group->sum('tax_amount'),
+                ];
+            })
+            ->values();
+
+        // Total retained
+        $totalRetained = $expenses->sum('tax_amount');
+
+        // Format expenses for display
+        $expensesFormatted = $expenses->map(function ($expense) {
+            return [
+                'id' => $expense->id,
+                'expense_number' => $expense->expense_number,
+                'expense_date' => $expense->expense_date->format('Y-m-d'),
+                'subtotal' => $expense->subtotal,
+                'tax_amount' => $expense->tax_amount,
+                'tax_rate' => $expense->tax_rate,
+                'category' => $expense->expenseCategory?->name,
+                'tax_account_code' => $expense->taxAccount->code,
+                'tax_account_name' => $expense->taxAccount->name,
+            ];
+        });
+
+        // Get existing certificates for this provider
+        $certificates = WithholdingCertificate::where('provider_id', $provider->id)
+            ->orderBy('year', 'desc')
+            ->get()
+            ->map(function ($cert) {
+                return [
+                    'id' => $cert->id,
+                    'certificate_number' => $cert->certificate_number,
+                    'year' => $cert->year,
+                    'issued_at' => $cert->issued_at->toISOString(),
+                    'total_withheld' => $cert->total_withheld,
+                ];
+            });
+
+        return Inertia::render('Reports/WithholdingProviderDetail', [
+            'provider' => [
+                'id' => $provider->id,
+                'name' => $provider->name,
+                'document_type' => $provider->document_type,
+                'document_number' => $provider->document_number,
+                'address' => $provider->address,
+                'email' => $provider->email,
+            ],
+            'expenses' => $expensesFormatted,
+            'retentionsByType' => $retentionsByType,
+            'totalRetained' => $totalRetained,
+            'certificates' => $certificates,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
             ],
         ]);
     }

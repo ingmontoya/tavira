@@ -140,17 +140,54 @@ class ChartOfAccountsController extends Controller
 
     public function show(ChartOfAccounts $chartOfAccount)
     {
-        $chartOfAccount->load(['parent', 'children', 'transactionEntries.transaction']);
+        $chartOfAccount->load(['parent', 'children']);
 
         $balance = $chartOfAccount->getBalance();
-        $monthlyBalance = $chartOfAccount->getBalance(
-            now()->startOfMonth()->toDateString(),
-            now()->endOfMonth()->toDateString()
-        );
+
+        // Get recent transactions for this account
+        $recentTransactions = $chartOfAccount->transactionEntries()
+            ->with('transaction')
+            ->whereHas('transaction', function ($query) {
+                $query->where('status', 'posted')
+                    ->orderBy('transaction_date', 'desc');
+            })
+            ->limit(10)
+            ->get()
+            ->map(function ($entry) {
+                return [
+                    'id' => $entry->transaction->id,
+                    'reference' => $entry->transaction->reference,
+                    'description' => $entry->transaction->description,
+                    'amount' => $entry->debit_amount > 0 ? $entry->debit_amount : $entry->credit_amount,
+                    'type' => $entry->debit_amount > 0 ? 'debit' : 'credit',
+                    'transaction_date' => $entry->transaction->transaction_date->toDateString(),
+                    'created_at' => $entry->created_at->toISOString(),
+                ];
+            });
+
+        // Get monthly balance trend (last 6 months)
+        $monthlyBalance = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $startDate = $date->copy()->startOfMonth()->toDateString();
+            $endDate = $date->copy()->endOfMonth()->toDateString();
+
+            $monthBalance = $chartOfAccount->getBalance($startDate, $endDate);
+
+            // Calculate change percentage
+            $prevMonth = $i < 5 ? $monthlyBalance[count($monthlyBalance) - 1]['balance'] ?? 0 : 0;
+            $change = $prevMonth != 0 ? (($monthBalance - $prevMonth) / abs($prevMonth)) * 100 : 0;
+
+            $monthlyBalance[] = [
+                'month' => $date->translatedFormat('M Y'),
+                'balance' => $monthBalance,
+                'change' => round($change, 1),
+            ];
+        }
 
         return Inertia::render('Accounting/ChartOfAccounts/Show', [
-            'account' => $chartOfAccount,
-            'balance' => $balance,
+            'account' => $chartOfAccount->append('balance'),
+            'recentTransactions' => $recentTransactions->toArray(),
             'monthlyBalance' => $monthlyBalance,
             'canEdit' => ! $chartOfAccount->transactionEntries()->exists(),
         ]);

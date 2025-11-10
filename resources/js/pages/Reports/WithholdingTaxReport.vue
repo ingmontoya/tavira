@@ -1,59 +1,29 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import { FileDown, Filter, X } from 'lucide-vue-next';
+import { FileDown, Filter, X, ChevronRight } from 'lucide-vue-next';
 
 interface Provider {
     id: number;
     name: string;
-}
-
-interface RetentionAccount {
-    id: number;
-    code: string;
-    name: string;
-}
-
-interface Expense {
-    id: number;
-    expense_number: string;
-    vendor_name: string;
-    expense_date: string;
-    subtotal: number;
-    tax_amount: number;
-    category: string;
-    provider_id: number | null;
-}
-
-interface RetentionByAccount {
-    account_id: number;
-    account_code: string;
-    account_name: string;
-    count: number;
+    document_type: string;
+    document_number: string;
     total_retained: number;
-    expenses: Expense[];
+    expenses_count: number;
 }
 
 interface Props {
-    retentionsByAccount: RetentionByAccount[];
-    totalRetentions: number;
-    mainAccount: { id: number; code: string; name: string } | null;
-    retentionAccounts: RetentionAccount[];
     providers: Provider[];
+    totalRetentions: number;
     filters: {
         start_date: string | null;
         end_date: string | null;
-        retention_type: number | null;
-        provider_id: number | null;
         provider_search: string | null;
     };
     summary: {
@@ -67,8 +37,6 @@ const props = defineProps<Props>();
 
 const startDate = ref(props.filters.start_date || '');
 const endDate = ref(props.filters.end_date || '');
-const retentionType = ref(props.filters.retention_type?.toString() || '');
-const providerId = ref(props.filters.provider_id?.toString() || '');
 const providerSearch = ref(props.filters.provider_search || '');
 
 const formatCurrency = (value: number) => {
@@ -80,18 +48,12 @@ const formatCurrency = (value: number) => {
     }).format(value);
 };
 
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-CO');
-};
-
 const applyFilters = () => {
     router.get(
         '/retenciones',
         {
             start_date: startDate.value || null,
             end_date: endDate.value || null,
-            retention_type: retentionType.value || null,
-            provider_id: providerId.value || null,
             provider_search: providerSearch.value || null,
         },
         {
@@ -104,15 +66,20 @@ const applyFilters = () => {
 const clearFilters = () => {
     startDate.value = '';
     endDate.value = '';
-    retentionType.value = '';
-    providerId.value = '';
     providerSearch.value = '';
     router.get('/retenciones');
 };
 
 const hasActiveFilters = computed(() => {
-    return startDate.value || endDate.value || retentionType.value || providerId.value || providerSearch.value;
+    return startDate.value || endDate.value || providerSearch.value;
 });
+
+const viewProviderDetail = (providerId: number) => {
+    router.get(`/retenciones/providers/${providerId}`, {
+        start_date: startDate.value || null,
+        end_date: endDate.value || null,
+    });
+};
 </script>
 
 <template>
@@ -140,10 +107,10 @@ const hasActiveFilters = computed(() => {
             <Card>
                 <CardHeader>
                     <CardTitle class="text-lg">Filtros</CardTitle>
-                    <CardDescription>Filtra las retenciones por fecha, tipo o proveedor</CardDescription>
+                    <CardDescription>Filtra las retenciones por fecha o proveedor</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                    <div class="grid gap-4 md:grid-cols-4">
                         <div class="space-y-2">
                             <Label for="start_date">Fecha Inicio</Label>
                             <Input id="start_date" v-model="startDate" type="date" />
@@ -151,24 +118,6 @@ const hasActiveFilters = computed(() => {
                         <div class="space-y-2">
                             <Label for="end_date">Fecha Fin</Label>
                             <Input id="end_date" v-model="endDate" type="date" />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="retention_type">Tipo de Retención</Label>
-                            <Select v-model="retentionType">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Todos" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="">Todos</SelectItem>
-                                    <SelectItem
-                                        v-for="account in retentionAccounts"
-                                        :key="account.id"
-                                        :value="account.id.toString()"
-                                    >
-                                        {{ account.code }} - {{ account.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
                         </div>
                         <div class="space-y-2">
                             <Label for="provider_search">Buscar Proveedor</Label>
@@ -192,16 +141,14 @@ const hasActiveFilters = computed(() => {
             </Card>
 
             <!-- Summary Cards -->
-            <div class="grid gap-4 md:grid-cols-4">
+            <div class="grid gap-4 md:grid-cols-3">
                 <Card>
                     <CardHeader class="pb-2">
                         <CardTitle class="text-sm font-medium">Total Retenido</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div class="text-2xl font-bold">{{ formatCurrency(totalRetentions) }}</div>
-                        <p v-if="mainAccount" class="text-xs text-muted-foreground">
-                            Cuenta {{ mainAccount.code }}
-                        </p>
+                        <p class="text-xs text-muted-foreground">Cuenta 2365</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -220,64 +167,55 @@ const hasActiveFilters = computed(() => {
                         <div class="text-2xl font-bold">{{ summary.total_providers }}</div>
                     </CardContent>
                 </Card>
-                <Card>
-                    <CardHeader class="pb-2">
-                        <CardTitle class="text-sm font-medium">Tasa Promedio</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">{{ summary.average_retention_rate.toFixed(2) }}%</div>
-                    </CardContent>
-                </Card>
             </div>
 
-            <!-- Retentions by Account -->
-            <div v-if="retentionsByAccount.length > 0" class="space-y-4">
-                <Card v-for="retention in retentionsByAccount" :key="retention.account_id">
-                    <CardHeader>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <CardTitle>{{ retention.account_code }} - {{ retention.account_name }}</CardTitle>
-                                <CardDescription>
-                                    {{ retention.count }} gastos - Total: {{ formatCurrency(retention.total_retained) }}
-                                </CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
+            <!-- Providers List -->
+            <Card>
+                <CardHeader>
+                    <CardTitle>Proveedores con Retenciones</CardTitle>
+                    <CardDescription>
+                        Haz clic en un proveedor para ver el detalle de sus retenciones y generar el certificado
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div v-if="providers.length > 0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Nro. Gasto</TableHead>
                                     <TableHead>Proveedor</TableHead>
-                                    <TableHead>Fecha</TableHead>
-                                    <TableHead>Categoría</TableHead>
-                                    <TableHead class="text-right">Base</TableHead>
-                                    <TableHead class="text-right">Retención</TableHead>
+                                    <TableHead>Tipo Doc.</TableHead>
+                                    <TableHead>Número Doc.</TableHead>
+                                    <TableHead class="text-right">Nro. Gastos</TableHead>
+                                    <TableHead class="text-right">Total Retenido</TableHead>
+                                    <TableHead class="text-right"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow v-for="expense in retention.expenses" :key="expense.id">
-                                    <TableCell>{{ expense.expense_number }}</TableCell>
-                                    <TableCell>{{ expense.vendor_name }}</TableCell>
-                                    <TableCell>{{ formatDate(expense.expense_date) }}</TableCell>
-                                    <TableCell>{{ expense.category || '-' }}</TableCell>
-                                    <TableCell class="text-right">{{ formatCurrency(expense.subtotal) }}</TableCell>
+                                <TableRow
+                                    v-for="provider in providers"
+                                    :key="provider.id"
+                                    class="cursor-pointer hover:bg-muted/50"
+                                    @click="viewProviderDetail(provider.id)"
+                                >
+                                    <TableCell class="font-medium">{{ provider.name }}</TableCell>
+                                    <TableCell>{{ provider.document_type || '-' }}</TableCell>
+                                    <TableCell>{{ provider.document_number || '-' }}</TableCell>
+                                    <TableCell class="text-right">{{ provider.expenses_count }}</TableCell>
                                     <TableCell class="text-right font-medium">
-                                        {{ formatCurrency(expense.tax_amount) }}
+                                        {{ formatCurrency(provider.total_retained) }}
+                                    </TableCell>
+                                    <TableCell class="text-right">
+                                        <ChevronRight class="h-4 w-4" />
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Empty State -->
-            <Card v-else>
-                <CardContent class="py-12 text-center">
-                    <p class="text-muted-foreground">
-                        No se encontraron gastos con retenciones en el período seleccionado.
-                    </p>
+                    </div>
+                    <div v-else class="py-12 text-center">
+                        <p class="text-muted-foreground">
+                            No se encontraron proveedores con retenciones en el período seleccionado.
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
         </div>

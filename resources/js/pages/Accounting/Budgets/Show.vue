@@ -10,6 +10,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,23 +116,29 @@ const isOverBudget = computed(() => {
 });
 
 const canEdit = computed(() => {
-    return props.budget.status === 'Draft'; // Only allow editing for draft budgets
+    return props.budget.raw_status === 'draft'; // Only allow editing for draft budgets
 });
 
 const canApprove = computed(() => {
-    return props.budget.status === 'Draft';
+    // Use the backend's can_approve attribute which checks role and status
+    return props.budget.can_approve === true;
 });
 
 const canActivate = computed(() => {
-    return props.budget.status === 'Approved';
+    return props.budget.can_be_activated === true;
 });
 
 const canClose = computed(() => {
-    return props.budget.status === 'Active';
+    return props.budget.raw_status === 'active';
 });
 
 const canDelete = computed(() => {
-    return props.budget.status !== 'Active';
+    return props.budget.raw_status !== 'active';
+});
+
+const showApprovalHint = computed(() => {
+    // Show hint if budget can be approved but user doesn't have permission
+    return props.budget.raw_status === 'draft' && props.budget.items.length > 0 && !props.budget.can_approve;
 });
 
 // Budget actions
@@ -160,6 +167,14 @@ const confirmDeleteBudget = () => {
             router.visit('/accounting/budgets');
         },
     });
+};
+
+const deleteItem = (itemId: number) => {
+    if (confirm('¿Está seguro que desea eliminar esta partida presupuestal?')) {
+        router.delete(`/accounting/budgets/${props.budget.id}/items/${itemId}`, {
+            preserveScroll: true,
+        });
+    }
 };
 
 const formatDate = (dateString: string) => {
@@ -219,6 +234,14 @@ const breadcrumbs = [
                         <CheckCircle class="h-4 w-4" />
                         Aprobar
                     </Button>
+
+                    <!-- Show hint if user cannot approve -->
+                    <div v-if="showApprovalHint" class="ml-2">
+                        <Badge variant="outline" class="border-amber-600 text-amber-600 bg-amber-50">
+                            <AlertCircle class="mr-1 h-3 w-3" />
+                            Solo el Concejo puede aprobar
+                        </Badge>
+                    </div>
 
                     <Button v-if="canActivate" @click="activateBudget" class="gap-2 bg-green-600 hover:bg-green-700">
                         <Play class="h-4 w-4" />
@@ -362,16 +385,19 @@ const breadcrumbs = [
                                             <TableHead class="text-right">Ejecutado</TableHead>
                                             <TableHead class="text-right">Variación</TableHead>
                                             <TableHead class="text-center">%</TableHead>
+                                            <TableHead v-if="canEdit" class="text-center">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         <TableRow
                                             v-for="item in budget.items"
                                             :key="item.id"
-                                            class="cursor-pointer hover:bg-muted/50"
-                                            @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)"
+                                            class="hover:bg-muted/50"
                                         >
-                                            <TableCell>
+                                            <TableCell
+                                                class="cursor-pointer"
+                                                @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)"
+                                            >
                                                 <div class="space-y-1">
                                                     <div class="font-mono text-sm">{{ item.account.code }}</div>
                                                     <div class="text-sm font-medium">{{ item.account.name }}</div>
@@ -419,6 +445,26 @@ const breadcrumbs = [
                                                     >
                                                         {{ Math.abs(item.variance_percentage).toFixed(1) }}%
                                                     </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell v-if="canEdit" class="text-center">
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        @click.stop="router.visit(`/accounting/budgets/${budget.id}/items/${item.id}/edit`)"
+                                                        class="h-8 w-8 p-0"
+                                                    >
+                                                        <Edit class="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        @click.stop="deleteItem(item.id)"
+                                                        class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    >
+                                                        <Trash2 class="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>

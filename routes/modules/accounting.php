@@ -40,6 +40,9 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
     // Budget Items
     Route::get('budgets/{budget}/items/create', [BudgetController::class, 'createItem'])->name('budgets.items.create');
     Route::post('budgets/{budget}/items', [BudgetController::class, 'storeItem'])->name('budgets.items.store');
+    Route::get('budgets/{budget}/items/{item}/edit', [BudgetController::class, 'editItem'])->name('budgets.items.edit');
+    Route::put('budgets/{budget}/items/{item}', [BudgetController::class, 'updateItem'])->name('budgets.items.update');
+    Route::delete('budgets/{budget}/items/{item}', [BudgetController::class, 'destroyItem'])->name('budgets.items.destroy');
 
     // Period Closures
     Route::get('closures', [AccountingClosureController::class, 'index'])->name('closures.index');

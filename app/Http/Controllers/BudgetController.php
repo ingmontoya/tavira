@@ -597,6 +597,114 @@ class BudgetController extends Controller
             ->with('success', 'Partida presupuestal agregada exitosamente.');
     }
 
+    public function editItem(Budget $budget, BudgetItem $item)
+    {
+        if ($item->budget_id !== $budget->id) {
+            abort(404, 'Item not found in this budget');
+        }
+
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden editar partidas de presupuestos activos.']);
+        }
+
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $incomeAccounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->byType('income')
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
+        $expenseAccounts = ChartOfAccounts::forConjunto($conjunto->id)
+            ->byType('expense')
+            ->postable()
+            ->active()
+            ->orderBy('code')
+            ->get();
+
+        // Get already used accounts to avoid duplicates (excluding current item)
+        $usedAccountIds = $budget->items()->where('id', '!=', $item->id)->pluck('account_id')->toArray();
+
+        $item->load('account');
+
+        return Inertia::render('Accounting/Budgets/Items/Edit', [
+            'budget' => $budget,
+            'item' => $item,
+            'incomeAccounts' => $incomeAccounts,
+            'expenseAccounts' => $expenseAccounts,
+            'usedAccountIds' => $usedAccountIds,
+        ]);
+    }
+
+    public function updateItem(Request $request, Budget $budget, BudgetItem $item)
+    {
+        if ($item->budget_id !== $budget->id) {
+            abort(404, 'Item not found in this budget');
+        }
+
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden editar partidas de presupuestos activos.']);
+        }
+
+        $validated = $request->validate([
+            'account_id' => 'required|exists:chart_of_accounts,id',
+            'category' => 'required|in:income,expense',
+            'expense_type' => 'nullable|in:fixed,variable,special_fund',
+            'budgeted_amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:500',
+            'monthly_distribution' => 'nullable|array',
+            'monthly_distribution.*' => 'nullable|numeric|min:0',
+        ]);
+
+        // Check if account is already used in this budget (excluding current item)
+        if ($budget->items()->where('account_id', $validated['account_id'])->where('id', '!=', $item->id)->exists()) {
+            return back()->withErrors(['account_id' => 'Esta cuenta ya está incluida en el presupuesto.']);
+        }
+
+        DB::transaction(function () use ($validated, $budget, $item) {
+            $item->update([
+                'account_id' => $validated['account_id'],
+                'category' => $validated['category'],
+                'expense_type' => $validated['expense_type'] ?? null,
+                'budgeted_amount' => $validated['budgeted_amount'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            if (isset($validated['monthly_distribution'])) {
+                $this->updateMonthlyDistribution($item, $validated['monthly_distribution']);
+            } else {
+                $item->distributeEqually();
+            }
+
+            $budget->calculateTotals();
+        });
+
+        return redirect()
+            ->route('accounting.budgets.show', $budget)
+            ->with('success', 'Partida presupuestal actualizada exitosamente.');
+    }
+
+    public function destroyItem(Budget $budget, BudgetItem $item)
+    {
+        if ($item->budget_id !== $budget->id) {
+            abort(404, 'Item not found in this budget');
+        }
+
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden eliminar partidas de presupuestos activos.']);
+        }
+
+        DB::transaction(function () use ($budget, $item) {
+            $item->delete();
+            $budget->calculateTotals();
+        });
+
+        return redirect()
+            ->route('accounting.budgets.show', $budget)
+            ->with('success', 'Partida presupuestal eliminada exitosamente.');
+    }
+
     public function cashFlowProjection(Budget $budget)
     {
         $budget->load(['incomeItems', 'expenseItems']);
@@ -674,11 +782,15 @@ class BudgetController extends Controller
             'total_budget' => (float) $totalBudget,
             'total_executed' => (float) $totalExecuted,
             'status' => $statusMapping[$budget->status] ?? 'Draft',
+            'raw_status' => $budget->status, // Add raw status for frontend logic
             'approval_date' => $budget->approved_at?->toDateString(),
             'execution_percentage' => (float) $executionPercentage,
             'items' => $transformedItems->toArray(),
             'created_at' => $budget->created_at->toISOString(),
             'updated_at' => $budget->updated_at->toISOString(),
+            'can_approve' => $budget->can_approve,
+            'can_be_approved' => $budget->can_be_approved,
+            'can_be_activated' => $budget->can_be_activated,
         ];
     }
 }

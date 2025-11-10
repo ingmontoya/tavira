@@ -158,6 +158,9 @@ Route::prefix('retenciones')->name('retenciones.')->group(function () {
     Route::get('/', [WithholdingTaxReportController::class, 'index'])
         ->name('index')
         ->middleware('can:view_expenses');
+    Route::get('providers/{provider}', [WithholdingTaxReportController::class, 'showProvider'])
+        ->name('providers.show')
+        ->middleware('can:view_expenses');
     Route::get('certificates', [WithholdingTaxReportController::class, 'certificates'])
         ->name('certificates')
         ->middleware('can:view_expenses');
