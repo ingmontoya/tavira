@@ -12,6 +12,13 @@ class WithholdingCertificateService
 {
     public function generateForProvider(Provider $provider, int $year): ?WithholdingCertificate
     {
+        // Get conjunto config
+        $conjunto = \App\Models\ConjuntoConfig::first();
+
+        if (!$conjunto) {
+            throw new \Exception('No se encontró configuración del conjunto');
+        }
+
         // Get all expenses with withholding for this provider in the year
         $expenses = Expense::where('provider_id', $provider->id)
             ->whereYear('expense_date', $year)
@@ -26,7 +33,7 @@ class WithholdingCertificateService
 
         // Create certificate
         $certificate = WithholdingCertificate::create([
-            'conjunto_config_id' => $provider->conjunto_config_id,
+            'conjunto_config_id' => $conjunto->id,
             'provider_id' => $provider->id,
             'year' => $year,
             'certificate_number' => $this->generateCertificateNumber($year),

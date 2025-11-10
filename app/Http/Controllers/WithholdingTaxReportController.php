@@ -140,7 +140,7 @@ class WithholdingTaxReportController extends Controller
                     'certificate_number' => $cert->certificate_number,
                     'year' => $cert->year,
                     'issued_at' => $cert->issued_at->toISOString(),
-                    'total_withheld' => $cert->total_withheld,
+                    'total_withheld' => $cert->total_retained,
                 ];
             });
 

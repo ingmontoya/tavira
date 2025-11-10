@@ -186,6 +186,15 @@ class BudgetController extends Controller
         $currentMonth = now()->month;
         $currentYear = $budget->fiscal_year;
 
+        // Refresh budget executions to get latest actual amounts
+        if ($budget->status === 'active') {
+            foreach ($budget->items as $item) {
+                foreach ($item->executions as $execution) {
+                    $execution->calculateActualAmountFromAccountingEntries();
+                }
+            }
+        }
+
         $executionSummary = $budget->getExecutionSummary($currentMonth, $currentYear);
 
         // Transform budget data to match frontend expectations

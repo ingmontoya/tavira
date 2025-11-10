@@ -42,8 +42,10 @@ RUN composer install \
 # Copy application code (excluding node_modules, tests, etc via .dockerignore)
 COPY . .
 
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev
+# Generate optimized autoloader and clear cached services
+# This removes any cached service providers from dev dependencies
+RUN composer dump-autoload --optimize --no-dev \
+    && rm -f bootstrap/cache/services.php bootstrap/cache/packages.php
 
 # =============================================================================
 # Stage 2: Build Frontend Assets

@@ -188,9 +188,11 @@ NAME               STATUS    PORTS
 tavira-postgres    Up        0.0.0.0:5432->5432/tcp
 tavira-redis       Up        0.0.0.0:6379->6379/tcp
 tavira-app         Up        9000/tcp
-tavira-nginx       Up        0.0.0.0:8080->80/tcp
+tavira-nginx       Up        0.0.0.0:8081->80/tcp
 tavira-queue       Up
 ```
+
+**Nota**: Si el puerto 8080 está ocupado por otra aplicación, el puerto se ha cambiado a 8081.
 
 ### Paso 5: Ejecutar Migraciones
 
@@ -224,8 +226,10 @@ docker-compose exec app php artisan tinker
 
 Abre tu navegador y visita:
 
-- **Aplicación**: http://localhost:8080
-- **Health Check**: http://localhost:8080/health
+- **Aplicación**: http://localhost:8081
+- **Health Check**: http://localhost:8081/health
+
+**Nota**: El puerto por defecto es 8081 para evitar conflictos con otras aplicaciones.
 
 ### Paso 8: Ver Logs
 
@@ -691,20 +695,28 @@ docker info
 ```
 Error starting userland proxy: listen tcp 0.0.0.0:8080: bind: address already in use
 ```
+O ves una aplicación diferente cuando accedes a `http://localhost:8080`
 
 **Solución**:
 ```bash
 # Encontrar el proceso usando el puerto
 lsof -i :8080
-netstat -tuln | grep 8080
+ps aux | grep 8080
 
-# Matar el proceso
+# Opción 1: Matar el proceso (si no lo necesitas)
 kill -9 <PID>
 
-# O cambiar el puerto en docker-compose.yml
+# Opción 2: Cambiar el puerto en docker-compose.yml (RECOMENDADO)
+# Editar la línea del servicio nginx:
 ports:
   - "8081:80"  # Cambiar a 8081 u otro puerto disponible
+
+# Reiniciar los contenedores
+docker-compose down
+docker-compose up -d
 ```
+
+**IMPORTANTE**: El archivo `docker-compose.yml` ya está configurado con el puerto 8081 por defecto para evitar conflictos.
 
 ### Problema 3: Pod en estado CrashLoopBackOff
 
