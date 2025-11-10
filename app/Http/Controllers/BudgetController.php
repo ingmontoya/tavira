@@ -736,13 +736,28 @@ class BudgetController extends Controller
         ]);
     }
 
+    private function calculateExecutedAmountFromTransactions(int $accountId, string $category, $startDate, $endDate): float
+    {
+        $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
+            $query->where('status', 'posted')
+                ->whereBetween('transaction_date', [$startDate, $endDate]);
+        })
+            ->where('account_id', $accountId)
+            ->get();
+
+        if ($category === 'income') {
+            // For income accounts, credit increases the balance
+            $actualAmount = $entries->sum('credit_amount') - $entries->sum('debit_amount');
+        } else {
+            // For expense accounts, debit increases the balance
+            $actualAmount = $entries->sum('debit_amount') - $entries->sum('credit_amount');
+        }
+
+        return max(0, $actualAmount);
+    }
+
     private function transformBudgetForFrontend(Budget $budget, array $executionSummary): array
     {
-        // Calculate totals
-        $totalBudget = $budget->total_budgeted_income + $budget->total_budgeted_expenses;
-        $totalExecuted = $executionSummary['total_income_actual'] + $executionSummary['total_expenses_actual'];
-        $executionPercentage = $totalBudget > 0 ? round(($totalExecuted / $totalBudget) * 100, 2) : 0;
-
         // Map status to frontend format
         $statusMapping = [
             'draft' => 'Draft',
@@ -752,14 +767,25 @@ class BudgetController extends Controller
         ];
 
         // Transform budget items with execution data
-        $transformedItems = $budget->items->map(function ($item) use ($executionSummary) {
-            // Find execution data for this item from the summary
+        $transformedItems = $budget->items->map(function ($item) use ($executionSummary, $budget) {
+            // Try to get execution data from summary first (for active budgets with BudgetExecutions)
             $itemExecutions = collect([
                 ...$executionSummary['income']->where('budgetItem.id', $item->id),
                 ...$executionSummary['expenses']->where('budgetItem.id', $item->id),
             ]);
 
             $executedAmount = $itemExecutions->sum('actual_amount');
+
+            // If no execution data found (budget not active or no BudgetExecutions), calculate from transactions
+            if ($executedAmount == 0) {
+                $executedAmount = $this->calculateExecutedAmountFromTransactions(
+                    $item->account_id,
+                    $item->category,
+                    $budget->start_date,
+                    $budget->end_date
+                );
+            }
+
             $varianceAmount = $executedAmount - $item->budgeted_amount;
             $variancePercentage = $item->budgeted_amount > 0
                 ? round(($varianceAmount / $item->budgeted_amount) * 100, 2)
@@ -780,6 +806,11 @@ class BudgetController extends Controller
                 'description' => $item->notes,
             ];
         });
+
+        // Calculate totals from transformed items
+        $totalBudget = $budget->total_budgeted_income + $budget->total_budgeted_expenses;
+        $totalExecuted = $transformedItems->sum('executed_amount');
+        $executionPercentage = $totalBudget > 0 ? round(($totalExecuted / $totalBudget) * 100, 2) : 0;
 
         return [
             'id' => $budget->id,
