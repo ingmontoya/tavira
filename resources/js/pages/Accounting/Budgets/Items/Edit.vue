@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import ValidationErrors from '@/components/ValidationErrors.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, Calculator, DollarSign, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { ArrowLeft, Calculator, ChevronDown, DollarSign, Lightbulb, Save, Search, TrendingDown, TrendingUp } from 'lucide-vue-next';
+import axios from 'axios';
+import { computed, ref, watch } from 'vue';
 
 interface Account {
     id: number;
@@ -49,18 +50,36 @@ interface BudgetItem {
     dec_amount: number;
 }
 
+interface HistoricalData {
+    total_amount: number;
+    monthly_distribution: Record<number, number>;
+    suggestions: {
+        copy_previous_year: number;
+        with_inflation: number;
+        inflation_rate: number;
+    };
+    trend: 'stable' | 'increasing' | 'decreasing';
+    has_data: boolean;
+}
+
 interface Props {
     budget: Budget;
     item: BudgetItem;
-    incomeAccounts: Account[];
-    expenseAccounts: Account[];
     usedAccountIds: number[];
+    historicalData: HistoricalData;
 }
 
 const props = defineProps<Props>();
 
 const page = usePage();
 const errors = computed(() => page.props.errors || {});
+
+// Account search state
+const accountSearch = ref('');
+const searchResults = ref<Account[]>([]);
+const isSearching = ref(false);
+const showDropdown = ref(false);
+const selectedAccount = ref<Account | null>(props.item.account);
 
 interface FormData {
     account_id: string;
@@ -99,11 +118,6 @@ const form = useForm<FormData>({
         11: props.item.nov_amount,
         12: props.item.dec_amount,
     },
-});
-
-const availableAccounts = computed(() => {
-    const accounts = form.category === 'income' ? props.incomeAccounts : props.expenseAccounts;
-    return accounts.filter((account) => !props.usedAccountIds.includes(account.id) || account.id === props.item.account_id);
 });
 
 const monthlyTotal = computed(() => {
@@ -146,6 +160,83 @@ const toggleMonthlyDistribution = () => {
         }
     }
 };
+
+// Forecast functions
+const applyCopyPreviousYear = () => {
+    form.budgeted_amount = props.historicalData.suggestions.copy_previous_year;
+};
+
+const applyWithInflation = () => {
+    form.budgeted_amount = props.historicalData.suggestions.with_inflation;
+};
+
+const applyHistoricalDistribution = () => {
+    if (!form.use_monthly_distribution) {
+        form.use_monthly_distribution = true;
+    }
+
+    form.budgeted_amount = props.historicalData.total_amount;
+
+    for (let month = 1; month <= 12; month++) {
+        form.monthly_distribution[month] = props.historicalData.monthly_distribution[month] || 0;
+    }
+};
+
+const trendIcon = computed(() => {
+    if (props.historicalData.trend === 'increasing') return TrendingUp;
+    if (props.historicalData.trend === 'decreasing') return TrendingDown;
+    return null;
+});
+
+const trendLabel = computed(() => {
+    if (props.historicalData.trend === 'increasing') return 'Tendencia al alza';
+    if (props.historicalData.trend === 'decreasing') return 'Tendencia a la baja';
+    return 'Tendencia estable';
+});
+
+// Account search functions
+const searchAccounts = async (query: string) => {
+    if (query.length < 2) {
+        searchResults.value = [];
+        return;
+    }
+
+    isSearching.value = true;
+    try {
+        const response = await axios.get('/accounting/accounts/search', {
+            params: {
+                q: query,
+                type: form.category,
+                exclude_ids: props.usedAccountIds,
+            },
+        });
+        searchResults.value = response.data.accounts;
+        showDropdown.value = true;
+    } catch (error) {
+        console.error('Error searching accounts:', error);
+    } finally {
+        isSearching.value = false;
+    }
+};
+
+const selectAccount = (account: Account) => {
+    selectedAccount.value = account;
+    form.account_id = account.id.toString();
+    accountSearch.value = `${account.code} - ${account.name}`;
+    showDropdown.value = false;
+};
+
+// Watch for search input changes
+watch(accountSearch, (newValue) => {
+    if (newValue !== `${selectedAccount.value?.code} - ${selectedAccount.value?.name}`) {
+        searchAccounts(newValue);
+    }
+});
+
+// Initialize search with current account
+if (props.item.account) {
+    accountSearch.value = `${props.item.account.code} - ${props.item.account.name}`;
+}
 
 const submit = () => {
     const data = {
@@ -213,21 +304,54 @@ const breadcrumbs = [
                                     </Select>
                                 </div>
 
-                                <div class="space-y-2">
+                                <div class="relative space-y-2">
                                     <Label for="account_id">Cuenta</Label>
-                                    <Select v-model="form.account_id">
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Seleccionar cuenta" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem v-for="account in availableAccounts" :key="account.id" :value="account.id.toString()">
-                                                <div class="flex flex-col">
-                                                    <span class="font-mono text-xs">{{ account.code }}</span>
-                                                    <span>{{ account.name }}</span>
-                                                </div>
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div class="relative">
+                                        <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="account_search"
+                                            v-model="accountSearch"
+                                            type="text"
+                                            placeholder="Buscar por código o nombre..."
+                                            class="pl-10"
+                                            @focus="showDropdown = searchResults.length > 0"
+                                            @blur="setTimeout(() => showDropdown = false, 200)"
+                                        />
+                                    </div>
+
+                                    <!-- Search Results Dropdown -->
+                                    <div
+                                        v-if="showDropdown && (searchResults.length > 0 || isSearching)"
+                                        class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                                    >
+                                        <div v-if="isSearching" class="flex items-center justify-center p-4">
+                                            <span class="text-sm text-muted-foreground">Buscando...</span>
+                                        </div>
+                                        <button
+                                            v-for="account in searchResults"
+                                            :key="account.id"
+                                            type="button"
+                                            class="flex w-full cursor-pointer flex-col rounded-sm px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                                            @click="selectAccount(account)"
+                                        >
+                                            <span class="font-mono text-xs text-muted-foreground">{{ account.code }}</span>
+                                            <span class="text-sm">{{ account.name }}</span>
+                                        </button>
+                                        <div v-if="!isSearching && searchResults.length === 0" class="p-4 text-center">
+                                            <span class="text-sm text-muted-foreground">No se encontraron cuentas</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Selected Account Display -->
+                                    <div v-if="selectedAccount" class="mt-2 rounded-md border bg-muted/50 p-2">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex flex-col">
+                                                <span class="font-mono text-xs text-muted-foreground">{{ selectedAccount.code }}</span>
+                                                <span class="text-sm font-medium">{{ selectedAccount.name }}</span>
+                                            </div>
+                                            <Badge variant="secondary">Seleccionada</Badge>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div v-if="form.category === 'expense'" class="space-y-2">
@@ -273,6 +397,80 @@ const breadcrumbs = [
                                         placeholder="Descripción adicional de la partida..."
                                         class="min-h-[80px]"
                                     />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <!-- Forecast Suggestions Card -->
+                        <Card v-if="historicalData.has_data" class="border-blue-200 bg-blue-50/50">
+                            <CardHeader>
+                                <CardTitle class="flex items-center gap-2 text-blue-900">
+                                    <Lightbulb class="h-5 w-5" />
+                                    Sugerencias Basadas en Datos Históricos
+                                </CardTitle>
+                                <CardDescription>
+                                    Datos del año {{ budget.fiscal_year - 1 }}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent class="space-y-4">
+                                <!-- Historical Amount Display -->
+                                <div class="rounded-lg border bg-white p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <Label class="text-xs text-muted-foreground">Ejecutado Año Anterior</Label>
+                                            <p class="text-2xl font-bold text-blue-600">
+                                                {{ formatCurrency(historicalData.total_amount) }}
+                                            </p>
+                                        </div>
+                                        <div v-if="trendIcon" class="flex items-center gap-1 text-sm">
+                                            <component :is="trendIcon" class="h-4 w-4" />
+                                            <span>{{ trendLabel }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Action Buttons -->
+                                <div class="space-y-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        class="w-full justify-start gap-2"
+                                        @click="applyCopyPreviousYear"
+                                    >
+                                        <Calculator class="h-4 w-4" />
+                                        <span class="flex-1 text-left">Copiar monto del año anterior</span>
+                                        <Badge variant="secondary" class="text-xs">
+                                            {{ formatCurrency(historicalData.suggestions.copy_previous_year) }}
+                                        </Badge>
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        class="w-full justify-start gap-2"
+                                        @click="applyWithInflation"
+                                    >
+                                        <TrendingUp class="h-4 w-4" />
+                                        <span class="flex-1 text-left">
+                                            Aplicar inflación (+{{ historicalData.suggestions.inflation_rate }}%)
+                                        </span>
+                                        <Badge variant="secondary" class="text-xs">
+                                            {{ formatCurrency(historicalData.suggestions.with_inflation) }}
+                                        </Badge>
+                                    </Button>
+
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        class="w-full justify-start gap-2"
+                                        @click="applyHistoricalDistribution"
+                                    >
+                                        <Calendar class="h-4 w-4" />
+                                        <span class="flex-1 text-left">Copiar distribución mensual histórica</span>
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>

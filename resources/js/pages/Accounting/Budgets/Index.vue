@@ -220,10 +220,10 @@ const columns = [
                     class: isOverBudget ? 'bg-red-100' : '',
                 }),
                 isOverBudget &&
-                    h('div', { class: 'text-xs text-red-600 flex items-center gap-1' }, [
-                        h(TrendingUp, { class: 'h-3 w-3' }),
-                        `+$${variance.toLocaleString()}`,
-                    ]),
+                h('div', { class: 'text-xs text-red-600 flex items-center gap-1' }, [
+                    h(TrendingUp, { class: 'h-3 w-3' }),
+                    `+$${variance.toLocaleString()}`,
+                ]),
             ]);
         },
     }),
@@ -336,10 +336,11 @@ const exportBudgets = () => {
 </script>
 
 <template>
+
     <Head title="Presupuestos" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div class="container mx-auto max-w-6xl px-4 py-8">
             <!-- Filtros Avanzados -->
             <Card class="mb-4 p-4">
                 <div class="space-y-4">
@@ -347,13 +348,10 @@ const exportBudgets = () => {
                     <div>
                         <Label for="search">Búsqueda General</Label>
                         <div class="relative mt-3">
-                            <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                            <Input
-                                id="search"
-                                v-model="customFilters.search"
-                                placeholder="Buscar por nombre, descripción o año..."
-                                class="max-w-md pl-10"
-                            />
+                            <Search
+                                class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
+                            <Input id="search" v-model="customFilters.search"
+                                placeholder="Buscar por nombre, descripción o año..." class="max-w-md pl-10" />
                         </div>
                     </div>
 
@@ -396,18 +394,16 @@ const exportBudgets = () => {
                             <X class="mr-2 h-4 w-4" />
                             Limpiar filtros
                         </Button>
-                        <div class="text-sm text-muted-foreground">Mostrando {{ filteredData.length }} de {{ data.length }} presupuestos</div>
+                        <div class="text-sm text-muted-foreground">Mostrando {{ filteredData.length }} de {{ data.length
+                            }} presupuestos</div>
                     </div>
                 </div>
             </Card>
 
             <div class="flex items-center gap-2 py-4">
-                <Input
-                    class="max-w-sm"
-                    placeholder="Filtro adicional por nombre..."
+                <Input class="max-w-sm" placeholder="Filtro adicional por nombre..."
                     :model-value="table.getColumn('name')?.getFilterValue() as string"
-                    @update:model-value="table.getColumn('name')?.setFilterValue($event)"
-                />
+                    @update:model-value="table.getColumn('name')?.setFilterValue($event)" />
                 <DropdownMenu>
                     <DropdownMenuTrigger as-child>
                         <Button variant="outline" class="ml-auto">
@@ -418,15 +414,12 @@ const exportBudgets = () => {
                     <DropdownMenuContent align="end">
                         <DropdownMenuCheckboxItem
                             v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
-                            :key="column.id"
-                            class="capitalize"
-                            :model-value="column.getIsVisible()"
+                            :key="column.id" class="capitalize" :model-value="column.getIsVisible()"
                             @update:model-value="
                                 (value) => {
                                     column.toggleVisibility(!!value);
                                 }
-                            "
-                        >
+                            ">
                             {{ column.id }}
                         </DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
@@ -447,42 +440,31 @@ const exportBudgets = () => {
                 <Table>
                     <TableHeader>
                         <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
-                            <TableHead
-                                v-for="header in headerGroup.headers"
-                                :key="header.id"
-                                :data-pinned="header.column.getIsPinned()"
-                                :class="
-                                    cn(
-                                        { 'sticky bg-background/95': header.column.getIsPinned() },
-                                        header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                    )
-                                "
-                            >
-                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header" :props="header.getContext()" />
+                            <TableHead v-for="header in headerGroup.headers" :key="header.id"
+                                :data-pinned="header.column.getIsPinned()" :class="cn(
+                                    { 'sticky bg-background/95': header.column.getIsPinned() },
+                                    header.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
+                                )
+                                    ">
+                                <FlexRender v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
+                                    :props="header.getContext()" />
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <template v-if="table.getRowModel().rows?.length">
                             <template v-for="row in table.getRowModel().rows" :key="row.id">
-                                <TableRow
-                                    :data-state="row.getIsSelected() && 'selected'"
+                                <TableRow :data-state="row.getIsSelected() && 'selected'"
                                     class="cursor-pointer transition-colors hover:bg-muted/50"
-                                    @click="router.visit(`/accounting/budgets/${row.original.id}`)"
-                                >
-                                    <TableCell
-                                        v-for="cell in row.getVisibleCells()"
-                                        :key="cell.id"
-                                        :data-pinned="cell.column.getIsPinned()"
-                                        :class="
-                                            cn(
-                                                { 'sticky bg-background/95': cell.column.getIsPinned() },
-                                                cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
-                                                cell.column.id === 'select' || cell.column.id === 'actions' ? 'cursor-default' : '',
-                                            )
-                                        "
-                                        @click="cell.column.id === 'select' || cell.column.id === 'actions' ? $event.stopPropagation() : null"
-                                    >
+                                    @click="router.visit(`/accounting/budgets/${row.original.id}`)">
+                                    <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id"
+                                        :data-pinned="cell.column.getIsPinned()" :class="cn(
+                                            { 'sticky bg-background/95': cell.column.getIsPinned() },
+                                            cell.column.getIsPinned() === 'left' ? 'left-0' : 'right-0',
+                                            cell.column.id === 'select' || cell.column.id === 'actions' ? 'cursor-default' : '',
+                                        )
+                                            "
+                                        @click="cell.column.id === 'select' || cell.column.id === 'actions' ? $event.stopPropagation() : null">
                                         <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
                                     </TableCell>
                                 </TableRow>
@@ -498,11 +480,17 @@ const exportBudgets = () => {
 
             <div class="flex items-center justify-end space-x-2 py-4">
                 <div class="flex-1 text-sm text-muted-foreground">
-                    {{ table.getFilteredSelectedRowModel().rows.length }} de {{ table.getFilteredRowModel().rows.length }} fila(s) seleccionadas.
+                    {{ table.getFilteredSelectedRowModel().rows.length }} de {{ table.getFilteredRowModel().rows.length
+                    }} fila(s)
+                    seleccionadas.
                 </div>
                 <div class="space-x-2">
-                    <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()"> Anterior </Button>
-                    <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()"> Siguiente </Button>
+                    <Button variant="outline" size="sm" :disabled="!table.getCanPreviousPage()"
+                        @click="table.previousPage()">
+                        Anterior </Button>
+                    <Button variant="outline" size="sm" :disabled="!table.getCanNextPage()" @click="table.nextPage()">
+                        Siguiente
+                    </Button>
                 </div>
             </div>
         </div>

@@ -16,6 +16,7 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
     Route::post('chart-of-accounts/sync', [ChartOfAccountsController::class, 'sync'])->name('chart-of-accounts.sync');
     Route::get('accounts/by-type', [ChartOfAccountsController::class, 'getByType'])->name('accounts.by-type');
     Route::get('accounts/hierarchical', [ChartOfAccountsController::class, 'getHierarchical'])->name('accounts.hierarchical');
+    Route::get('accounts/search', [ChartOfAccountsController::class, 'search'])->name('accounts.search');
 
     // Accounting Transactions
     Route::get('transactions/{transaction}/duplicate', [AccountingTransactionController::class, 'duplicate'])->name('transactions.duplicate');

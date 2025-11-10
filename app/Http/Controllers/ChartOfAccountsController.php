@@ -432,4 +432,55 @@ class ChartOfAccountsController extends Controller
             ]);
         }
     }
+
+    public function search(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $request->validate([
+            'q' => 'nullable|string|max:100',
+            'type' => 'nullable|in:asset,liability,equity,income,expense',
+            'postable_only' => 'boolean',
+            'exclude_ids' => 'nullable|array',
+            'exclude_ids.*' => 'integer',
+        ]);
+
+        $query = ChartOfAccounts::forConjunto($conjunto->id)
+            ->active()
+            ->postable()
+            ->orderBy('code');
+
+        // Filter by type if provided
+        if ($request->filled('type')) {
+            $query->byType($request->type);
+        }
+
+        // Search by code or name
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        // Exclude specific account IDs
+        if ($request->filled('exclude_ids')) {
+            $query->whereNotIn('id', $request->exclude_ids);
+        }
+
+        // Limit results for performance
+        $accounts = $query->limit(50)->get();
+
+        return response()->json([
+            'accounts' => $accounts->map(function ($account) {
+                return [
+                    'id' => $account->id,
+                    'code' => $account->code,
+                    'name' => $account->name,
+                    'account_type' => $account->account_type,
+                ];
+            }),
+        ]);
+    }
 }

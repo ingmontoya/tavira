@@ -208,6 +208,7 @@ const breadcrumbs = [
 </script>
 
 <template>
+
     <Head :title="budget.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -222,18 +223,20 @@ const breadcrumbs = [
                             {{ statusInfo.label }}
                         </Badge>
                     </div>
-                    <p class="text-muted-foreground">{{ budget.description || `Presupuesto para el año ${budget.year}` }}</p>
+                    <p class="text-muted-foreground">{{ budget.description || `Presupuesto para el año ${budget.year}`
+                        }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <Link href="/accounting/budgets">
-                        <Button variant="outline" class="gap-2">
-                            <ArrowLeft class="h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline" class="gap-2">
+                        <ArrowLeft class="h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
 
                     <!-- Botones de estado -->
-                    <Button v-if="canApprove" @click="approveBudget" variant="outline" class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
+                    <Button v-if="canApprove" @click="approveBudget" variant="outline"
+                        class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
                         <CheckCircle class="h-4 w-4" />
                         Aprobar
                     </Button>
@@ -251,21 +254,23 @@ const breadcrumbs = [
                         Activar
                     </Button>
 
-                    <Button v-if="canClose" @click="closeBudget" variant="outline" class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
+                    <Button v-if="canClose" @click="closeBudget" variant="outline"
+                        class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
                         <Clock class="h-4 w-4" />
                         Cerrar
                     </Button>
 
                     <Link v-if="canEdit" :href="`/accounting/budgets/${budget.id}/edit`">
-                        <Button class="gap-2">
-                            <Edit class="h-4 w-4" />
-                            Editar
-                        </Button>
+                    <Button class="gap-2">
+                        <Edit class="h-4 w-4" />
+                        Editar
+                    </Button>
                     </Link>
 
                     <AlertDialog v-model:open="deleteDialogOpen">
                         <AlertDialogTrigger as-child>
-                            <Button v-if="canDelete" variant="outline" class="gap-2 border-red-600 text-red-600 hover:bg-red-50">
+                            <Button v-if="canDelete" variant="outline"
+                                class="gap-2 border-red-600 text-red-600 hover:bg-red-50">
                                 <Trash2 class="h-4 w-4" />
                                 Eliminar
                             </Button>
@@ -274,16 +279,17 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br /><br />
-                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas
+                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}? <br /><br />
+                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se
+                                    eliminarán todas las partidas
                                     presupuestales asociadas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700"
-                                    >Eliminar Presupuesto</AlertDialogAction
-                                >
+                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700">
+                                    Eliminar Presupuesto</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -320,7 +326,8 @@ const breadcrumbs = [
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Período</Label>
-                                    <p class="text-sm">{{ formatDate(budget.start_date) }} - {{ formatDate(budget.end_date) }}</p>
+                                    <p class="text-sm">{{ formatDate(budget.start_date) }} - {{
+                                        formatDate(budget.end_date) }}</p>
                                 </div>
                                 <div v-if="budget.approval_date">
                                     <Label class="text-sm font-medium text-muted-foreground">Fecha de Aprobación</Label>
@@ -331,10 +338,12 @@ const breadcrumbs = [
                             <!-- Execution Progress -->
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <Label class="text-sm font-medium text-muted-foreground">Progreso de Ejecución</Label>
+                                    <Label class="text-sm font-medium text-muted-foreground">Progreso de
+                                        Ejecución</Label>
                                     <span class="text-sm font-medium">{{ budget.execution_percentage }}%</span>
                                 </div>
-                                <Progress :value="Math.min(budget.execution_percentage, 100)" :class="isOverBudget ? 'bg-red-100' : ''" />
+                                <Progress :value="Math.min(budget.execution_percentage, 100)"
+                                    :class="isOverBudget ? 'bg-red-100' : ''" />
                                 <div v-if="isOverBudget" class="flex items-center gap-1 text-xs text-red-600">
                                     <TrendingUp class="h-3 w-3" />
                                     Sobrepresupuesto por {{ formatCurrency(totalVariance) }}
@@ -364,12 +373,8 @@ const breadcrumbs = [
                                     <CardTitle>Partidas Presupuestales</CardTitle>
                                     <CardDescription>Detalle por cuenta contable</CardDescription>
                                 </div>
-                                <Button
-                                    v-if="canEdit"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="router.visit(`/accounting/budgets/${budget.id}/items/create`)"
-                                >
+                                <Button v-if="canEdit" variant="outline" size="sm"
+                                    @click="router.visit(`/accounting/budgets/${budget.id}/items/create`)">
                                     Agregar Partida
                                 </Button>
                             </div>
@@ -406,19 +411,14 @@ const breadcrumbs = [
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow
-                                            v-for="item in budget.items"
-                                            :key="item.id"
-                                            class="hover:bg-muted/50"
-                                        >
-                                            <TableCell
-                                                class="cursor-pointer"
-                                                @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)"
-                                            >
+                                        <TableRow v-for="item in budget.items" :key="item.id" class="hover:bg-muted/50">
+                                            <TableCell class="cursor-pointer"
+                                                @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)">
                                                 <div class="space-y-1">
                                                     <div class="font-mono text-sm">{{ item.account.code }}</div>
                                                     <div class="text-sm font-medium">{{ item.account.name }}</div>
-                                                    <div v-if="item.description" class="text-xs text-muted-foreground">{{ item.description }}</div>
+                                                    <div v-if="item.description" class="text-xs text-muted-foreground">
+                                                        {{ item.description }}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell class="text-right font-mono">
@@ -428,58 +428,46 @@ const breadcrumbs = [
                                                 {{ formatCurrency(item.executed_amount) }}
                                             </TableCell>
                                             <TableCell class="text-right font-mono">
-                                                <span :class="item.variance_amount >= 0 ? 'text-red-600' : 'text-green-600'">
-                                                    {{ item.variance_amount >= 0 ? '+' : '' }}{{ formatCurrency(item.variance_amount) }}
+                                                <span
+                                                    :class="item.variance_amount >= 0 ? 'text-red-600' : 'text-green-600'">
+                                                    {{ item.variance_amount >= 0 ? '+' : '' }}{{
+                                                    formatCurrency(item.variance_amount) }}
                                                 </span>
                                             </TableCell>
                                             <TableCell class="text-center">
                                                 <div class="flex items-center justify-center gap-1">
-                                                    <component
-                                                        :is="
-                                                            item.variance_percentage > 0
-                                                                ? TrendingUp
-                                                                : item.variance_percentage < 0
-                                                                  ? TrendingDown
-                                                                  : Hash
-                                                        "
-                                                        :class="[
+                                                    <component :is="item.variance_percentage > 0
+                                                            ? TrendingUp
+                                                            : item.variance_percentage < 0
+                                                                ? TrendingDown
+                                                                : Hash
+                                                        " :class="[
                                                             'h-3 w-3',
                                                             item.variance_percentage > 0
                                                                 ? 'text-red-500'
                                                                 : item.variance_percentage < 0
-                                                                  ? 'text-green-500'
-                                                                  : 'text-gray-500',
-                                                        ]"
-                                                    />
-                                                    <span
-                                                        :class="
-                                                            item.variance_percentage > 0
-                                                                ? 'text-red-600'
-                                                                : item.variance_percentage < 0
-                                                                  ? 'text-green-600'
-                                                                  : 'text-gray-600'
-                                                        "
-                                                    >
+                                                                    ? 'text-green-500'
+                                                                    : 'text-gray-500',
+                                                        ]" />
+                                                    <span :class="item.variance_percentage > 0
+                                                            ? 'text-red-600'
+                                                            : item.variance_percentage < 0
+                                                                ? 'text-green-600'
+                                                                : 'text-gray-600'
+                                                        ">
                                                         {{ Math.abs(item.variance_percentage).toFixed(1) }}%
                                                     </span>
                                                 </div>
                                             </TableCell>
                                             <TableCell v-if="canEdit" class="text-center">
                                                 <div class="flex items-center justify-center gap-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
+                                                    <Button variant="ghost" size="sm"
                                                         @click.stop="router.visit(`/accounting/budgets/${budget.id}/items/${item.id}/edit`)"
-                                                        class="h-8 w-8 p-0"
-                                                    >
+                                                        class="h-8 w-8 p-0">
                                                         <Edit class="h-4 w-4" />
                                                     </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        @click.stop="deleteItem(item.id)"
-                                                        class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    >
+                                                    <Button variant="ghost" size="sm" @click.stop="deleteItem(item.id)"
+                                                        class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
                                                         <Trash2 class="h-4 w-4" />
                                                     </Button>
                                                 </div>
@@ -525,12 +513,14 @@ const breadcrumbs = [
                                             </TooltipContent>
                                         </Tooltip>
                                     </TooltipProvider>
-                                    <p class="text-xl font-semibold text-blue-600">{{ formatCurrency(budget.total_executed) }}</p>
+                                    <p class="text-xl font-semibold text-blue-600">{{
+                                        formatCurrency(budget.total_executed) }}</p>
                                 </div>
 
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Variación</Label>
-                                    <p :class="['text-lg font-semibold', isOverBudget ? 'text-red-600' : 'text-green-600']">
+                                    <p
+                                        :class="['text-lg font-semibold', isOverBudget ? 'text-red-600' : 'text-green-600']">
                                         {{ totalVariance >= 0 ? '+' : '' }}{{ formatCurrency(totalVariance) }}
                                     </p>
                                 </div>
@@ -557,30 +547,20 @@ const breadcrumbs = [
                             <CardTitle>Acciones Rápidas</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-2">
-                            <Button
-                                v-if="canEdit"
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/budgets/${budget.id}/edit`)"
-                            >
+                            <Button v-if="canEdit" variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/budgets/${budget.id}/edit`)">
                                 <Edit class="h-4 w-4" />
                                 Editar Presupuesto
                             </Button>
 
-                            <Button
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/budgets/${budget.id}/execution`)"
-                            >
+                            <Button variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/budgets/${budget.id}/execution`)">
                                 <TrendingUp class="h-4 w-4" />
                                 Ver Ejecución
                             </Button>
 
-                            <Button
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/reports/budget-execution?budget=${budget.id}`)"
-                            >
+                            <Button variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/reports/budget-execution?budget=${budget.id}`)">
                                 <Calendar class="h-4 w-4" />
                                 Reporte de Ejecución
                             </Button>

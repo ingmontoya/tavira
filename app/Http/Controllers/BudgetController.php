@@ -618,31 +618,27 @@ class BudgetController extends Controller
 
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
-        $incomeAccounts = ChartOfAccounts::forConjunto($conjunto->id)
-            ->byType('income')
-            ->postable()
-            ->active()
-            ->orderBy('code')
-            ->get();
-
-        $expenseAccounts = ChartOfAccounts::forConjunto($conjunto->id)
-            ->byType('expense')
-            ->postable()
-            ->active()
-            ->orderBy('code')
-            ->get();
-
         // Get already used accounts to avoid duplicates (excluding current item)
         $usedAccountIds = $budget->items()->where('id', '!=', $item->id)->pluck('account_id')->toArray();
 
         $item->load('account');
 
+        // Calculate historical data from previous year for forecast
+        $previousYearStart = $budget->start_date->copy()->subYear();
+        $previousYearEnd = $budget->end_date->copy()->subYear();
+
+        $historicalData = $this->calculateHistoricalDataForAccount(
+            $item->account_id,
+            $item->category,
+            $previousYearStart,
+            $previousYearEnd
+        );
+
         return Inertia::render('Accounting/Budgets/Items/Edit', [
             'budget' => $budget,
             'item' => $item,
-            'incomeAccounts' => $incomeAccounts,
-            'expenseAccounts' => $expenseAccounts,
             'usedAccountIds' => $usedAccountIds,
+            'historicalData' => $historicalData,
         ]);
     }
 
@@ -836,6 +832,67 @@ class BudgetController extends Controller
             'can_approve' => $budget->can_approve,
             'can_be_approved' => $budget->can_be_approved,
             'can_be_activated' => $budget->can_be_activated,
+        ];
+    }
+
+    private function calculateHistoricalDataForAccount(int $accountId, string $category, $startDate, $endDate): array
+    {
+        // Get all transactions for this account in the previous year
+        $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
+            $query->where('status', 'contabilizado')
+                ->whereBetween('transaction_date', [$startDate, $endDate]);
+        })
+            ->where('account_id', $accountId)
+            ->with('transaction')
+            ->get();
+
+        // Calculate total amount
+        if ($category === 'income') {
+            $totalAmount = $entries->sum('credit_amount') - $entries->sum('debit_amount');
+        } else {
+            $totalAmount = $entries->sum('debit_amount') - $entries->sum('credit_amount');
+        }
+
+        // Calculate monthly distribution
+        $monthlyDistribution = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $monthEntries = $entries->filter(function ($entry) use ($month) {
+                return $entry->transaction->transaction_date->month === $month;
+            });
+
+            if ($category === 'income') {
+                $monthAmount = $monthEntries->sum('credit_amount') - $monthEntries->sum('debit_amount');
+            } else {
+                $monthAmount = $monthEntries->sum('debit_amount') - $monthEntries->sum('credit_amount');
+            }
+
+            $monthlyDistribution[$month] = max(0, $monthAmount);
+        }
+
+        // Calculate suggestions
+        $inflationRate = 0.04; // 4% default inflation rate
+        $withInflation = $totalAmount * (1 + $inflationRate);
+
+        // Calculate trend (simple: compare first half vs second half)
+        $firstHalfTotal = array_sum(array_slice($monthlyDistribution, 0, 6));
+        $secondHalfTotal = array_sum(array_slice($monthlyDistribution, 6, 6));
+        $trend = 'stable';
+        if ($secondHalfTotal > $firstHalfTotal * 1.1) {
+            $trend = 'increasing';
+        } elseif ($secondHalfTotal < $firstHalfTotal * 0.9) {
+            $trend = 'decreasing';
+        }
+
+        return [
+            'total_amount' => (float) max(0, $totalAmount),
+            'monthly_distribution' => $monthlyDistribution,
+            'suggestions' => [
+                'copy_previous_year' => (float) max(0, $totalAmount),
+                'with_inflation' => (float) max(0, $withInflation),
+                'inflation_rate' => $inflationRate * 100, // as percentage
+            ],
+            'trend' => $trend,
+            'has_data' => $entries->count() > 0,
         ];
     }
 }
