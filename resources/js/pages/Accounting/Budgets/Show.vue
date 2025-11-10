@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -30,6 +31,7 @@ import {
     DollarSign,
     Edit,
     Hash,
+    Info,
     Play,
     Trash2,
     TrendingDown,
@@ -57,6 +59,7 @@ interface Budget {
     name: string;
     description?: string;
     year: number;
+    historical_year: number;
     start_date: string;
     end_date: string;
     total_budget: number;
@@ -382,7 +385,21 @@ const breadcrumbs = [
                                         <TableRow>
                                             <TableHead>Cuenta</TableHead>
                                             <TableHead class="text-right">Presupuestado</TableHead>
-                                            <TableHead class="text-right">Ejecutado</TableHead>
+                                            <TableHead class="text-right">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger class="flex items-center justify-end gap-1">
+                                                            <span>Ejecutado</span>
+                                                            <Info class="h-3 w-3 text-muted-foreground" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p class="text-xs">
+                                                                Datos históricos del año {{ budget.historical_year }}
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </TableHead>
                                             <TableHead class="text-right">Variación</TableHead>
                                             <TableHead class="text-center">%</TableHead>
                                             <TableHead v-if="canEdit" class="text-center">Acciones</TableHead>
@@ -493,7 +510,21 @@ const breadcrumbs = [
                                 </div>
 
                                 <div>
-                                    <Label class="text-sm text-muted-foreground">Ejecutado</Label>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger class="text-left">
+                                                <Label class="text-sm text-muted-foreground flex items-center gap-1">
+                                                    Ejecutado
+                                                    <Info class="h-3 w-3" />
+                                                </Label>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p class="text-xs">
+                                                    Datos históricos del año {{ budget.historical_year }}
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                     <p class="text-xl font-semibold text-blue-600">{{ formatCurrency(budget.total_executed) }}</p>
                                 </div>
 

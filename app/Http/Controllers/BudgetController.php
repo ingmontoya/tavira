@@ -738,9 +738,13 @@ class BudgetController extends Controller
 
     private function calculateExecutedAmountFromTransactions(int $accountId, string $category, $startDate, $endDate): float
     {
-        $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
+        // Use previous year's date range as historical reference for budget planning
+        $previousYearStart = \Carbon\Carbon::parse($startDate)->subYear()->toDateString();
+        $previousYearEnd = \Carbon\Carbon::parse($endDate)->subYear()->toDateString();
+
+        $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($previousYearStart, $previousYearEnd) {
             $query->where('status', 'contabilizado')
-                ->whereBetween('transaction_date', [$startDate, $endDate]);
+                ->whereBetween('transaction_date', [$previousYearStart, $previousYearEnd]);
         })
             ->where('account_id', $accountId)
             ->get();
@@ -817,6 +821,7 @@ class BudgetController extends Controller
             'name' => $budget->name,
             'description' => null, // Add if you have a description field
             'year' => $budget->fiscal_year,
+            'historical_year' => $budget->fiscal_year - 1, // Year used for historical execution data
             'start_date' => $budget->start_date->toDateString(),
             'end_date' => $budget->end_date->toDateString(),
             'total_budget' => (float) $totalBudget,
