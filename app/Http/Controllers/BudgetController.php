@@ -739,7 +739,7 @@ class BudgetController extends Controller
     private function calculateExecutedAmountFromTransactions(int $accountId, string $category, $startDate, $endDate): float
     {
         $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
-            $query->where('status', 'posted')
+            $query->where('status', 'contabilizado')
                 ->whereBetween('transaction_date', [$startDate, $endDate]);
         })
             ->where('account_id', $accountId)

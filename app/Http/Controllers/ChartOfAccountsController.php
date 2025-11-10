@@ -147,11 +147,11 @@ class ChartOfAccountsController extends Controller
         // Get recent transactions for this account
         $recentTransactions = $chartOfAccount->transactionEntries()
             ->with(['transaction' => function ($query) {
-                $query->where('status', 'posted')
+                $query->where('status', 'contabilizado')
                     ->orderBy('transaction_date', 'desc');
             }])
             ->whereHas('transaction', function ($query) {
-                $query->where('status', 'posted');
+                $query->where('status', 'contabilizado');
             })
             ->orderByDesc('id')
             ->limit(10)
