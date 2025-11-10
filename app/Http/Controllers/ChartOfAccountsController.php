@@ -157,13 +157,39 @@ class ChartOfAccountsController extends Controller
             ->limit(10)
             ->get()
             ->map(function ($entry) {
+                $transaction = $entry->transaction;
+
+                // Get reference number based on the reference model
+                $referenceNumber = $transaction->transaction_number;
+
+                // Only try to load reference for known types to avoid class not found errors
+                $validReferenceTypes = ['expense', 'invoice', 'expense_payment', 'payment_application'];
+
+                if ($transaction->reference_type && in_array($transaction->reference_type, $validReferenceTypes)) {
+                    try {
+                        $reference = $transaction->reference;
+                        if ($reference) {
+                            if ($reference instanceof \App\Models\Expense) {
+                                $referenceNumber = $reference->expense_number;
+                            } elseif ($reference instanceof \App\Models\Invoice) {
+                                $referenceNumber = $reference->invoice_number;
+                            } elseif (method_exists($reference, 'getReferenceNumber')) {
+                                $referenceNumber = $reference->getReferenceNumber();
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // If reference fails to load, use transaction_number
+                        $referenceNumber = $transaction->transaction_number;
+                    }
+                }
+
                 return [
-                    'id' => $entry->transaction->id,
-                    'reference' => $entry->transaction->reference,
-                    'description' => $entry->transaction->description,
+                    'id' => $transaction->id,
+                    'reference' => $referenceNumber,
+                    'description' => $transaction->description,
                     'amount' => $entry->debit_amount > 0 ? $entry->debit_amount : $entry->credit_amount,
                     'type' => $entry->debit_amount > 0 ? 'debit' : 'credit',
-                    'transaction_date' => $entry->transaction->transaction_date->toDateString(),
+                    'transaction_date' => $transaction->transaction_date->toDateString(),
                     'created_at' => $entry->created_at->toISOString(),
                 ];
             });
