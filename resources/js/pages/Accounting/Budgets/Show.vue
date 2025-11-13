@@ -76,7 +76,13 @@ const props = defineProps<{
     budget: Budget;
 }>();
 
+// Dialog state management
 const deleteDialogOpen = ref(false);
+const approveDialogOpen = ref(false);
+const activateDialogOpen = ref(false);
+const closeDialogOpen = ref(false);
+const deleteItemDialogOpen = ref(false);
+const itemToDelete = ref<number | null>(null);
 
 // Computed properties
 const statusInfo = computed(() => {
@@ -145,22 +151,19 @@ const showApprovalHint = computed(() => {
 });
 
 // Budget actions
-const approveBudget = () => {
-    if (confirm('¿Está seguro que desea aprobar este presupuesto?')) {
-        router.post(`/accounting/budgets/${props.budget.id}/approve`);
-    }
+const confirmApproveBudget = () => {
+    approveDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/approve`);
 };
 
-const activateBudget = () => {
-    if (confirm('¿Está seguro que desea activar este presupuesto? Esto desactivará otros presupuestos activos del mismo año.')) {
-        router.post(`/accounting/budgets/${props.budget.id}/activate`);
-    }
+const confirmActivateBudget = () => {
+    activateDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/activate`);
 };
 
-const closeBudget = () => {
-    if (confirm('¿Está seguro que desea cerrar este presupuesto?')) {
-        router.post(`/accounting/budgets/${props.budget.id}/close`);
-    }
+const confirmCloseBudget = () => {
+    closeDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/close`);
 };
 
 const confirmDeleteBudget = () => {
@@ -172,11 +175,18 @@ const confirmDeleteBudget = () => {
     });
 };
 
-const deleteItem = (itemId: number) => {
-    if (confirm('¿Está seguro que desea eliminar esta partida presupuestal?')) {
-        router.delete(`/accounting/budgets/${props.budget.id}/items/${itemId}`, {
+const openDeleteItemDialog = (itemId: number) => {
+    itemToDelete.value = itemId;
+    deleteItemDialogOpen.value = true;
+};
+
+const confirmDeleteItem = () => {
+    if (itemToDelete.value !== null) {
+        router.delete(`/accounting/budgets/${props.budget.id}/items/${itemToDelete.value}`, {
             preserveScroll: true,
         });
+        deleteItemDialogOpen.value = false;
+        itemToDelete.value = null;
     }
 };
 
@@ -235,11 +245,31 @@ const breadcrumbs = [
                     </Link>
 
                     <!-- Botones de estado -->
-                    <Button v-if="canApprove" @click="approveBudget" variant="outline"
-                        class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
-                        <CheckCircle class="h-4 w-4" />
-                        Aprobar
-                    </Button>
+                    <AlertDialog v-model:open="approveDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canApprove" variant="outline"
+                                class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
+                                <CheckCircle class="h-4 w-4" />
+                                Aprobar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Aprobar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{ budget.year }}?
+                                    <br /><br />
+                                    Una vez aprobado, el presupuesto podrá ser activado para su ejecución.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmApproveBudget" class="bg-blue-600 hover:bg-blue-700">
+                                    Aprobar Presupuesto
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
                     <!-- Show hint if user cannot approve -->
                     <div v-if="showApprovalHint" class="ml-2">
@@ -249,16 +279,56 @@ const breadcrumbs = [
                         </Badge>
                     </div>
 
-                    <Button v-if="canActivate" @click="activateBudget" class="gap-2 bg-green-600 hover:bg-green-700">
-                        <Play class="h-4 w-4" />
-                        Activar
-                    </Button>
+                    <AlertDialog v-model:open="activateDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canActivate" class="gap-2 bg-green-600 hover:bg-green-700">
+                                <Play class="h-4 w-4" />
+                                Activar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Activar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea activar el presupuesto "{{ budget.name }}" del año {{ budget.year }}?
+                                    <br /><br />
+                                    <strong class="text-amber-600">Esta acción desactivará otros presupuestos activos del mismo año.</strong>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmActivateBudget" class="bg-green-600 hover:bg-green-700">
+                                    Activar Presupuesto
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
-                    <Button v-if="canClose" @click="closeBudget" variant="outline"
-                        class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
-                        <Clock class="h-4 w-4" />
-                        Cerrar
-                    </Button>
+                    <AlertDialog v-model:open="closeDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canClose" variant="outline"
+                                class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
+                                <Clock class="h-4 w-4" />
+                                Cerrar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Cerrar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea cerrar el presupuesto "{{ budget.name }}" del año {{ budget.year }}?
+                                    <br /><br />
+                                    Una vez cerrado, no se permitirán más cambios ni ejecuciones.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmCloseBudget" class="bg-orange-600 hover:bg-orange-700">
+                                    Cerrar Presupuesto
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
                     <Link v-if="canEdit" :href="`/accounting/budgets/${budget.id}/edit`">
                     <Button class="gap-2">
@@ -466,7 +536,7 @@ const breadcrumbs = [
                                                         class="h-8 w-8 p-0">
                                                         <Edit class="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="sm" @click.stop="deleteItem(item.id)"
+                                                    <Button variant="ghost" size="sm" @click.stop="openDeleteItemDialog(item.id)"
                                                         class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
                                                         <Trash2 class="h-4 w-4" />
                                                     </Button>
@@ -478,6 +548,26 @@ const breadcrumbs = [
                             </div>
                         </CardContent>
                     </Card>
+
+                    <!-- Delete Item Dialog -->
+                    <AlertDialog v-model:open="deleteItemDialogOpen">
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar Partida Presupuestal</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea eliminar esta partida presupuestal?
+                                    <br /><br />
+                                    <strong class="text-red-600">Esta acción no se puede deshacer.</strong>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmDeleteItem" class="bg-red-600 hover:bg-red-700">
+                                    Eliminar Partida
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
 
                 <!-- Sidebar -->
@@ -557,6 +647,12 @@ const breadcrumbs = [
                                 @click="router.visit(`/accounting/budgets/${budget.id}/execution`)">
                                 <TrendingUp class="h-4 w-4" />
                                 Ver Ejecución
+                            </Button>
+
+                            <Button variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/budgets/${budget.id}/monthly-report`)">
+                                <Calendar class="h-4 w-4" />
+                                Reporte Mensual
                             </Button>
 
                             <Button variant="outline" class="w-full justify-start gap-2"

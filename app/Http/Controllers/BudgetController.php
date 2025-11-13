@@ -732,6 +732,46 @@ class BudgetController extends Controller
         ]);
     }
 
+    public function monthlyReport(Budget $budget)
+    {
+        $monthlyData = $budget->getMonthlyReport();
+
+        // Calculate totals
+        $totals = [
+            'budgeted_income' => array_sum(array_column($monthlyData, 'budgeted_income')),
+            'budgeted_expenses' => array_sum(array_column($monthlyData, 'budgeted_expenses')),
+            'executed_income' => array_sum(array_column($monthlyData, 'executed_income')),
+            'executed_expenses' => array_sum(array_column($monthlyData, 'executed_expenses')),
+        ];
+
+        $totals['budgeted_net'] = $totals['budgeted_income'] - $totals['budgeted_expenses'];
+        $totals['executed_net'] = $totals['executed_income'] - $totals['executed_expenses'];
+        $totals['variance_income'] = $totals['executed_income'] - $totals['budgeted_income'];
+        $totals['variance_expenses'] = $totals['executed_expenses'] - $totals['budgeted_expenses'];
+        $totals['variance_net'] = $totals['executed_net'] - $totals['budgeted_net'];
+        $totals['income_execution_percentage'] = $totals['budgeted_income'] > 0 ? ($totals['executed_income'] / $totals['budgeted_income']) * 100 : 0;
+        $totals['expenses_execution_percentage'] = $totals['budgeted_expenses'] > 0 ? ($totals['executed_expenses'] / $totals['budgeted_expenses']) * 100 : 0;
+
+        // Temporary dump - uncomment to debug
+        // dd([
+        //     'budget_id' => $budget->id,
+        //     'budget_name' => $budget->name,
+        //     'fiscal_year' => $budget->fiscal_year,
+        //     'totals' => $totals,
+        //     'january' => $monthlyData[0],
+        // ]);
+
+        return Inertia::render('Accounting/Budgets/MonthlyReport', [
+            'budget' => [
+                'id' => $budget->id,
+                'name' => $budget->name,
+                'fiscal_year' => $budget->fiscal_year,
+            ],
+            'monthlyData' => $monthlyData,
+            'totals' => $totals,
+        ]);
+    }
+
     private function calculateExecutedAmountFromTransactions(int $accountId, string $category, $startDate, $endDate): float
     {
         // Use previous year's date range as historical reference for budget planning

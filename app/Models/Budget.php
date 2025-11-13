@@ -148,8 +148,8 @@ class Budget extends Model
         // Use items_count if available (from withCount), otherwise fallback to query
         $itemsCount = $this->items_count ?? $this->items()->count();
 
-        // Only users with 'concejo' role can approve budgets
-        return $user->hasRole('concejo') && $this->status === 'draft' && $itemsCount > 0;
+        // Only users with 'consejo' role can approve budgets
+        return $user->hasRole('consejo') && $this->status === 'draft' && $itemsCount > 0;
     }
 
     public function calculateTotals(): void
@@ -166,7 +166,7 @@ class Budget extends Model
         }
 
         $user = auth()->user();
-        if (! $user || ! $user->hasRole('concejo')) {
+        if (! $user || ! $user->hasRole('consejo')) {
             throw new \Exception('Solo el Concejo de Administración puede aprobar presupuestos');
         }
 
@@ -496,5 +496,101 @@ class Budget extends Model
             'danger' => count(array_filter($alerts, fn ($alert) => $alert['type'] === 'danger')),
             'warning' => count(array_filter($alerts, fn ($alert) => $alert['type'] === 'warning')),
         ];
+    }
+
+    /**
+     * Get monthly budget vs execution report
+     */
+    public function getMonthlyReport(): array
+    {
+        $monthColumns = [
+            1 => 'jan_amount',
+            2 => 'feb_amount',
+            3 => 'mar_amount',
+            4 => 'apr_amount',
+            5 => 'may_amount',
+            6 => 'jun_amount',
+            7 => 'jul_amount',
+            8 => 'aug_amount',
+            9 => 'sep_amount',
+            10 => 'oct_amount',
+            11 => 'nov_amount',
+            12 => 'dec_amount',
+        ];
+
+        $monthNames = [
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre',
+        ];
+
+        $items = $this->items()->with('account', 'executions')->get();
+        $monthlyData = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $column = $monthColumns[$month];
+            $budgetedIncome = 0;
+            $budgetedExpenses = 0;
+            $executedIncome = 0;
+            $executedExpenses = 0;
+
+            foreach ($items as $item) {
+                $budgetedAmount = (float) $item->{$column};
+
+                // If monthly amount is 0, distribute total budgeted amount equally across 12 months
+                if ($budgetedAmount == 0 && $item->budgeted_amount > 0) {
+                    $budgetedAmount = (float) $item->budgeted_amount / 12;
+                }
+
+                // Sum budgeted amounts
+                if ($item->category === 'income') {
+                    $budgetedIncome += $budgetedAmount;
+                } else {
+                    $budgetedExpenses += $budgetedAmount;
+                }
+
+                // Sum executed amounts from budget executions
+                $execution = $item->executions()
+                    ->where('period_month', $month)
+                    ->where('period_year', $this->fiscal_year)
+                    ->first();
+
+                if ($execution) {
+                    $executedAmount = (float) $execution->actual_amount;
+                    if ($item->category === 'income') {
+                        $executedIncome += $executedAmount;
+                    } else {
+                        $executedExpenses += $executedAmount;
+                    }
+                }
+            }
+
+            $monthlyData[] = [
+                'month' => $month,
+                'month_name' => $monthNames[$month],
+                'budgeted_income' => $budgetedIncome,
+                'budgeted_expenses' => $budgetedExpenses,
+                'budgeted_net' => $budgetedIncome - $budgetedExpenses,
+                'executed_income' => $executedIncome,
+                'executed_expenses' => $executedExpenses,
+                'executed_net' => $executedIncome - $executedExpenses,
+                'variance_income' => $executedIncome - $budgetedIncome,
+                'variance_expenses' => $executedExpenses - $budgetedExpenses,
+                'variance_net' => ($executedIncome - $executedExpenses) - ($budgetedIncome - $budgetedExpenses),
+                'income_execution_percentage' => $budgetedIncome > 0 ? ($executedIncome / $budgetedIncome) * 100 : 0,
+                'expenses_execution_percentage' => $budgetedExpenses > 0 ? ($executedExpenses / $budgetedExpenses) * 100 : 0,
+            ];
+        }
+
+        return $monthlyData;
     }
 }
