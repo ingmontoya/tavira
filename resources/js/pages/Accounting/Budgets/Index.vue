@@ -340,7 +340,7 @@ const exportBudgets = () => {
     <Head title="Presupuestos" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Filtros Avanzados -->
             <Card class="mb-4 p-4">
                 <div class="space-y-4">
@@ -395,7 +395,7 @@ const exportBudgets = () => {
                             Limpiar filtros
                         </Button>
                         <div class="text-sm text-muted-foreground">Mostrando {{ filteredData.length }} de {{ data.length
-                            }} presupuestos</div>
+                        }} presupuestos</div>
                     </div>
                 </div>
             </Card>

@@ -207,10 +207,11 @@ const overallPerformance = computed(() => {
 </script>
 
 <template>
+
     <Head :title="`Ejecución - ${budget.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
                 <div class="flex items-center gap-4">
@@ -220,7 +221,8 @@ const overallPerformance = computed(() => {
                     </Button>
                     <div>
                         <h1 class="text-3xl font-bold tracking-tight">Ejecución Presupuestal</h1>
-                        <p class="text-muted-foreground">{{ budget.name }} - {{ availableMonths[currentPeriod.month] }} {{ currentPeriod.year }}</p>
+                        <p class="text-muted-foreground">{{ budget.name }} - {{ availableMonths[currentPeriod.month] }}
+                            {{ currentPeriod.year }}</p>
                     </div>
                 </div>
 
@@ -253,7 +255,8 @@ const overallPerformance = computed(() => {
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem v-for="(monthName, monthNum) in availableMonths" :key="monthNum" :value="monthNum">
+                                    <SelectItem v-for="(monthName, monthNum) in availableMonths" :key="monthNum"
+                                        :value="monthNum">
                                         {{ monthName }}
                                     </SelectItem>
                                 </SelectContent>
@@ -291,7 +294,8 @@ const overallPerformance = computed(() => {
                             <Progress :value="Math.min(incomePerformance.percentage, 100)" class="h-2" />
                         </div>
                         <div class="mt-2 text-xs text-muted-foreground">
-                            {{ formatCurrency(incomePerformance.executed) }} de {{ formatCurrency(incomePerformance.total) }}
+                            {{ formatCurrency(incomePerformance.executed) }} de {{
+                                formatCurrency(incomePerformance.total) }}
                         </div>
                     </CardContent>
                 </Card>
@@ -308,7 +312,8 @@ const overallPerformance = computed(() => {
                             <Progress :value="Math.min(expensesPerformance.percentage, 100)" class="h-2" />
                         </div>
                         <div class="mt-2 text-xs text-muted-foreground">
-                            {{ formatCurrency(expensesPerformance.executed) }} de {{ formatCurrency(expensesPerformance.total) }}
+                            {{ formatCurrency(expensesPerformance.executed) }} de {{
+                                formatCurrency(expensesPerformance.total) }}
                         </div>
                     </CardContent>
                 </Card>
@@ -325,7 +330,8 @@ const overallPerformance = computed(() => {
                             <Progress :value="Math.min(overallPerformance.percentage, 100)" class="h-2" />
                         </div>
                         <div class="mt-2 text-xs text-muted-foreground">
-                            {{ formatCurrency(overallPerformance.executed) }} de {{ formatCurrency(overallPerformance.total) }}
+                            {{ formatCurrency(overallPerformance.executed) }} de {{
+                                formatCurrency(overallPerformance.total) }}
                         </div>
                     </CardContent>
                 </Card>
@@ -335,20 +341,17 @@ const overallPerformance = computed(() => {
                         <CardTitle class="text-sm font-medium">Variación Total</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div
-                            class="flex items-center gap-2 text-2xl font-bold"
-                            :class="
-                                getVarianceColor(
-                                    overallPerformance.variance,
-                                    overallPerformance.total > 0 ? (overallPerformance.variance / overallPerformance.total) * 100 : 0,
-                                )
-                            "
-                        >
+                        <div class="flex items-center gap-2 text-2xl font-bold" :class="getVarianceColor(
+                            overallPerformance.variance,
+                            overallPerformance.total > 0 ? (overallPerformance.variance / overallPerformance.total) * 100 : 0,
+                        )
+                            ">
                             <component :is="getVarianceIcon(overallPerformance.variance)" class="h-5 w-5" />
                             {{ formatCurrency(Math.abs(overallPerformance.variance)) }}
                         </div>
                         <p class="mt-1 text-xs text-muted-foreground">
-                            {{ overallPerformance.total > 0 ? ((overallPerformance.variance / overallPerformance.total) * 100).toFixed(1) : 0 }}%
+                            {{ overallPerformance.total > 0 ? ((overallPerformance.variance / overallPerformance.total)
+                            * 100).toFixed(1) : 0 }}%
                             {{ overallPerformance.variance > 0 ? 'sobre' : 'bajo' }} presupuesto
                         </p>
                     </CardContent>
@@ -384,11 +387,14 @@ const overallPerformance = computed(() => {
                                     </div>
                                     <p class="text-sm font-medium text-green-600">Ejecutado</p>
                                 </div>
-                                <div class="rounded-lg p-4 text-center" :class="incomePerformance.variance > 0 ? 'bg-green-50' : 'bg-red-50'">
-                                    <div class="text-2xl font-bold" :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
+                                <div class="rounded-lg p-4 text-center"
+                                    :class="incomePerformance.variance > 0 ? 'bg-green-50' : 'bg-red-50'">
+                                    <div class="text-2xl font-bold"
+                                        :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ formatCurrency(Math.abs(incomePerformance.variance)) }}
                                     </div>
-                                    <p class="text-sm font-medium" :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
+                                    <p class="text-sm font-medium"
+                                        :class="incomePerformance.variance > 0 ? 'text-green-600' : 'text-red-600'">
                                         {{ incomePerformance.variance > 0 ? 'Exceso' : 'Faltante' }}
                                     </p>
                                 </div>
@@ -408,35 +414,35 @@ const overallPerformance = computed(() => {
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-for="item in executionSummary.income" :key="item.id">
-                                        <TableCell class="font-mono text-sm">{{ item.budgetItem?.account?.code || 'N/A' }}</TableCell>
-                                        <TableCell class="font-medium">{{ item.budgetItem?.account?.name || 'N/A' }}</TableCell>
+                                        <TableCell class="font-mono text-sm">{{ item.budgetItem?.account?.code || 'N/A'
+                                            }}</TableCell>
+                                        <TableCell class="font-medium">{{ item.budgetItem?.account?.name || 'N/A' }}
+                                        </TableCell>
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.budgeted_amount || 0) }}
                                         </TableCell>
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.actual_amount || 0) }}
                                         </TableCell>
-                                        <TableCell
-                                            class="text-right font-mono"
-                                            :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
-                                        >
+                                        <TableCell class="text-right font-mono"
+                                            :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)">
                                             {{ formatCurrency(Math.abs(item.variance_amount || 0)) }}
                                             ({{ (item.variance_percentage || 0).toFixed(1) }}%)
                                         </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center gap-2">
-                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)" class="h-2 flex-1" />
-                                                <span class="w-12 text-xs font-medium" :class="getExecutionColor(item.execution_percentage || 0)">
+                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)"
+                                                    class="h-2 flex-1" />
+                                                <span class="w-12 text-xs font-medium"
+                                                    :class="getExecutionColor(item.execution_percentage || 0)">
                                                     {{ (item.execution_percentage || 0).toFixed(0) }}%
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <component
-                                                :is="getVarianceIcon(item.variance_amount || 0)"
+                                            <component :is="getVarianceIcon(item.variance_amount || 0)"
                                                 :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
-                                                class="h-4 w-4"
-                                            />
+                                                class="h-4 w-4" />
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
@@ -457,11 +463,14 @@ const overallPerformance = computed(() => {
                                     </div>
                                     <p class="text-sm font-medium text-green-600">Ejecutado</p>
                                 </div>
-                                <div class="rounded-lg p-4 text-center" :class="expensesPerformance.variance > 0 ? 'bg-red-50' : 'bg-green-50'">
-                                    <div class="text-2xl font-bold" :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
+                                <div class="rounded-lg p-4 text-center"
+                                    :class="expensesPerformance.variance > 0 ? 'bg-red-50' : 'bg-green-50'">
+                                    <div class="text-2xl font-bold"
+                                        :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
                                         {{ formatCurrency(Math.abs(expensesPerformance.variance)) }}
                                     </div>
-                                    <p class="text-sm font-medium" :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
+                                    <p class="text-sm font-medium"
+                                        :class="expensesPerformance.variance > 0 ? 'text-red-600' : 'text-green-600'">
                                         {{ expensesPerformance.variance > 0 ? 'Sobregiro' : 'Ahorro' }}
                                     </p>
                                 </div>
@@ -481,35 +490,35 @@ const overallPerformance = computed(() => {
                                 </TableHeader>
                                 <TableBody>
                                     <TableRow v-for="item in executionSummary.expenses" :key="item.id">
-                                        <TableCell class="font-mono text-sm">{{ item.budgetItem?.account?.code || 'N/A' }}</TableCell>
-                                        <TableCell class="font-medium">{{ item.budgetItem?.account?.name || 'N/A' }}</TableCell>
+                                        <TableCell class="font-mono text-sm">{{ item.budgetItem?.account?.code || 'N/A'
+                                            }}</TableCell>
+                                        <TableCell class="font-medium">{{ item.budgetItem?.account?.name || 'N/A' }}
+                                        </TableCell>
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.budgeted_amount || 0) }}
                                         </TableCell>
                                         <TableCell class="text-right font-mono">
                                             {{ formatCurrency(item.actual_amount || 0) }}
                                         </TableCell>
-                                        <TableCell
-                                            class="text-right font-mono"
-                                            :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
-                                        >
+                                        <TableCell class="text-right font-mono"
+                                            :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)">
                                             {{ formatCurrency(Math.abs(item.variance_amount || 0)) }}
                                             ({{ (item.variance_percentage || 0).toFixed(1) }}%)
                                         </TableCell>
                                         <TableCell class="text-right">
                                             <div class="flex items-center gap-2">
-                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)" class="h-2 flex-1" />
-                                                <span class="w-12 text-xs font-medium" :class="getExecutionColor(item.execution_percentage || 0)">
+                                                <Progress :value="Math.min(item.execution_percentage || 0, 100)"
+                                                    class="h-2 flex-1" />
+                                                <span class="w-12 text-xs font-medium"
+                                                    :class="getExecutionColor(item.execution_percentage || 0)">
                                                     {{ (item.execution_percentage || 0).toFixed(0) }}%
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <component
-                                                :is="getVarianceIcon(item.variance_amount || 0)"
+                                            <component :is="getVarianceIcon(item.variance_amount || 0)"
                                                 :class="getVarianceColor(item.variance_amount || 0, item.variance_percentage || 0)"
-                                                class="h-4 w-4"
-                                            />
+                                                class="h-4 w-4" />
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>

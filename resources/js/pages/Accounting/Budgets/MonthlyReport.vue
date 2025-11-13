@@ -94,10 +94,11 @@ const getExecutionBadgeVariant = (percentage: number) => {
 </script>
 
 <template>
+
     <Head :title="`Reporte Mensual - ${budget.name}`" />
 
     <AppLayout :title="`Reporte Mensual - ${budget.name}`" :breadcrumbs="breadcrumbs">
-        <div class="space-y-6">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
@@ -108,10 +109,10 @@ const getExecutionBadgeVariant = (percentage: number) => {
                 </div>
                 <div class="flex space-x-2">
                     <Link :href="`/accounting/budgets/${budget.id}`">
-                        <Button variant="outline">
-                            <ArrowLeft class="mr-2 h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline">
+                        <ArrowLeft class="mr-2 h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
                 </div>
             </div>
@@ -162,7 +163,8 @@ const getExecutionBadgeVariant = (percentage: number) => {
             <Card>
                 <CardHeader>
                     <CardTitle>Detalle Mensual</CardTitle>
-                    <CardDescription>Presupuestado vs Ejecutado por cada mes del año {{ budget.fiscal_year }}</CardDescription>
+                    <CardDescription>Presupuestado vs Ejecutado por cada mes del año {{ budget.fiscal_year }}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -211,10 +213,8 @@ const getExecutionBadgeVariant = (percentage: number) => {
                                 <!-- Variance -->
                                 <TableCell class="text-right">
                                     <div class="flex items-center justify-end space-x-1">
-                                        <component
-                                            :is="getVarianceIndicator(month.variance_net).icon"
-                                            :class="['h-4 w-4', getVarianceIndicator(month.variance_net).class]"
-                                        />
+                                        <component :is="getVarianceIndicator(month.variance_net).icon"
+                                            :class="['h-4 w-4', getVarianceIndicator(month.variance_net).class]" />
                                         <span :class="getVarianceIndicator(month.variance_net).class">
                                             {{ formatCurrency(Math.abs(month.variance_net)) }}
                                         </span>

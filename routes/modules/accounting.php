@@ -5,6 +5,7 @@ use App\Http\Controllers\AccountingReportsController;
 use App\Http\Controllers\AccountingTransactionController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ChartOfAccountsController;
+use App\Http\Controllers\ExogenousReportController;
 use Illuminate\Support\Facades\Route;
 
 // Accounting System
@@ -64,5 +65,19 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
         Route::get('general-ledger', [AccountingReportsController::class, 'generalLedger'])->name('general-ledger');
         Route::get('budget-execution', [AccountingReportsController::class, 'budgetExecution'])->name('budget-execution');
         Route::get('cash-flow', [AccountingReportsController::class, 'cashFlow'])->name('cash-flow');
+    });
+
+    // Exogenous Reports (DIAN)
+    Route::prefix('exogenous-reports')->name('exogenous-reports.')->group(function () {
+        Route::get('/', [ExogenousReportController::class, 'index'])->name('index');
+        Route::get('/create', [ExogenousReportController::class, 'create'])->name('create');
+        Route::post('/preview', [ExogenousReportController::class, 'preview'])->name('preview');
+        Route::post('/', [ExogenousReportController::class, 'store'])->name('store');
+        Route::get('/{exogenousReport}', [ExogenousReportController::class, 'show'])->name('show');
+        Route::post('/{exogenousReport}/validate', [ExogenousReportController::class, 'validateReport'])->name('validate');
+        Route::post('/{exogenousReport}/export', [ExogenousReportController::class, 'export'])->name('export');
+        Route::get('/{exogenousReport}/download', [ExogenousReportController::class, 'download'])->name('download');
+        Route::post('/{exogenousReport}/mark-submitted', [ExogenousReportController::class, 'markAsSubmitted'])->name('mark-submitted');
+        Route::delete('/{exogenousReport}', [ExogenousReportController::class, 'destroy'])->name('destroy');
     });
 });

@@ -50,6 +50,11 @@ class AccountingReportsController extends Controller
                     'description' => 'Entradas y salidas de efectivo',
                     'icon' => 'dollar',
                 ],
+                'exogenous-reports' => [
+                    'name' => 'Información Exógena',
+                    'description' => 'Reportes para la DIAN (formatos 1001, 1003, 1005, 1647)',
+                    'icon' => 'file',
+                ],
             ],
         ]);
     }

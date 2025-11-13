@@ -112,9 +112,10 @@ const canGenerateCertificate = (year: number) => {
 
 <template>
     <AppLayout>
+
         <Head :title="`Retenciones - ${provider.name}`" />
 
-        <div class="space-y-6">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -198,11 +199,8 @@ const canGenerateCertificate = (year: number) => {
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-4">
-                        <div
-                            v-for="retention in retentionsByType"
-                            :key="retention.account_code"
-                            class="flex items-center justify-between border-b pb-3 last:border-0"
-                        >
+                        <div v-for="retention in retentionsByType" :key="retention.account_code"
+                            class="flex items-center justify-between border-b pb-3 last:border-0">
                             <div>
                                 <p class="font-medium">{{ retention.account_code }} - {{ retention.account_name }}</p>
                                 <p class="text-sm text-muted-foreground">{{ retention.count }} gastos</p>
@@ -270,19 +268,11 @@ const canGenerateCertificate = (year: number) => {
                         <form @submit.prevent="generateCertificate" class="space-y-4">
                             <div class="space-y-2">
                                 <Label for="year">Año del Certificado</Label>
-                                <Input
-                                    id="year"
-                                    v-model.number="certificateYear"
-                                    type="number"
-                                    :min="2020"
-                                    :max="currentYear"
-                                />
+                                <Input id="year" v-model.number="certificateYear" type="number" :min="2020"
+                                    :max="currentYear" />
                             </div>
-                            <Button
-                                type="submit"
-                                class="w-full"
-                                :disabled="generateCertificateForm.processing || !canGenerateCertificate(certificateYear)"
-                            >
+                            <Button type="submit" class="w-full"
+                                :disabled="generateCertificateForm.processing || !canGenerateCertificate(certificateYear)">
                                 <FileText class="mr-2 h-4 w-4" />
                                 {{
                                     canGenerateCertificate(certificateYear)
@@ -305,11 +295,8 @@ const canGenerateCertificate = (year: number) => {
                     </CardHeader>
                     <CardContent>
                         <div v-if="certificates.length > 0" class="space-y-3">
-                            <div
-                                v-for="certificate in certificates"
-                                :key="certificate.id"
-                                class="flex items-center justify-between border rounded-lg p-3"
-                            >
+                            <div v-for="certificate in certificates" :key="certificate.id"
+                                class="flex items-center justify-between border rounded-lg p-3">
                                 <div>
                                     <p class="font-medium">{{ certificate.certificate_number }}</p>
                                     <p class="text-sm text-muted-foreground">
@@ -319,11 +306,7 @@ const canGenerateCertificate = (year: number) => {
                                         Emitido: {{ formatDateTime(certificate.issued_at) }}
                                     </p>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    @click="downloadCertificate(certificate.id)"
-                                >
+                                <Button variant="outline" size="sm" @click="downloadCertificate(certificate.id)">
                                     <FileDown class="h-4 w-4" />
                                 </Button>
                             </div>

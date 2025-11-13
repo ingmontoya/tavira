@@ -360,6 +360,13 @@ export function useNavigation() {
                     visible: hasPermission('view_expenses'),
                 },
                 {
+                    title: 'Información Exógena',
+                    href: '/accounting/exogenous-reports',
+                    icon: FileSpreadsheet,
+                    tourId: 'nav-exogenous-reports',
+                    visible: hasPermission('view_accounting'),
+                },
+                {
                     title: 'Cierres Contables',
                     href: '/accounting/closures',
                     icon: CalendarDays,

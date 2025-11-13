@@ -84,9 +84,10 @@ const viewProviderDetail = (providerId: number) => {
 
 <template>
     <AppLayout>
+
         <Head title="Retenciones en la Fuente" />
 
-        <div class="space-y-6">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
@@ -121,11 +122,8 @@ const viewProviderDetail = (providerId: number) => {
                         </div>
                         <div class="space-y-2">
                             <Label for="provider_search">Buscar Proveedor</Label>
-                            <Input
-                                id="provider_search"
-                                v-model="providerSearch"
-                                placeholder="Nombre del proveedor..."
-                            />
+                            <Input id="provider_search" v-model="providerSearch"
+                                placeholder="Nombre del proveedor..." />
                         </div>
                         <div class="flex items-end gap-2">
                             <Button @click="applyFilters" class="flex-1">
@@ -191,12 +189,8 @@ const viewProviderDetail = (providerId: number) => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow
-                                    v-for="provider in providers"
-                                    :key="provider.id"
-                                    class="cursor-pointer hover:bg-muted/50"
-                                    @click="viewProviderDetail(provider.id)"
-                                >
+                                <TableRow v-for="provider in providers" :key="provider.id"
+                                    class="cursor-pointer hover:bg-muted/50" @click="viewProviderDetail(provider.id)">
                                     <TableCell class="font-medium">{{ provider.name }}</TableCell>
                                     <TableCell>{{ provider.document_type || '-' }}</TableCell>
                                     <TableCell>{{ provider.document_number || '-' }}</TableCell>

@@ -222,7 +222,7 @@ const breadcrumbs = [
     <Head :title="budget.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -234,7 +234,7 @@ const breadcrumbs = [
                         </Badge>
                     </div>
                     <p class="text-muted-foreground">{{ budget.description || `Presupuesto para el año ${budget.year}`
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <Link href="/accounting/budgets">
@@ -257,7 +257,8 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Aprobar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{ budget.year }}?
+                                    ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}?
                                     <br /><br />
                                     Una vez aprobado, el presupuesto podrá ser activado para su ejecución.
                                 </AlertDialogDescription>
@@ -290,14 +291,17 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Activar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    ¿Está seguro que desea activar el presupuesto "{{ budget.name }}" del año {{ budget.year }}?
+                                    ¿Está seguro que desea activar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}?
                                     <br /><br />
-                                    <strong class="text-amber-600">Esta acción desactivará otros presupuestos activos del mismo año.</strong>
+                                    <strong class="text-amber-600">Esta acción desactivará otros presupuestos activos
+                                        del mismo año.</strong>
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction @click="confirmActivateBudget" class="bg-green-600 hover:bg-green-700">
+                                <AlertDialogAction @click="confirmActivateBudget"
+                                    class="bg-green-600 hover:bg-green-700">
                                     Activar Presupuesto
                                 </AlertDialogAction>
                             </AlertDialogFooter>
@@ -316,14 +320,16 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Cerrar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    ¿Está seguro que desea cerrar el presupuesto "{{ budget.name }}" del año {{ budget.year }}?
+                                    ¿Está seguro que desea cerrar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}?
                                     <br /><br />
                                     Una vez cerrado, no se permitirán más cambios ni ejecuciones.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction @click="confirmCloseBudget" class="bg-orange-600 hover:bg-orange-700">
+                                <AlertDialogAction @click="confirmCloseBudget"
+                                    class="bg-orange-600 hover:bg-orange-700">
                                     Cerrar Presupuesto
                                 </AlertDialogAction>
                             </AlertDialogFooter>
@@ -350,7 +356,7 @@ const breadcrumbs = [
                                 <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
                                     ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{
-                                    budget.year }}? <br /><br />
+                                        budget.year }}? <br /><br />
                                     <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se
                                     eliminarán todas las partidas
                                     presupuestales asociadas.
@@ -501,16 +507,16 @@ const breadcrumbs = [
                                                 <span
                                                     :class="item.variance_amount >= 0 ? 'text-red-600' : 'text-green-600'">
                                                     {{ item.variance_amount >= 0 ? '+' : '' }}{{
-                                                    formatCurrency(item.variance_amount) }}
+                                                        formatCurrency(item.variance_amount) }}
                                                 </span>
                                             </TableCell>
                                             <TableCell class="text-center">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <component :is="item.variance_percentage > 0
-                                                            ? TrendingUp
-                                                            : item.variance_percentage < 0
-                                                                ? TrendingDown
-                                                                : Hash
+                                                        ? TrendingUp
+                                                        : item.variance_percentage < 0
+                                                            ? TrendingDown
+                                                            : Hash
                                                         " :class="[
                                                             'h-3 w-3',
                                                             item.variance_percentage > 0
@@ -520,10 +526,10 @@ const breadcrumbs = [
                                                                     : 'text-gray-500',
                                                         ]" />
                                                     <span :class="item.variance_percentage > 0
-                                                            ? 'text-red-600'
-                                                            : item.variance_percentage < 0
-                                                                ? 'text-green-600'
-                                                                : 'text-gray-600'
+                                                        ? 'text-red-600'
+                                                        : item.variance_percentage < 0
+                                                            ? 'text-green-600'
+                                                            : 'text-gray-600'
                                                         ">
                                                         {{ Math.abs(item.variance_percentage).toFixed(1) }}%
                                                     </span>
@@ -536,7 +542,8 @@ const breadcrumbs = [
                                                         class="h-8 w-8 p-0">
                                                         <Edit class="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="ghost" size="sm" @click.stop="openDeleteItemDialog(item.id)"
+                                                    <Button variant="ghost" size="sm"
+                                                        @click.stop="openDeleteItemDialog(item.id)"
                                                         class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
                                                         <Trash2 class="h-4 w-4" />
                                                     </Button>

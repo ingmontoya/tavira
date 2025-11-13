@@ -168,227 +168,219 @@ const cancelReservation = (reservationId: number) => {
 </script>
 
 <template>
+
     <Head title="Reservas" />
 
     <AppLayout>
-        <div class="py-6">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="mb-6">
-                    <div class="flex items-center justify-between">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div class="mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            {{ isAdmin ? 'Gestión de Reservas' : 'Mis Reservas' }}
+                        </h1>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            {{ isAdmin ? 'Administra todas las reservas del conjunto' :
+                                'Consulta y gestiona tus reservas' }}
+                        </p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <Button @click="() => router.visit(route('reservations.create'))"
+                            class="inline-flex items-center">
+                            <Plus class="mr-2 h-4 w-4" />
+                            Nueva Reserva
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <Card class="mb-6">
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
                         <div>
-                            <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                                {{ isAdmin ? 'Gestión de Reservas' : 'Mis Reservas' }}
-                            </h1>
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                {{ isAdmin ? 'Administra todas las reservas del conjunto' : 'Consulta y gestiona tus reservas' }}
-                            </p>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Buscar
+                            </label>
+                            <div class="relative">
+                                <Search
+                                    class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+                                <Input v-model="search" placeholder="Buscar reservas..." class="pl-10"
+                                    @keydown.enter="applyFilters" />
+                            </div>
                         </div>
-                        <div class="flex space-x-3">
-                            <Button @click="() => router.visit(route('reservations.create'))" class="inline-flex items-center">
-                                <Plus class="mr-2 h-4 w-4" />
-                                Nueva Reserva
+
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Estado
+                            </label>
+                            <Select v-model="selectedStatus">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Todos los estados" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos los estados</SelectItem>
+                                    <SelectItem v-for="(label, value) in statuses" :key="value" :value="value">
+                                        {{ label }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Activo
+                            </label>
+                            <Select v-model="selectedAsset">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Todos los activos" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos los activos</SelectItem>
+                                    <SelectItem v-for="asset in assets" :key="asset.id" :value="asset.id.toString()">
+                                        {{ asset.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Desde
+                            </label>
+                            <Input v-model="dateFrom" type="date" />
+                        </div>
+
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Hasta
+                            </label>
+                            <Input v-model="dateTo" type="date" />
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex justify-between">
+                        <Button @click="applyFilters" class="inline-flex items-center">
+                            <Search class="mr-2 h-4 w-4" />
+                            Filtrar
+                        </Button>
+                        <Button variant="outline" @click="clearFilters"> Limpiar filtros </Button>
+                    </div>
+                </div>
+            </Card>
+
+            <!-- Reservations Table -->
+            <Card>
+                <div class="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Activo</TableHead>
+                                <TableHead v-if="isAdmin">Usuario</TableHead>
+                                <TableHead v-if="isAdmin">Apartamento</TableHead>
+                                <TableHead>Fecha y Hora</TableHead>
+                                <TableHead>Estado</TableHead>
+                                <TableHead>Costo</TableHead>
+                                <TableHead>Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-if="reservations.data.length === 0">
+                                <TableCell :colspan="isAdmin ? 7 : 5" class="py-8 text-center text-gray-500">
+                                    <CalendarDays class="mx-auto mb-2 h-8 w-8 text-gray-400" />
+                                    <p>No hay reservas que coincidan con los filtros.</p>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow v-for="reservation in reservations.data" :key="reservation.id">
+                                <TableCell>
+                                    <div>
+                                        <p class="font-medium">{{ reservation.reservable_asset.name }}</p>
+                                        <p class="text-sm text-gray-500 capitalize">{{
+                                            reservation.reservable_asset.type.replace('_', ' ') }}</p>
+                                    </div>
+                                </TableCell>
+                                <TableCell v-if="isAdmin">
+                                    {{ reservation.user.name }}
+                                </TableCell>
+                                <TableCell v-if="isAdmin">
+                                    {{ reservation.apartment?.number || 'N/A' }}
+                                </TableCell>
+                                <TableCell>
+                                    <div class="text-sm">
+                                        <p class="font-medium">{{ formatDateTime(reservation.start_time) }}</p>
+                                        <p class="text-gray-500">{{ formatDateTime(reservation.end_time) }}</p>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge :class="getStatusBadgeClass(reservation.status_color)">
+                                        {{ reservation.status_label }}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div class="text-sm">
+                                        <p class="font-medium">{{ formatCurrency(reservation.cost) }}</p>
+                                        <p v-if="reservation.payment_required" class="text-gray-500 capitalize">
+                                            {{ reservation.payment_status }}
+                                        </p>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <DropdownAction>
+                                        <Link :href="route('reservations.show', reservation.id)"
+                                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600">
+                                        <Eye class="mr-2 h-4 w-4" />
+                                        Ver detalles
+                                        </Link>
+
+                                        <Link v-if="reservation.can_be_cancelled && !isAdmin"
+                                            :href="route('reservations.edit', reservation.id)"
+                                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600">
+                                        <Edit class="mr-2 h-4 w-4" />
+                                        Editar
+                                        </Link>
+
+                                        <button v-if="isAdmin && reservation.status === 'pending'"
+                                            @click="approveReservation(reservation.id)"
+                                            class="flex w-full items-center px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50 dark:text-green-300 dark:hover:bg-green-600">
+                                            <Check class="mr-2 h-4 w-4" />
+                                            Aprobar
+                                        </button>
+
+                                        <button v-if="isAdmin && reservation.status === 'pending'"
+                                            @click="rejectReservation(reservation.id)"
+                                            class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600">
+                                            <X class="mr-2 h-4 w-4" />
+                                            Rechazar
+                                        </button>
+
+                                        <button v-if="reservation.can_be_cancelled"
+                                            @click="cancelReservation(reservation.id)"
+                                            class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600">
+                                            <Trash2 class="mr-2 h-4 w-4" />
+                                            Cancelar
+                                        </button>
+                                    </DropdownAction>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <!-- Pagination -->
+                <div v-if="reservations.total > 0" class="border-t px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700 dark:text-gray-300">
+                            Mostrando {{ reservations.from }} a {{ reservations.to }} de {{ reservations.total }}
+                            reservas
+                        </div>
+                        <div class="flex space-x-2">
+                            <Button v-if="reservations.prev_page_url" variant="outline" size="sm"
+                                @click="router.visit(reservations.prev_page_url)">
+                                Anterior
+                            </Button>
+                            <Button v-if="reservations.next_page_url" variant="outline" size="sm"
+                                @click="router.visit(reservations.next_page_url)">
+                                Siguiente
                             </Button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Filters -->
-                <Card class="mb-6">
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Buscar </label>
-                                <div class="relative">
-                                    <Search class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                                    <Input v-model="search" placeholder="Buscar reservas..." class="pl-10" @keydown.enter="applyFilters" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Estado </label>
-                                <Select v-model="selectedStatus">
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Todos los estados" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Todos los estados</SelectItem>
-                                        <SelectItem v-for="(label, value) in statuses" :key="value" :value="value">
-                                            {{ label }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Activo </label>
-                                <Select v-model="selectedAsset">
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Todos los activos" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Todos los activos</SelectItem>
-                                        <SelectItem v-for="asset in assets" :key="asset.id" :value="asset.id.toString()">
-                                            {{ asset.name }}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Desde </label>
-                                <Input v-model="dateFrom" type="date" />
-                            </div>
-
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Hasta </label>
-                                <Input v-model="dateTo" type="date" />
-                            </div>
-                        </div>
-
-                        <div class="mt-4 flex justify-between">
-                            <Button @click="applyFilters" class="inline-flex items-center">
-                                <Search class="mr-2 h-4 w-4" />
-                                Filtrar
-                            </Button>
-                            <Button variant="outline" @click="clearFilters"> Limpiar filtros </Button>
-                        </div>
-                    </div>
-                </Card>
-
-                <!-- Reservations Table -->
-                <Card>
-                    <div class="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Activo</TableHead>
-                                    <TableHead v-if="isAdmin">Usuario</TableHead>
-                                    <TableHead v-if="isAdmin">Apartamento</TableHead>
-                                    <TableHead>Fecha y Hora</TableHead>
-                                    <TableHead>Estado</TableHead>
-                                    <TableHead>Costo</TableHead>
-                                    <TableHead>Acciones</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow v-if="reservations.data.length === 0">
-                                    <TableCell :colspan="isAdmin ? 7 : 5" class="py-8 text-center text-gray-500">
-                                        <CalendarDays class="mx-auto mb-2 h-8 w-8 text-gray-400" />
-                                        <p>No hay reservas que coincidan con los filtros.</p>
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow v-for="reservation in reservations.data" :key="reservation.id">
-                                    <TableCell>
-                                        <div>
-                                            <p class="font-medium">{{ reservation.reservable_asset.name }}</p>
-                                            <p class="text-sm text-gray-500 capitalize">{{ reservation.reservable_asset.type.replace('_', ' ') }}</p>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell v-if="isAdmin">
-                                        {{ reservation.user.name }}
-                                    </TableCell>
-                                    <TableCell v-if="isAdmin">
-                                        {{ reservation.apartment?.number || 'N/A' }}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div class="text-sm">
-                                            <p class="font-medium">{{ formatDateTime(reservation.start_time) }}</p>
-                                            <p class="text-gray-500">{{ formatDateTime(reservation.end_time) }}</p>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge :class="getStatusBadgeClass(reservation.status_color)">
-                                            {{ reservation.status_label }}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div class="text-sm">
-                                            <p class="font-medium">{{ formatCurrency(reservation.cost) }}</p>
-                                            <p v-if="reservation.payment_required" class="text-gray-500 capitalize">
-                                                {{ reservation.payment_status }}
-                                            </p>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <DropdownAction>
-                                            <Link
-                                                :href="route('reservations.show', reservation.id)"
-                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                                            >
-                                                <Eye class="mr-2 h-4 w-4" />
-                                                Ver detalles
-                                            </Link>
-
-                                            <Link
-                                                v-if="reservation.can_be_cancelled && !isAdmin"
-                                                :href="route('reservations.edit', reservation.id)"
-                                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                                            >
-                                                <Edit class="mr-2 h-4 w-4" />
-                                                Editar
-                                            </Link>
-
-                                            <button
-                                                v-if="isAdmin && reservation.status === 'pending'"
-                                                @click="approveReservation(reservation.id)"
-                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50 dark:text-green-300 dark:hover:bg-green-600"
-                                            >
-                                                <Check class="mr-2 h-4 w-4" />
-                                                Aprobar
-                                            </button>
-
-                                            <button
-                                                v-if="isAdmin && reservation.status === 'pending'"
-                                                @click="rejectReservation(reservation.id)"
-                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600"
-                                            >
-                                                <X class="mr-2 h-4 w-4" />
-                                                Rechazar
-                                            </button>
-
-                                            <button
-                                                v-if="reservation.can_be_cancelled"
-                                                @click="cancelReservation(reservation.id)"
-                                                class="flex w-full items-center px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-600"
-                                            >
-                                                <Trash2 class="mr-2 h-4 w-4" />
-                                                Cancelar
-                                            </button>
-                                        </DropdownAction>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div v-if="reservations.total > 0" class="border-t px-6 py-4">
-                        <div class="flex items-center justify-between">
-                            <div class="text-sm text-gray-700 dark:text-gray-300">
-                                Mostrando {{ reservations.from }} a {{ reservations.to }} de {{ reservations.total }} reservas
-                            </div>
-                            <div class="flex space-x-2">
-                                <Button
-                                    v-if="reservations.prev_page_url"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="router.visit(reservations.prev_page_url)"
-                                >
-                                    Anterior
-                                </Button>
-                                <Button
-                                    v-if="reservations.next_page_url"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="router.visit(reservations.next_page_url)"
-                                >
-                                    Siguiente
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-            </div>
+            </Card>
         </div>
     </AppLayout>
 </template>
