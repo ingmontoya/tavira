@@ -66,6 +66,11 @@ class RequiresSubscription
             'wompi.webhook',
             'user-profile-information.update',
             'tenant-features.*', // Allow tenant features routes (central dashboard)
+            'dashboard', // Allow central dashboard access
+            'home', // Allow home page access
+            'provider.*', // Allow provider routes
+            'admin.*', // Allow admin routes (provider registrations, etc)
+            'tenant-management.*', // Allow tenant management routes
         ];
 
         foreach ($allowedRoutes as $route) {
@@ -74,8 +79,9 @@ class RequiresSubscription
             }
         }
 
-        // Check subscription status for central operations
-        if ($user->hasRole('admin')) {
+        // Check subscription status for central operations only for regular admin users
+        // Skip for superadmin and provider roles who manage multiple tenants
+        if ($user->hasRole('admin') && ! $user->hasAnyRole(['superadmin', 'admin_sistema', 'provider'])) {
             // First, check if user has an active subscription
             $activeSubscription = \App\Models\TenantSubscription::where('user_id', $user->id)
                 ->where('status', 'active')

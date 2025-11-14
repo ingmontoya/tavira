@@ -140,17 +140,83 @@ class ChartOfAccountsController extends Controller
 
     public function show(ChartOfAccounts $chartOfAccount)
     {
-        $chartOfAccount->load(['parent', 'children', 'transactionEntries.transaction']);
+        $chartOfAccount->load(['parent', 'children']);
 
         $balance = $chartOfAccount->getBalance();
-        $monthlyBalance = $chartOfAccount->getBalance(
-            now()->startOfMonth()->toDateString(),
-            now()->endOfMonth()->toDateString()
-        );
+
+        // Get recent transactions for this account
+        $recentTransactions = $chartOfAccount->transactionEntries()
+            ->with(['transaction' => function ($query) {
+                $query->where('status', 'contabilizado')
+                    ->orderBy('transaction_date', 'desc');
+            }])
+            ->whereHas('transaction', function ($query) {
+                $query->where('status', 'contabilizado');
+            })
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get()
+            ->map(function ($entry) {
+                $transaction = $entry->transaction;
+
+                // Get reference number based on the reference model
+                $referenceNumber = $transaction->transaction_number;
+
+                // Only try to load reference for known types to avoid class not found errors
+                $validReferenceTypes = ['expense', 'invoice', 'expense_payment', 'payment_application'];
+
+                if ($transaction->reference_type && in_array($transaction->reference_type, $validReferenceTypes)) {
+                    try {
+                        $reference = $transaction->reference;
+                        if ($reference) {
+                            if ($reference instanceof \App\Models\Expense) {
+                                $referenceNumber = $reference->expense_number;
+                            } elseif ($reference instanceof \App\Models\Invoice) {
+                                $referenceNumber = $reference->invoice_number;
+                            } elseif (method_exists($reference, 'getReferenceNumber')) {
+                                $referenceNumber = $reference->getReferenceNumber();
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // If reference fails to load, use transaction_number
+                        $referenceNumber = $transaction->transaction_number;
+                    }
+                }
+
+                return [
+                    'id' => $transaction->id,
+                    'reference' => $referenceNumber,
+                    'description' => $transaction->description,
+                    'amount' => $entry->debit_amount > 0 ? $entry->debit_amount : $entry->credit_amount,
+                    'type' => $entry->debit_amount > 0 ? 'debit' : 'credit',
+                    'transaction_date' => $transaction->transaction_date->toDateString(),
+                    'created_at' => $entry->created_at->toISOString(),
+                ];
+            });
+
+        // Get monthly balance trend (last 6 months)
+        $monthlyBalance = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $startDate = $date->copy()->startOfMonth()->toDateString();
+            $endDate = $date->copy()->endOfMonth()->toDateString();
+
+            $monthBalance = $chartOfAccount->getBalance($startDate, $endDate);
+
+            // Calculate change percentage
+            $prevMonth = $i < 5 ? $monthlyBalance[count($monthlyBalance) - 1]['balance'] ?? 0 : 0;
+            $change = $prevMonth != 0 ? (($monthBalance - $prevMonth) / abs($prevMonth)) * 100 : 0;
+
+            $monthlyBalance[] = [
+                'month' => $date->translatedFormat('M Y'),
+                'balance' => $monthBalance,
+                'change' => round($change, 1),
+            ];
+        }
 
         return Inertia::render('Accounting/ChartOfAccounts/Show', [
-            'account' => $chartOfAccount,
-            'balance' => $balance,
+            'account' => $chartOfAccount->append('balance'),
+            'recentTransactions' => $recentTransactions->toArray(),
             'monthlyBalance' => $monthlyBalance,
             'canEdit' => ! $chartOfAccount->transactionEntries()->exists(),
         ]);
@@ -365,5 +431,56 @@ class ChartOfAccountsController extends Controller
                 'sync' => 'Error al sincronizar el plan de cuentas: '.$e->getMessage(),
             ]);
         }
+    }
+
+    public function search(Request $request)
+    {
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        $request->validate([
+            'q' => 'nullable|string|max:100',
+            'type' => 'nullable|in:asset,liability,equity,income,expense',
+            'postable_only' => 'boolean',
+            'exclude_ids' => 'nullable|array',
+            'exclude_ids.*' => 'integer',
+        ]);
+
+        $query = ChartOfAccounts::forConjunto($conjunto->id)
+            ->active()
+            ->postable()
+            ->orderBy('code');
+
+        // Filter by type if provided
+        if ($request->filled('type')) {
+            $query->byType($request->type);
+        }
+
+        // Search by code or name
+        if ($request->filled('q')) {
+            $search = $request->q;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        // Exclude specific account IDs
+        if ($request->filled('exclude_ids')) {
+            $query->whereNotIn('id', $request->exclude_ids);
+        }
+
+        // Limit results for performance
+        $accounts = $query->limit(50)->get();
+
+        return response()->json([
+            'accounts' => $accounts->map(function ($account) {
+                return [
+                    'id' => $account->id,
+                    'code' => $account->code,
+                    'name' => $account->name,
+                    'account_type' => $account->account_type,
+                ];
+            }),
+        ]);
     }
 }

@@ -34,14 +34,15 @@ class TestProviderApprovedEmail extends Command
         // Get first pending registration for test data
         $registration = ProviderRegistration::pending()->first();
 
-        if (!$registration) {
+        if (! $registration) {
             $this->error('No pending registrations found to use as test data.');
+
             return 1;
         }
 
         // Create a temporary provider for testing
         $provider = Provider::create([
-            'name' => '[TEST] ' . $registration->company_name,
+            'name' => '[TEST] '.$registration->company_name,
             'category' => $registration->service_type,
             'email' => $registration->email,
             'contact_name' => $registration->contact_name,
@@ -65,7 +66,8 @@ class TestProviderApprovedEmail extends Command
 
             return 0;
         } catch (\Exception $e) {
-            $this->error('✗ Failed to queue email: ' . $e->getMessage());
+            $this->error('✗ Failed to queue email: '.$e->getMessage());
+
             return 1;
         }
     }

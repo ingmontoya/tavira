@@ -11,6 +11,7 @@ import {
     CheckCircle,
     Clock,
     CreditCard,
+    FileCheck,
     FileQuestion,
     FileSpreadsheet,
     FileText,
@@ -350,6 +351,20 @@ export function useNavigation() {
                     icon: TrendingUp,
                     tourId: 'nav-accounting-reports',
                     visible: isFeatureEnabled('financial_reports') && hasPermission('view_accounting'),
+                },
+                {
+                    title: 'Retenciones',
+                    href: '/retenciones',
+                    icon: FileCheck,
+                    tourId: 'nav-retenciones',
+                    visible: hasPermission('view_expenses'),
+                },
+                {
+                    title: 'Información Exógena',
+                    href: '/accounting/exogenous-reports',
+                    icon: FileSpreadsheet,
+                    tourId: 'nav-exogenous-reports',
+                    visible: hasPermission('view_accounting'),
                 },
                 {
                     title: 'Cierres Contables',

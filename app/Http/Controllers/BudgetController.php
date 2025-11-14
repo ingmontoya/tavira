@@ -186,6 +186,15 @@ class BudgetController extends Controller
         $currentMonth = now()->month;
         $currentYear = $budget->fiscal_year;
 
+        // Refresh budget executions to get latest actual amounts
+        if ($budget->status === 'active') {
+            foreach ($budget->items as $item) {
+                foreach ($item->executions as $execution) {
+                    $execution->calculateActualAmountFromAccountingEntries();
+                }
+            }
+        }
+
         $executionSummary = $budget->getExecutionSummary($currentMonth, $currentYear);
 
         // Transform budget data to match frontend expectations
@@ -597,6 +606,110 @@ class BudgetController extends Controller
             ->with('success', 'Partida presupuestal agregada exitosamente.');
     }
 
+    public function editItem(Budget $budget, BudgetItem $item)
+    {
+        if ($item->budget_id !== $budget->id) {
+            abort(404, 'Item not found in this budget');
+        }
+
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden editar partidas de presupuestos activos.']);
+        }
+
+        $conjunto = ConjuntoConfig::where('is_active', true)->first();
+
+        // Get already used accounts to avoid duplicates (excluding current item)
+        $usedAccountIds = $budget->items()->where('id', '!=', $item->id)->pluck('account_id')->toArray();
+
+        $item->load('account');
+
+        // Calculate historical data from previous year for forecast
+        $previousYearStart = $budget->start_date->copy()->subYear();
+        $previousYearEnd = $budget->end_date->copy()->subYear();
+
+        $historicalData = $this->calculateHistoricalDataForAccount(
+            $item->account_id,
+            $item->category,
+            $previousYearStart,
+            $previousYearEnd
+        );
+
+        return Inertia::render('Accounting/Budgets/Items/Edit', [
+            'budget' => $budget,
+            'item' => $item,
+            'usedAccountIds' => $usedAccountIds,
+            'historicalData' => $historicalData,
+        ]);
+    }
+
+    public function updateItem(Request $request, Budget $budget, BudgetItem $item)
+    {
+        if ($item->budget_id !== $budget->id) {
+            abort(404, 'Item not found in this budget');
+        }
+
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden editar partidas de presupuestos activos.']);
+        }
+
+        $validated = $request->validate([
+            'account_id' => 'required|exists:chart_of_accounts,id',
+            'category' => 'required|in:income,expense',
+            'expense_type' => 'nullable|in:fixed,variable,special_fund',
+            'budgeted_amount' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:500',
+            'monthly_distribution' => 'nullable|array',
+            'monthly_distribution.*' => 'nullable|numeric|min:0',
+        ]);
+
+        // Check if account is already used in this budget (excluding current item)
+        if ($budget->items()->where('account_id', $validated['account_id'])->where('id', '!=', $item->id)->exists()) {
+            return back()->withErrors(['account_id' => 'Esta cuenta ya está incluida en el presupuesto.']);
+        }
+
+        DB::transaction(function () use ($validated, $budget, $item) {
+            $item->update([
+                'account_id' => $validated['account_id'],
+                'category' => $validated['category'],
+                'expense_type' => $validated['expense_type'] ?? null,
+                'budgeted_amount' => $validated['budgeted_amount'],
+                'notes' => $validated['notes'] ?? null,
+            ]);
+
+            if (isset($validated['monthly_distribution'])) {
+                $this->updateMonthlyDistribution($item, $validated['monthly_distribution']);
+            } else {
+                $item->distributeEqually();
+            }
+
+            $budget->calculateTotals();
+        });
+
+        return redirect()
+            ->route('accounting.budgets.show', $budget)
+            ->with('success', 'Partida presupuestal actualizada exitosamente.');
+    }
+
+    public function destroyItem(Budget $budget, BudgetItem $item)
+    {
+        if ($item->budget_id !== $budget->id) {
+            abort(404, 'Item not found in this budget');
+        }
+
+        if ($budget->status === 'active') {
+            return back()->withErrors(['budget' => 'No se pueden eliminar partidas de presupuestos activos.']);
+        }
+
+        DB::transaction(function () use ($budget, $item) {
+            $item->delete();
+            $budget->calculateTotals();
+        });
+
+        return redirect()
+            ->route('accounting.budgets.show', $budget)
+            ->with('success', 'Partida presupuestal eliminada exitosamente.');
+    }
+
     public function cashFlowProjection(Budget $budget)
     {
         $budget->load(['incomeItems', 'expenseItems']);
@@ -619,13 +732,72 @@ class BudgetController extends Controller
         ]);
     }
 
+    public function monthlyReport(Budget $budget)
+    {
+        $monthlyData = $budget->getMonthlyReport();
+
+        // Calculate totals
+        $totals = [
+            'budgeted_income' => array_sum(array_column($monthlyData, 'budgeted_income')),
+            'budgeted_expenses' => array_sum(array_column($monthlyData, 'budgeted_expenses')),
+            'executed_income' => array_sum(array_column($monthlyData, 'executed_income')),
+            'executed_expenses' => array_sum(array_column($monthlyData, 'executed_expenses')),
+        ];
+
+        $totals['budgeted_net'] = $totals['budgeted_income'] - $totals['budgeted_expenses'];
+        $totals['executed_net'] = $totals['executed_income'] - $totals['executed_expenses'];
+        $totals['variance_income'] = $totals['executed_income'] - $totals['budgeted_income'];
+        $totals['variance_expenses'] = $totals['executed_expenses'] - $totals['budgeted_expenses'];
+        $totals['variance_net'] = $totals['executed_net'] - $totals['budgeted_net'];
+        $totals['income_execution_percentage'] = $totals['budgeted_income'] > 0 ? ($totals['executed_income'] / $totals['budgeted_income']) * 100 : 0;
+        $totals['expenses_execution_percentage'] = $totals['budgeted_expenses'] > 0 ? ($totals['executed_expenses'] / $totals['budgeted_expenses']) * 100 : 0;
+
+        // Temporary dump - uncomment to debug
+        // dd([
+        //     'budget_id' => $budget->id,
+        //     'budget_name' => $budget->name,
+        //     'fiscal_year' => $budget->fiscal_year,
+        //     'totals' => $totals,
+        //     'january' => $monthlyData[0],
+        // ]);
+
+        return Inertia::render('Accounting/Budgets/MonthlyReport', [
+            'budget' => [
+                'id' => $budget->id,
+                'name' => $budget->name,
+                'fiscal_year' => $budget->fiscal_year,
+            ],
+            'monthlyData' => $monthlyData,
+            'totals' => $totals,
+        ]);
+    }
+
+    private function calculateExecutedAmountFromTransactions(int $accountId, string $category, $startDate, $endDate): float
+    {
+        // Use previous year's date range as historical reference for budget planning
+        $previousYearStart = \Carbon\Carbon::parse($startDate)->subYear()->toDateString();
+        $previousYearEnd = \Carbon\Carbon::parse($endDate)->subYear()->toDateString();
+
+        $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($previousYearStart, $previousYearEnd) {
+            $query->where('status', 'contabilizado')
+                ->whereBetween('transaction_date', [$previousYearStart, $previousYearEnd]);
+        })
+            ->where('account_id', $accountId)
+            ->get();
+
+        if ($category === 'income') {
+            // For income accounts, credit increases the balance
+            $actualAmount = $entries->sum('credit_amount') - $entries->sum('debit_amount');
+        } else {
+            // For expense accounts, debit increases the balance
+            $actualAmount = $entries->sum('debit_amount') - $entries->sum('credit_amount');
+        }
+
+        return max(0, $actualAmount);
+    }
+
     private function transformBudgetForFrontend(Budget $budget, array $executionSummary): array
     {
-        // Calculate totals
-        $totalBudget = $budget->total_budgeted_income + $budget->total_budgeted_expenses;
-        $totalExecuted = $executionSummary['total_income_actual'] + $executionSummary['total_expenses_actual'];
-        $executionPercentage = $totalBudget > 0 ? round(($totalExecuted / $totalBudget) * 100, 2) : 0;
-
         // Map status to frontend format
         $statusMapping = [
             'draft' => 'Draft',
@@ -635,14 +807,25 @@ class BudgetController extends Controller
         ];
 
         // Transform budget items with execution data
-        $transformedItems = $budget->items->map(function ($item) use ($executionSummary) {
-            // Find execution data for this item from the summary
+        $transformedItems = $budget->items->map(function ($item) use ($executionSummary, $budget) {
+            // Try to get execution data from summary first (for active budgets with BudgetExecutions)
             $itemExecutions = collect([
                 ...$executionSummary['income']->where('budgetItem.id', $item->id),
                 ...$executionSummary['expenses']->where('budgetItem.id', $item->id),
             ]);
 
             $executedAmount = $itemExecutions->sum('actual_amount');
+
+            // If no execution data found (budget not active or no BudgetExecutions), calculate from transactions
+            if ($executedAmount == 0) {
+                $executedAmount = $this->calculateExecutedAmountFromTransactions(
+                    $item->account_id,
+                    $item->category,
+                    $budget->start_date,
+                    $budget->end_date
+                );
+            }
+
             $varianceAmount = $executedAmount - $item->budgeted_amount;
             $variancePercentage = $item->budgeted_amount > 0
                 ? round(($varianceAmount / $item->budgeted_amount) * 100, 2)
@@ -664,21 +847,92 @@ class BudgetController extends Controller
             ];
         });
 
+        // Calculate totals from transformed items
+        $totalBudget = $budget->total_budgeted_income + $budget->total_budgeted_expenses;
+        $totalExecuted = $transformedItems->sum('executed_amount');
+        $executionPercentage = $totalBudget > 0 ? round(($totalExecuted / $totalBudget) * 100, 2) : 0;
+
         return [
             'id' => $budget->id,
             'name' => $budget->name,
             'description' => null, // Add if you have a description field
             'year' => $budget->fiscal_year,
+            'historical_year' => $budget->fiscal_year - 1, // Year used for historical execution data
             'start_date' => $budget->start_date->toDateString(),
             'end_date' => $budget->end_date->toDateString(),
             'total_budget' => (float) $totalBudget,
             'total_executed' => (float) $totalExecuted,
             'status' => $statusMapping[$budget->status] ?? 'Draft',
+            'raw_status' => $budget->status, // Add raw status for frontend logic
             'approval_date' => $budget->approved_at?->toDateString(),
             'execution_percentage' => (float) $executionPercentage,
             'items' => $transformedItems->toArray(),
             'created_at' => $budget->created_at->toISOString(),
             'updated_at' => $budget->updated_at->toISOString(),
+            'can_approve' => $budget->can_approve,
+            'can_be_approved' => $budget->can_be_approved,
+            'can_be_activated' => $budget->can_be_activated,
+        ];
+    }
+
+    private function calculateHistoricalDataForAccount(int $accountId, string $category, $startDate, $endDate): array
+    {
+        // Get all transactions for this account in the previous year
+        $entries = \App\Models\AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
+            $query->where('status', 'contabilizado')
+                ->whereBetween('transaction_date', [$startDate, $endDate]);
+        })
+            ->where('account_id', $accountId)
+            ->with('transaction')
+            ->get();
+
+        // Calculate total amount
+        if ($category === 'income') {
+            $totalAmount = $entries->sum('credit_amount') - $entries->sum('debit_amount');
+        } else {
+            $totalAmount = $entries->sum('debit_amount') - $entries->sum('credit_amount');
+        }
+
+        // Calculate monthly distribution
+        $monthlyDistribution = [];
+        for ($month = 1; $month <= 12; $month++) {
+            $monthEntries = $entries->filter(function ($entry) use ($month) {
+                return $entry->transaction->transaction_date->month === $month;
+            });
+
+            if ($category === 'income') {
+                $monthAmount = $monthEntries->sum('credit_amount') - $monthEntries->sum('debit_amount');
+            } else {
+                $monthAmount = $monthEntries->sum('debit_amount') - $monthEntries->sum('credit_amount');
+            }
+
+            $monthlyDistribution[$month] = max(0, $monthAmount);
+        }
+
+        // Calculate suggestions
+        $inflationRate = 0.04; // 4% default inflation rate
+        $withInflation = $totalAmount * (1 + $inflationRate);
+
+        // Calculate trend (simple: compare first half vs second half)
+        $firstHalfTotal = array_sum(array_slice($monthlyDistribution, 0, 6));
+        $secondHalfTotal = array_sum(array_slice($monthlyDistribution, 6, 6));
+        $trend = 'stable';
+        if ($secondHalfTotal > $firstHalfTotal * 1.1) {
+            $trend = 'increasing';
+        } elseif ($secondHalfTotal < $firstHalfTotal * 0.9) {
+            $trend = 'decreasing';
+        }
+
+        return [
+            'total_amount' => (float) max(0, $totalAmount),
+            'monthly_distribution' => $monthlyDistribution,
+            'suggestions' => [
+                'copy_previous_year' => (float) max(0, $totalAmount),
+                'with_inflation' => (float) max(0, $withInflation),
+                'inflation_rate' => $inflationRate * 100, // as percentage
+            ],
+            'trend' => $trend,
+            'has_data' => $entries->count() > 0,
         ];
     }
 }

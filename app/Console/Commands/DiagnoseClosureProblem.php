@@ -36,6 +36,7 @@ class DiagnoseClosureProblem extends Command
 
         if ($conjuntos->isEmpty()) {
             $this->error('   ✗ No hay conjuntos configurados');
+
             return 1;
         }
 
@@ -49,8 +50,9 @@ class DiagnoseClosureProblem extends Command
         $this->info('2. CONJUNTO ACTIVO (usado para cierres):');
         $conjuntoActivo = ConjuntoConfig::where('is_active', true)->first();
 
-        if (!$conjuntoActivo) {
+        if (! $conjuntoActivo) {
             $this->error('   ✗ No hay conjunto activo configurado');
+
             return 1;
         }
 
@@ -78,7 +80,7 @@ class DiagnoseClosureProblem extends Command
         $this->newLine();
 
         // 4. Verificar cuentas críticas en el conjunto ACTIVO
-        $this->info('4. CUENTAS CRÍTICAS EN CONJUNTO ACTIVO (ID: ' . $conjuntoActivo->id . '):');
+        $this->info('4. CUENTAS CRÍTICAS EN CONJUNTO ACTIVO (ID: '.$conjuntoActivo->id.'):');
         $requiredAccounts = [
             '590505' => 'GANANCIAS Y PERDIDAS DEL EJERCICIO',
             '360505' => 'EXCEDENTE DEL EJERCICIO',
@@ -101,7 +103,7 @@ class DiagnoseClosureProblem extends Command
         $this->newLine();
 
         // 5. Buscar cuentas críticas en OTROS conjuntos
-        if (!$hasAllAccounts) {
+        if (! $hasAllAccounts) {
             $this->warn('5. BUSCANDO CUENTAS CRÍTICAS EN OTROS CONJUNTOS:');
             foreach ($requiredAccounts as $code => $expectedName) {
                 $accountsInOtherConjuntos = ChartOfAccounts::where('code', $code)
@@ -123,7 +125,7 @@ class DiagnoseClosureProblem extends Command
             // 6. Solución
             $this->info('6. SOLUCIÓN:');
             $this->warn('   Las cuentas están en conjuntos diferentes. Ejecute:');
-            $this->line("   php artisan tenants:seed --class=ChartOfAccountsSeeder");
+            $this->line('   php artisan tenants:seed --class=ChartOfAccountsSeeder');
             $this->line('   Esto creará las cuentas faltantes para el conjunto activo.');
         } else {
             $this->info('5. RESULTADO:');

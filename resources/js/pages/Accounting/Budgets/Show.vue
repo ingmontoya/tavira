@@ -10,6 +10,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { formatCurrency } from '@/utils';
 import { Head, Link, router } from '@inertiajs/vue3';
@@ -29,6 +31,7 @@ import {
     DollarSign,
     Edit,
     Hash,
+    Info,
     Play,
     Trash2,
     TrendingDown,
@@ -56,6 +59,7 @@ interface Budget {
     name: string;
     description?: string;
     year: number;
+    historical_year: number;
     start_date: string;
     end_date: string;
     total_budget: number;
@@ -72,7 +76,13 @@ const props = defineProps<{
     budget: Budget;
 }>();
 
+// Dialog state management
 const deleteDialogOpen = ref(false);
+const approveDialogOpen = ref(false);
+const activateDialogOpen = ref(false);
+const closeDialogOpen = ref(false);
+const deleteItemDialogOpen = ref(false);
+const itemToDelete = ref<number | null>(null);
 
 // Computed properties
 const statusInfo = computed(() => {
@@ -115,42 +125,45 @@ const isOverBudget = computed(() => {
 });
 
 const canEdit = computed(() => {
-    return props.budget.status === 'Draft'; // Only allow editing for draft budgets
+    return props.budget.raw_status === 'draft'; // Only allow editing for draft budgets
 });
 
 const canApprove = computed(() => {
-    return props.budget.status === 'Draft';
+    // Use the backend's can_approve attribute which checks role and status
+    return props.budget.can_approve === true;
 });
 
 const canActivate = computed(() => {
-    return props.budget.status === 'Approved';
+    return props.budget.can_be_activated === true;
 });
 
 const canClose = computed(() => {
-    return props.budget.status === 'Active';
+    return props.budget.raw_status === 'active';
 });
 
 const canDelete = computed(() => {
-    return props.budget.status !== 'Active';
+    return props.budget.raw_status !== 'active';
+});
+
+const showApprovalHint = computed(() => {
+    // Show hint if budget can be approved but user doesn't have permission
+    return props.budget.raw_status === 'draft' && props.budget.items.length > 0 && !props.budget.can_approve;
 });
 
 // Budget actions
-const approveBudget = () => {
-    if (confirm('¿Está seguro que desea aprobar este presupuesto?')) {
-        router.post(`/accounting/budgets/${props.budget.id}/approve`);
-    }
+const confirmApproveBudget = () => {
+    approveDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/approve`);
 };
 
-const activateBudget = () => {
-    if (confirm('¿Está seguro que desea activar este presupuesto? Esto desactivará otros presupuestos activos del mismo año.')) {
-        router.post(`/accounting/budgets/${props.budget.id}/activate`);
-    }
+const confirmActivateBudget = () => {
+    activateDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/activate`);
 };
 
-const closeBudget = () => {
-    if (confirm('¿Está seguro que desea cerrar este presupuesto?')) {
-        router.post(`/accounting/budgets/${props.budget.id}/close`);
-    }
+const confirmCloseBudget = () => {
+    closeDialogOpen.value = false;
+    router.post(`/accounting/budgets/${props.budget.id}/close`);
 };
 
 const confirmDeleteBudget = () => {
@@ -160,6 +173,21 @@ const confirmDeleteBudget = () => {
             router.visit('/accounting/budgets');
         },
     });
+};
+
+const openDeleteItemDialog = (itemId: number) => {
+    itemToDelete.value = itemId;
+    deleteItemDialogOpen.value = true;
+};
+
+const confirmDeleteItem = () => {
+    if (itemToDelete.value !== null) {
+        router.delete(`/accounting/budgets/${props.budget.id}/items/${itemToDelete.value}`, {
+            preserveScroll: true,
+        });
+        deleteItemDialogOpen.value = false;
+        itemToDelete.value = null;
+    }
 };
 
 const formatDate = (dateString: string) => {
@@ -190,10 +218,11 @@ const breadcrumbs = [
 </script>
 
 <template>
+
     <Head :title="budget.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-6xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -204,42 +233,120 @@ const breadcrumbs = [
                             {{ statusInfo.label }}
                         </Badge>
                     </div>
-                    <p class="text-muted-foreground">{{ budget.description || `Presupuesto para el año ${budget.year}` }}</p>
+                    <p class="text-muted-foreground">{{ budget.description || `Presupuesto para el año ${budget.year}`
+                    }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <Link href="/accounting/budgets">
-                        <Button variant="outline" class="gap-2">
-                            <ArrowLeft class="h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline" class="gap-2">
+                        <ArrowLeft class="h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
 
                     <!-- Botones de estado -->
-                    <Button v-if="canApprove" @click="approveBudget" variant="outline" class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
-                        <CheckCircle class="h-4 w-4" />
-                        Aprobar
-                    </Button>
+                    <AlertDialog v-model:open="approveDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canApprove" variant="outline"
+                                class="gap-2 border-blue-600 text-blue-600 hover:bg-blue-50">
+                                <CheckCircle class="h-4 w-4" />
+                                Aprobar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Aprobar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea aprobar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}?
+                                    <br /><br />
+                                    Una vez aprobado, el presupuesto podrá ser activado para su ejecución.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmApproveBudget" class="bg-blue-600 hover:bg-blue-700">
+                                    Aprobar Presupuesto
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
-                    <Button v-if="canActivate" @click="activateBudget" class="gap-2 bg-green-600 hover:bg-green-700">
-                        <Play class="h-4 w-4" />
-                        Activar
-                    </Button>
+                    <!-- Show hint if user cannot approve -->
+                    <div v-if="showApprovalHint" class="ml-2">
+                        <Badge variant="outline" class="border-amber-600 text-amber-600 bg-amber-50">
+                            <AlertCircle class="mr-1 h-3 w-3" />
+                            Solo el Concejo puede aprobar
+                        </Badge>
+                    </div>
 
-                    <Button v-if="canClose" @click="closeBudget" variant="outline" class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
-                        <Clock class="h-4 w-4" />
-                        Cerrar
-                    </Button>
+                    <AlertDialog v-model:open="activateDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canActivate" class="gap-2 bg-green-600 hover:bg-green-700">
+                                <Play class="h-4 w-4" />
+                                Activar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Activar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea activar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}?
+                                    <br /><br />
+                                    <strong class="text-amber-600">Esta acción desactivará otros presupuestos activos
+                                        del mismo año.</strong>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmActivateBudget"
+                                    class="bg-green-600 hover:bg-green-700">
+                                    Activar Presupuesto
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog v-model:open="closeDialogOpen">
+                        <AlertDialogTrigger as-child>
+                            <Button v-if="canClose" variant="outline"
+                                class="gap-2 border-orange-600 text-orange-600 hover:bg-orange-50">
+                                <Clock class="h-4 w-4" />
+                                Cerrar
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Cerrar Presupuesto</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea cerrar el presupuesto "{{ budget.name }}" del año {{
+                                    budget.year }}?
+                                    <br /><br />
+                                    Una vez cerrado, no se permitirán más cambios ni ejecuciones.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmCloseBudget"
+                                    class="bg-orange-600 hover:bg-orange-700">
+                                    Cerrar Presupuesto
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
 
                     <Link v-if="canEdit" :href="`/accounting/budgets/${budget.id}/edit`">
-                        <Button class="gap-2">
-                            <Edit class="h-4 w-4" />
-                            Editar
-                        </Button>
+                    <Button class="gap-2">
+                        <Edit class="h-4 w-4" />
+                        Editar
+                    </Button>
                     </Link>
 
                     <AlertDialog v-model:open="deleteDialogOpen">
                         <AlertDialogTrigger as-child>
-                            <Button v-if="canDelete" variant="outline" class="gap-2 border-red-600 text-red-600 hover:bg-red-50">
+                            <Button v-if="canDelete" variant="outline"
+                                class="gap-2 border-red-600 text-red-600 hover:bg-red-50">
                                 <Trash2 class="h-4 w-4" />
                                 Eliminar
                             </Button>
@@ -248,16 +355,17 @@ const breadcrumbs = [
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Eliminar Presupuesto</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{ budget.year }}? <br /><br />
-                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se eliminarán todas las partidas
+                                    ¿Está seguro que desea eliminar el presupuesto "{{ budget.name }}" del año {{
+                                        budget.year }}? <br /><br />
+                                    <strong class="text-red-600">Esta acción no se puede deshacer</strong> y se
+                                    eliminarán todas las partidas
                                     presupuestales asociadas.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700"
-                                    >Eliminar Presupuesto</AlertDialogAction
-                                >
+                                <AlertDialogAction @click="confirmDeleteBudget" class="bg-red-600 hover:bg-red-700">
+                                    Eliminar Presupuesto</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -294,7 +402,8 @@ const breadcrumbs = [
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Período</Label>
-                                    <p class="text-sm">{{ formatDate(budget.start_date) }} - {{ formatDate(budget.end_date) }}</p>
+                                    <p class="text-sm">{{ formatDate(budget.start_date) }} - {{
+                                        formatDate(budget.end_date) }}</p>
                                 </div>
                                 <div v-if="budget.approval_date">
                                     <Label class="text-sm font-medium text-muted-foreground">Fecha de Aprobación</Label>
@@ -305,10 +414,12 @@ const breadcrumbs = [
                             <!-- Execution Progress -->
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between">
-                                    <Label class="text-sm font-medium text-muted-foreground">Progreso de Ejecución</Label>
+                                    <Label class="text-sm font-medium text-muted-foreground">Progreso de
+                                        Ejecución</Label>
                                     <span class="text-sm font-medium">{{ budget.execution_percentage }}%</span>
                                 </div>
-                                <Progress :value="Math.min(budget.execution_percentage, 100)" :class="isOverBudget ? 'bg-red-100' : ''" />
+                                <Progress :value="Math.min(budget.execution_percentage, 100)"
+                                    :class="isOverBudget ? 'bg-red-100' : ''" />
                                 <div v-if="isOverBudget" class="flex items-center gap-1 text-xs text-red-600">
                                     <TrendingUp class="h-3 w-3" />
                                     Sobrepresupuesto por {{ formatCurrency(totalVariance) }}
@@ -338,12 +449,8 @@ const breadcrumbs = [
                                     <CardTitle>Partidas Presupuestales</CardTitle>
                                     <CardDescription>Detalle por cuenta contable</CardDescription>
                                 </div>
-                                <Button
-                                    v-if="canEdit"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="router.visit(`/accounting/budgets/${budget.id}/items/create`)"
-                                >
+                                <Button v-if="canEdit" variant="outline" size="sm"
+                                    @click="router.visit(`/accounting/budgets/${budget.id}/items/create`)">
                                     Agregar Partida
                                 </Button>
                             </div>
@@ -359,23 +466,35 @@ const breadcrumbs = [
                                         <TableRow>
                                             <TableHead>Cuenta</TableHead>
                                             <TableHead class="text-right">Presupuestado</TableHead>
-                                            <TableHead class="text-right">Ejecutado</TableHead>
+                                            <TableHead class="text-right">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger class="flex items-center justify-end gap-1">
+                                                            <span>Ejecutado</span>
+                                                            <Info class="h-3 w-3 text-muted-foreground" />
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p class="text-xs">
+                                                                Datos históricos del año {{ budget.historical_year }}
+                                                            </p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </TableHead>
                                             <TableHead class="text-right">Variación</TableHead>
                                             <TableHead class="text-center">%</TableHead>
+                                            <TableHead v-if="canEdit" class="text-center">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        <TableRow
-                                            v-for="item in budget.items"
-                                            :key="item.id"
-                                            class="cursor-pointer hover:bg-muted/50"
-                                            @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)"
-                                        >
-                                            <TableCell>
+                                        <TableRow v-for="item in budget.items" :key="item.id" class="hover:bg-muted/50">
+                                            <TableCell class="cursor-pointer"
+                                                @click="router.visit(`/accounting/chart-of-accounts/${item.account.id}`)">
                                                 <div class="space-y-1">
                                                     <div class="font-mono text-sm">{{ item.account.code }}</div>
                                                     <div class="text-sm font-medium">{{ item.account.name }}</div>
-                                                    <div v-if="item.description" class="text-xs text-muted-foreground">{{ item.description }}</div>
+                                                    <div v-if="item.description" class="text-xs text-muted-foreground">
+                                                        {{ item.description }}</div>
                                                 </div>
                                             </TableCell>
                                             <TableCell class="text-right font-mono">
@@ -385,40 +504,49 @@ const breadcrumbs = [
                                                 {{ formatCurrency(item.executed_amount) }}
                                             </TableCell>
                                             <TableCell class="text-right font-mono">
-                                                <span :class="item.variance_amount >= 0 ? 'text-red-600' : 'text-green-600'">
-                                                    {{ item.variance_amount >= 0 ? '+' : '' }}{{ formatCurrency(item.variance_amount) }}
+                                                <span
+                                                    :class="item.variance_amount >= 0 ? 'text-red-600' : 'text-green-600'">
+                                                    {{ item.variance_amount >= 0 ? '+' : '' }}{{
+                                                        formatCurrency(item.variance_amount) }}
                                                 </span>
                                             </TableCell>
                                             <TableCell class="text-center">
                                                 <div class="flex items-center justify-center gap-1">
-                                                    <component
-                                                        :is="
-                                                            item.variance_percentage > 0
-                                                                ? TrendingUp
-                                                                : item.variance_percentage < 0
-                                                                  ? TrendingDown
-                                                                  : Hash
-                                                        "
-                                                        :class="[
+                                                    <component :is="item.variance_percentage > 0
+                                                        ? TrendingUp
+                                                        : item.variance_percentage < 0
+                                                            ? TrendingDown
+                                                            : Hash
+                                                        " :class="[
                                                             'h-3 w-3',
                                                             item.variance_percentage > 0
                                                                 ? 'text-red-500'
                                                                 : item.variance_percentage < 0
-                                                                  ? 'text-green-500'
-                                                                  : 'text-gray-500',
-                                                        ]"
-                                                    />
-                                                    <span
-                                                        :class="
-                                                            item.variance_percentage > 0
-                                                                ? 'text-red-600'
-                                                                : item.variance_percentage < 0
-                                                                  ? 'text-green-600'
-                                                                  : 'text-gray-600'
-                                                        "
-                                                    >
+                                                                    ? 'text-green-500'
+                                                                    : 'text-gray-500',
+                                                        ]" />
+                                                    <span :class="item.variance_percentage > 0
+                                                        ? 'text-red-600'
+                                                        : item.variance_percentage < 0
+                                                            ? 'text-green-600'
+                                                            : 'text-gray-600'
+                                                        ">
                                                         {{ Math.abs(item.variance_percentage).toFixed(1) }}%
                                                     </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell v-if="canEdit" class="text-center">
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <Button variant="ghost" size="sm"
+                                                        @click.stop="router.visit(`/accounting/budgets/${budget.id}/items/${item.id}/edit`)"
+                                                        class="h-8 w-8 p-0">
+                                                        <Edit class="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm"
+                                                        @click.stop="openDeleteItemDialog(item.id)"
+                                                        class="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                        <Trash2 class="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -427,6 +555,26 @@ const breadcrumbs = [
                             </div>
                         </CardContent>
                     </Card>
+
+                    <!-- Delete Item Dialog -->
+                    <AlertDialog v-model:open="deleteItemDialogOpen">
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar Partida Presupuestal</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    ¿Está seguro que desea eliminar esta partida presupuestal?
+                                    <br /><br />
+                                    <strong class="text-red-600">Esta acción no se puede deshacer.</strong>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction @click="confirmDeleteItem" class="bg-red-600 hover:bg-red-700">
+                                    Eliminar Partida
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
 
                 <!-- Sidebar -->
@@ -447,13 +595,29 @@ const breadcrumbs = [
                                 </div>
 
                                 <div>
-                                    <Label class="text-sm text-muted-foreground">Ejecutado</Label>
-                                    <p class="text-xl font-semibold text-blue-600">{{ formatCurrency(budget.total_executed) }}</p>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger class="text-left">
+                                                <Label class="text-sm text-muted-foreground flex items-center gap-1">
+                                                    Ejecutado
+                                                    <Info class="h-3 w-3" />
+                                                </Label>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p class="text-xs">
+                                                    Datos históricos del año {{ budget.historical_year }}
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                    <p class="text-xl font-semibold text-blue-600">{{
+                                        formatCurrency(budget.total_executed) }}</p>
                                 </div>
 
                                 <div>
                                     <Label class="text-sm text-muted-foreground">Variación</Label>
-                                    <p :class="['text-lg font-semibold', isOverBudget ? 'text-red-600' : 'text-green-600']">
+                                    <p
+                                        :class="['text-lg font-semibold', isOverBudget ? 'text-red-600' : 'text-green-600']">
                                         {{ totalVariance >= 0 ? '+' : '' }}{{ formatCurrency(totalVariance) }}
                                     </p>
                                 </div>
@@ -480,30 +644,26 @@ const breadcrumbs = [
                             <CardTitle>Acciones Rápidas</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-2">
-                            <Button
-                                v-if="canEdit"
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/budgets/${budget.id}/edit`)"
-                            >
+                            <Button v-if="canEdit" variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/budgets/${budget.id}/edit`)">
                                 <Edit class="h-4 w-4" />
                                 Editar Presupuesto
                             </Button>
 
-                            <Button
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/budgets/${budget.id}/execution`)"
-                            >
+                            <Button variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/budgets/${budget.id}/execution`)">
                                 <TrendingUp class="h-4 w-4" />
                                 Ver Ejecución
                             </Button>
 
-                            <Button
-                                variant="outline"
-                                class="w-full justify-start gap-2"
-                                @click="router.visit(`/accounting/reports/budget-execution?budget=${budget.id}`)"
-                            >
+                            <Button variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/budgets/${budget.id}/monthly-report`)">
+                                <Calendar class="h-4 w-4" />
+                                Reporte Mensual
+                            </Button>
+
+                            <Button variant="outline" class="w-full justify-start gap-2"
+                                @click="router.visit(`/accounting/reports/budget-execution?budget=${budget.id}`)">
                                 <Calendar class="h-4 w-4" />
                                 Reporte de Ejecución
                             </Button>

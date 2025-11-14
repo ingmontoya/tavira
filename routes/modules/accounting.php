@@ -5,6 +5,7 @@ use App\Http\Controllers\AccountingReportsController;
 use App\Http\Controllers\AccountingTransactionController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\ChartOfAccountsController;
+use App\Http\Controllers\ExogenousReportController;
 use Illuminate\Support\Facades\Route;
 
 // Accounting System
@@ -16,6 +17,7 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
     Route::post('chart-of-accounts/sync', [ChartOfAccountsController::class, 'sync'])->name('chart-of-accounts.sync');
     Route::get('accounts/by-type', [ChartOfAccountsController::class, 'getByType'])->name('accounts.by-type');
     Route::get('accounts/hierarchical', [ChartOfAccountsController::class, 'getHierarchical'])->name('accounts.hierarchical');
+    Route::get('accounts/search', [ChartOfAccountsController::class, 'search'])->name('accounts.search');
 
     // Accounting Transactions
     Route::get('transactions/{transaction}/duplicate', [AccountingTransactionController::class, 'duplicate'])->name('transactions.duplicate');
@@ -32,6 +34,7 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
     Route::post('budgets/{budget}/activate', [BudgetController::class, 'activate'])->name('budgets.activate');
     Route::post('budgets/{budget}/close', [BudgetController::class, 'close'])->name('budgets.close');
     Route::get('budgets/{budget}/execution', [BudgetController::class, 'execution'])->name('budgets.execution');
+    Route::get('budgets/{budget}/monthly-report', [BudgetController::class, 'monthlyReport'])->name('budgets.monthly-report');
     Route::get('budgets/{budget}/cash-flow-projection', [BudgetController::class, 'cashFlowProjection'])->name('budgets.cash-flow-projection');
     Route::post('budgets/copy-from-previous', [BudgetController::class, 'copyFromPrevious'])->name('budgets.copy-from-previous');
     Route::post('budgets/create-with-template', [BudgetController::class, 'createWithTemplate'])->name('budgets.create-with-template');
@@ -40,6 +43,9 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
     // Budget Items
     Route::get('budgets/{budget}/items/create', [BudgetController::class, 'createItem'])->name('budgets.items.create');
     Route::post('budgets/{budget}/items', [BudgetController::class, 'storeItem'])->name('budgets.items.store');
+    Route::get('budgets/{budget}/items/{item}/edit', [BudgetController::class, 'editItem'])->name('budgets.items.edit');
+    Route::put('budgets/{budget}/items/{item}', [BudgetController::class, 'updateItem'])->name('budgets.items.update');
+    Route::delete('budgets/{budget}/items/{item}', [BudgetController::class, 'destroyItem'])->name('budgets.items.destroy');
 
     // Period Closures
     Route::get('closures', [AccountingClosureController::class, 'index'])->name('closures.index');
@@ -59,5 +65,19 @@ Route::prefix('accounting')->name('accounting.')->middleware(['can:view_accounti
         Route::get('general-ledger', [AccountingReportsController::class, 'generalLedger'])->name('general-ledger');
         Route::get('budget-execution', [AccountingReportsController::class, 'budgetExecution'])->name('budget-execution');
         Route::get('cash-flow', [AccountingReportsController::class, 'cashFlow'])->name('cash-flow');
+    });
+
+    // Exogenous Reports (DIAN)
+    Route::prefix('exogenous-reports')->name('exogenous-reports.')->group(function () {
+        Route::get('/', [ExogenousReportController::class, 'index'])->name('index');
+        Route::get('/create', [ExogenousReportController::class, 'create'])->name('create');
+        Route::post('/preview', [ExogenousReportController::class, 'preview'])->name('preview');
+        Route::post('/', [ExogenousReportController::class, 'store'])->name('store');
+        Route::get('/{exogenousReport}', [ExogenousReportController::class, 'show'])->name('show');
+        Route::post('/{exogenousReport}/validate', [ExogenousReportController::class, 'validateReport'])->name('validate');
+        Route::post('/{exogenousReport}/export', [ExogenousReportController::class, 'export'])->name('export');
+        Route::get('/{exogenousReport}/download', [ExogenousReportController::class, 'download'])->name('download');
+        Route::post('/{exogenousReport}/mark-submitted', [ExogenousReportController::class, 'markAsSubmitted'])->name('mark-submitted');
+        Route::delete('/{exogenousReport}', [ExogenousReportController::class, 'destroy'])->name('destroy');
     });
 });

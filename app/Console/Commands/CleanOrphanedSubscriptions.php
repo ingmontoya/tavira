@@ -34,6 +34,7 @@ class CleanOrphanedSubscriptions extends Command
 
         if ($orphanedSubscriptions->isEmpty()) {
             $this->info('✅ No orphaned subscriptions found. Everything looks good!');
+
             return 0;
         }
 
@@ -46,7 +47,7 @@ class CleanOrphanedSubscriptions extends Command
                 'ID' => $sub->id,
                 'Plan' => $sub->plan_name,
                 'Status' => $sub->status,
-                'Amount' => '$' . number_format($sub->amount, 0),
+                'Amount' => '$'.number_format($sub->amount, 0),
                 'Tenant ID' => $sub->tenant_id ?? 'NULL',
                 'User ID' => 'NULL',
                 'Paid At' => $sub->paid_at?->format('Y-m-d H:i') ?? 'NULL',
@@ -64,11 +65,13 @@ class CleanOrphanedSubscriptions extends Command
         if ($this->option('dry-run')) {
             $this->info('🔍 DRY RUN MODE - No changes will be made');
             $this->warn('These subscriptions would be marked as "orphaned" status');
+
             return 0;
         }
 
-        if (!$this->confirm('Do you want to mark these subscriptions as "orphaned" status?', true)) {
+        if (! $this->confirm('Do you want to mark these subscriptions as "orphaned" status?', true)) {
             $this->info('Operation cancelled.');
+
             return 0;
         }
 

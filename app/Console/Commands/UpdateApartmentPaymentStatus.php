@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Apartment;
 use Illuminate\Console\Command;
-use Stancl\Tenancy\Facades\Tenancy;
 
 class UpdateApartmentPaymentStatus extends Command
 {
@@ -33,11 +32,12 @@ class UpdateApartmentPaymentStatus extends Command
         if (! tenancy()->initialized) {
             $this->error('This command must be run in a tenant context.');
             $this->line('Use: php artisan tenants:run apartments:update-payment-status');
+
             return self::FAILURE;
         }
 
         $this->info('=== Updating Apartment Payment Status ===');
-        $this->info('Tenant: ' . tenant('id'));
+        $this->info('Tenant: '.tenant('id'));
         $this->newLine();
 
         $query = Apartment::query();

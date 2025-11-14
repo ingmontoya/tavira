@@ -34,6 +34,7 @@ class FixDuplicateExpensePaymentTransactions extends Command
 
         if ($paymentTransactions->isEmpty()) {
             $this->info('No expense payment transactions found.');
+
             return 0;
         }
 
@@ -45,9 +46,10 @@ class FixDuplicateExpensePaymentTransactions extends Command
         foreach ($paymentTransactions as $transaction) {
             $expense = $transaction->reference;
 
-            if (!$expense || !($expense instanceof Expense)) {
+            if (! $expense || ! ($expense instanceof Expense)) {
                 $this->warn("Transaction #{$transaction->transaction_number}: No expense found - skipping");
                 $skipped++;
+
                 continue;
             }
 
@@ -56,6 +58,7 @@ class FixDuplicateExpensePaymentTransactions extends Command
             if ($entries->count() !== 2) {
                 $this->warn("Transaction #{$transaction->transaction_number} (Expense #{$expense->expense_number}): Expected 2 entries, found {$entries->count()} - skipping");
                 $skipped++;
+
                 continue;
             }
 
@@ -63,9 +66,10 @@ class FixDuplicateExpensePaymentTransactions extends Command
             $debitEntry = $entries->where('debit_amount', '>', 0)->first();
             $creditEntry = $entries->where('credit_amount', '>', 0)->first();
 
-            if (!$debitEntry || !$creditEntry) {
+            if (! $debitEntry || ! $creditEntry) {
                 $this->warn("Transaction #{$transaction->transaction_number} (Expense #{$expense->expense_number}): Missing debit or credit entry - skipping");
                 $skipped++;
+
                 continue;
             }
 
@@ -78,9 +82,9 @@ class FixDuplicateExpensePaymentTransactions extends Command
                 if (str_starts_with($accountCode, '1110') || str_starts_with($accountCode, '1105')) {
                     $this->error("Transaction #{$transaction->transaction_number} (Expense #{$expense->expense_number}): DUPLICATE - Debit and Credit both to account {$accountCode} for \${$amount}");
 
-                    if (!$dryRun) {
+                    if (! $dryRun) {
                         try {
-                            DB::connection('tenant')->transaction(function () use ($transaction, $expense) {
+                            DB::connection('tenant')->transaction(function () use ($transaction) {
                                 // Delete the transaction entries first
                                 $transaction->entries()->delete();
 

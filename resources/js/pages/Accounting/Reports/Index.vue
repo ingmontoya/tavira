@@ -60,6 +60,10 @@ const navigateToReport = (reportKey: string) => {
             params.append('period_month', (currentMonth.getMonth() + 1).toString());
             params.append('period_year', currentMonth.getFullYear().toString());
             break;
+        case 'exogenous-reports':
+            // Navigate directly to the exogenous reports page
+            router.visit('/accounting/exogenous-reports');
+            return;
     }
 
     if (params.toString()) {

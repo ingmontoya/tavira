@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notification;
 
 class InvoiceGenerated extends Notification implements ShouldQueue
 {
-    use Queueable, GeneratesTenantUrls;
+    use GeneratesTenantUrls, Queueable;
 
     public function __construct(
         private $invoice

@@ -25,7 +25,7 @@ k8s/deployed/
 ### Application Stack
 
 - **PHP Application**: Laravel 12 with Inertia.js
-- **Image**: `ingmontoyav/tavira-app:v20251027-cf6bafe`
+- **Image**: `ingmontoyav/tavira-app:v20251107-e572fc7`
 - **Replicas**: 2
 - **Containers per Pod**: 2 (php-fpm + nginx sidecar)
 - **Port**: 80 (nginx)
@@ -339,7 +339,13 @@ kubectl describe pvc postgres-storage
 
 ## 📅 Last Updated
 
-- **Date**: 2025-10-27
-- **Image**: `ingmontoyav/tavira-app:v20251027-cf6bafe`
-- **Kubernetes**: K3s cluster
+- **Date**: 2025-11-13
+- **Image**: `ingmontoyav/tavira-app:v20251107-e572fc7`
+- **Kubernetes**: K3s cluster (default context)
 - **Status**: Production-ready ✅
+
+## 🔗 Related Documentation
+
+- [Development Workflow](../../DEVELOPMENT-WORKFLOW.md) - Complete workflow from local to production
+- [Local Development](../../LOCAL-DEVELOPMENT.md) - Local development with docker-compose
+- [Staging Environment](../staging/README.md) - Staging environment documentation

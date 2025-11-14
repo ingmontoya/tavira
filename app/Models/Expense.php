@@ -109,6 +109,11 @@ class Expense extends Model
         return $this->belongsTo(ChartOfAccounts::class, 'credit_account_id');
     }
 
+    public function taxAccount(): BelongsTo
+    {
+        return $this->belongsTo(ChartOfAccounts::class, 'tax_account_id');
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -529,12 +534,14 @@ class Expense extends Model
         if ($this->provider_id) {
             \Log::info('Provider already exists, updating existing transactions', ['provider_id' => $this->provider_id]);
             $this->updateExistingTransactionEntriesWithThirdParty($this->provider_id);
+
             return;
         }
 
         // If we don't even have a vendor_name, nothing we can do
         if (! $this->vendor_name) {
             \Log::warning('No vendor_name, cannot create provider');
+
             return;
         }
 
@@ -554,7 +561,7 @@ class Expense extends Model
             }
         }
 
-        if (!$requiresThirdParty && $this->tax_account_id) {
+        if (! $requiresThirdParty && $this->tax_account_id) {
             $taxAccount = ChartOfAccounts::find($this->tax_account_id);
             \Log::info('Tax account check', [
                 'account_id' => $this->tax_account_id,

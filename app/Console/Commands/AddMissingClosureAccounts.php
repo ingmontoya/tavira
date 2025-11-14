@@ -34,16 +34,18 @@ class AddMissingClosureAccounts extends Command
 
         if ($conjuntoId) {
             $conjunto = ConjuntoConfig::find($conjuntoId);
-            if (!$conjunto) {
+            if (! $conjunto) {
                 $this->error("Conjunto con ID {$conjuntoId} no encontrado");
+
                 return 1;
             }
             $this->addAccountsToConjunto($conjunto);
         } else {
             // Procesar el conjunto activo
             $conjunto = ConjuntoConfig::where('is_active', true)->first();
-            if (!$conjunto) {
+            if (! $conjunto) {
                 $this->error('No hay conjunto activo');
+
                 return 1;
             }
             $this->addAccountsToConjunto($conjunto);
@@ -74,6 +76,7 @@ class AddMissingClosureAccounts extends Command
             if ($exists) {
                 $this->line("  • {$accountData['code']} - {$accountData['name']} [Ya existe]");
                 $existing++;
+
                 continue;
             }
 
@@ -106,7 +109,7 @@ class AddMissingClosureAccounts extends Command
         }
 
         $this->newLine();
-        $this->line("Resumen:");
+        $this->line('Resumen:');
         $this->line("  Cuentas creadas: {$added}");
         $this->line("  Cuentas existentes: {$existing}");
     }

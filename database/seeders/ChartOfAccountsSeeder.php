@@ -92,6 +92,7 @@ class ChartOfAccountsSeeder extends Seeder
         // Helper function to calculate level based on code length
         $calculateLevel = function ($code) {
             $length = strlen($code);
+
             return match ($length) {
                 1 => 1,
                 2 => 2,
@@ -105,11 +106,22 @@ class ChartOfAccountsSeeder extends Seeder
         // Helper function to get parent code
         $getParentCode = function ($code) {
             $length = strlen($code);
-            if ($length == 1) return null;
-            if ($length == 2) return substr($code, 0, 1);
-            if ($length == 4) return substr($code, 0, 2);
-            if ($length == 6) return substr($code, 0, 4);
-            if ($length == 8) return substr($code, 0, 6);
+            if ($length == 1) {
+                return null;
+            }
+            if ($length == 2) {
+                return substr($code, 0, 1);
+            }
+            if ($length == 4) {
+                return substr($code, 0, 2);
+            }
+            if ($length == 6) {
+                return substr($code, 0, 4);
+            }
+            if ($length == 8) {
+                return substr($code, 0, 6);
+            }
+
             return null;
         };
 
@@ -267,8 +279,14 @@ class ChartOfAccountsSeeder extends Seeder
             // CLASE 4 - INGRESOS
             ['4', 'INGRESOS', 1],
             ['41', 'EXPENSOS Y SERVICIOS COMUNES (Sugiero eliminar antiguo OPERACIONALES, pues todo ingreso y gasto es Operacional)', 2],
+            ['4135', 'ACTIVIDADES DE PROPIEDAD HORIZONTAL', 3],
+            ['413501', 'CUOTAS ORDINARIAS DE ADMINISTRACIÓN', 4],
+            ['413502', 'CUOTAS EXTRAORDINARIAS', 4],
+            ['413503', 'PARQUEADEROS', 4],
+            ['413505', 'MULTAS Y SANCIONES', 4],
+            ['413506', 'INTERESES DE MORA', 4],
             ['4170', 'OTRAS ACTIVIDADES DE SERVICIOS COMUNITARIOS, SOCIALES Y PERSONALES', 3],
-            ['417005', 'CUOTAS DE ADMINISTRACIÓN', 4],
+            ['417005', 'CUOTAS DE ADMINISTRACIÓN (Antiguos Anticipos)', 4],
             ['417010', 'INTERESES DE MORA CUOTAS DE ADMINISTRACIÓN', 4],
             ['417015', 'CUOTA EXTRA PARA FACHADAS (Aunque recomiendo su manejo en el Grupo 28)', 4],
             ['417020', 'INTERESES DE MORA CUOTA EXTRA', 4],
@@ -463,7 +481,7 @@ class ChartOfAccountsSeeder extends Seeder
             $parentCode = $getParentCode($code);
 
             // Determine if account accepts posting (only level 4 and 5 for most accounts)
-            $acceptsPosting = in_array($level, [4, 5]) && !empty($name);
+            $acceptsPosting = in_array($level, [4, 5]) && ! empty($name);
 
             // Determine if requires third party (deudores and proveedores)
             $requiresThirdParty = in_array(substr($code, 0, 2), ['13', '23']) && $level >= 3;

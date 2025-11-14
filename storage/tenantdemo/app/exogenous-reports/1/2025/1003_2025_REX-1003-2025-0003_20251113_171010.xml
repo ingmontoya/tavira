@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InformacionExogena>
+  <Cabecera>
+    <TipoFormato>1003</TipoFormato>
+    <VersionFormato>1.0</VersionFormato>
+    <NumeroEnvio>1</NumeroEnvio>
+    <FechaEnvio>2025-11-13</FechaEnvio>
+    <FechaInicio>2025-01-01</FechaInicio>
+    <FechaFin>2025-12-31</FechaFin>
+    <Reportante>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900123456-7</NumeroIdentificacion>
+      <RazonSocial>Torres de Villa Campestre</RazonSocial>
+      <Direccion>Calle 123 #45-67</Direccion>
+      <Ciudad>Bogotá</Ciudad>
+    </Reportante>
+  </Cabecera>
+  <Items>
+    <Item>
+      <Secuencia>1</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>4000000.00</ValorPago>
+      <ValorRetencion>400000.00</ValorRetencion>
+      <BaseGravable>4000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>2</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>3</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>4</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>5</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>6</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>700000.00</ValorPago>
+      <ValorRetencion>70000.00</ValorRetencion>
+      <BaseGravable>700000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>7</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>3000000.00</ValorPago>
+      <ValorRetencion>300000.00</ValorRetencion>
+      <BaseGravable>3000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>8</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>500000.00</ValorPago>
+      <ValorRetencion>50000.00</ValorRetencion>
+      <BaseGravable>500000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>9</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>2500000.00</ValorPago>
+      <ValorRetencion>250000.00</ValorRetencion>
+      <BaseGravable>2500000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>10</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>3500000.00</ValorPago>
+      <ValorRetencion>350000.00</ValorRetencion>
+      <BaseGravable>3500000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>11</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1800000.00</ValorPago>
+      <ValorRetencion>180000.00</ValorRetencion>
+      <BaseGravable>1800000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>12</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>600000.00</ValorPago>
+      <ValorRetencion>60000.00</ValorRetencion>
+      <BaseGravable>600000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>13</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1900000.00</ValorPago>
+      <ValorRetencion>190000.00</ValorRetencion>
+      <BaseGravable>1900000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>14</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>15</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>000000000</NumeroIdentificacion>
+      <PrimerApellido>SOLUCIONES INTEGRALES ZEUS S.A.S</PrimerApellido>
+      <RazonSocial>SOLUCIONES INTEGRALES ZEUS S.A.S</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>16</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>31</CodigoConcepto>
+      <ValorPago>520000.00</ValorPago>
+      <ValorRetencion>20000.00</ValorRetencion>
+      <BaseGravable>500000.00</BaseGravable>
+      <TarifaRetencion>4.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>17</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>18</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>19</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>20</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>3000000.00</ValorPago>
+      <ValorRetencion>300000.00</ValorRetencion>
+      <BaseGravable>3000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>21</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>3000000.00</ValorPago>
+      <ValorRetencion>300000.00</ValorRetencion>
+      <BaseGravable>3000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>22</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>23</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>01234567</NumeroIdentificacion>
+      <PrimerApellido>ARNOVIS ANTONIO M.M</PrimerApellido>
+      <RazonSocial>ARNOVIS ANTONIO M.M</RazonSocial>
+      <Ciudad>Montería</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>24</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>1234569</NumeroIdentificacion>
+      <PrimerApellido>PEDRO PICAPIEDRA</PrimerApellido>
+      <RazonSocial>PEDRO PICAPIEDRA</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>31</CodigoConcepto>
+      <ValorPago>236000.00</ValorPago>
+      <ValorRetencion>36000.00</ValorRetencion>
+      <BaseGravable>200000.00</BaseGravable>
+      <TarifaRetencion>18.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>25</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>1234569</NumeroIdentificacion>
+      <PrimerApellido>PEDRO PICAPIEDRA</PrimerApellido>
+      <RazonSocial>PEDRO PICAPIEDRA</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>26</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>1234569</NumeroIdentificacion>
+      <PrimerApellido>PEDRO PICAPIEDRA</PrimerApellido>
+      <RazonSocial>PEDRO PICAPIEDRA</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>27</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>1234569</NumeroIdentificacion>
+      <PrimerApellido>PEDRO PICAPIEDRA</PrimerApellido>
+      <RazonSocial>PEDRO PICAPIEDRA</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>2000000.00</ValorPago>
+      <ValorRetencion>200000.00</ValorRetencion>
+      <BaseGravable>2000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>28</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>80021234563</NumeroIdentificacion>
+      <PrimerApellido>VIPERS LTDA.</PrimerApellido>
+      <RazonSocial>VIPERS LTDA.</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1210000.00</ValorPago>
+      <ValorRetencion>20000.00</ValorRetencion>
+      <BaseGravable>1190000.00</BaseGravable>
+      <TarifaRetencion>1.68</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>29</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900123456</NumeroIdentificacion>
+      <DigitoVerificacion>7</DigitoVerificacion>
+      <PrimerApellido>kevin lomas</PrimerApellido>
+      <RazonSocial>kevin lomas</RazonSocial>
+      <Ciudad>Bogotá</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>30</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900123456</NumeroIdentificacion>
+      <DigitoVerificacion>7</DigitoVerificacion>
+      <PrimerApellido>kevin lomas</PrimerApellido>
+      <RazonSocial>kevin lomas</RazonSocial>
+      <Ciudad>Bogotá</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>3000000.00</ValorPago>
+      <ValorRetencion>300000.00</ValorRetencion>
+      <BaseGravable>3000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>31</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900123456</NumeroIdentificacion>
+      <DigitoVerificacion>7</DigitoVerificacion>
+      <PrimerApellido>kevin lomas</PrimerApellido>
+      <RazonSocial>kevin lomas</RazonSocial>
+      <Ciudad>Bogotá</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>3000000.00</ValorPago>
+      <ValorRetencion>300000.00</ValorRetencion>
+      <BaseGravable>3000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>32</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>33</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>34</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>100000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>35</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>1000000.00</ValorPago>
+      <ValorRetencion>20000.00</ValorRetencion>
+      <BaseGravable>1000000.00</BaseGravable>
+      <TarifaRetencion>2.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>36</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>500000.00</ValorPago>
+      <ValorRetencion>50000.00</ValorRetencion>
+      <BaseGravable>500000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>37</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>30</CodigoConcepto>
+      <ValorPago>500000.00</ValorPago>
+      <ValorRetencion>50000.00</ValorRetencion>
+      <BaseGravable>500000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>38</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>900875126320</NumeroIdentificacion>
+      <PrimerApellido>SIEMPRE LIMPIO S.A.S</PrimerApellido>
+      <RazonSocial>SIEMPRE LIMPIO S.A.S</RazonSocial>
+      <Ciudad>Barranquilla</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>500000.00</ValorPago>
+      <ValorRetencion>50000.00</ValorRetencion>
+      <BaseGravable>500000.00</BaseGravable>
+      <TarifaRetencion>10.00</TarifaRetencion>
+    </Item>
+    <Item>
+      <Secuencia>39</Secuencia>
+      <TipoDocumento>NIT</TipoDocumento>
+      <NumeroIdentificacion>90125648521</NumeroIdentificacion>
+      <PrimerApellido>AFINIA</PrimerApellido>
+      <RazonSocial>AFINIA</RazonSocial>
+      <Ciudad>Cartagena</Ciudad>
+      <CodigoConcepto>28</CodigoConcepto>
+      <ValorPago>119000.00</ValorPago>
+      <ValorRetencion>19000.00</ValorRetencion>
+      <BaseGravable>100000.00</BaseGravable>
+      <TarifaRetencion>19.00</TarifaRetencion>
+    </Item>
+  </Items>
+  <Resumen>
+    <TotalRegistros>39</TotalRegistros>
+    <TotalPagos>60085000.00</TotalPagos>
+    <TotalRetenciones>5815000.00</TotalRetenciones>
+  </Resumen>
+</InformacionExogena>

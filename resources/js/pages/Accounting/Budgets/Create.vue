@@ -121,10 +121,11 @@ const breadcrumbs = [
 </script>
 
 <template>
+
     <Head title="Nuevo Presupuesto" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container mx-auto max-w-4xl px-4 py-8">
+        <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
             <!-- Header -->
             <div class="mb-8 flex items-center justify-between">
                 <div class="space-y-1">
@@ -133,10 +134,10 @@ const breadcrumbs = [
                 </div>
                 <div class="flex items-center gap-3">
                     <Link :href="route('accounting.budgets.index')">
-                        <Button variant="outline" class="gap-2">
-                            <ArrowLeft class="h-4 w-4" />
-                            Volver
-                        </Button>
+                    <Button variant="outline" class="gap-2">
+                        <ArrowLeft class="h-4 w-4" />
+                        Volver
+                    </Button>
                     </Link>
                 </div>
             </div>
@@ -159,12 +160,8 @@ const breadcrumbs = [
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="name">Nombre del Presupuesto *</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    placeholder="Ej: Presupuesto 2024"
-                                    :class="{ 'border-red-500': form.errors.name }"
-                                />
+                                <Input id="name" v-model="form.name" placeholder="Ej: Presupuesto 2024"
+                                    :class="{ 'border-red-500': form.errors.name }" />
                                 <p v-if="form.errors.name" class="text-sm text-red-600">
                                     {{ form.errors.name }}
                                 </p>
@@ -192,7 +189,8 @@ const breadcrumbs = [
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="start_date">Fecha de Inicio *</Label>
-                                <Input id="start_date" v-model="form.start_date" type="date" :class="{ 'border-red-500': form.errors.start_date }" />
+                                <Input id="start_date" v-model="form.start_date" type="date"
+                                    :class="{ 'border-red-500': form.errors.start_date }" />
                                 <p v-if="form.errors.start_date" class="text-sm text-red-600">
                                     {{ form.errors.start_date }}
                                 </p>
@@ -200,7 +198,8 @@ const breadcrumbs = [
 
                             <div class="space-y-2">
                                 <Label for="end_date">Fecha de Fin *</Label>
-                                <Input id="end_date" v-model="form.end_date" type="date" :class="{ 'border-red-500': form.errors.end_date }" />
+                                <Input id="end_date" v-model="form.end_date" type="date"
+                                    :class="{ 'border-red-500': form.errors.end_date }" />
                                 <p v-if="form.errors.end_date" class="text-sm text-red-600">
                                     {{ form.errors.end_date }}
                                 </p>
@@ -210,13 +209,9 @@ const breadcrumbs = [
                         <!-- Description -->
                         <div class="space-y-2">
                             <Label for="description">Descripción</Label>
-                            <Textarea
-                                id="description"
-                                v-model="form.description"
+                            <Textarea id="description" v-model="form.description"
                                 placeholder="Descripción del presupuesto y objetivos..."
-                                :class="{ 'border-red-500': form.errors.description }"
-                                rows="3"
-                            />
+                                :class="{ 'border-red-500': form.errors.description }" rows="3" />
                             <p v-if="form.errors.description" class="text-sm text-red-600">
                                 {{ form.errors.description }}
                             </p>

@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notification;
 
 class SupportMessageReceived extends Notification implements ShouldQueue
 {
-    use Queueable, GeneratesTenantUrls;
+    use GeneratesTenantUrls, Queueable;
 
     public function __construct(
         private SupportTicket $ticket,

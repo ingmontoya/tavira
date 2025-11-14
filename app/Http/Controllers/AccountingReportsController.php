@@ -50,6 +50,11 @@ class AccountingReportsController extends Controller
                     'description' => 'Entradas y salidas de efectivo',
                     'icon' => 'dollar',
                 ],
+                'exogenous-reports' => [
+                    'name' => 'Información Exógena',
+                    'description' => 'Reportes para la DIAN (formatos 1001, 1003, 1005, 1647)',
+                    'icon' => 'file',
+                ],
             ],
         ]);
     }
@@ -246,11 +251,12 @@ class AccountingReportsController extends Controller
         $endDate = $validated['end_date'] ?? now()->toDateString();
 
         // Income - Usar contabilidad por causación (base devengado)
-        $income = $this->getAccountBalances($conjunto->id, 'income', $startDate, $endDate);
+        // Excluir transacciones de cierre contable para evitar saldos negativos
+        $income = $this->getAccountBalances($conjunto->id, 'income', $startDate, $endDate, true);
         $totalIncome = array_sum(array_column($income, 'balance'));
 
-        // Expenses
-        $expenses = $this->getAccountBalances($conjunto->id, 'expense', $startDate, $endDate);
+        // Expenses - Excluir transacciones de cierre contable
+        $expenses = $this->getAccountBalances($conjunto->id, 'expense', $startDate, $endDate, true);
         $totalExpenses = array_sum(array_column($expenses, 'balance'));
 
         $netIncome = $totalIncome - $totalExpenses;
@@ -737,13 +743,13 @@ class AccountingReportsController extends Controller
         return $account->getBalance(null, $asOfDate);
     }
 
-    private function getAccountBalances(int $conjuntoConfigId, string $accountType, ?string $startDate = null, ?string $endDate = null)
+    private function getAccountBalances(int $conjuntoConfigId, string $accountType, ?string $startDate = null, ?string $endDate = null, bool $excludeClosingEntries = false)
     {
         return ChartOfAccounts::forConjunto($conjuntoConfigId)
             ->byType($accountType)
             ->active()
-            ->with(['transactionEntries' => function ($query) use ($startDate, $endDate) {
-                $query->whereHas('transaction', function ($q) use ($startDate, $endDate) {
+            ->with(['transactionEntries' => function ($query) use ($startDate, $endDate, $excludeClosingEntries) {
+                $query->whereHas('transaction', function ($q) use ($startDate, $endDate, $excludeClosingEntries) {
                     $q->where('status', 'contabilizado');
 
                     if ($startDate) {
@@ -753,12 +759,22 @@ class AccountingReportsController extends Controller
                     if ($endDate) {
                         $q->where('transaction_date', '<=', $endDate);
                     }
+
+                    // Excluir transacciones de cierre contable si se solicita
+                    if ($excludeClosingEntries) {
+                        $q->where('reference_type', '!=', 'accounting_closure');
+                    }
                 });
             }])
             ->orderBy('code')
             ->get()
-            ->map(function ($account) use ($startDate, $endDate) {
-                $balance = $account->getBalance($startDate, $endDate);
+            ->map(function ($account) use ($startDate, $endDate, $excludeClosingEntries) {
+                // Calcular balance excluyendo cierres contables si se solicita
+                if ($excludeClosingEntries) {
+                    $balance = $this->getBalanceExcludingClosures($account, $startDate, $endDate);
+                } else {
+                    $balance = $account->getBalance($startDate, $endDate);
+                }
 
                 return [
                     'id' => $account->id,
@@ -773,6 +789,31 @@ class AccountingReportsController extends Controller
             ->filter(fn ($account) => $account['balance'] != 0)
             ->values()
             ->toArray(); // Convierte Collection a array PHP
+    }
+
+    /**
+     * Calcula el balance de una cuenta excluyendo transacciones de cierre contable
+     */
+    private function getBalanceExcludingClosures(ChartOfAccounts $account, ?string $startDate = null, ?string $endDate = null): float
+    {
+        $query = $account->transactionEntries()
+            ->whereHas('transaction', function ($q) use ($startDate, $endDate) {
+                $q->where('status', 'contabilizado')
+                    ->where('reference_type', '!=', 'accounting_closure');
+
+                if ($startDate) {
+                    $q->where('transaction_date', '>=', $startDate);
+                }
+
+                if ($endDate) {
+                    $q->where('transaction_date', '<=', $endDate);
+                }
+            });
+
+        $debits = $query->sum('debit_amount');
+        $credits = $query->sum('credit_amount');
+
+        return $account->nature === 'debit' ? $debits - $credits : $credits - $debits;
     }
 
     private function getMonthName(int $month): string

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class ResetDatabaseSequences extends Command
 {
@@ -57,6 +56,7 @@ class ResetDatabaseSequences extends Command
     {
         if (! class_exists(\Stancl\Tenancy\Facades\Tenancy::class)) {
             $this->error('Tenancy package not installed');
+
             return Command::FAILURE;
         }
 
@@ -104,6 +104,7 @@ class ResetDatabaseSequences extends Command
 
             if (! $primaryKey) {
                 $this->warn("⚠️  Table '{$table}' has no primary key, skipping...");
+
                 return;
             }
 
@@ -116,6 +117,7 @@ class ResetDatabaseSequences extends Command
             if (! $maxId) {
                 // Table is empty, reset to 1
                 DB::statement("ALTER SEQUENCE {$sequenceName} RESTART WITH 1");
+
                 return;
             }
 
@@ -148,7 +150,7 @@ class ResetDatabaseSequences extends Command
             "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
         );
 
-        return array_map(fn($table) => $table->tablename, $tables);
+        return array_map(fn ($table) => $table->tablename, $tables);
     }
 
     /**
@@ -156,12 +158,12 @@ class ResetDatabaseSequences extends Command
      */
     protected function getPrimaryKey(string $table): ?string
     {
-        $result = DB::selectOne("
+        $result = DB::selectOne('
             SELECT a.attname
             FROM pg_index i
             JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
             WHERE i.indrelid = ?::regclass AND i.indisprimary
-        ", [$table]);
+        ', [$table]);
 
         return $result->attname ?? null;
     }

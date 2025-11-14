@@ -79,7 +79,7 @@ class SyncChartOfAccounts extends Command
         $conjuntos = ConjuntoConfig::all();
 
         if ($conjuntos->isEmpty()) {
-            $this->warn("  └─ Sin conjuntos configurados. Saltando...");
+            $this->warn('  └─ Sin conjuntos configurados. Saltando...');
             tenancy()->end();
 
             return;
@@ -94,6 +94,7 @@ class SyncChartOfAccounts extends Command
             if ($existingAccounts > 0 && ! $this->option('force')) {
                 $this->line("  └─ Conjunto '{$conjunto->name}' (ID: {$conjunto->id}): {$existingAccounts} cuentas existentes. Saltando...");
                 $skipped++;
+
                 continue;
             }
 

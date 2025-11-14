@@ -190,7 +190,7 @@ class BudgetExecution extends Model
         $category = $this->budgetItem->category;
 
         $entries = AccountingTransactionEntry::whereHas('transaction', function ($query) {
-            $query->where('status', 'posted')
+            $query->where('status', 'contabilizado')
                 ->whereMonth('transaction_date', $this->period_month)
                 ->whereYear('transaction_date', $this->period_year);
         })

@@ -41,3 +41,5 @@ k8s/deployed/laravel-env-secret.yaml
 k8s/deployed/*-secret.yaml
 !k8s/deployed/*-secret-template.yaml
 
+
+crm

@@ -42,7 +42,7 @@ class ReconciliationController extends Controller
         // Get transactions for the period
         $transactions = AccountingTransactionEntry::with(['transaction'])
             ->whereHas('transaction', function ($query) use ($startDate, $endDate) {
-                $query->where('status', 'posted')
+                $query->where('status', 'contabilizado')
                     ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
             ->where('account_id', $account->id)
@@ -154,7 +154,7 @@ class ReconciliationController extends Controller
         $reconciliationData = [];
         foreach ($bankAccounts as $account) {
             $entries = AccountingTransactionEntry::whereHas('transaction', function ($query) use ($startDate, $endDate) {
-                $query->where('status', 'posted')
+                $query->where('status', 'contabilizado')
                     ->whereBetween('transaction_date', [$startDate, $endDate]);
             })
                 ->where('account_id', $account->id)
