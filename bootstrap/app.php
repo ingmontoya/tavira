@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AuditLogMiddleware;
+use App\Http\Middleware\CheckProviderPlan;
 use App\Http\Middleware\EnsureCanCreateMultipleConjuntos;
 use App\Http\Middleware\EnsureConjuntoConfigured;
 use App\Http\Middleware\EnsureUserIsCompany;
@@ -82,6 +83,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'multiple.conjuntos' => EnsureCanCreateMultipleConjuntos::class,
             'redirect.if.subscribed' => RedirectIfSubscribed::class,
             'requires.feature' => RequiresFeature::class,
+            'check.provider.plan' => CheckProviderPlan::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
