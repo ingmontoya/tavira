@@ -131,6 +131,11 @@ data:
             # Use root from map based on domain type
             root $app_root;
 
+            # For POST requests, always go to PHP
+            if ($request_method = POST) {
+                rewrite ^ /index.php last;
+            }
+
             # Try to serve file directly, then directory, then fallback
             try_files $uri $uri/ /index.html /index.php?$query_string;
         }
