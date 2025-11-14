@@ -28,6 +28,21 @@ data:
         "" $remote_addr;
     }
 
+    # Detect if this is the main domain (landing) vs tenant subdomain
+    # Main domains: tavira.com.co
+    # Tenant domains: *.tavira.com.co
+    map $forwarded_host $is_main_domain {
+        default 0;
+        "tavira.com.co" 1;
+        "~^(www\.)?tavira\.com\.co$" 1;
+    }
+
+    # Map to set root directory based on domain type
+    map $is_main_domain $app_root {
+        default "/var/www/html/public";
+        1 "/var/www/html/public/landing";
+    }
+
     server {
         listen 80;
         listen [::]:80;
@@ -70,8 +85,26 @@ data:
             add_header Content-Type text/plain;
         }
 
+        # Laravel assets - must be served from Laravel public directory
+        # Use ^~ to prevent regex locations from matching (higher priority)
+        location ^~ /build/ {
+            alias /var/www/html/public/build/;
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            access_log off;
+        }
+
+        # Laravel images - serve from Laravel public directory
+        location ^~ /img/ {
+            alias /var/www/html/public/img/;
+            expires 7d;
+            add_header Cache-Control "public";
+            access_log off;
+        }
+
         # Static files - cache for 1 year
         location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
+            root $app_root;  # Use correct root based on domain type
             expires 1y;
             add_header Cache-Control "public, immutable";
             access_log off;
@@ -85,9 +118,20 @@ data:
             log_not_found off;
         }
 
-        # Main location - route everything through index.php
-        location / {
+        # Laravel routes that must be accessible from main domain
+        location ~ ^/(login|register|logout|password|verification|provider-register|admin|app|dashboard|subscription|api|tenants|tenant-features|tenant-management) {
+            # Force Laravel root even for main domain
+            root /var/www/html/public;
             try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        # Main location - serve landing for main domain, Laravel for tenant subdomains
+        location / {
+            # Use root from map based on domain type
+            root $app_root;
+
+            # Try to serve file directly, then directory, then fallback
+            try_files $uri $uri/ /index.html /index.php?$query_string;
         }
 
         # PHP-FPM processing
