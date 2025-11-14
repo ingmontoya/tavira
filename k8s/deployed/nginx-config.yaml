@@ -119,7 +119,8 @@ data:
         }
 
         # Laravel routes that must be accessible from main domain
-        location ~ ^/(login|register|logout|password|verification|provider-register|admin|app|dashboard|subscription|api|tenants|tenant-features|tenant-management) {
+        # Match any route that should be handled by Laravel, not the landing
+        location ~ ^/(login|register|logout|password|verification|provider-register|admin|app|dashboard|subscription|api|tenants|tenant-features|tenant-management|profile|settings|docs|support|user) {
             # Force Laravel root even for main domain
             root /var/www/html/public;
             try_files $uri $uri/ /index.php?$query_string;
