@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_active',
         'avatar',
         'tenant_id',
+        'provider_id',
         'requires_subscription',
         'subscription_required_at',
     ];
@@ -149,6 +150,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Get the provider profile associated with this user.
+     */
+    public function provider()
+    {
+        return $this->belongsTo(\App\Models\Central\Provider::class);
     }
 
     /**
