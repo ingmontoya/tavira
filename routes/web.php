@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Public API endpoint for Nuxt landing form (available on all domains)
+Route::post('/api/leads/create', [App\Http\Controllers\LandingController::class, 'submitContactoFormApi'])
+    ->name('api.leads.create');
+
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
         // your actual routes
@@ -18,6 +22,13 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/security', function () {
             return Inertia::render('Security');
         })->name('security.page');
+
+        // Landing Pages
+        Route::get('/contacto', [App\Http\Controllers\LandingController::class, 'contacto'])
+            ->name('landing.contacto');
+
+        Route::post('/contacto/submit', [App\Http\Controllers\LandingController::class, 'submitContactoForm'])
+            ->name('landing.contacto.submit');
 
         Route::get('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
             ->name('provider-register');

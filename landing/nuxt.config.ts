@@ -70,7 +70,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     prerender: {
       crawlLinks: true,
-      routes: ['/']
+      routes: ['/', '/contacto', '/features', '/security', '/red-tavira']
     }
   },
 
@@ -81,6 +81,12 @@ export default defineNuxtConfig({
 
   // Runtime config
   runtimeConfig: {
+    // Private keys (server-side only)
+    perfexBaseUrl: process.env.PERFEX_BASE_URL || 'https://perfexcrm.themesic.com',
+    perfexApiUser: process.env.PERFEX_API_USER || 'precontactos',
+    perfexApiToken: process.env.PERFEX_API_TOKEN || '',
+
+    // Public keys (exposed to client)
     public: {
       siteUrl: 'https://tavira.com.co',
       siteName: 'Tavira',
