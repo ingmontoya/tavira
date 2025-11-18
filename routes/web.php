@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Public API endpoint for Nuxt landing form (available on all domains)
+Route::post('/api/leads/create', [App\Http\Controllers\LandingController::class, 'submitContactoFormApi'])
+    ->name('api.leads.create');
+
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
         // your actual routes
@@ -18,6 +22,13 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/security', function () {
             return Inertia::render('Security');
         })->name('security.page');
+
+        // Landing Pages
+        Route::get('/contacto', [App\Http\Controllers\LandingController::class, 'contacto'])
+            ->name('landing.contacto');
+
+        Route::post('/contacto/submit', [App\Http\Controllers\LandingController::class, 'submitContactoForm'])
+            ->name('landing.contacto.submit');
 
         Route::get('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
             ->name('provider-register');
@@ -62,28 +73,36 @@ foreach (config('tenancy.central_domains') as $domain) {
 
             // Provider Routes (for authenticated providers)
             Route::middleware('role:provider')->prefix('provider')->name('provider.')->group(function () {
-                // Dashboard
-                Route::get('/dashboard', [App\Http\Controllers\Provider\ProviderDashboardController::class, 'index'])
-                    ->name('dashboard');
+                // Pricing page (no middleware check.provider.plan)
+                Route::get('/pricing', [App\Http\Controllers\Provider\PricingController::class, 'index'])->name('pricing');
+                Route::post('/pricing-viewed', [App\Http\Controllers\Provider\PricingController::class, 'markAsViewed'])->name('pricing-viewed');
+                Route::post('/subscribe', [App\Http\Controllers\Provider\PricingController::class, 'subscribe'])->name('subscribe');
 
-                // Service Catalog Management
-                Route::resource('services', App\Http\Controllers\Provider\ProviderServiceController::class);
-                Route::post('/services/{service}/toggle-status', [App\Http\Controllers\Provider\ProviderServiceController::class, 'toggleStatus'])
-                    ->name('services.toggle-status');
+                // Routes that require pricing check
+                Route::middleware('check.provider.plan')->group(function () {
+                    // Dashboard
+                    Route::get('/dashboard', [App\Http\Controllers\Provider\ProviderDashboardController::class, 'index'])
+                        ->name('dashboard');
 
-                // Quotation Requests
-                Route::prefix('quotations')->name('quotations.')->group(function () {
-                    Route::get('/', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'index'])
-                        ->name('index');
-                    Route::get('/{tenantId}/{quotationRequestId}', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'show'])
-                        ->name('show');
-                    Route::post('/{tenantId}/{quotationRequestId}/respond', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'respond'])
-                        ->name('respond');
+                    // Service Catalog Management
+                    Route::resource('services', App\Http\Controllers\Provider\ProviderServiceController::class);
+                    Route::post('/services/{service}/toggle-status', [App\Http\Controllers\Provider\ProviderServiceController::class, 'toggleStatus'])
+                        ->name('services.toggle-status');
+
+                    // Quotation Requests
+                    Route::prefix('quotations')->name('quotations.')->group(function () {
+                        Route::get('/', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'index'])
+                            ->name('index');
+                        Route::get('/{tenantId}/{quotationRequestId}', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'show'])
+                            ->name('show');
+                        Route::post('/{tenantId}/{quotationRequestId}/respond', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'respond'])
+                            ->name('respond');
+                    });
+
+                    // Proposals History
+                    Route::get('/proposals', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'proposals'])
+                        ->name('quotations.proposals');
                 });
-
-                // Proposals History
-                Route::get('/proposals', [App\Http\Controllers\Provider\ProviderQuotationController::class, 'proposals'])
-                    ->name('quotations.proposals');
             });
         });
 

@@ -124,7 +124,12 @@ class ProviderDashboardController extends Controller
         ];
 
         return Inertia::render('Provider/Dashboard', [
-            'provider' => $provider,
+            'provider' => array_merge($provider->toArray(), [
+                'subscription_plan' => $provider->subscription_plan,
+                'leads_used_this_month' => $provider->leads_used_this_month,
+                'leads_remaining' => $provider->leads_remaining,
+                'has_seen_pricing' => $provider->has_seen_pricing,
+            ]),
             'stats' => $stats,
             'recentRequests' => $recentRequests,
             'recentProposals' => $recentProposals,

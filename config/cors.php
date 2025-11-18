@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'register', 'logout', 'maintenance-requests/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'register', 'logout', 'maintenance-requests/*', 'provider-register', 'provider/*'],
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
@@ -25,6 +25,9 @@ return [
             'https://127.0.0.1:8000',
             'http://localhost:8000',
             'http://127.0.0.1:8000',
+            'http://localhost:8083',
+            'http://127.0.0.1:8083',
+            'http://192.168.1.21:8083',
             'http://localhost:3001',
             'http://127.0.0.1:3000',
             'http://localhost:5173',

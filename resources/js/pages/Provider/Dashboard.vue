@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
+import UpgradePlanBanner from '@/components/Provider/UpgradePlanBanner.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { Calendar, Clock, Eye, FileText, Package, Plus, TrendingUp } from 'lucide-vue-next';
 
@@ -12,6 +13,10 @@ interface Provider {
     email: string;
     phone: string;
     categories: Array<{ id: number; name: string }>;
+    subscription_plan?: string;
+    leads_used_this_month?: number;
+    leads_remaining?: number;
+    has_seen_pricing?: boolean;
 }
 
 interface Stats {
@@ -102,6 +107,14 @@ const getStatusBadge = (status: string) => {
                     </Button>
                 </Link>
             </div>
+
+            <!-- Upgrade Banner -->
+            <UpgradePlanBanner
+                :current-plan="provider.subscription_plan"
+                :leads-used="provider.leads_used_this_month"
+                :leads-limit="provider.leads_remaining"
+                :has-seen-pricing="provider.has_seen_pricing"
+            />
 
             <!-- Stats Cards -->
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
