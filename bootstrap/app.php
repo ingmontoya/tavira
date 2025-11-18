@@ -51,6 +51,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // Exclude only public landing form endpoint from CSRF protection
+        // Mobile app and other API endpoints should use Sanctum tokens
+        $middleware->validateCsrfTokens(except: [
+            'api/leads/create', // Public landing page form submission
+        ]);
+
         $middleware->web(prepend: [
             TrustProxies::class, // Must be first to handle X-Forwarded-* headers
         ]);
