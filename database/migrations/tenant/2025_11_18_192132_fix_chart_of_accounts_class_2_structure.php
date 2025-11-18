@@ -160,7 +160,7 @@ return new class extends Migration
             if ($account) {
                 // Check if account has transactions
                 $hasTransactions = DB::table('accounting_transaction_entries')
-                    ->where('chart_of_account_id', $account->id)
+                    ->where('account_id', $account->id)
                     ->exists();
 
                 if (! $hasTransactions) {
@@ -198,8 +198,8 @@ return new class extends Migration
         if ($newAccount) {
             // Update all transaction entries
             DB::table('accounting_transaction_entries')
-                ->where('chart_of_account_id', $oldAccount->id)
-                ->update(['chart_of_account_id' => $newAccount->id]);
+                ->where('account_id', $oldAccount->id)
+                ->update(['account_id' => $newAccount->id]);
 
             // Update budget items if any
             DB::table('budget_items')
