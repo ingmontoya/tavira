@@ -160,7 +160,7 @@ return new class extends Migration
             if ($account) {
                 // Check if account has transactions
                 $hasTransactions = DB::table('accounting_transaction_entries')
-                    ->where('chart_of_account_id', $account->id)
+                    ->where('account_id', $account->id)
                     ->exists();
 
                 if (! $hasTransactions) {
@@ -198,8 +198,8 @@ return new class extends Migration
         if ($newAccount) {
             // Update all transaction entries
             DB::table('accounting_transaction_entries')
-                ->where('chart_of_account_id', $oldAccount->id)
-                ->update(['chart_of_account_id' => $newAccount->id]);
+                ->where('account_id', $oldAccount->id)
+                ->update(['account_id' => $newAccount->id]);
 
             // Update budget items if any
             DB::table('budget_items')
@@ -217,17 +217,13 @@ return new class extends Migration
     private function addMissingAccounts(int $conjuntoConfigId): void
     {
         $missingAccounts = [
-            // Activos - Subcuentas de bancos
+            // Activos - Subcuentas de bancos (nivel 5 - 8 dígitos)
             ['11100501', 'NOMBRE DEL BANCO NUMERO Y TIPO DE CUENTA', '111005', 5, 'asset', 'debit'],
             ['11200501', 'NOMBRE DEL BANCO NUMERO Y TIPO DE CUENTA', '112005', 5, 'asset', 'debit'],
 
             // Activos - Subcuentas de zonas comunes en deudores
-            ['1305053005', 'SALON SOCIAL', '13050530', 6, 'asset', 'debit'],
-            ['1305053010', 'PARQUEADEROS', '13050530', 6, 'asset', 'debit'],
-            ['1305053015', 'PISCINAS', '13050530', 6, 'asset', 'debit'],
-            ['1305053020', 'GIMNASIOS', '13050530', 6, 'asset', 'debit'],
-            ['1305053025', 'ZONA BBQ', '13050530', 6, 'asset', 'debit'],
-            ['1305053030', 'CANCHAS DEPORTIVAS', '13050530', 6, 'asset', 'debit'],
+            // Nota: No agregamos subcuentas adicionales porque 13050530 ya existe como
+            // "USO ZONAS COMUNES" y sirve para todas las zonas comunes
 
             // Activos - Deterioro de cartera
             ['139905', 'PROPIETARIOS Y/O RESIDENTES', '1399', 4, 'asset', 'debit'],
@@ -248,13 +244,6 @@ return new class extends Migration
             ['23353580', 'EXTINTORES', '233535', 5, 'liability', 'credit'],
             ['23353585', 'FUMIGACIÓN Y ROEDORES', '233535', 5, 'liability', 'credit'],
             ['23353590', 'MANTENIMIENTO CUBIERTAS Y FACHADAS', '233535', 5, 'liability', 'credit'],
-
-            // Ingresos - Subcuentas de zonas comunes
-            ['41703010', 'PARQUEADEROS', '417030', 5, 'income', 'credit'],
-            ['41703015', 'PISCINAS', '417030', 5, 'income', 'credit'],
-            ['41703020', 'GIMNASIO', '417030', 5, 'income', 'credit'],
-            ['41703025', 'ZONA BBQ', '417030', 5, 'income', 'credit'],
-            ['41703030', 'CANCHAS DEPORTIVAS', '417030', 5, 'income', 'credit'],
 
             // Ingresos - Cuentas faltantes
             ['417060', 'REINTEGRO DE OTROS COSTOS Y GASTOS', '4170', 4, 'income', 'credit'],
@@ -300,7 +289,7 @@ return new class extends Migration
                 'is_active' => true,
                 'requires_third_party' => $requiresThirdParty,
                 'nature' => $nature,
-                'accepts_posting' => in_array($level, [4, 5, 6]),
+                'accepts_posting' => in_array($level, [4, 5]),
             ]);
         }
     }
@@ -318,7 +307,6 @@ return new class extends Migration
             4 => 3,
             6 => 4,
             8 => 5,
-            10 => 6,
             default => 1,
         };
     }
