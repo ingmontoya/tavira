@@ -302,9 +302,12 @@ const table = useVueTable({
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // Disable client-side pagination - we're using server-side pagination
+    manualPagination: true,
+    // Disable client-side sorting - could be server-side later if needed
+    manualSorting: true,
+    // Disable client-side filtering - we're using server-side filtering
+    manualFiltering: true,
     getExpandedRowModel: getExpandedRowModel(),
     onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
     onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
@@ -406,6 +409,7 @@ const exportAccounts = () => {
                                 v-model="customFilters.search"
                                 placeholder="Buscar por código, nombre de cuenta, descripción..."
                                 class="max-w-md pl-10"
+                                @keyup.enter="applyFilters"
                             />
                         </div>
                     </div>
