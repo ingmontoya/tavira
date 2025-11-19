@@ -78,13 +78,35 @@ const uniqueAccountTypes = computed(() => {
 });
 
 const uniqueStatuses = computed(() => {
-    return ['Active', 'Inactive'];
+    return ['active', 'inactive'];
 });
 
 // Check if custom filters are active
 const hasActiveCustomFilters = computed(() => {
     return Object.values(customFilters.value).some((value) => value !== '' && value !== 'all');
 });
+
+// Apply filters - send to server
+const applyFilters = () => {
+    const filters: Record<string, any> = {};
+
+    if (customFilters.value.search) {
+        filters.search = customFilters.value.search;
+    }
+
+    if (customFilters.value.account_type !== 'all') {
+        filters.account_type = customFilters.value.account_type;
+    }
+
+    if (customFilters.value.status !== 'all') {
+        filters.status = customFilters.value.status;
+    }
+
+    router.get('/accounting/chart-of-accounts', filters, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
 
 // Clear custom filters
 const clearCustomFilters = () => {
@@ -95,6 +117,11 @@ const clearCustomFilters = () => {
     };
     // Also clear table filters
     table.getColumn('name')?.setFilterValue('');
+    // Apply cleared filters
+    router.get('/accounting/chart-of-accounts', {}, {
+        preserveState: true,
+        preserveScroll: true,
+    });
 };
 
 // Create default accounts
@@ -139,35 +166,8 @@ const syncAccounts = () => {
     );
 };
 
-// Apply custom filters to data
-const filteredData = computed(() => {
-    let filtered = data;
-
-    // Search filter
-    if (customFilters.value.search) {
-        const searchTerm = customFilters.value.search.toLowerCase();
-        filtered = filtered.filter(
-            (account) =>
-                account.code?.toLowerCase().includes(searchTerm) ||
-                account.name?.toLowerCase().includes(searchTerm) ||
-                account.description?.toLowerCase().includes(searchTerm) ||
-                account.parent_account?.name?.toLowerCase().includes(searchTerm),
-        );
-    }
-
-    // Account type filter
-    if (customFilters.value.account_type !== 'all') {
-        filtered = filtered.filter((account) => account.account_type === customFilters.value.account_type);
-    }
-
-    // Status filter
-    if (customFilters.value.status !== 'all') {
-        const isActive = customFilters.value.status === 'Active';
-        filtered = filtered.filter((account) => account.is_active === isActive);
-    }
-
-    return filtered;
-});
+// Server-side filtering is handled by the backend
+// All filters are applied via applyFilters() which makes a server request
 
 const columnHelper = createColumnHelper<ChartOfAccount>();
 
@@ -298,7 +298,7 @@ const expanded = ref<ExpandedState>({});
 
 const table = useVueTable({
     get data() {
-        return filteredData.value;
+        return data;
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -437,8 +437,8 @@ const exportAccounts = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos los estados</SelectItem>
-                                    <SelectItem value="Active">Activa</SelectItem>
-                                    <SelectItem value="Inactive">Inactiva</SelectItem>
+                                    <SelectItem value="active">Activa</SelectItem>
+                                    <SelectItem value="inactive">Inactiva</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -446,11 +446,17 @@ const exportAccounts = () => {
 
                     <!-- Botones de acción -->
                     <div class="flex items-center justify-between">
-                        <Button variant="outline" @click="clearCustomFilters" v-if="hasActiveCustomFilters">
-                            <X class="mr-2 h-4 w-4" />
-                            Limpiar filtros
-                        </Button>
-                        <div class="text-sm text-muted-foreground">Mostrando {{ filteredData.length }} de {{ data.length }} cuentas</div>
+                        <div class="flex gap-2">
+                            <Button @click="applyFilters">
+                                <Search class="mr-2 h-4 w-4" />
+                                Buscar
+                            </Button>
+                            <Button variant="outline" @click="clearCustomFilters" v-if="hasActiveCustomFilters">
+                                <X class="mr-2 h-4 w-4" />
+                                Limpiar filtros
+                            </Button>
+                        </div>
+                        <div class="text-sm text-muted-foreground">Mostrando {{ props.accounts.from }} - {{ props.accounts.to }} de {{ props.accounts.total }} cuentas</div>
                     </div>
                 </div>
             </Card>

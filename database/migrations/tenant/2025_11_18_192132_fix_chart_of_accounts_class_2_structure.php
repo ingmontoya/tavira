@@ -221,9 +221,13 @@ return new class extends Migration
             ['11100501', 'NOMBRE DEL BANCO NUMERO Y TIPO DE CUENTA', '111005', 5, 'asset', 'debit'],
             ['11200501', 'NOMBRE DEL BANCO NUMERO Y TIPO DE CUENTA', '112005', 5, 'asset', 'debit'],
 
-            // Activos - Subcuentas de zonas comunes en deudores
-            // Nota: No agregamos subcuentas adicionales porque 13050530 ya existe como
-            // "USO ZONAS COMUNES" y sirve para todas las zonas comunes
+            // Activos - Subcuentas de zonas comunes en deudores (nivel 6 - 10 dígitos)
+            ['1305053005', 'SALON SOCIAL', '13050530', 6, 'asset', 'debit'],
+            ['1305053010', 'PARQUEADEROS', '13050530', 6, 'asset', 'debit'],
+            ['1305053015', 'PISCINAS', '13050530', 6, 'asset', 'debit'],
+            ['1305053020', 'GIMNASIOS', '13050530', 6, 'asset', 'debit'],
+            ['1305053025', 'ZONA BBQ', '13050530', 6, 'asset', 'debit'],
+            ['1305053030', 'CANCHAS DEPORTIVAS', '13050530', 6, 'asset', 'debit'],
 
             // Activos - Deterioro de cartera
             ['139905', 'PROPIETARIOS Y/O RESIDENTES', '1399', 4, 'asset', 'debit'],
@@ -244,6 +248,13 @@ return new class extends Migration
             ['23353580', 'EXTINTORES', '233535', 5, 'liability', 'credit'],
             ['23353585', 'FUMIGACIÓN Y ROEDORES', '233535', 5, 'liability', 'credit'],
             ['23353590', 'MANTENIMIENTO CUBIERTAS Y FACHADAS', '233535', 5, 'liability', 'credit'],
+
+            // Ingresos - Subcuentas de zonas comunes (nivel 5 - 8 dígitos)
+            ['41703010', 'PARQUEADEROS', '417030', 5, 'income', 'credit'],
+            ['41703015', 'PISCINAS', '417030', 5, 'income', 'credit'],
+            ['41703020', 'GIMNASIO', '417030', 5, 'income', 'credit'],
+            ['41703025', 'ZONA BBQ', '417030', 5, 'income', 'credit'],
+            ['41703030', 'CANCHAS DEPORTIVAS', '417030', 5, 'income', 'credit'],
 
             // Ingresos - Cuentas faltantes
             ['417060', 'REINTEGRO DE OTROS COSTOS Y GASTOS', '4170', 4, 'income', 'credit'],
@@ -289,7 +300,7 @@ return new class extends Migration
                 'is_active' => true,
                 'requires_third_party' => $requiresThirdParty,
                 'nature' => $nature,
-                'accepts_posting' => in_array($level, [4, 5]),
+                'accepts_posting' => in_array($level, [4, 5, 6]),
             ]);
         }
     }
@@ -307,6 +318,7 @@ return new class extends Migration
             4 => 3,
             6 => 4,
             8 => 5,
+            10 => 6,
             default => 1,
         };
     }

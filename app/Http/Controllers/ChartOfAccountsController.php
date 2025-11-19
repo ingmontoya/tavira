@@ -42,8 +42,19 @@ class ChartOfAccountsController extends Controller
             $query->postable();
         }
 
-        $accounts = $query->active()
-            ->orderBy('code')
+        // Status filter
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        } else {
+            // Default to active accounts only
+            $query->where('is_active', true);
+        }
+
+        $accounts = $query->orderBy('code')
             ->paginate(50)
             ->withQueryString();
 
@@ -53,7 +64,7 @@ class ChartOfAccountsController extends Controller
 
         return Inertia::render('Accounting/ChartOfAccounts/Index', [
             'accounts' => $accounts,
-            'filters' => $request->only(['account_type', 'level', 'search', 'parent_id', 'postable_only']),
+            'filters' => $request->only(['account_type', 'level', 'search', 'parent_id', 'postable_only', 'status']),
             'accountTypes' => [
                 'asset' => 'Activo',
                 'liability' => 'Pasivo',
