@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'perfex' => [
+        'base_url' => env('PERFEX_BASE_URL', 'https://perfexcrm.themesic.com'),
+        'api_user' => env('PERFEX_API_USER', 'precontactos'),
+        'api_token' => env('PERFEX_API_TOKEN'),
+    ],
+
 ];

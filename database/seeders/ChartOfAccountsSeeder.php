@@ -99,6 +99,7 @@ class ChartOfAccountsSeeder extends Seeder
                 4 => 3,
                 6 => 4,
                 8 => 5,
+                10 => 6,
                 default => 1,
             };
         };
@@ -120,6 +121,9 @@ class ChartOfAccountsSeeder extends Seeder
             }
             if ($length == 8) {
                 return substr($code, 0, 6);
+            }
+            if ($length == 10) {
+                return substr($code, 0, 8);
             }
 
             return null;
@@ -156,6 +160,12 @@ class ChartOfAccountsSeeder extends Seeder
             ['13050520', 'INTERESES DE MORA CUOTA EXTRA', 5],
             ['13050525', 'SANCIONES ASAMBLEA', 5],
             ['13050530', 'USO ZONAS COMUNES (Se sugiere una cuenta para cada servicio: BBQ, Salón, Squash, fichas, etc.)', 5],
+            ['1305053005', 'SALON SOCIAL', 6],
+            ['1305053010', 'PARQUEADEROS', 6],
+            ['1305053015', 'PISCINAS', 6],
+            ['1305053020', 'GIMNASIOS', 6],
+            ['1305053025', 'ZONA BBQ', 6],
+            ['1305053030', 'CANCHAS DEPORTIVAS', 6],
             ['13050535', 'HONORARIOS DE ABOGADO', 5],
             ['13050540', 'COSTOS Y GASTOS DE COBRANZA (Certificados libertad o vehículo, pólizas, fotocopias, etc.)', 5],
             ['13050545', 'CUOTAS EXTRAORDINARIAS', 5],
@@ -313,6 +323,11 @@ class ChartOfAccountsSeeder extends Seeder
             ['417025', 'SANCIONES ASAMBLEA', 4],
             ['417030', 'USO ZONAS COMUNES (Se sugiere una cuenta para cada servicio: BBQ, Salón social, Squash, Fichas, etc.)', 4],
             ['41703005', 'SALON SOCIAL', 5],
+            ['41703010', 'PARQUEADEROS', 5],
+            ['41703015', 'PISCINAS', 5],
+            ['41703020', 'GIMNASIO', 5],
+            ['41703025', 'ZONA BBQ', 5],
+            ['41703030', 'CANCHAS DEPORTIVAS', 5],
             ['417035', 'INDEMNIZACIÓN SEGUROS', 4],
             ['417040', 'POR RECLAMACIONES', 4],
             ['417045', 'POR REINTEGRO PROVISIONES', 4],
@@ -502,8 +517,8 @@ class ChartOfAccountsSeeder extends Seeder
             $info = $getAccountInfo($code);
             $parentCode = $getParentCode($code);
 
-            // Determine if account accepts posting (only level 4 and 5 for most accounts)
-            $acceptsPosting = in_array($level, [4, 5]) && ! empty($name);
+            // Determine if account accepts posting (only level 4, 5 and 6)
+            $acceptsPosting = in_array($level, [4, 5, 6]) && ! empty($name);
 
             // Determine if requires third party (deudores and proveedores)
             $requiresThirdParty = in_array(substr($code, 0, 2), ['13', '23']) && $level >= 3;
