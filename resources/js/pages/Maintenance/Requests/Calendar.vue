@@ -23,6 +23,8 @@ export interface CalendarEvent {
     url: string;
     backgroundColor: string;
     borderColor: string;
+    isRecurring?: boolean;
+    recurrenceFrequency?: string;
 }
 
 export interface MaintenanceRequest {
@@ -61,6 +63,7 @@ const props = defineProps<Props>();
 // State
 const selectedStatus = ref(props.filters.status || 'all');
 const selectedMonth = ref(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+const showRecurringOnly = ref(false);
 
 const { hasPermission } = useNavigation();
 
@@ -124,10 +127,17 @@ const currentMonthEvents = computed(() => {
     const monthStart = `${year}-${month.toString().padStart(2, '0')}-01`;
     const monthEnd = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of month
 
-    return props.events.filter((event) => {
+    let filtered = props.events.filter((event) => {
         // Compare as strings to avoid timezone issues
         return event.start >= monthStart && event.start <= monthEnd;
     });
+
+    // Filter by recurring if enabled
+    if (showRecurringOnly.value) {
+        filtered = filtered.filter((event) => event.isRecurring);
+    }
+
+    return filtered;
 });
 
 const eventsByDate = computed(() => {
@@ -209,7 +219,8 @@ const getDaysInMonth = () => {
 
 const getDateString = (day: number) => {
     const [year, month] = selectedMonth.value.split('-').map(Number);
-    return new Date(year, month - 1, day).toISOString().split('T')[0]; // month - 1 because Date constructor expects 0-based month
+    // Construct date string directly without Date object to avoid timezone issues
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 };
 
 const hasActiveFilters = computed(() => {
@@ -256,7 +267,7 @@ watch(selectedMonth, () => {
                         </Button>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                         <div class="space-y-2">
                             <Label for="month">Mes</Label>
                             <Input id="month" v-model="selectedMonth" type="month" class="w-full" />
@@ -281,6 +292,18 @@ watch(selectedMonth, () => {
                                     <SelectItem value="closed">Cerrada</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div class="flex items-center space-x-2 pt-8">
+                            <input
+                                id="recurring-only"
+                                v-model="showRecurringOnly"
+                                type="checkbox"
+                                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <Label for="recurring-only" class="text-sm font-medium leading-none cursor-pointer">
+                                Solo recurrentes
+                            </Label>
                         </div>
 
                         <div class="flex items-end">

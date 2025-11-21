@@ -58,6 +58,28 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $upcomingMaintenance = null;
+
+        // Get upcoming maintenance notifications for authenticated users
+        if ($request->user()) {
+            $upcomingMaintenance = \App\Models\MaintenanceRequest::recurringDueSoon(30)
+                ->with('maintenanceCategory')
+                ->orderBy('next_occurrence_date')
+                ->take(5)
+                ->get()
+                ->map(fn ($maintenance) => [
+                    'id' => $maintenance->id,
+                    'title' => $maintenance->title,
+                    'category' => $maintenance->maintenanceCategory->name,
+                    'next_occurrence_date' => $maintenance->next_occurrence_date?->format('Y-m-d'),
+                    'days_until' => $maintenance->next_occurrence_date?->diffInDays(now()),
+                    'priority' => $maintenance->priority,
+                    'location' => $maintenance->location,
+                    'recurrence_frequency' => $maintenance->getRecurrenceFrequencyLabel(),
+                    'url' => route('maintenance-requests.show', $maintenance),
+                ]);
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -67,6 +89,7 @@ class HandleInertiaRequests extends Middleware
                 'tenant_name' => session('tenant_name'),
                 'original_admin_id' => session('original_admin_id'),
             ],
+            'upcomingMaintenance' => fn () => $upcomingMaintenance,
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
                 // Use APP_URL as base for location to ensure correct URL in K8s/proxied environments

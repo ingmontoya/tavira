@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, ArrowRight, Calendar, Check, CheckCircle, Clock, DollarSign, Edit, FileText, MapPin, Play, User, Wrench } from 'lucide-vue-next';
+import { AlertCircle, ArrowLeft, ArrowRight, Calendar, Check, CheckCircle, Clock, DollarSign, Edit, FileText, MapPin, Pause, Play, RefreshCw, User, Wrench } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 export interface MaintenanceRequest {
@@ -30,6 +30,17 @@ export interface MaintenanceRequest {
     attachments: any[] | null;
     created_at: string;
     updated_at: string;
+    is_recurring: boolean;
+    is_recurring_paused: boolean;
+    recurring_paused_at: string | null;
+    recurring_pause_reason: string | null;
+    recurrence_frequency: string | null;
+    recurrence_interval: number | null;
+    recurrence_start_date: string | null;
+    recurrence_end_date: string | null;
+    next_occurrence_date: string | null;
+    days_before_notification: number | null;
+    recurrence_frequency_label: string | null;
     maintenance_category: {
         id: number;
         name: string;
@@ -88,6 +99,12 @@ const props = defineProps<Props>();
 const assignForm = useForm({
     assigned_staff_id: '',
 });
+
+const pauseForm = useForm({
+    reason: '',
+});
+
+const showPauseDialog = computed(() => false); // Will be implemented with a dialog component
 
 const statusLabels = {
     created: 'Creada',
@@ -223,6 +240,21 @@ const completeRequest = () => {
 
 const transitionToNextState = () => {
     router.patch(route('maintenance-requests.next-state', props.maintenanceRequest.id));
+};
+
+const pauseRecurrence = () => {
+    const reason = prompt('¿Razón para pausar la recurrencia? (opcional)');
+    if (reason !== null) { // null means cancelled
+        router.post(route('maintenance-requests.pause-recurrence', props.maintenanceRequest.id), {
+            reason: reason || null
+        });
+    }
+};
+
+const resumeRecurrence = () => {
+    if (confirm('¿Está seguro de que desea reactivar la recurrencia de este mantenimiento?')) {
+        router.post(route('maintenance-requests.resume-recurrence', props.maintenanceRequest.id));
+    }
 };
 
 const formatCurrency = (amount: number | null) => {
@@ -504,6 +536,114 @@ const breadcrumbs = [
                         </CardContent>
                     </Card>
                 </div>
+
+                <!-- Recurrence Information -->
+                <Card v-if="maintenanceRequest.is_recurring" class="border-blue-200 bg-blue-50">
+                    <CardHeader class="bg-blue-100">
+                        <CardTitle class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <RefreshCw class="h-5 w-5 text-blue-600" />
+                                <span>Mantenimiento Recurrente</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <Badge v-if="maintenanceRequest.is_recurring_paused" variant="destructive">
+                                    <Pause class="mr-1 h-3 w-3" />
+                                    Pausado
+                                </Badge>
+                                <Badge v-else variant="default">
+                                    <RefreshCw class="mr-1 h-3 w-3" />
+                                    Activo
+                                </Badge>
+                            </div>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent class="space-y-4 bg-white">
+                        <!-- Paused Warning -->
+                        <div v-if="maintenanceRequest.is_recurring_paused" class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                            <div class="flex items-start space-x-3">
+                                <AlertCircle class="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-orange-900">Recurrencia Pausada</h4>
+                                    <p class="text-sm text-orange-700 mt-1">
+                                        Pausado el {{ formatDate(maintenanceRequest.recurring_paused_at) }}
+                                    </p>
+                                    <p v-if="maintenanceRequest.recurring_pause_reason" class="text-sm text-orange-700 mt-1">
+                                        <span class="font-medium">Razón:</span> {{ maintenanceRequest.recurring_pause_reason }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                                    <RefreshCw class="h-4 w-4" />
+                                    <span>Frecuencia</span>
+                                </h4>
+                                <p class="mt-1 text-sm text-gray-900">{{ maintenanceRequest.recurrence_frequency_label || 'No definida' }}</p>
+                            </div>
+
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                                    <Calendar class="h-4 w-4" />
+                                    <span>Próxima Ocurrencia</span>
+                                </h4>
+                                <p class="mt-1 text-sm font-semibold text-blue-600">
+                                    {{ formatDate(maintenanceRequest.next_occurrence_date) }}
+                                </p>
+                                <p v-if="maintenanceRequest.next_occurrence_date" class="text-xs text-gray-600 mt-1">
+                                    {{ Math.ceil((new Date(maintenanceRequest.next_occurrence_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) }} días restantes
+                                </p>
+                            </div>
+
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700">Fecha de Inicio</h4>
+                                <p class="mt-1 text-sm text-gray-900">{{ formatDate(maintenanceRequest.recurrence_start_date) }}</p>
+                            </div>
+
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700">Fecha de Fin</h4>
+                                <p class="mt-1 text-sm text-gray-900">
+                                    {{ maintenanceRequest.recurrence_end_date ? formatDate(maintenanceRequest.recurrence_end_date) : 'Indefinida' }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 flex items-center space-x-2">
+                                    <Clock class="h-4 w-4" />
+                                    <span>Notificación Anticipada</span>
+                                </h4>
+                                <p class="mt-1 text-sm text-gray-900">
+                                    {{ maintenanceRequest.days_before_notification || 7 }} días antes
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <Separator />
+
+                        <div class="flex items-center justify-end space-x-2">
+                            <Button
+                                v-if="!maintenanceRequest.is_recurring_paused && permissions.can_edit"
+                                variant="outline"
+                                size="sm"
+                                @click="pauseRecurrence"
+                            >
+                                <Pause class="mr-2 h-4 w-4" />
+                                Pausar Recurrencia
+                            </Button>
+                            <Button
+                                v-if="maintenanceRequest.is_recurring_paused && permissions.can_edit"
+                                variant="default"
+                                size="sm"
+                                @click="resumeRecurrence"
+                            >
+                                <Play class="mr-2 h-4 w-4" />
+                                Reactivar Recurrencia
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <!-- Documentación -->
                 <MaintenanceRequestDocuments :maintenanceRequestId="maintenanceRequest.id" :canEdit="permissions.can_edit" />

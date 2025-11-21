@@ -80,8 +80,25 @@ class MaintenanceRequestController extends Controller
             ->where('is_active', true)
             ->count() > 0;
 
+        // Calculate metrics/indicators
+        $baseQuery = MaintenanceRequest::where('conjunto_config_id', $conjuntoConfig->id);
+
+        $metrics = [
+            'total' => (clone $baseQuery)->count(),
+            'active' => (clone $baseQuery)->whereIn('status', ['created', 'evaluation', 'budgeted', 'pending_approval', 'approved', 'assigned', 'in_progress'])->count(),
+            'completed_this_month' => (clone $baseQuery)->where('status', 'completed')->whereMonth('updated_at', now()->month)->count(),
+            'critical_priority' => (clone $baseQuery)->where('priority', 'critical')->whereNotIn('status', ['completed', 'closed'])->count(),
+            'pending_approval' => (clone $baseQuery)->where('status', 'pending_approval')->count(),
+            'in_progress' => (clone $baseQuery)->where('status', 'in_progress')->count(),
+            'recurring_active' => (clone $baseQuery)->where('is_recurring', true)->where('is_recurring_paused', false)->count(),
+            'recurring_paused' => (clone $baseQuery)->where('is_recurring', true)->where('is_recurring_paused', true)->count(),
+            'upcoming_recurring' => MaintenanceRequest::recurringDueSoon(30)->count(),
+            'total_cost_this_month' => (clone $baseQuery)->whereMonth('created_at', now()->month)->sum('estimated_cost'),
+        ];
+
         return Inertia::render('Maintenance/Requests/Index', [
             'maintenanceRequests' => $maintenanceRequests,
+            'metrics' => $metrics,
             'filters' => $request->only(['status', 'priority', 'category', 'search']),
             'categories' => $categories,
             'hasCategoriesConfigured' => $hasCategoriesConfigured,
@@ -100,15 +117,11 @@ class MaintenanceRequestController extends Controller
             'requestedBy',
             'assignedStaff',
         ])->where('conjunto_config_id', $conjuntoConfig->id)
-            ->whereNotNull('estimated_completion_date');
-
-        // Filter by date range if provided
-        if ($request->filled('start') && $request->filled('end')) {
-            $query->whereBetween('estimated_completion_date', [
-                $request->start,
-                $request->end,
-            ]);
-        }
+            ->where(function ($q) {
+                // Include requests that have estimated_completion_date OR next_occurrence_date
+                $q->whereNotNull('estimated_completion_date')
+                    ->orWhereNotNull('next_occurrence_date');
+            });
 
         // Filter by status
         if ($request->filled('status')) {
@@ -117,24 +130,79 @@ class MaintenanceRequestController extends Controller
 
         $maintenanceRequests = $query->orderBy('estimated_completion_date')->get();
 
-        // Transform data for calendar view
-        $calendarEvents = $maintenanceRequests->map(function ($request) {
-            return [
-                'id' => $request->id,
-                'title' => $request->title,
-                'start' => $request->estimated_completion_date ? $request->estimated_completion_date->format('Y-m-d') : null,
-                'end' => $request->actual_completion_date?->format('Y-m-d'),
-                'status' => $request->status,
-                'priority' => $request->priority,
-                'category' => $request->maintenanceCategory->name,
-                'categoryColor' => $request->maintenanceCategory->color,
-                'url' => route('maintenance-requests.show', $request->id),
-                'backgroundColor' => $this->getEventBackgroundColor($request->maintenanceCategory->color, $request->priority, $request->status),
-                'borderColor' => $this->getEventBorderColor($request->priority, $request->status),
-            ];
-        })->filter(function ($event) {
-            return $event['start'] !== null;
-        });
+        $filterStartDate = $request->filled('start') ? \Carbon\Carbon::parse($request->start) : null;
+        $filterEndDate = $request->filled('end') ? \Carbon\Carbon::parse($request->end) : null;
+
+        // Transform data for calendar view, generating multiple occurrences for recurring events
+        $calendarEvents = collect();
+
+        foreach ($maintenanceRequests as $maintenanceRequest) {
+            if ($maintenanceRequest->is_recurring && $maintenanceRequest->recurrence_start_date) {
+                // Generate all occurrences within the filter range (or next 12 months if no filter)
+                $occurrences = $this->generateRecurringOccurrences(
+                    $maintenanceRequest,
+                    $filterStartDate,
+                    $filterEndDate
+                );
+
+                foreach ($occurrences as $occurrenceDate) {
+                    $calendarEvents->push([
+                        'id' => $maintenanceRequest->id,
+                        'title' => $maintenanceRequest->title,
+                        'start' => $occurrenceDate->format('Y-m-d'),
+                        'end' => $maintenanceRequest->actual_completion_date?->format('Y-m-d'),
+                        'status' => $maintenanceRequest->status,
+                        'priority' => $maintenanceRequest->priority,
+                        'category' => $maintenanceRequest->maintenanceCategory->name,
+                        'categoryColor' => $maintenanceRequest->maintenanceCategory->color,
+                        'url' => route('maintenance-requests.show', $maintenanceRequest->id),
+                        'backgroundColor' => $this->getEventBackgroundColor($maintenanceRequest->maintenanceCategory->color, $maintenanceRequest->priority, $maintenanceRequest->status),
+                        'borderColor' => $this->getEventBorderColor($maintenanceRequest->priority, $maintenanceRequest->status),
+                        'isRecurring' => true,
+                        'recurrenceFrequency' => $maintenanceRequest->getRecurrenceFrequencyLabel(),
+                    ]);
+                }
+            } else {
+                // Non-recurring event - only add if it's within the date range
+                $eventDate = $maintenanceRequest->estimated_completion_date;
+                if ($eventDate) {
+                    $includeEvent = true;
+                    if ($filterStartDate && $filterEndDate) {
+                        $includeEvent = $eventDate >= $filterStartDate && $eventDate <= $filterEndDate;
+                    }
+
+                    if ($includeEvent) {
+                        $calendarEvents->push([
+                            'id' => $maintenanceRequest->id,
+                            'title' => $maintenanceRequest->title,
+                            'start' => $eventDate->format('Y-m-d'),
+                            'end' => $maintenanceRequest->actual_completion_date?->format('Y-m-d'),
+                            'status' => $maintenanceRequest->status,
+                            'priority' => $maintenanceRequest->priority,
+                            'category' => $maintenanceRequest->maintenanceCategory->name,
+                            'categoryColor' => $maintenanceRequest->maintenanceCategory->color,
+                            'url' => route('maintenance-requests.show', $maintenanceRequest->id),
+                            'backgroundColor' => $this->getEventBackgroundColor($maintenanceRequest->maintenanceCategory->color, $maintenanceRequest->priority, $maintenanceRequest->status),
+                            'borderColor' => $this->getEventBorderColor($maintenanceRequest->priority, $maintenanceRequest->status),
+                            'isRecurring' => false,
+                            'recurrenceFrequency' => null,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        \Log::info('Calendar query parameters', [
+            'start_date' => $request->start ?? 'not provided',
+            'end_date' => $request->end ?? 'not provided',
+            'status_filter' => $request->status ?? 'not provided',
+        ]);
+
+        \Log::info('Calendar events being sent to frontend', [
+            'total_requests' => $maintenanceRequests->count(),
+            'total_events' => $calendarEvents->count(),
+            'events' => $calendarEvents->toArray(),
+        ]);
 
         return Inertia::render('Maintenance/Requests/Calendar', [
             'events' => $calendarEvents,
@@ -268,12 +336,39 @@ class MaintenanceRequestController extends Controller
             'vendor_contact_name' => 'nullable|string|max:255',
             'vendor_contact_phone' => 'nullable|string|max:20',
             'vendor_contact_email' => 'nullable|email|max:255',
+            // Recurrence fields
+            'is_recurring' => 'boolean',
+            'recurrence_frequency' => 'nullable|required_if:is_recurring,true|in:daily,weekly,monthly,quarterly,semi_annual,annual',
+            'recurrence_interval' => 'nullable|integer|min:1|max:100',
+            'recurrence_start_date' => 'nullable|required_if:is_recurring,true|date|after_or_equal:today',
+            'recurrence_end_date' => 'nullable|date|after:recurrence_start_date',
+            'days_before_notification' => 'nullable|integer|min:1|max:30',
         ]);
 
         $validated['conjunto_config_id'] = $conjuntoConfig->id;
         $validated['requested_by_user_id'] = Auth::id();
 
+        // Debug logging
+        \Log::info('Creating maintenance request', [
+            'is_recurring' => $validated['is_recurring'] ?? 'not set',
+            'recurrence_frequency' => $validated['recurrence_frequency'] ?? 'not set',
+            'recurrence_start_date' => $validated['recurrence_start_date'] ?? 'not set',
+            'all_validated' => $validated,
+        ]);
+
+        // Calculate next occurrence date if recurring
+        if ($validated['is_recurring'] ?? false) {
+            $validated['next_occurrence_date'] = $validated['recurrence_start_date'];
+            \Log::info('Setting next_occurrence_date', ['date' => $validated['next_occurrence_date']]);
+        }
+
         $maintenanceRequest = MaintenanceRequest::create($validated);
+
+        \Log::info('Maintenance request created', [
+            'id' => $maintenanceRequest->id,
+            'is_recurring' => $maintenanceRequest->is_recurring,
+            'next_occurrence_date' => $maintenanceRequest->next_occurrence_date,
+        ]);
         $maintenanceRequest->load(['maintenanceCategory', 'requestedBy']);
 
         // Send notification to administrative users
@@ -296,8 +391,14 @@ class MaintenanceRequestController extends Controller
             'documents.uploadedBy',
         ]);
 
+        // Add recurrence frequency label if recurring
+        $maintenanceRequestArray = $maintenanceRequest->toArray();
+        if ($maintenanceRequest->is_recurring) {
+            $maintenanceRequestArray['recurrence_frequency_label'] = $maintenanceRequest->getRecurrenceFrequencyLabel();
+        }
+
         return Inertia::render('Maintenance/Requests/Show', [
-            'maintenanceRequest' => $maintenanceRequest,
+            'maintenanceRequest' => $maintenanceRequestArray,
             'staff' => MaintenanceStaff::where('conjunto_config_id', $maintenanceRequest->conjunto_config_id)
                 ->where('is_active', true)
                 ->get(),
@@ -341,6 +442,12 @@ class MaintenanceRequestController extends Controller
 
     public function update(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
     {
+        \Log::info('Update request received', [
+            'request_id' => $maintenanceRequest->id,
+            'is_recurring_in_request' => $request->input('is_recurring'),
+            'all_request_data' => $request->all(),
+        ]);
+
         $validated = $request->validate([
             'maintenance_category_id' => 'required|exists:maintenance_categories,id',
             'apartment_id' => 'nullable|exists:apartments,id',
@@ -361,6 +468,30 @@ class MaintenanceRequestController extends Controller
             'vendor_contact_name' => 'nullable|string|max:255',
             'vendor_contact_phone' => 'nullable|string|max:20',
             'vendor_contact_email' => 'nullable|email|max:255',
+            // Recurrence fields
+            'is_recurring' => 'boolean',
+            'recurrence_frequency' => 'nullable|required_if:is_recurring,true|in:daily,weekly,monthly,quarterly,semi_annual,annual',
+            'recurrence_interval' => 'nullable|integer|min:1|max:100',
+            'recurrence_start_date' => 'nullable|required_if:is_recurring,true|date',
+            'recurrence_end_date' => 'nullable|date|after:recurrence_start_date',
+            'days_before_notification' => 'nullable|integer|min:1|max:30',
+        ]);
+
+        \Log::info('After validation', [
+            'is_recurring_validated' => $validated['is_recurring'] ?? 'not present',
+            'validated_data' => $validated,
+        ]);
+
+        // Update next_occurrence_date if recurring settings changed
+        if ($validated['is_recurring'] ?? false) {
+            $validated['next_occurrence_date'] = $validated['recurrence_start_date'];
+        } else {
+            // Clear recurrence data if is_recurring is false
+            $validated['next_occurrence_date'] = null;
+        }
+
+        \Log::info('Before update', [
+            'final_data_to_update' => $validated,
         ]);
 
         $maintenanceRequest->update($validated);
@@ -596,5 +727,115 @@ class MaintenanceRequestController extends Controller
             'suspended' => 'Suspendida',
             default => 'Desconocido',
         };
+    }
+
+    /**
+     * Pause recurrence for a maintenance request
+     */
+    public function pauseRecurrence(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        if (! $maintenanceRequest->is_recurring) {
+            return redirect()->back()->with('error', 'Esta solicitud no es recurrente.');
+        }
+
+        if ($maintenanceRequest->is_recurring_paused) {
+            return redirect()->back()->with('warning', 'La recurrencia ya está pausada.');
+        }
+
+        $maintenanceRequest->pauseRecurrence($validated['reason'] ?? null);
+
+        return redirect()->back()->with('success', 'Recurrencia pausada exitosamente.');
+    }
+
+    /**
+     * Resume recurrence for a maintenance request
+     */
+    public function resumeRecurrence(MaintenanceRequest $maintenanceRequest): RedirectResponse
+    {
+        if (! $maintenanceRequest->is_recurring) {
+            return redirect()->back()->with('error', 'Esta solicitud no es recurrente.');
+        }
+
+        if (! $maintenanceRequest->is_recurring_paused) {
+            return redirect()->back()->with('warning', 'La recurrencia no está pausada.');
+        }
+
+        $maintenanceRequest->resumeRecurrence();
+
+        return redirect()->back()->with('success', 'Recurrencia reactivada exitosamente.');
+    }
+
+    /**
+     * Generate all occurrences of a recurring maintenance request within a date range
+     */
+    private function generateRecurringOccurrences(MaintenanceRequest $request, ?\Carbon\Carbon $rangeStart, ?\Carbon\Carbon $rangeEnd): array
+    {
+        $occurrences = [];
+
+        // If no range provided, default to next 12 months
+        if (! $rangeStart) {
+            $rangeStart = now()->startOfMonth();
+        }
+        if (! $rangeEnd) {
+            $rangeEnd = now()->addYear()->endOfMonth();
+        }
+
+        $currentDate = \Carbon\Carbon::parse($request->recurrence_start_date);
+        $interval = $request->recurrence_interval ?? 1;
+        $endDate = $request->recurrence_end_date ? \Carbon\Carbon::parse($request->recurrence_end_date) : null;
+
+        // Limit to 100 occurrences to prevent infinite loops
+        $maxOccurrences = 100;
+        $count = 0;
+
+        while ($count < $maxOccurrences) {
+            // Stop if we've passed the recurrence end date
+            if ($endDate && $currentDate > $endDate) {
+                break;
+            }
+
+            // Stop if we've gone way past the range end date (optimization)
+            if ($currentDate > $rangeEnd->copy()->addYear()) {
+                break;
+            }
+
+            // Only include dates within the requested range
+            if ($currentDate >= $rangeStart && $currentDate <= $rangeEnd) {
+                $occurrences[] = $currentDate->copy();
+            }
+
+            // Calculate next occurrence based on frequency
+            switch ($request->recurrence_frequency) {
+                case 'daily':
+                    $currentDate->addDays($interval);
+                    break;
+                case 'weekly':
+                    $currentDate->addWeeks($interval);
+                    break;
+                case 'monthly':
+                    $currentDate->addMonths($interval);
+                    break;
+                case 'quarterly':
+                    $currentDate->addMonths(3 * $interval);
+                    break;
+                case 'semi_annual':
+                    $currentDate->addMonths(6 * $interval);
+                    break;
+                case 'annual':
+                    $currentDate->addYears($interval);
+                    break;
+                default:
+                    // Unknown frequency, break the loop
+                    break 2;
+            }
+
+            $count++;
+        }
+
+        return $occurrences;
     }
 }

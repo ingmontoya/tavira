@@ -45,6 +45,7 @@ export function useNavigation() {
     const permissions = computed(() => page.props.auth?.permissions || []);
     const roles = computed(() => page.props.auth?.roles || []);
     const conjuntoConfigured = computed(() => page.props.conjuntoConfigured || { exists: false, isActive: false });
+    const upcomingMaintenanceCount = computed(() => (page.props.upcomingMaintenance as any[])?.length || 0);
 
     // Check if we're in the central dashboard context
     const isCentralDashboard = computed(() => {
@@ -129,44 +130,45 @@ export function useNavigation() {
                     tourId: 'nav-conjunto-config',
                     visible: hasPermission('view_conjunto_config'),
                 },
+            ],
+        },
+        {
+            title: 'Mantenimiento',
+            icon: Wrench,
+            badge: upcomingMaintenanceCount.value > 0 ? upcomingMaintenanceCount.value.toString() : undefined,
+            visible:
+                isFeatureEnabled('maintenance_requests') &&
+                (hasPermission('view_maintenance_requests') ||
+                    hasPermission('view_maintenance_categories') ||
+                    hasPermission('view_maintenance_staff')),
+            items: [
                 {
-                    title: 'Mantenimiento',
+                    title: 'Solicitudes',
+                    href: '/maintenance-requests',
                     icon: Wrench,
-                    visible:
-                        isFeatureEnabled('maintenance_requests') &&
-                        (hasPermission('view_maintenance_requests') ||
-                            hasPermission('view_maintenance_categories') ||
-                            hasPermission('view_maintenance_staff')),
-                    items: [
-                        {
-                            title: 'Solicitudes',
-                            href: '/maintenance-requests',
-                            icon: Wrench,
-                            tourId: 'nav-maintenance-requests',
-                            visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
-                        },
-                        {
-                            title: 'Categorías',
-                            href: '/maintenance-categories',
-                            icon: Settings,
-                            tourId: 'nav-maintenance-categories',
-                            visible: hasPermission('view_maintenance_categories') && isFeatureEnabled('maintenance_requests'),
-                        },
-                        {
-                            title: 'Personal',
-                            href: '/maintenance-staff',
-                            icon: UserCog,
-                            tourId: 'nav-maintenance-staff',
-                            visible: hasPermission('view_maintenance_staff') && isFeatureEnabled('maintenance_requests'),
-                        },
-                        {
-                            title: 'Cronograma',
-                            href: '/maintenance-requests-calendar',
-                            icon: Clock,
-                            tourId: 'nav-maintenance-calendar',
-                            visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
-                        },
-                    ],
+                    tourId: 'nav-maintenance-requests',
+                    visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
+                },
+                {
+                    title: 'Categorías',
+                    href: '/maintenance-categories',
+                    icon: Settings,
+                    tourId: 'nav-maintenance-categories',
+                    visible: hasPermission('view_maintenance_categories') && isFeatureEnabled('maintenance_requests'),
+                },
+                {
+                    title: 'Personal',
+                    href: '/maintenance-staff',
+                    icon: UserCog,
+                    tourId: 'nav-maintenance-staff',
+                    visible: hasPermission('view_maintenance_staff') && isFeatureEnabled('maintenance_requests'),
+                },
+                {
+                    title: 'Cronograma',
+                    href: '/maintenance-requests-calendar',
+                    icon: Clock,
+                    tourId: 'nav-maintenance-calendar',
+                    visible: hasPermission('view_maintenance_requests') && isFeatureEnabled('maintenance_requests'),
                 },
             ],
         },

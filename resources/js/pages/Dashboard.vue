@@ -43,6 +43,9 @@
                 </Card>
             </div>
 
+            <!-- Upcoming Maintenance Alerts -->
+            <UpcomingMaintenanceAlert />
+
             <!-- Setup Banner -->
             <ConjuntoSetupBanner />
 
@@ -480,6 +483,7 @@
 
 <script setup lang="ts">
 import ConjuntoSetupBanner from '@/components/ConjuntoSetupBanner.vue';
+import UpcomingMaintenanceAlert from '@/components/maintenance/UpcomingMaintenanceAlert.vue';
 import Icon from '@/components/Icon.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
