@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Events\AccountingTransactionPosted;
+use App\Events\CorrespondenceReceived;
 use App\Events\InvoiceCreated;
 use App\Events\LateFeeApplied;
 use App\Events\PaymentReceived;
 use App\Listeners\GenerateAccountingEntryFromInvoice;
 use App\Listeners\GenerateAccountingEntryFromLateFee;
 use App\Listeners\GenerateAccountingEntryFromPayment;
+use App\Listeners\SendCorrespondenceNotification;
 use App\Listeners\SendWelcomeEmail;
 use App\Listeners\SyncProvidersToNewTenant;
 use App\Listeners\UpdateBudgetExecutionFromTransaction;
@@ -76,6 +78,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(PaymentReceived::class, UpdateExtraordinaryAssessmentProgress::class);
         Event::listen(LateFeeApplied::class, GenerateAccountingEntryFromLateFee::class);
         Event::listen(AccountingTransactionPosted::class, UpdateBudgetExecutionFromTransaction::class);
+
+        // Eventos de correspondencia
+        Event::listen(CorrespondenceReceived::class, SendCorrespondenceNotification::class);
 
         // Eventos de sincronización de recursos (Stancl Tenancy)
         // NOTA: SyncedResourceSaved ya está registrado en TenancyServiceProvider
