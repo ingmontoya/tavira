@@ -48,14 +48,14 @@ spec:
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
 
-        # Reduced resources for staging
+        # Optimized resources for staging (right-sized based on actual usage)
         resources:
           requests:
-            cpu: 100m       # Reduced from 250m
-            memory: 128Mi   # Reduced from 256Mi
+            cpu: 100m       # Based on 100m actual usage (stable)
+            memory: 256Mi   # Based on 200Mi actual usage + 28% headroom
           limits:
-            cpu: 500m       # Reduced from 1000m
-            memory: 256Mi   # Reduced from 512Mi
+            cpu: 400m       # 4x requests for query bursts
+            memory: 512Mi   # 2x requests for query result caching
 
         livenessProbe:
           exec:

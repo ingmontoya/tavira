@@ -26,6 +26,8 @@ services:
       # Exclude vendor and node_modules (use container's versions)
       - /var/www/html/vendor
       - /var/www/html/node_modules
+      # Override .env with Docker-specific version
+      - ./.env.docker:/var/www/html/.env:ro
       # Explicitly mount public for built assets (ensures npm run build changes are reflected)
       - ./public:/var/www/html/public
       # Keep storage and cache as before
@@ -49,6 +51,8 @@ services:
       # Exclude vendor and node_modules (use container's versions)
       - /var/www/html/vendor
       - /var/www/html/node_modules
+      # Override .env with Docker-specific version
+      - ./.env.docker:/var/www/html/.env:ro
       # Keep storage as before
       - ./storage:/var/www/html/storage
     environment:
@@ -62,6 +66,8 @@ services:
       # Use local public directory for hot reload of built assets
       - ./public:/var/www/html/public:ro
       - ./storage:/var/www/html/storage:ro
+      # Mount landing directory for Nuxt landing page
+      - ./landing:/var/www/html/landing:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 
   # Optional: Vite dev server for frontend hot module replacement (HMR)

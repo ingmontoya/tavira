@@ -72,11 +72,11 @@ spec:
 
         resources:
           requests:
-            cpu: 200m
-            memory: 256Mi
+            cpu: 100m       # Init container - short lived
+            memory: 192Mi   # Reduced for one-time setup
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 300m       # Sufficient for cache warming
+            memory: 384Mi   # Adequate for Laravel bootstrap
 
         securityContext:
           runAsUser: 82
@@ -214,14 +214,14 @@ spec:
         - secretRef:
             name: laravel-env-staging
 
-        # Optimized resources for staging (increased for better performance)
+        # Optimized resources for staging (right-sized based on actual usage)
         resources:
           requests:
-            cpu: 500m       # Sufficient for Laravel multitenancy
-            memory: 512Mi   # Comfortable memory for Laravel + cache
+            cpu: 250m       # Based on 200m actual usage + 25% headroom
+            memory: 384Mi   # Based on 300Mi actual usage + 28% headroom
           limits:
-            cpu: 1000m      # Allow full CPU core for bursts
-            memory: 1Gi     # Prevent OOM with comfortable headroom
+            cpu: 600m       # 2.4x requests for burst capacity
+            memory: 768Mi   # 2x requests, sufficient for spikes
 
         livenessProbe:
           tcpSocket:
@@ -260,14 +260,14 @@ spec:
           name: http
           protocol: TCP
 
-        # Optimized resources for staging (increased with FastCGI cache)
+        # Optimized resources for staging (right-sized based on actual usage)
         resources:
           requests:
-            cpu: 100m       # Sufficient for proxy + cache operations
-            memory: 128Mi   # Adequate for nginx with cache
+            cpu: 50m        # Based on 50m actual usage (stable)
+            memory: 96Mi    # Based on 80Mi actual usage + 20% headroom
           limits:
-            cpu: 300m       # Allow bursts during traffic spikes
-            memory: 256Mi   # Comfortable headroom for cache
+            cpu: 200m       # 4x requests for traffic bursts
+            memory: 192Mi   # 2x requests, adequate for cache spikes
 
         livenessProbe:
           httpGet:

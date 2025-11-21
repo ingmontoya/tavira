@@ -28,14 +28,14 @@ spec:
         - containerPort: 6379
           protocol: TCP
 
-        # Reduced resources for staging
+        # Optimized resources for staging (right-sized based on actual usage)
         resources:
           requests:
-            cpu: 50m        # Reduced from 100m
-            memory: 64Mi    # Reduced from 128Mi
+            cpu: 25m        # Based on 20m actual usage + 25% headroom
+            memory: 48Mi    # Based on 40Mi actual usage + 20% headroom
           limits:
-            cpu: 150m       # Reduced from 250m
-            memory: 128Mi   # Reduced from 256Mi
+            cpu: 100m       # 4x requests for burst operations
+            memory: 96Mi    # 2x requests for cache spikes
 
         livenessProbe:
           tcpSocket:
