@@ -16,6 +16,7 @@ class AccountingTransaction extends Model
         'description',
         'reference_type',
         'reference_id',
+        'apartment_id',
         'total_debit',
         'total_credit',
         'status',
@@ -82,43 +83,23 @@ class AccountingTransaction extends Model
         return $this->reference;
     }
 
-    public function apartment(): ?BelongsTo
+    public function apartment(): BelongsTo
     {
-        // Get apartment through the referenced object (skip for manual transactions)
-        $reference = $this->getReferencedModel();
-
-        if (! $reference) {
-            return null;
-        }
-
-        // Handle different reference types
-        if ($this->reference_type === 'invoice' && method_exists($reference, 'apartment')) {
-            return $reference->apartment();
-        }
-
-        if ($this->reference_type === 'payment' && method_exists($reference, 'apartment')) {
-            return $reference->apartment();
-        }
-
-        if ($this->reference_type === 'payment_application' && method_exists($reference, 'invoice')) {
-            return $reference->invoice->apartment();
-        }
-
-        if ($this->reference_type === 'payment_application_reversal' && method_exists($reference, 'invoice')) {
-            return $reference->invoice->apartment();
-        }
-
-        // Expenses don't have a direct apartment relationship
-        if ($this->reference_type === 'expense') {
-            return null;
-        }
-
-        return null;
+        return $this->belongsTo(Apartment::class);
     }
 
-    public function getApartmentAttribute()
+    /**
+     * Get the apartment associated with this transaction.
+     * First checks for direct apartment_id, then checks reference objects.
+     */
+    public function getRelatedApartment()
     {
-        // Get apartment through the referenced object (skip for manual transactions)
+        // First check if there's a direct apartment_id assignment
+        if ($this->apartment_id) {
+            return $this->apartment;
+        }
+
+        // Otherwise, get apartment through the referenced object
         $reference = $this->getReferencedModel();
 
         if (! $reference) {
@@ -308,6 +289,7 @@ class AccountingTransaction extends Model
             'description' => "Apto {$invoice->apartment->number} - Factura {$invoice->invoice_number}",
             'reference_type' => 'invoice',
             'reference_id' => $invoice->id,
+            'apartment_id' => $invoice->apartment_id,
             'created_by' => auth()->id(),
         ]);
 
@@ -353,6 +335,7 @@ class AccountingTransaction extends Model
             'description' => "Apto {$invoice->apartment->number} - Pago factura {$invoice->invoice_number}",
             'reference_type' => 'payment',
             'reference_id' => $invoice->id,
+            'apartment_id' => $invoice->apartment_id,
             'created_by' => auth()->id(),
         ]);
 
