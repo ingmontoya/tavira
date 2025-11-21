@@ -45,7 +45,7 @@
         "laravel-echo": "^2.2.6",
         "laravel-vite-plugin": "^1.0",
         "lucide-vue-next": "^0.468.0",
-        "mermaid": "^11.10.0",
+        "mermaid": "^11.12.1",
         "pusher-js": "^8.4.0",
         "qrcode": "^1.5.4",
         "reka-ui": "^2.5.1",
