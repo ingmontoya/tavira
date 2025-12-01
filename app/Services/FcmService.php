@@ -271,8 +271,8 @@ class FcmService
                     'ttl' => '300s', // 5 minutes TTL for urgent alerts
                     'notification' => [
                         'channel_id' => 'alertas_panico',
-                        'priority' => 'max',
-                        'visibility' => 'public',
+                        'notification_priority' => 'PRIORITY_MAX',
+                        'visibility' => 'PUBLIC',
                         'default_sound' => true,
                         'default_vibrate_timings' => true,
                         'notification_count' => 1,
