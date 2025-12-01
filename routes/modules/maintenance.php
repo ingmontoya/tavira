@@ -22,6 +22,10 @@ Route::middleware('requires.feature:maintenance_requests')->group(function () {
         ->name('maintenance-requests.complete');
     Route::patch('maintenance-requests/{maintenanceRequest}/next-state', [MaintenanceRequestController::class, 'nextState'])
         ->name('maintenance-requests.next-state');
+    Route::post('maintenance-requests/{maintenanceRequest}/pause-recurrence', [MaintenanceRequestController::class, 'pauseRecurrence'])
+        ->name('maintenance-requests.pause-recurrence');
+    Route::post('maintenance-requests/{maintenanceRequest}/resume-recurrence', [MaintenanceRequestController::class, 'resumeRecurrence'])
+        ->name('maintenance-requests.resume-recurrence');
 
     // Maintenance Request Documents routes
     Route::get('maintenance-requests/{maintenanceRequest}/documents', [MaintenanceRequestDocumentController::class, 'index'])

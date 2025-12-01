@@ -43,3 +43,4 @@ k8s/deployed/*-secret.yaml
 
 
 crm
+.env.docker

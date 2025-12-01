@@ -39,6 +39,12 @@ export interface MaintenanceRequest {
     estimated_cost: number | null;
     estimated_completion_date: string | null;
     requires_council_approval: boolean;
+    is_recurring: boolean;
+    recurrence_frequency: string | null;
+    recurrence_interval: number;
+    recurrence_start_date: string | null;
+    recurrence_end_date: string | null;
+    days_before_notification: number;
     maintenance_category: {
         id: number;
         name: string;
@@ -73,11 +79,25 @@ const form = useForm({
         ? props.maintenanceRequest.estimated_completion_date.split('T')[0]
         : '',
     requires_council_approval: props.maintenanceRequest.requires_council_approval,
+    is_recurring: props.maintenanceRequest.is_recurring || false,
+    recurrence_frequency: props.maintenanceRequest.recurrence_frequency || '',
+    recurrence_interval: props.maintenanceRequest.recurrence_interval || 1,
+    recurrence_start_date: props.maintenanceRequest.recurrence_start_date
+        ? props.maintenanceRequest.recurrence_start_date.split('T')[0]
+        : '',
+    recurrence_end_date: props.maintenanceRequest.recurrence_end_date
+        ? props.maintenanceRequest.recurrence_end_date.split('T')[0]
+        : '',
+    days_before_notification: props.maintenanceRequest.days_before_notification || 7,
 });
 
 const selectedCategory = computed(() => {
     if (!form.maintenance_category_id) return null;
     return props.categories.find((cat) => cat.id.toString() === form.maintenance_category_id);
+});
+
+const showRecurrenceFields = computed(() => {
+    return form.is_recurring;
 });
 
 // Auto-set council approval requirement based on category
@@ -88,10 +108,21 @@ const updateRequiresApproval = () => {
 };
 
 const submit = () => {
+    // Validate recurrence fields before submission
+    if (form.is_recurring && !form.recurrence_frequency) {
+        form.setError('recurrence_frequency', 'La frecuencia es obligatoria para mantenimientos recurrentes');
+        const recurrenceSection = document.querySelector('#recurrence-section');
+        if (recurrenceSection) {
+            recurrenceSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+
     // Convert 'none' to empty string for backend
     const submissionData = {
         ...form.data(),
         apartment_id: form.apartment_id === 'none' ? '' : form.apartment_id,
+        is_recurring: !!form.is_recurring,
     };
 
     form.transform(() => submissionData).put(route('maintenance-requests.update', props.maintenanceRequest.id));
@@ -309,6 +340,126 @@ const breadcrumbs = [
                                 <Input id="estimated_completion_date" v-model="form.estimated_completion_date" type="date" />
                                 <div v-if="form.errors.estimated_completion_date" class="text-sm text-red-600">
                                     {{ form.errors.estimated_completion_date }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuración de Recurrencia -->
+                        <div id="recurrence-section" class="space-y-6 border-t pt-6">
+                            <div class="flex items-center space-x-3">
+                                <input
+                                    id="is_recurring"
+                                    v-model="form.is_recurring"
+                                    type="checkbox"
+                                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <Label for="is_recurring" class="text-sm font-medium cursor-pointer">
+                                    Marcar como Mantenimiento Recurrente
+                                </Label>
+                            </div>
+
+                            <div v-if="showRecurrenceFields" class="space-y-6">
+                                <div class="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                                    <div class="flex items-start space-x-3">
+                                        <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <h4 class="text-sm font-semibold text-blue-900">Configuración de Recurrencia</h4>
+                                            <p class="text-sm text-blue-700 mt-1">
+                                                Configure la frecuencia del mantenimiento y recibirá notificaciones automáticas antes de cada ocurrencia.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <!-- Frecuencia de Recurrencia -->
+                                    <div class="space-y-2">
+                                        <Label for="recurrence_frequency" class="text-red-600">Frecuencia * (Requerido)</Label>
+                                        <Select v-model="form.recurrence_frequency" required>
+                                            <SelectTrigger :class="{ 'border-red-500': form.errors.recurrence_frequency || (!form.recurrence_frequency && form.is_recurring) }">
+                                                <SelectValue placeholder="Debe seleccionar una frecuencia" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="daily">Diario</SelectItem>
+                                                <SelectItem value="weekly">Semanal</SelectItem>
+                                                <SelectItem value="monthly">Mensual</SelectItem>
+                                                <SelectItem value="quarterly">Trimestral (cada 3 meses)</SelectItem>
+                                                <SelectItem value="semi_annual">Semestral (cada 6 meses)</SelectItem>
+                                                <SelectItem value="annual">Anual (cada año)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <div v-if="form.errors.recurrence_frequency || (!form.recurrence_frequency && form.is_recurring)" class="text-sm text-red-600">
+                                            {{ form.errors.recurrence_frequency || 'La frecuencia es obligatoria para mantenimientos recurrentes' }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Intervalo -->
+                                    <div class="space-y-2">
+                                        <Label for="recurrence_interval">Cada (Intervalo)</Label>
+                                        <Input
+                                            id="recurrence_interval"
+                                            v-model="form.recurrence_interval"
+                                            type="number"
+                                            min="1"
+                                            placeholder="1"
+                                            :class="{ 'border-red-500': form.errors.recurrence_interval }"
+                                        />
+                                        <div class="text-xs text-gray-500">Ej: 2 = cada 2 semanas/meses</div>
+                                        <div v-if="form.errors.recurrence_interval" class="text-sm text-red-600">
+                                            {{ form.errors.recurrence_interval }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <!-- Fecha de Inicio -->
+                                    <div class="space-y-2">
+                                        <Label for="recurrence_start_date">Fecha de Inicio *</Label>
+                                        <Input
+                                            id="recurrence_start_date"
+                                            v-model="form.recurrence_start_date"
+                                            type="date"
+                                            :class="{ 'border-red-500': form.errors.recurrence_start_date }"
+                                        />
+                                        <div v-if="form.errors.recurrence_start_date" class="text-sm text-red-600">
+                                            {{ form.errors.recurrence_start_date }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Fecha de Fin (Opcional) -->
+                                    <div class="space-y-2">
+                                        <Label for="recurrence_end_date">Fecha de Fin (Opcional)</Label>
+                                        <Input
+                                            id="recurrence_end_date"
+                                            v-model="form.recurrence_end_date"
+                                            type="date"
+                                            :class="{ 'border-red-500': form.errors.recurrence_end_date }"
+                                        />
+                                        <div class="text-xs text-gray-500">Dejar vacío para recurrencia indefinida</div>
+                                        <div v-if="form.errors.recurrence_end_date" class="text-sm text-red-600">
+                                            {{ form.errors.recurrence_end_date }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Días antes de notificación -->
+                                <div class="space-y-2">
+                                    <Label for="days_before_notification">Notificar con (días de anticipación)</Label>
+                                    <Input
+                                        id="days_before_notification"
+                                        v-model="form.days_before_notification"
+                                        type="number"
+                                        min="1"
+                                        max="30"
+                                        placeholder="7"
+                                        :class="{ 'border-red-500': form.errors.days_before_notification }"
+                                    />
+                                    <div class="text-xs text-gray-500">
+                                        Los usuarios serán notificados este número de días antes de cada mantenimiento
+                                    </div>
+                                    <div v-if="form.errors.days_before_notification" class="text-sm text-red-600">
+                                        {{ form.errors.days_before_notification }}
+                                    </div>
                                 </div>
                             </div>
                         </div>

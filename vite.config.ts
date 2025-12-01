@@ -37,6 +37,16 @@ export default defineConfig({
         strictPort: false,
         hmr: {
             host: 'localhost',
+            protocol: 'ws',
         },
+        watch: {
+            usePolling: true,
+        },
+        allowedHosts: [
+            'localhost',
+            '127.0.0.1',
+            'host.docker.internal',
+            '.localhost',
+        ],
     },
 });

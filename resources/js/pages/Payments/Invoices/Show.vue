@@ -563,7 +563,7 @@ const viewElectronicInvoice = () => {
                         <CardHeader>
                             <CardTitle>Historial de Pagos</CardTitle>
                             <CardDescription>
-                                Pagos aplicados a esta factura ({{ invoice.payment_applications.filter((app) => app.status === 'active').length }}
+                                Pagos aplicados a esta factura ({{ invoice.payment_applications.filter((app) => app.status === 'activo').length }}
                                 activos)
                             </CardDescription>
                         </CardHeader>

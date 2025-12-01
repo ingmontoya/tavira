@@ -64,6 +64,18 @@ interface Props {
         meta: any;
         links: any;
     };
+    metrics?: {
+        total: number;
+        active: number;
+        completed_this_month: number;
+        critical_priority: number;
+        pending_approval: number;
+        in_progress: number;
+        recurring_active: number;
+        recurring_paused: number;
+        upcoming_recurring: number;
+        total_cost_this_month: number;
+    };
     filters: {
         status?: string;
         priority?: string;
@@ -79,6 +91,20 @@ interface Props {
 const props = defineProps<Props>();
 
 const data = ref(props.maintenanceRequests.data);
+
+// Default metrics if not provided
+const metrics = computed(() => props.metrics || {
+    total: 0,
+    active: 0,
+    completed_this_month: 0,
+    critical_priority: 0,
+    pending_approval: 0,
+    in_progress: 0,
+    recurring_active: 0,
+    recurring_paused: 0,
+    upcoming_recurring: 0,
+    total_cost_this_month: 0,
+});
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
@@ -331,6 +357,73 @@ const breadcrumbs = [
                 :has-staff-configured="hasStaffConfigured"
                 :show-staff-step="true"
             />
+
+            <!-- Metrics/Indicators -->
+            <div v-if="!needsSetup" class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <!-- Total -->
+                <Card class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Total</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ metrics.total }}</p>
+                        </div>
+                        <Wrench class="h-8 w-8 text-blue-500" />
+                    </div>
+                </Card>
+
+                <!-- Active -->
+                <Card class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Activas</p>
+                            <p class="text-2xl font-bold text-blue-600">{{ metrics.active }}</p>
+                        </div>
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                            <span class="text-lg font-bold text-blue-600">•</span>
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- In Progress -->
+                <Card class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">En Progreso</p>
+                            <p class="text-2xl font-bold text-green-600">{{ metrics.in_progress }}</p>
+                        </div>
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                            <span class="text-sm font-bold text-green-600">▶</span>
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- Critical -->
+                <Card class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Críticas</p>
+                            <p class="text-2xl font-bold text-red-600">{{ metrics.critical_priority }}</p>
+                        </div>
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
+                            <span class="text-lg font-bold text-red-600">!</span>
+                        </div>
+                    </div>
+                </Card>
+
+                <!-- Recurring -->
+                <Card class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Recurrentes</p>
+                            <p class="text-2xl font-bold text-purple-600">{{ metrics.recurring_active }}</p>
+                            <p class="text-xs text-gray-500">{{ metrics.upcoming_recurring }} próximas</p>
+                        </div>
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
+                            <span class="text-lg font-bold text-purple-600">↻</span>
+                        </div>
+                    </div>
+                </Card>
+            </div>
 
             <!-- Filters (hidden when setup is needed) -->
             <Card v-if="!needsSetup" class="p-6">

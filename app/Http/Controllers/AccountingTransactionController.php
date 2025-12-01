@@ -17,7 +17,7 @@ class AccountingTransactionController extends Controller
         $conjunto = ConjuntoConfig::where('is_active', true)->first();
 
         $query = AccountingTransaction::forConjunto($conjunto->id)
-            ->with(['entries.account', 'createdBy', 'postedBy']);
+            ->with(['entries.account', 'createdBy', 'postedBy', 'apartment']);
 
         if ($request->filled('status')) {
             $query->byStatus($request->status);
@@ -50,6 +50,10 @@ class AccountingTransactionController extends Controller
                 }
 
                 // Add apartment information to each transaction
+                // Check if apartment relation was loaded via with(), if not load it
+                if (!$transaction->relationLoaded('apartment') && $transaction->apartment_id) {
+                    $transaction->load('apartment');
+                }
                 $apartment = $transaction->apartment;
                 $transaction->apartment_number = $apartment ? $apartment->number : null;
 
@@ -195,6 +199,7 @@ class AccountingTransactionController extends Controller
             'entries.account',
             'createdBy',
             'postedBy',
+            'apartment',
         ]);
 
         // Load reference only if it's not a manual transaction
@@ -221,7 +226,7 @@ class AccountingTransactionController extends Controller
             ->orderBy('code')
             ->get(['id', 'code', 'name', 'account_type', 'is_active', 'requires_third_party', 'nature']);
 
-        $transaction->load('entries.account');
+        $transaction->load(['entries.account', 'apartment']);
 
         $apartments = \App\Models\Apartment::where('conjunto_config_id', $conjunto->id)
             ->orderBy('number')
@@ -275,6 +280,7 @@ class AccountingTransactionController extends Controller
             'transaction_date' => 'required|date',
             'description' => 'required|string|max:500',
             'reference_type' => 'nullable|string|max:50',
+            'apartment_id' => 'nullable|exists:apartments,id',
             'status' => 'required|in:borrador,contabilizado',
             'entries' => 'required|array|min:2',
             'entries.*.account_id' => 'required|exists:chart_of_accounts,id',
@@ -324,6 +330,7 @@ class AccountingTransactionController extends Controller
                 'transaction_date' => $validated['transaction_date'],
                 'description' => $validated['description'],
                 'reference_type' => $validated['reference_type'] ?? 'manual',
+                'apartment_id' => $validated['apartment_id'] ?? null,
             ]);
 
             // Delete existing entries

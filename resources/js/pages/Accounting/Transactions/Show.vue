@@ -234,6 +234,11 @@ const breadcrumbs = [
                                 <p class="text-sm leading-relaxed">{{ transaction.description }}</p>
                             </div>
 
+                            <div v-if="transaction.apartment" class="rounded-lg bg-blue-50 p-3">
+                                <Label class="text-sm font-medium text-blue-700">Apartamento Asignado</Label>
+                                <p class="text-lg font-semibold text-blue-900">{{ transaction.apartment.number }}</p>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <Label class="text-sm font-medium text-muted-foreground">Estado</Label>

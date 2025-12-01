@@ -38,6 +38,18 @@ class MaintenanceRequest extends Model
         'council_approved_at',
         'notes',
         'attachments',
+        'is_recurring',
+        'is_recurring_paused',
+        'recurring_paused_at',
+        'recurring_pause_reason',
+        'recurrence_frequency',
+        'recurrence_interval',
+        'recurrence_start_date',
+        'recurrence_end_date',
+        'next_occurrence_date',
+        'days_before_notification',
+        'last_notified_at',
+        'recurrence_metadata',
     ];
 
     protected $casts = [
@@ -52,6 +64,14 @@ class MaintenanceRequest extends Model
         'attachments' => 'array',
         'vendor_quote_attachments' => 'array',
         'notes' => 'array',
+        'is_recurring' => 'boolean',
+        'is_recurring_paused' => 'boolean',
+        'recurring_paused_at' => 'datetime',
+        'recurrence_start_date' => 'date',
+        'recurrence_end_date' => 'date',
+        'next_occurrence_date' => 'date',
+        'last_notified_at' => 'datetime',
+        'recurrence_metadata' => 'array',
     ];
 
     public const STATUS_CREATED = 'created';
@@ -87,6 +107,18 @@ class MaintenanceRequest extends Model
     public const PROJECT_TYPE_INTERNAL = 'internal';
 
     public const PROJECT_TYPE_EXTERNAL = 'external';
+
+    public const RECURRENCE_DAILY = 'daily';
+
+    public const RECURRENCE_WEEKLY = 'weekly';
+
+    public const RECURRENCE_MONTHLY = 'monthly';
+
+    public const RECURRENCE_QUARTERLY = 'quarterly';
+
+    public const RECURRENCE_SEMI_ANNUAL = 'semi_annual';
+
+    public const RECURRENCE_ANNUAL = 'annual';
 
     public function conjuntoConfig(): BelongsTo
     {
@@ -271,5 +303,208 @@ class MaintenanceRequest extends Model
         ];
 
         return $statusLabels[$nextStatus] ?? null;
+    }
+
+    /**
+     * Calculate the next occurrence date based on recurrence settings
+     */
+    public function calculateNextOccurrence(): ?\Carbon\Carbon
+    {
+        if (! $this->is_recurring || ! $this->recurrence_frequency) {
+            return null;
+        }
+
+        $baseDate = $this->next_occurrence_date ?: $this->recurrence_start_date;
+        if (! $baseDate) {
+            return null;
+        }
+
+        $date = \Carbon\Carbon::parse($baseDate);
+        $interval = $this->recurrence_interval ?? 1;
+
+        switch ($this->recurrence_frequency) {
+            case self::RECURRENCE_DAILY:
+                $date->addDays($interval);
+                break;
+            case self::RECURRENCE_WEEKLY:
+                $date->addWeeks($interval);
+                break;
+            case self::RECURRENCE_MONTHLY:
+                $date->addMonths($interval);
+                break;
+            case self::RECURRENCE_QUARTERLY:
+                $date->addMonths($interval * 3);
+                break;
+            case self::RECURRENCE_SEMI_ANNUAL:
+                $date->addMonths($interval * 6);
+                break;
+            case self::RECURRENCE_ANNUAL:
+                $date->addYears($interval);
+                break;
+        }
+
+        // Check if the next occurrence exceeds the end date
+        if ($this->recurrence_end_date && $date->isAfter($this->recurrence_end_date)) {
+            return null;
+        }
+
+        return $date;
+    }
+
+    /**
+     * Check if maintenance is due soon (within notification window)
+     */
+    public function isDueSoon(): bool
+    {
+        if (! $this->is_recurring || ! $this->next_occurrence_date) {
+            return false;
+        }
+
+        $daysBeforeNotification = $this->days_before_notification ?? 7;
+        $notificationDate = now()->addDays($daysBeforeNotification);
+
+        return $this->next_occurrence_date->isBefore($notificationDate) &&
+               $this->next_occurrence_date->isFuture();
+    }
+
+    /**
+     * Check if notification should be sent
+     */
+    public function shouldNotify(): bool
+    {
+        if (! $this->isDueSoon()) {
+            return false;
+        }
+
+        // Don't notify if already notified recently (within 24 hours)
+        if ($this->last_notified_at && $this->last_notified_at->isAfter(now()->subDay())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Mark maintenance as notified
+     */
+    public function markAsNotified(): void
+    {
+        $this->update(['last_notified_at' => now()]);
+    }
+
+    /**
+     * Update the next occurrence date
+     */
+    public function updateNextOccurrence(): bool
+    {
+        $nextDate = $this->calculateNextOccurrence();
+
+        if ($nextDate) {
+            $this->update(['next_occurrence_date' => $nextDate]);
+
+            return true;
+        }
+
+        // If no next occurrence, mark as non-recurring
+        $this->update([
+            'is_recurring' => false,
+            'next_occurrence_date' => null,
+        ]);
+
+        return false;
+    }
+
+    /**
+     * Get recurrence frequency label
+     */
+    public function getRecurrenceFrequencyLabel(): ?string
+    {
+        if (! $this->is_recurring) {
+            return null;
+        }
+
+        $labels = [
+            self::RECURRENCE_DAILY => 'Diario',
+            self::RECURRENCE_WEEKLY => 'Semanal',
+            self::RECURRENCE_MONTHLY => 'Mensual',
+            self::RECURRENCE_QUARTERLY => 'Trimestral',
+            self::RECURRENCE_SEMI_ANNUAL => 'Semestral',
+            self::RECURRENCE_ANNUAL => 'Anual',
+        ];
+
+        $label = $labels[$this->recurrence_frequency] ?? '';
+
+        if ($this->recurrence_interval > 1) {
+            $label = "Cada {$this->recurrence_interval} ".strtolower($label);
+        }
+
+        return $label;
+    }
+
+    /**
+     * Scope to get recurring maintenance due soon
+     */
+    public function scopeRecurringDueSoon($query, int $days = 7)
+    {
+        return $query->where('is_recurring', true)
+            ->whereNotNull('next_occurrence_date')
+            ->whereDate('next_occurrence_date', '<=', now()->addDays($days))
+            ->whereDate('next_occurrence_date', '>', now());
+    }
+
+    /**
+     * Scope to get maintenance that needs notification
+     */
+    public function scopeNeedsNotification($query)
+    {
+        return $query->where('is_recurring', true)
+            ->where('is_recurring_paused', false)
+            ->whereNotNull('next_occurrence_date')
+            ->where(function ($q) {
+                $q->whereNull('last_notified_at')
+                    ->orWhere('last_notified_at', '<', now()->subDay());
+            })
+            ->whereRaw('DATE(next_occurrence_date) <= DATE_ADD(CURDATE(), INTERVAL days_before_notification DAY)')
+            ->whereDate('next_occurrence_date', '>', now());
+    }
+
+    /**
+     * Pause recurrence
+     */
+    public function pauseRecurrence(?string $reason = null): bool
+    {
+        if (! $this->is_recurring) {
+            return false;
+        }
+
+        return $this->update([
+            'is_recurring_paused' => true,
+            'recurring_paused_at' => now(),
+            'recurring_pause_reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Resume recurrence
+     */
+    public function resumeRecurrence(): bool
+    {
+        if (! $this->is_recurring) {
+            return false;
+        }
+
+        return $this->update([
+            'is_recurring_paused' => false,
+            'recurring_paused_at' => null,
+            'recurring_pause_reason' => null,
+        ]);
+    }
+
+    /**
+     * Check if recurrence is active (not paused)
+     */
+    public function isRecurrenceActive(): bool
+    {
+        return $this->is_recurring && ! $this->is_recurring_paused;
     }
 }

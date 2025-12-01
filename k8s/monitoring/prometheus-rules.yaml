@@ -1,0 +1,111 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tavira-production-alerts
+  namespace: monitoring
+  labels:
+    prometheus: prometheus-kube-prometheus-prometheus
+    release: prometheus
+spec:
+  groups:
+  - name: tavira-production
+    interval: 30s
+    rules:
+    # High Memory Usage Alert
+    - alert: TaviraHighMemoryUsage
+      expr: |
+        (sum(container_memory_working_set_bytes{namespace="default",pod=~"tavira-app.*"})
+        / sum(container_spec_memory_limit_bytes{namespace="default",pod=~"tavira-app.*"})) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "Tavira app memory usage is above 80%"
+        description: "Memory usage is {{ $value }}% for Tavira application pods"
+
+    # High CPU Usage Alert
+    - alert: TaviraHighCPUUsage
+      expr: |
+        sum(rate(container_cpu_usage_seconds_total{namespace="default",pod=~"tavira-app.*"}[5m]))
+        by (pod) * 100 > 80
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "Tavira app CPU usage is above 80%"
+        description: "CPU usage is {{ $value }}% for pod {{ $labels.pod }}"
+
+    # Pod Crash Loop Alert
+    - alert: TaviraPodCrashLoop
+      expr: |
+        rate(kube_pod_container_status_restarts_total{namespace="default",pod=~"tavira.*"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        component: infrastructure
+      annotations:
+        summary: "Tavira pod is crash looping"
+        description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+
+    # High Error Rate Alert
+    - alert: TaviraHighErrorRate
+      expr: |
+        (sum(rate(nginx_ingress_controller_requests{namespace="default",ingress=~"tavira.*",status=~"5.."}[5m]))
+        / sum(rate(nginx_ingress_controller_requests{namespace="default",ingress=~"tavira.*"}[5m]))) * 100 > 5
+      for: 5m
+      labels:
+        severity: critical
+        component: application
+      annotations:
+        summary: "Tavira has high error rate (5xx)"
+        description: "Error rate is {{ $value }}% for the last 5 minutes"
+
+    # Slow Response Time Alert
+    - alert: TaviraSlowResponseTime
+      expr: |
+        histogram_quantile(0.95, sum(rate(nginx_ingress_controller_request_duration_seconds_bucket{namespace="default",ingress=~"tavira.*"}[5m])) by (le)) > 2
+      for: 5m
+      labels:
+        severity: warning
+        component: application
+      annotations:
+        summary: "Tavira response time is slow"
+        description: "P95 response time is {{ $value }}s for the last 5 minutes"
+
+    # PostgreSQL Down Alert
+    - alert: TaviraPostgreSQLDown
+      expr: |
+        up{namespace="default",pod=~"postgres.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: database
+      annotations:
+        summary: "PostgreSQL is down"
+        description: "PostgreSQL database is not responding"
+
+    # Redis Down Alert
+    - alert: TaviraRedisDown
+      expr: |
+        up{namespace="default",pod=~"redis.*"} == 0
+      for: 1m
+      labels:
+        severity: critical
+        component: cache
+      annotations:
+        summary: "Redis is down"
+        description: "Redis cache is not responding"
+
+    # Queue Worker High Restart Rate
+    - alert: TaviraQueueWorkerRestarting
+      expr: |
+        rate(kube_pod_container_status_restarts_total{namespace="default",pod=~"tavira-queue-worker.*"}[1h]) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+        component: queue
+      annotations:
+        summary: "Queue worker is restarting frequently"
+        description: "Queue worker {{ $labels.pod }} is restarting at {{ $value }} restarts/hour"

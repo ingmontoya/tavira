@@ -131,14 +131,14 @@ spec:
         - secretRef:
             name: laravel-env-staging
 
-        # Reduced resources for staging
+        # Optimized resources for staging (right-sized based on actual usage)
         resources:
           requests:
-            cpu: 50m        # Reduced from 100m
-            memory: 128Mi   # Reduced from 256Mi
+            cpu: 30m        # Based on 30m actual usage (light queue load)
+            memory: 128Mi   # Based on 100Mi actual usage + 28% headroom
           limits:
-            cpu: 300m       # Reduced from 500m
-            memory: 256Mi   # Reduced from 512Mi
+            cpu: 200m       # 6.7x requests for job bursts
+            memory: 256Mi   # 2x requests for heavy job processing
 
         # Liveness probe
         livenessProbe:

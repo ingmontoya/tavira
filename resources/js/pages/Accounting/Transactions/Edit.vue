@@ -35,6 +35,10 @@ interface AccountingTransaction {
     description: string;
     transaction_date: string;
     status: string;
+    apartment?: {
+        id: number;
+        number: string;
+    };
     entries: TransactionEntry[];
 }
 
@@ -42,6 +46,7 @@ interface FormData {
     reference: string;
     description: string;
     transaction_date: string;
+    apartment_id: number | null;
     status: string;
     entries: TransactionEntry[];
 }
@@ -82,6 +87,7 @@ const form = useForm<FormData>({
     reference: props.transaction.reference,
     description: props.transaction.description,
     transaction_date: props.transaction.transaction_date,
+    apartment_id: props.transaction.apartment?.id || null,
     status: props.transaction.status,
     entries: props.transaction.entries.map((entry) => ({
         id: entry.id,
@@ -353,6 +359,25 @@ const breadcrumbs = [
                             <p v-if="form.errors.status" class="text-sm text-red-600">
                                 {{ form.errors.status }}
                             </p>
+                        </div>
+
+                        <!-- Apartment (optional) -->
+                        <div class="space-y-2">
+                            <Label for="apartment_id">Apartamento (Opcional)</Label>
+                            <Select v-model="form.apartment_id" :disabled="!canEdit">
+                                <SelectTrigger id="apartment_id">
+                                    <SelectValue placeholder="Seleccionar apartamento (opcional)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem :value="null">Sin apartamento</SelectItem>
+                                    <SelectItem v-for="apartment in apartments" :key="apartment.id"
+                                        :value="apartment.id">
+                                        {{ apartment.number }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p class="text-xs text-muted-foreground">Asigna un apartamento específico a esta
+                                transacción si es relevante</p>
                         </div>
 
                         <!-- Description -->

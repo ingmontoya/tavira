@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CorrespondenceReceived;
 use App\Http\Requests\StoreCorrespondenceRequest;
 use App\Http\Requests\UpdateCorrespondenceRequest;
 use App\Models\Apartment;
@@ -146,6 +147,12 @@ class CorrespondenceController extends Controller
                 ]);
             }
         }
+
+        // Load the apartment relationship before dispatching the event
+        $correspondence->load('apartment');
+
+        // Dispatch event to send notifications
+        CorrespondenceReceived::dispatch($correspondence);
 
         return redirect()->route('correspondence.index')->with('success', 'Correspondencia registrada exitosamente');
     }

@@ -47,6 +47,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Also run a daily check to catch any missed updates
         $schedule->command('tenants:sync-subscription-status')->dailyAt('06:00');
+
+        // Check and notify about upcoming recurring maintenance daily at 08:00
+        $schedule->job(new \App\Jobs\NotifyUpcomingMaintenanceJob)->dailyAt('08:00');
     })
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);

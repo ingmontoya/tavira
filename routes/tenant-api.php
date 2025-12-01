@@ -334,6 +334,10 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
                 ->name('alerts.active');
         });
 
+        // NOTE: Device tokens have been moved to the central API (routes/api.php)
+        // This enables cross-tenant notifications for police/security personnel.
+        // Mobile app should use /api/device-tokens on the central domain.
+
         // === PANIC ALERTS ===
         Route::prefix('panic-alerts')->name('tenant.api.panic-alerts.')
             ->middleware([\App\Http\Middleware\RequiresFeature::class.':panic_button'])
@@ -356,10 +360,18 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
                     ->name('index');
                 Route::get('/active', [\App\Http\Controllers\Api\PanicAlertController::class, 'active'])
                     ->name('active');
+                Route::get('/{panicAlert}', [\App\Http\Controllers\Api\PanicAlertController::class, 'show'])
+                    ->name('show');
                 Route::patch('/{panicAlert}/acknowledge', [\App\Http\Controllers\Api\PanicAlertController::class, 'acknowledge'])
                     ->name('acknowledge');
                 Route::patch('/{panicAlert}/resolve', [\App\Http\Controllers\Api\PanicAlertController::class, 'resolve'])
                     ->name('resolve');
+
+                // Police/Security response routes
+                Route::post('/{panicAlert}/respond', [\App\Http\Controllers\Api\PanicAlertController::class, 'respond'])
+                    ->name('respond');
+                Route::post('/{panicAlert}/reject', [\App\Http\Controllers\Api\PanicAlertController::class, 'reject'])
+                    ->name('reject');
             });
 
         // === ASSEMBLIES & VOTING (with feature flag middleware) ===
