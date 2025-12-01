@@ -334,9 +334,21 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
                 ->name('alerts.active');
         });
 
-        // NOTE: Device tokens have been moved to the central API (routes/api.php)
-        // This enables cross-tenant notifications for police/security personnel.
-        // Mobile app should use /api/device-tokens on the central domain.
+        // === DEVICE TOKENS (also available on central, but needed here for tenant auth) ===
+        // Device tokens are stored in central DB but accessed via tenant API
+        // because Sanctum tokens are tenant-scoped
+        Route::prefix('device-tokens')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\DeviceTokenController::class, 'index'])
+                ->name('tenant.api.device-tokens.index');
+            Route::post('/', [\App\Http\Controllers\Api\DeviceTokenController::class, 'store'])
+                ->name('tenant.api.device-tokens.store');
+            Route::post('/location', [\App\Http\Controllers\Api\DeviceTokenController::class, 'updateLocation'])
+                ->name('tenant.api.device-tokens.update-location');
+            Route::delete('/{token}', [\App\Http\Controllers\Api\DeviceTokenController::class, 'destroy'])
+                ->name('tenant.api.device-tokens.destroy');
+            Route::post('/deactivate-all', [\App\Http\Controllers\Api\DeviceTokenController::class, 'deactivateAll'])
+                ->name('tenant.api.device-tokens.deactivate-all');
+        });
 
         // === PANIC ALERTS ===
         Route::prefix('panic-alerts')->name('tenant.api.panic-alerts.')
