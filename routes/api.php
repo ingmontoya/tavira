@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\FeaturesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
@@ -55,10 +56,19 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         // Protected central API routes (non-tenant specific)
         Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
-            // Central domain functionality only - tenant operations should be in tenant-api.php
-
-            // Note: All tenant operational routes should be in tenant-api.php
-            // This file should only contain central domain functionality
+            // Device tokens - stored centrally for cross-tenant notifications
+            Route::prefix('device-tokens')->group(function () {
+                Route::get('/', [DeviceTokenController::class, 'index'])
+                    ->name('api.device-tokens.index');
+                Route::post('/', [DeviceTokenController::class, 'store'])
+                    ->name('api.device-tokens.store');
+                Route::post('/location', [DeviceTokenController::class, 'updateLocation'])
+                    ->name('api.device-tokens.update-location');
+                Route::delete('/{token}', [DeviceTokenController::class, 'destroy'])
+                    ->name('api.device-tokens.destroy');
+                Route::post('/deactivate-all', [DeviceTokenController::class, 'deactivateAll'])
+                    ->name('api.device-tokens.deactivate-all');
+            });
         });
     });
 }

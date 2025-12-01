@@ -17,11 +17,19 @@ class PanicAlert extends Model
         'lat',
         'lng',
         'status',
+        'responded_by',
+        'responded_at',
+        'response_type',
+        'resolved_by',
+        'resolved_at',
+        'resolution_notes',
     ];
 
     protected $casts = [
         'lat' => 'decimal:7',
         'lng' => 'decimal:7',
+        'responded_at' => 'datetime',
+        'resolved_at' => 'datetime',
     ];
 
     /**
@@ -38,6 +46,22 @@ class PanicAlert extends Model
     public function apartment(): BelongsTo
     {
         return $this->belongsTo(Apartment::class);
+    }
+
+    /**
+     * Get the user who responded to the alert.
+     */
+    public function responder(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responded_by');
+    }
+
+    /**
+     * Get the user who resolved the alert.
+     */
+    public function resolver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 
     /**
@@ -112,5 +136,53 @@ class PanicAlert extends Model
         }
 
         return 'Apartamento no especificado';
+    }
+
+    /**
+     * Get responder display name.
+     */
+    public function getResponderDisplayNameAttribute(): ?string
+    {
+        return $this->responder?->name;
+    }
+
+    /**
+     * Get resolver display name.
+     */
+    public function getResolverDisplayNameAttribute(): ?string
+    {
+        return $this->resolver?->name;
+    }
+
+    /**
+     * Check if alert has been responded to.
+     */
+    public function hasResponder(): bool
+    {
+        return $this->responded_by !== null;
+    }
+
+    /**
+     * Check if alert is available for response (no one has accepted it yet).
+     */
+    public function isAvailableForResponse(): bool
+    {
+        return $this->isActive() && $this->response_type !== 'accepted';
+    }
+
+    /**
+     * Scope to get alerts that are awaiting response.
+     */
+    public function scopeAwaitingResponse($query)
+    {
+        return $query->active()->whereNull('responded_by');
+    }
+
+    /**
+     * Scope to get alerts responded by a specific user.
+     */
+    public function scopeRespondedBy($query, int $userId)
+    {
+        return $query->where('responded_by', $userId);
     }
 }

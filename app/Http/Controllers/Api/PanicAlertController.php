@@ -6,10 +6,16 @@ use App\Events\PanicAlertTriggered;
 use App\Events\PanicAlertUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\PanicAlert;
+use App\Services\FcmService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PanicAlertController extends Controller
 {
+    public function __construct(
+        private FcmService $fcmService
+    ) {}
+
     /**
      * Store a newly created panic alert.
      */
@@ -31,8 +37,27 @@ class PanicAlertController extends Controller
             'status' => 'triggered',
         ]);
 
-        // Broadcast the event
+        // Load relationships for notifications
+        $panicAlert->load(['user', 'apartment']);
+
+        // Broadcast the event (WebSocket)
         event(new PanicAlertTriggered($panicAlert));
+
+        // Send push notifications to police/security (FCM)
+        try {
+            $pushResult = $this->fcmService->sendPanicAlertToPolice($panicAlert);
+            Log::info('Push notifications sent for panic alert', [
+                'alert_id' => $panicAlert->id,
+                'sent_count' => $pushResult['sent_count'] ?? 0,
+                'failed_count' => $pushResult['failed_count'] ?? 0,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send push notifications for panic alert', [
+                'alert_id' => $panicAlert->id,
+                'error' => $e->getMessage(),
+            ]);
+            // Don't fail the request if push fails - WebSocket is the primary channel
+        }
 
         return response()->json([
             'success' => true,
@@ -280,6 +305,142 @@ class PanicAlertController extends Controller
         return response()->json([
             'success' => true,
             'alerts' => $alerts,
+        ]);
+    }
+
+    /**
+     * Respond to a panic alert (police officer accepts to attend).
+     */
+    public function respond(PanicAlert $panicAlert)
+    {
+        // Check if user has permission (police, security roles)
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'policia', 'porteria'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para responder a alertas',
+            ], 403);
+        }
+
+        // Check if alert is still active and available
+        if (! $panicAlert->isAvailableForResponse()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta alerta ya fue atendida por otro oficial',
+                'current_responder' => $panicAlert->responder_display_name,
+            ], 400);
+        }
+
+        // Mark alert as responded
+        $panicAlert->update([
+            'responded_by' => auth()->id(),
+            'responded_at' => now(),
+            'response_type' => 'accepted',
+            'status' => 'confirmed', // Move to confirmed status when someone responds
+        ]);
+
+        // Broadcast the update
+        event(new PanicAlertUpdated($panicAlert->fresh(['user', 'apartment', 'responder'])));
+
+        // Clear cache
+        \Cache::forget('panic_alerts:active:'.tenant('id'));
+
+        Log::info('Panic alert responded to', [
+            'alert_id' => $panicAlert->id,
+            'responder_id' => auth()->id(),
+            'responder_name' => auth()->user()->name,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Has aceptado atender esta alerta',
+            'alert' => [
+                'id' => $panicAlert->id,
+                'status' => $panicAlert->status,
+                'responded_by' => auth()->user()->name,
+                'responded_at' => $panicAlert->responded_at->toISOString(),
+                'user_name' => $panicAlert->user_display_name,
+                'apartment' => $panicAlert->apartment_display_name,
+                'latitude' => $panicAlert->lat,
+                'longitude' => $panicAlert->lng,
+            ],
+        ]);
+    }
+
+    /**
+     * Reject a panic alert (police officer declines to attend).
+     */
+    public function reject(PanicAlert $panicAlert)
+    {
+        // Check if user has permission
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'policia', 'porteria'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para rechazar alertas',
+            ], 403);
+        }
+
+        // Check if alert is still active
+        if (! $panicAlert->isActive()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta alerta ya no está activa',
+            ], 400);
+        }
+
+        // Log the rejection but don't assign the alert to this user
+        // The alert remains available for other officers
+        Log::info('Panic alert rejected', [
+            'alert_id' => $panicAlert->id,
+            'rejected_by' => auth()->id(),
+            'rejected_by_name' => auth()->user()->name,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Has rechazado esta alerta. Otro oficial puede atenderla.',
+            'alert' => [
+                'id' => $panicAlert->id,
+                'status' => $panicAlert->status,
+            ],
+        ]);
+    }
+
+    /**
+     * Get a single panic alert details (for map view after responding).
+     */
+    public function show(PanicAlert $panicAlert)
+    {
+        // Check if user has permission
+        if (! auth()->user()->hasAnyRole(['superadmin', 'admin_conjunto', 'seguridad', 'policia', 'porteria'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes permisos para ver esta alerta',
+            ], 403);
+        }
+
+        $panicAlert->load(['user', 'apartment', 'responder', 'resolver']);
+
+        return response()->json([
+            'success' => true,
+            'alert' => [
+                'id' => $panicAlert->id,
+                'user_name' => $panicAlert->user_display_name,
+                'apartment' => $panicAlert->apartment_display_name,
+                'latitude' => $panicAlert->lat ? (float) $panicAlert->lat : null,
+                'longitude' => $panicAlert->lng ? (float) $panicAlert->lng : null,
+                'location' => $panicAlert->location_string,
+                'status' => $panicAlert->status,
+                'status_badge' => $panicAlert->status_badge,
+                'severity' => 'critical',
+                'created_at' => $panicAlert->created_at->toISOString(),
+                'time_elapsed' => $panicAlert->created_at->diffForHumans(),
+                'responded_by' => $panicAlert->responder_display_name,
+                'responded_at' => $panicAlert->responded_at?->toISOString(),
+                'resolved_by' => $panicAlert->resolver_display_name,
+                'resolved_at' => $panicAlert->resolved_at?->toISOString(),
+                'resolution_notes' => $panicAlert->resolution_notes,
+                'is_active' => $panicAlert->isActive(),
+            ],
         ]);
     }
 
