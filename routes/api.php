@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ConjuntoSearchController;
 use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\FeaturesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -19,6 +20,16 @@ use Illuminate\Support\Facades\Route;
 
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
+        // Public API routes for mobile app registration (no authentication required)
+        Route::prefix('conjuntos')->middleware(['throttle:30,1'])->group(function () {
+            Route::get('/search', [ConjuntoSearchController::class, 'search'])
+                ->name('api.conjuntos.search');
+            Route::get('/{subdomain}/estructura', [ConjuntoSearchController::class, 'getStructure'])
+                ->name('api.conjuntos.structure');
+            Route::get('/{subdomain}/validate', [ConjuntoSearchController::class, 'validateSubdomain'])
+                ->name('api.conjuntos.validate');
+        });
+
         // Internal API routes for inter-app communication (central <-> tenant)
         Route::prefix('internal')->middleware(['throttle:300,1'])->group(function () {
             // Feature flags API for tenant apps
