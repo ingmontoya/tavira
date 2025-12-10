@@ -123,9 +123,9 @@ class ConjuntoSearchController extends Controller
             }
 
             // Get apartments grouped by tower
+            // Show all apartments (including those with residents) for registration
             $apartments = Apartment::query()
                 ->select('id', 'number', 'tower', 'floor')
-                ->whereDoesntHave('residents') // Only show apartments without residents
                 ->orderBy('tower')
                 ->orderBy('floor')
                 ->orderBy('number')
