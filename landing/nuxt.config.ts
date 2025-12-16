@@ -70,7 +70,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/contacto', '/features', '/security', '/red-tavira', '/politica-privacidad']
+      routes: ['/', '/contacto', '/features', '/security', '/red-tavira', '/politica-privacidad', '/terminos-servicio']
     }
   },
 
