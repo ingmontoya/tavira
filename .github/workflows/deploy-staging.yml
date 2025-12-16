@@ -75,6 +75,8 @@ jobs:
             BUILD_ENV=staging
             APP_URL=https://staging.tavira.com.co
             BUILD_ID=${{ steps.version.outputs.short_sha }}
+            NUXT_PUBLIC_SITE_URL=https://staging.tavira.com.co
+            NUXT_PUBLIC_ENV=staging
 
       # 7️⃣ Configure kubectl
       - name: Set up kubectl

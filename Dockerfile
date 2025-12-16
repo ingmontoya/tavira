@@ -126,6 +126,14 @@ RUN echo "Building with APP_URL: ${APP_URL}, BUILD_ID: ${BUILD_ID}" && \
 # =============================================================================
 FROM node:20-alpine AS landing
 
+# Build arguments for environment-specific builds
+ARG NUXT_PUBLIC_SITE_URL=https://tavira.com.co
+ARG NUXT_PUBLIC_ENV=production
+
+# Set environment variables for Nuxt build
+ENV NUXT_PUBLIC_SITE_URL=${NUXT_PUBLIC_SITE_URL}
+ENV NUXT_PUBLIC_ENV=${NUXT_PUBLIC_ENV}
+
 WORKDIR /app/landing
 
 # Copy landing package files
@@ -137,8 +145,9 @@ RUN npm ci
 # Copy landing source files
 COPY landing/ ./
 
-# Generate static site
-RUN npm run generate
+# Generate static site with environment-specific configuration
+RUN echo "Building landing with NUXT_PUBLIC_SITE_URL=${NUXT_PUBLIC_SITE_URL}, NUXT_PUBLIC_ENV=${NUXT_PUBLIC_ENV}" && \
+    npm run generate
 
 # =============================================================================
 # Stage 4: OrbStack Development Image (PHP-FPM with dev tools)
