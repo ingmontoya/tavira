@@ -19,25 +19,14 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => env('CORS_ALLOWED_ORIGINS') ?
-        explode(',', env('CORS_ALLOWED_ORIGINS')) : [
-            'https://localhost:8000',
-            'https://127.0.0.1:8000',
-            'http://localhost:8000',
-            'http://127.0.0.1:8000',
-            'http://localhost:8083',
-            'http://127.0.0.1:8083',
-            'http://192.168.1.21:8083',
-            'http://localhost:3001',
-            'http://127.0.0.1:3000',
-            'http://localhost:5173',
-            'http://127.0.0.1:5173',
-            'http://192.168.1.12:3000',
-            'http://192.168.1.12:3001',
-            'http://192.168.1.12:8000',
-        ],
+    'allowed_origins' => ['*'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [
+        '#^http://127\.0\.0\.1:\d+$#',
+        '#^http://localhost:\d+$#',
+        '#^http://192\.168\.\d+\.\d+:\d+$#',
+        '#^http://192\.168\.\d+\.\d+$#',
+    ],
 
     'allowed_headers' => [
         'Content-Type',

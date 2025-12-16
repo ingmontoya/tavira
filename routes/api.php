@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\ConjuntoSearchController;
 use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\FeaturesController;
+use App\Http\Controllers\Api\SecurityAuthController;
+use App\Http\Controllers\Api\SecurityRegistrationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +65,25 @@ foreach (config('tenancy.central_domains') as $domain) {
                     'user' => $userData,
                 ]);
             })->middleware(['auth:sanctum'])->name('api.user');
+
+            // Security personnel registration and authentication (police, security companies, etc.)
+            Route::prefix('auth/security')->middleware(['throttle:6,1'])->group(function () {
+                // Registration
+                Route::post('/register', [SecurityRegistrationController::class, 'store'])
+                    ->name('api.auth.security.register');
+                Route::post('/verify-email', [SecurityRegistrationController::class, 'verifyEmail'])
+                    ->name('api.auth.security.verify-email');
+                Route::post('/resend-verification', [SecurityRegistrationController::class, 'resendVerification'])
+                    ->name('api.auth.security.resend-verification');
+
+                // Authentication
+                Route::post('/login', [SecurityAuthController::class, 'login'])
+                    ->name('api.auth.security.login');
+                Route::post('/logout', [SecurityAuthController::class, 'logout'])
+                    ->name('api.auth.security.logout');
+                Route::post('/check-status', [SecurityAuthController::class, 'checkStatus'])
+                    ->name('api.auth.security.check-status');
+            });
         });
 
         // Protected central API routes (non-tenant specific)
