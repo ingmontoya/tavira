@@ -58,6 +58,8 @@ jobs:
           cache-to: type=inline
           build-args: |
             BUILD_ENV=staging
+            NUXT_PUBLIC_SITE_URL=https://staging.tavira.com.co
+            NUXT_PUBLIC_ENV=staging
 
       # 6️⃣ Build & push Nuxt image for staging
       - name: Build & Push Nuxt Docker image (staging)
