@@ -96,7 +96,7 @@ services:
       dockerfile: Dockerfile.nginx
     container_name: tavira-nginx
     ports:
-      - "8083:80"
+      - "8084:80"
     volumes:
       # Note: public directory is mounted in override for local dev
       - ./storage:/var/www/html/storage:ro

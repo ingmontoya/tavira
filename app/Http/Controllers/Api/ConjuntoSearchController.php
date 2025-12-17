@@ -31,14 +31,17 @@ class ConjuntoSearchController extends Controller
             ]);
         }
 
-        // Search tenants by data->name (JSON) or id (subdomain)
+        // Search tenants by data->name (JSON), admin_name, or domain
         // Only return active tenants with valid subscriptions
         // Using PostgreSQL JSON syntax: data->>'name' extracts as text
         $tenants = Tenant::query()
             ->where(function ($q) use ($query) {
-                // Search in the 'data' JSON field for name, or by tenant id
+                // Search in the 'data' JSON field for name, admin_name, or by domain
                 $q->whereRaw("COALESCE(data->>'name', '') ILIKE ?", ["%{$query}%"])
-                    ->orWhere('id', 'ilike', "%{$query}%");
+                    ->orWhere('admin_name', 'ilike', "%{$query}%")
+                    ->orWhereHas('domains', function ($dq) use ($query) {
+                        $dq->where('domain', 'ilike', "%{$query}%");
+                    });
             })
             ->whereIn('subscription_status', ['active', 'trial'])
             ->with('domains')
@@ -52,7 +55,7 @@ class ConjuntoSearchController extends Controller
 
             return [
                 'id' => $tenant->id,
-                'name' => $tenant->name ?? $tenant->id,
+                'name' => $tenant->name ?? $tenant->admin_name ?? $tenant->id,
                 'subdomain' => $subdomain,
                 'city' => $tenant->city ?? null,
                 'address' => $tenant->address ?? null,
@@ -120,9 +123,9 @@ class ConjuntoSearchController extends Controller
             }
 
             // Get apartments grouped by tower
+            // Show all apartments (including those with residents) for registration
             $apartments = Apartment::query()
                 ->select('id', 'number', 'tower', 'floor')
-                ->whereDoesntHave('residents') // Only show apartments without residents
                 ->orderBy('tower')
                 ->orderBy('floor')
                 ->orderBy('number')
@@ -177,7 +180,7 @@ class ConjuntoSearchController extends Controller
 
         return response()->json([
             'valid' => true,
-            'name' => $tenant->name ?? $tenant->id,
+            'name' => $tenant->name ?? $tenant->admin_name ?? $tenant->id,
             'subdomain' => $subdomain,
         ]);
     }

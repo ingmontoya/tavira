@@ -71,6 +71,16 @@ foreach (config('tenancy.central_domains') as $domain) {
                 Route::delete('/{provider}', [App\Http\Controllers\CentralProviderController::class, 'destroy'])->name('destroy');
             });
 
+            // Security Personnel Management (Superadmin only)
+            Route::prefix('admin/security-personnel')->name('admin.security-personnel.')->group(function () {
+                Route::get('/', [App\Http\Controllers\SecurityPersonnelAdminController::class, 'index'])->name('index');
+                Route::get('/{personnel}', [App\Http\Controllers\SecurityPersonnelAdminController::class, 'show'])->name('show');
+                Route::post('/{personnel}/approve', [App\Http\Controllers\SecurityPersonnelAdminController::class, 'approve'])->name('approve');
+                Route::post('/{personnel}/reject', [App\Http\Controllers\SecurityPersonnelAdminController::class, 'reject'])->name('reject');
+                Route::post('/{personnel}/suspend', [App\Http\Controllers\SecurityPersonnelAdminController::class, 'suspend'])->name('suspend');
+                Route::post('/{personnel}/reactivate', [App\Http\Controllers\SecurityPersonnelAdminController::class, 'reactivate'])->name('reactivate');
+            });
+
             // Provider Routes (for authenticated providers)
             Route::middleware('role:provider')->prefix('provider')->name('provider.')->group(function () {
                 // Pricing page (no middleware check.provider.plan)

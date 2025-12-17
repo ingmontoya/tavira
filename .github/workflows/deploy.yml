@@ -68,6 +68,11 @@ jobs:
             ${{ env.DOCKER_IMAGE_NUXT }}:${{ steps.version.outputs.tag }}
           cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_NUXT }}:latest
           cache-to: type=inline
+          build-args: |
+            APP_URL=https://tavira.com.co
+            BUILD_ID=${{ steps.version.outputs.short_sha }}
+            NUXT_PUBLIC_SITE_URL=https://tavira.com.co
+            NUXT_PUBLIC_ENV=production
 
       # 7️⃣ Configure kubectl
       - name: Set up kubectl

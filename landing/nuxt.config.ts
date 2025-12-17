@@ -70,7 +70,7 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     prerender: {
       crawlLinks: true,
-      routes: ['/', '/contacto', '/features', '/security', '/red-tavira']
+      routes: ['/', '/contacto', '/features', '/security', '/red-tavira', '/politica-privacidad', '/terminos-servicio']
     }
   },
 
@@ -88,10 +88,11 @@ export default defineNuxtConfig({
 
     // Public keys (exposed to client)
     public: {
-      siteUrl: 'https://tavira.com.co',
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://tavira.com.co',
       siteName: 'Tavira',
       siteDescription: 'Software líder para administración de conjuntos residenciales en Colombia',
-      language: 'es-CO'
+      language: 'es-CO',
+      environment: process.env.NUXT_PUBLIC_ENV || 'production'
     }
   },
 

@@ -146,9 +146,9 @@
 
           <h5 class="mb-4 text-sm font-semibold text-white">{{ $t('footer.legal') }}</h5>
           <ul class="space-y-2 text-xs text-white/70">
-            <li><a href="#" class="transition-colors duration-200 hover:text-secondary">Términos de Servicio</a></li>
-            <li><a href="#" class="transition-colors duration-200 hover:text-secondary">Política de Privacidad</a></li>
-            <li><a href="#" class="transition-colors duration-200 hover:text-secondary">RGPD & Ley 1581</a></li>
+            <li><NuxtLink to="/terminos-servicio" class="transition-colors duration-200 hover:text-secondary">Términos de Servicio</NuxtLink></li>
+            <li><NuxtLink to="/politica-privacidad" class="transition-colors duration-200 hover:text-secondary">Política de Privacidad</NuxtLink></li>
+            <li><NuxtLink to="/politica-privacidad#2" class="transition-colors duration-200 hover:text-secondary">Ley 1581 & Habeas Data</NuxtLink></li>
           </ul>
         </div>
       </div>
