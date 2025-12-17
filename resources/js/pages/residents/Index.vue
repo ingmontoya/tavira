@@ -49,7 +49,7 @@ export interface Resident {
         };
     };
     resident_type: 'Owner' | 'Tenant' | 'Family';
-    status: 'Active' | 'Inactive';
+    status: 'Active' | 'Inactive' | 'Pending';
 }
 
 const props = defineProps<{
@@ -97,7 +97,7 @@ const uniqueResidentTypes = computed(() => {
 });
 
 const uniqueStatuses = computed(() => {
-    return ['Active', 'Inactive'];
+    return ['Active', 'Inactive', 'Pending'];
 });
 
 // Check if custom filters are active
@@ -255,14 +255,18 @@ const columns = [
         header: 'Estado',
         cell: ({ row }) => {
             const status = row.getValue('status') as string;
+            const statusMap: Record<string, { label: string; class: string }> = {
+                Active: { label: 'Activo', class: 'bg-green-100 text-green-800' },
+                Inactive: { label: 'Inactivo', class: 'bg-red-100 text-red-800' },
+                Pending: { label: 'Pendiente', class: 'bg-amber-100 text-amber-800' },
+            };
+            const statusInfo = statusMap[status] || { label: status, class: 'bg-gray-100 text-gray-800' };
             return h(
                 'span',
                 {
-                    class: `inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                        status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`,
+                    class: `inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${statusInfo.class}`,
                 },
-                status === 'Active' ? 'Activo' : 'Inactivo',
+                statusInfo.label,
             );
         },
     }),
@@ -406,6 +410,7 @@ onMounted(() => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos los estados</SelectItem>
+                                    <SelectItem value="Pending">Pendiente</SelectItem>
                                     <SelectItem value="Active">Activo</SelectItem>
                                     <SelectItem value="Inactive">Inactivo</SelectItem>
                                 </SelectContent>
