@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ResidentRegistrationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CorrespondenceController;
 use App\Http\Controllers\InvoiceController;
@@ -31,6 +32,11 @@ Route::prefix('api')->middleware(['throttle:60,1'])->group(function () {
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
         ->middleware(['guest', 'throttle:6,1'])
         ->name('tenant.api.login');
+
+    // Register (guest middleware) - for mobile app resident self-registration
+    Route::post('/auth/register', [ResidentRegistrationController::class, 'store'])
+        ->middleware(['guest', 'throttle:6,1'])
+        ->name('tenant.api.register');
 
     // === CACHE CLEAR ENDPOINT ===
     Route::get('/debug/clear-cache', function () {
