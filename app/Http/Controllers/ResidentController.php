@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Apartment;
 use App\Models\Resident;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +21,6 @@ class ResidentController extends Controller
         $query = Resident::with('apartment');
 
         if ($request->filled('search')) {
-            dd('sup');
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -93,7 +94,7 @@ class ResidentController extends Controller
             'emergency_contact' => ['nullable', 'string'],
             'apartment_id' => ['required', 'exists:apartments,id'],
             'resident_type' => ['required', 'in:Owner,Tenant,Family'],
-            'status' => ['required', 'in:Active,Inactive'],
+            'status' => ['required', 'in:Active,Inactive,Pending'],
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after:start_date'],
             'notes' => ['nullable', 'string'],
@@ -158,7 +159,7 @@ class ResidentController extends Controller
             'emergency_contact' => ['nullable', 'string'],
             'apartment_id' => ['required', 'exists:apartments,id'],
             'resident_type' => ['required', 'in:Owner,Tenant,Family'],
-            'status' => ['required', 'in:Active,Inactive'],
+            'status' => ['required', 'in:Active,Inactive,Pending'],
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after:start_date'],
             'notes' => ['nullable', 'string'],
@@ -188,5 +189,69 @@ class ResidentController extends Controller
         $resident->delete();
 
         return redirect()->route('residents.index')->with('success', 'Residente eliminado exitosamente.');
+    }
+
+    /**
+     * Approve a pending resident registration.
+     * This activates both the resident record and the associated user account.
+     */
+    public function approve(Resident $resident): RedirectResponse
+    {
+        if ($resident->status !== 'Pending') {
+            return back()->with('error', 'Solo se pueden aprobar residentes pendientes.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Activate the resident
+            $resident->update(['status' => 'Active']);
+
+            // Find and activate the associated user by email
+            $user = User::where('email', $resident->email)->first();
+            if ($user) {
+                $user->update(['is_active' => true]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('residents.index')->with('success', 'Residente aprobado exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Error al aprobar el residente: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Reject a pending resident registration.
+     * This deactivates the resident record and the associated user account.
+     */
+    public function reject(Resident $resident): RedirectResponse
+    {
+        if ($resident->status !== 'Pending') {
+            return back()->with('error', 'Solo se pueden rechazar residentes pendientes.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Set resident to Inactive
+            $resident->update(['status' => 'Inactive']);
+
+            // Find and deactivate the associated user by email
+            $user = User::where('email', $resident->email)->first();
+            if ($user) {
+                $user->update(['is_active' => false]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('residents.index')->with('success', 'Residente rechazado.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Error al rechazar el residente: '.$e->getMessage());
+        }
     }
 }

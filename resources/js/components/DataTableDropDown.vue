@@ -20,7 +20,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { router } from '@inertiajs/vue3';
-import { CheckCircle, Clock, Copy, Edit, Eye, MoreHorizontal, Play, QrCode, RefreshCw, Trash2 } from 'lucide-vue-next';
+import { CheckCircle, Clock, Copy, Edit, Eye, MoreHorizontal, Play, QrCode, RefreshCw, Trash2, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -50,6 +50,16 @@ const deleteResident = () => {
 
 const copyResidentCode = () => {
     navigator.clipboard.writeText(props.resident.document_number);
+};
+
+const approveResident = () => {
+    router.post(`/residents/${props.resident.id}/approve`);
+};
+
+const rejectResident = () => {
+    if (confirm('¿Está seguro que desea rechazar este residente? Su cuenta quedará inactiva.')) {
+        router.post(`/residents/${props.resident.id}/reject`);
+    }
 };
 
 // Apartment actions
@@ -152,6 +162,18 @@ const viewBudgetExecution = () => {
                     <Edit class="mr-2 h-4 w-4" />
                     Editar
                 </DropdownMenuItem>
+                <!-- Approval actions for pending residents -->
+                <template v-if="resident.status === 'Pending'">
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem @click="approveResident" class="text-green-600">
+                        <CheckCircle class="mr-2 h-4 w-4" />
+                        Aprobar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="rejectResident" class="text-red-600">
+                        <XCircle class="mr-2 h-4 w-4" />
+                        Rechazar
+                    </DropdownMenuItem>
+                </template>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem @click="deleteResident" class="text-red-600">
                     <Trash2 class="mr-2 h-4 w-4" />
