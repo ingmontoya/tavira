@@ -68,12 +68,13 @@ class ResidentRegistrationController extends Controller
         try {
             DB::beginTransaction();
 
-            // Create the user
+            // Create the user (inactive until approved)
             $user = User::create([
                 'name' => $request->name,
                 'email' => strtolower(trim($request->email)),
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
+                'is_active' => false, // Inactive until admin approves
             ]);
 
             // Assign resident role
@@ -88,10 +89,9 @@ class ResidentRegistrationController extends Controller
             $existingResident = Resident::where('email', strtolower(trim($request->email)))->first();
 
             if (! $existingResident) {
-                // Create a resident record
+                // Create a resident record with Pending status (requires admin approval)
                 Resident::create([
                     'apartment_id' => $apartment->id,
-                    'user_id' => $user->id,
                     'document_type' => 'CC',
                     'document_number' => 'PENDIENTE_'.$user->id,
                     'first_name' => $firstName,
@@ -99,34 +99,28 @@ class ResidentRegistrationController extends Controller
                     'email' => strtolower(trim($request->email)),
                     'phone' => $request->phone,
                     'resident_type' => 'Tenant', // Default to tenant, admin can change later
+                    'status' => 'Pending', // Requires admin approval
                     'start_date' => now()->toDateString(),
                 ]);
             } else {
-                // Update existing resident to link with user
+                // Update existing resident to pending status
                 $existingResident->update([
-                    'user_id' => $user->id,
                     'apartment_id' => $apartment->id,
+                    'status' => 'Pending', // Requires admin approval
                 ]);
             }
 
             DB::commit();
 
-            // Fire registered event (for email verification, etc.)
+            // Fire registered event (sends email verification)
             event(new Registered($user));
 
-            // Generate API token
-            $token = $user->createToken('mobile-app')->plainTextToken;
-
-            // Load user with relationships
-            $user->load(['resident.apartment.apartmentType', 'roles']);
-
-            $userData = $user->toArray();
-            $userData['role'] = $user->roles->first()?->name ?? 'residente';
-
+            // DO NOT generate token - user must verify email AND be approved by admin
             return response()->json([
-                'message' => 'Registro exitoso',
-                'token' => $token,
-                'user' => $userData,
+                'message' => 'Registro exitoso. Por favor verifica tu correo electrónico. Tu cuenta será activada una vez que el administrador del conjunto la apruebe.',
+                'requires_verification' => true,
+                'requires_approval' => true,
+                'email' => $user->email,
             ], 201);
 
         } catch (\Exception $e) {
