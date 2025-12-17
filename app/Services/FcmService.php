@@ -41,10 +41,11 @@ class FcmService
      * 2. Security personnel from nearby tenants (within alert radius)
      *
      * @param  PanicAlert  $alert  The panic alert to notify about
-     * @param  string  $tenantId  The tenant where the alert originated
+     * @param  string|null  $tenantId  The tenant where the alert originated (defaults to current tenant)
      */
-    public function sendPanicAlertToPolice(PanicAlert $alert, string $tenantId): array
+    public function sendPanicAlertToPolice(PanicAlert $alert, ?string $tenantId = null): array
     {
+        $tenantId = $tenantId ?? tenant('id');
         $tenant = Tenant::find($tenantId);
 
         if (! $tenant) {
