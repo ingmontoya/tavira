@@ -186,9 +186,25 @@ class ResidentController extends Controller
 
     public function destroy(Resident $resident): RedirectResponse
     {
-        $resident->delete();
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('residents.index')->with('success', 'Residente eliminado exitosamente.');
+            // Find and delete the associated user by email (for self-registered residents)
+            $user = User::where('email', $resident->email)->first();
+            if ($user) {
+                $user->delete();
+            }
+
+            $resident->delete();
+
+            DB::commit();
+
+            return redirect()->route('residents.index')->with('success', 'Residente eliminado exitosamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Error al eliminar el residente: '.$e->getMessage());
+        }
     }
 
     /**
