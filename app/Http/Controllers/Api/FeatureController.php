@@ -104,6 +104,13 @@ class FeatureController extends Controller
                         'version' => '1.0.0',
                     ],
                 ],
+                'payments' => [
+                    'enabled' => true,
+                    'metadata' => [
+                        'description' => 'Payment management and billing',
+                        'version' => '1.0.0',
+                    ],
+                ],
             ];
 
             // Override with actual tenant feature settings from database
@@ -273,6 +280,13 @@ class FeatureController extends Controller
                 'enabled' => true,
                 'metadata' => [
                     'description' => 'Emergency panic button for security alerts',
+                    'version' => '1.0.0',
+                ],
+            ],
+            'payments' => [
+                'enabled' => true,
+                'metadata' => [
+                    'description' => 'Payment management and billing',
                     'version' => '1.0.0',
                 ],
             ],

@@ -163,8 +163,10 @@ export function useFeatures() {
             visitor_management: 'Gestión de Visitantes',
             security_scanner: 'Escáner de Seguridad QR',
             access_control: 'Control de Acceso',
+            panic_button: 'panic_button',
 
             // Finanzas y Contabilidad
+            payments: 'Pagos',
             accounting: 'Contabilidad Completa',
             payment_agreements: 'Acuerdos de Pago',
             expense_approvals: 'Aprobaciones de Gastos',
@@ -186,6 +188,9 @@ export function useFeatures() {
             system_settings: 'Configuración del Sistema',
             audit_logs: 'Auditoría y Logs',
             bulk_operations: 'Operaciones Masivas',
+
+            // Asambleas y Votaciones
+            voting: 'voting',
         };
         return labels[feature] || feature;
     };

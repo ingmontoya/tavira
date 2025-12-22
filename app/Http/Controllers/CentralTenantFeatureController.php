@@ -299,6 +299,7 @@ class CentralTenantFeatureController extends Controller
             'panic_button',
 
             // Finanzas y Contabilidad
+            'payments',
             'accounting',
             'payment_agreements',
             'expense_approvals',
@@ -381,6 +382,7 @@ class CentralTenantFeatureController extends Controller
                     'institutional_email',
                     'messaging',
                     'visitor_management',
+                    'payments',
                     'accounting',
                     'reservations',
                     'security_scanner',
@@ -409,6 +411,7 @@ class CentralTenantFeatureController extends Controller
                     'security_scanner',
                     'access_control',
                     'panic_button',
+                    'payments',
                     'accounting',
                     'payment_agreements',
                     'expense_approvals',
@@ -441,6 +444,7 @@ class CentralTenantFeatureController extends Controller
                     'security_scanner',
                     'access_control',
                     'panic_button',
+                    'payments',
                     'accounting',
                     'payment_agreements',
                     'expense_approvals',
