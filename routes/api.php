@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ConjuntoSearchController;
 use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\FeaturesController;
+use App\Http\Controllers\Api\ProviderRegistrationController;
 use App\Http\Controllers\Api\SecurityAuthController;
 use App\Http\Controllers\Api\SecurityRegistrationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -83,6 +84,14 @@ foreach (config('tenancy.central_domains') as $domain) {
                     ->name('api.auth.security.logout');
                 Route::post('/check-status', [SecurityAuthController::class, 'checkStatus'])
                     ->name('api.auth.security.check-status');
+            });
+
+            // Provider registration (service providers for residential complexes)
+            Route::prefix('provider-register')->middleware(['throttle:6,1'])->group(function () {
+                Route::get('/categories', [ProviderRegistrationController::class, 'categories'])
+                    ->name('api.provider-register.categories');
+                Route::post('/', [ProviderRegistrationController::class, 'store'])
+                    ->name('api.provider-register.store');
             });
         });
 
