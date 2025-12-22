@@ -72,7 +72,7 @@ const props = defineProps<{
     };
 }>();
 
-const data: Resident[] = props.residents.data;
+const data = computed(() => props.residents.data);
 
 // Custom filters state
 const customFilters = ref({
@@ -120,7 +120,7 @@ const clearCustomFilters = () => {
 
 // Apply custom filters to data
 const filteredData = computed(() => {
-    let filtered = data;
+    let filtered = data.value;
 
     // Search filter
     if (customFilters.value.search) {

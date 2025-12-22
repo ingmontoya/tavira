@@ -44,7 +44,9 @@ const editResident = () => {
 
 const deleteResident = () => {
     if (confirm('¿Está seguro que desea eliminar este residente?')) {
-        router.delete(`/residents/${props.resident.id}`);
+        router.delete(`/residents/${props.resident.id}`, {
+            preserveScroll: true,
+        });
     }
 };
 
@@ -53,12 +55,16 @@ const copyResidentCode = () => {
 };
 
 const approveResident = () => {
-    router.post(`/residents/${props.resident.id}/approve`);
+    router.post(`/residents/${props.resident.id}/approve`, {}, {
+        preserveScroll: true,
+    });
 };
 
 const rejectResident = () => {
     if (confirm('¿Está seguro que desea rechazar este residente? Su cuenta quedará inactiva.')) {
-        router.post(`/residents/${props.resident.id}/reject`);
+        router.post(`/residents/${props.resident.id}/reject`, {}, {
+            preserveScroll: true,
+        });
     }
 };
 
