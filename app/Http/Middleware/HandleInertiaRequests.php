@@ -60,8 +60,9 @@ class HandleInertiaRequests extends Middleware
     {
         $upcomingMaintenance = null;
 
-        // Get upcoming maintenance notifications for authenticated users
-        if ($request->user()) {
+        // Get upcoming maintenance notifications for authenticated users in tenant context only
+        // The maintenance_requests table only exists in tenant databases, not in the central database
+        if ($request->user() && tenancy()->initialized) {
             $upcomingMaintenance = \App\Models\MaintenanceRequest::recurringDueSoon(30)
                 ->with('maintenanceCategory')
                 ->orderBy('next_occurrence_date')
