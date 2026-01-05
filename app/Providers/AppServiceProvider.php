@@ -63,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
             'apartment' => \App\Models\Apartment::class,
             'resident' => \App\Models\Resident::class,
             'supplier' => \App\Models\Supplier::class,
+            'security_personnel' => \App\Models\SecurityPersonnel::class,
         ]);
 
         // Registrar driver personalizado de Pennant
