@@ -8,7 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 /**
  * API controller for security personnel authentication
@@ -89,11 +88,12 @@ class SecurityAuthController extends Controller
             ], 403);
         }
 
-        // Generate token for API authentication
-        $token = Str::random(60);
+        // Delete existing tokens for this personnel
+        $personnel->tokens()->delete();
 
-        // For now, store the token in the session or return it directly
-        // In a real implementation, you would use Sanctum or Passport
+        // Create a new Sanctum token
+        $token = $personnel->createToken('security-mobile-app')->plainTextToken;
+
         return response()->json([
             'success' => true,
             'message' => 'Inicio de sesión exitoso',
@@ -115,12 +115,28 @@ class SecurityAuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        // This would require proper token validation with Sanctum/Passport
-        // For now, return a placeholder response
+        $personnel = $request->user();
+
+        if (!$personnel || !($personnel instanceof SecurityPersonnel)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autenticado',
+            ], 401);
+        }
+
         return response()->json([
-            'success' => false,
-            'message' => 'Authentication required',
-        ], 401);
+            'success' => true,
+            'user' => [
+                'id' => $personnel->id,
+                'name' => $personnel->name,
+                'email' => $personnel->email,
+                'phone' => $personnel->phone,
+                'organization_type' => $personnel->organization_type,
+                'organization_name' => $personnel->organization_name,
+                'role' => 'security_' . $personnel->organization_type,
+                'status' => $personnel->status,
+            ],
+        ]);
     }
 
     /**

@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * Security personnel model for police, security companies, etc.
@@ -17,9 +18,9 @@ use Illuminate\Support\Str;
  * 4. rejected - Admin rejected the registration
  * 5. suspended - Admin suspended the account
  */
-class SecurityPersonnel extends Model
+class SecurityPersonnel extends Authenticatable
 {
-    use HasUuids;
+    use HasUuids, HasApiTokens;
 
     protected $table = 'security_personnel';
 

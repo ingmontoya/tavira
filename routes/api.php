@@ -84,6 +84,12 @@ foreach (config('tenancy.central_domains') as $domain) {
                     ->name('api.auth.security.logout');
                 Route::post('/check-status', [SecurityAuthController::class, 'checkStatus'])
                     ->name('api.auth.security.check-status');
+
+                // Protected routes for security personnel
+                Route::middleware(['auth:sanctum'])->group(function () {
+                    Route::get('/me', [SecurityAuthController::class, 'me'])
+                        ->name('api.auth.security.me');
+                });
             });
 
             // Provider registration (service providers for residential complexes)
