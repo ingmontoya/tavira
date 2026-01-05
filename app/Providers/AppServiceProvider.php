@@ -17,12 +17,14 @@ use App\Listeners\UpdateBudgetExecutionFromTransaction;
 use App\Listeners\UpdateExtraordinaryAssessmentProgress;
 use App\Models\ConjuntoConfig;
 use App\Observers\ConjuntoConfigObserver;
+use App\Models\CentralPersonalAccessToken;
 use App\Services\FeatureFlags\CentralApiDriver;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Pennant\Feature;
+use Laravel\Sanctum\Sanctum;
 use Stancl\Tenancy\Events\SyncedResourceSaved;
 use Stancl\Tenancy\Events\TenantCreated;
 
@@ -50,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
             // The TrustProxies middleware will correctly detect the domain from X-Forwarded-Host
             // Only the HTTPS scheme needs to be forced
         }
+
+        // Use custom PersonalAccessToken that always uses the central database
+        // This is necessary for multi-tenant apps where tokens are stored centrally
+        Sanctum::usePersonalAccessTokenModel(CentralPersonalAccessToken::class);
 
         // Configurar mapa de morfos para relaciones polimórficas
         Relation::enforceMorphMap([
