@@ -42,7 +42,8 @@ return [
         ],
         'sanctum' => [
             'driver' => 'sanctum',
-            'provider' => 'users',
+            // Note: provider is intentionally omitted to allow multi-model token auth
+            // (User, SecurityPersonnel, etc.) via the HasApiTokens trait
         ],
         'security' => [
             'driver' => 'session',
