@@ -21,7 +21,7 @@ class SecurityEmailVerificationController extends Controller
         $token = $request->query('token');
 
         if (!$token || strlen($token) !== 64) {
-            return Inertia::render('Auth/SecurityVerifyEmailResult', [
+            return Inertia::render('auth/SecurityVerifyEmailResult', [
                 'success' => false,
                 'message' => 'El enlace de verificacion no es valido.',
             ]);
@@ -30,7 +30,7 @@ class SecurityEmailVerificationController extends Controller
         $personnel = SecurityPersonnel::where('email_verification_token', $token)->first();
 
         if (!$personnel) {
-            return Inertia::render('Auth/SecurityVerifyEmailResult', [
+            return Inertia::render('auth/SecurityVerifyEmailResult', [
                 'success' => false,
                 'message' => 'El enlace de verificacion ha expirado o no es valido.',
             ]);
@@ -38,7 +38,7 @@ class SecurityEmailVerificationController extends Controller
 
         // Check if already verified
         if ($personnel->hasVerifiedEmail()) {
-            return Inertia::render('Auth/SecurityVerifyEmailResult', [
+            return Inertia::render('auth/SecurityVerifyEmailResult', [
                 'success' => true,
                 'message' => 'Tu correo electronico ya ha sido verificado.',
                 'alreadyVerified' => true,
@@ -49,7 +49,7 @@ class SecurityEmailVerificationController extends Controller
         // Verify the email
         $personnel->verifyEmail($token);
 
-        return Inertia::render('Auth/SecurityVerifyEmailResult', [
+        return Inertia::render('auth/SecurityVerifyEmailResult', [
             'success' => true,
             'message' => 'Tu correo electronico ha sido verificado exitosamente.',
             'status' => 'pending_admin_approval',
