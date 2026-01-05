@@ -38,6 +38,7 @@ class DeviceToken extends Model
     ];
 
     protected $casts = [
+        'user_id' => 'string', // Can be bigint (User) or UUID (SecurityPersonnel)
         'is_active' => 'boolean',
         'last_used_at' => 'datetime',
         'location_updated_at' => 'datetime',
@@ -47,10 +48,28 @@ class DeviceToken extends Model
 
     /**
      * Get the user that owns this device token.
+     * Returns User or SecurityPersonnel based on user_type.
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        if ($this->user_type === 'security_personnel') {
+            return $this->belongsTo(SecurityPersonnel::class, 'user_id');
+        }
+
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the tokenable model (User or SecurityPersonnel).
+     * This provides a consistent interface regardless of user type.
+     */
+    public function getTokenableAttribute()
+    {
+        if ($this->user_type === 'security_personnel') {
+            return SecurityPersonnel::find($this->user_id);
+        }
+
+        return User::find($this->user_id);
     }
 
     /**
