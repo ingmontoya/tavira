@@ -19,4 +19,11 @@ class CentralPersonalAccessToken extends SanctumPersonalAccessToken
      * @var string
      */
     protected $connection = 'central';
+
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'personal_access_tokens';
 }
