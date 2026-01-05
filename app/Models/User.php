@@ -16,6 +16,19 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
+     * Override the tokens relationship to use TenantPersonalAccessToken.
+     *
+     * This ensures tokens are stored in the tenant database (not central),
+     * allowing proper authentication for tenant users via Sanctum.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function tokens()
+    {
+        return $this->morphMany(TenantPersonalAccessToken::class, 'tokenable');
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
