@@ -22,6 +22,12 @@ class SecurityPersonnel extends Authenticatable
 {
     use HasUuids, HasApiTokens;
 
+    /**
+     * Use the central database connection.
+     * SecurityPersonnel are stored centrally, not per tenant.
+     */
+    protected $connection = 'central';
+
     protected $table = 'security_personnel';
 
     protected $fillable = [
