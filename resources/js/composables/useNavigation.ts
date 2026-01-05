@@ -637,6 +637,12 @@ export function useNavigation() {
             ],
         },
         {
+            title: 'Personal de Seguridad',
+            href: '/admin/security-personnel',
+            icon: Shield,
+            visible: true,
+        },
+        {
             title: 'Gestión de Features',
             href: '/tenant-features',
             icon: Settings,
