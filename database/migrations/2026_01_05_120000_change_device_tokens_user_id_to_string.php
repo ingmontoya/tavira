@@ -18,14 +18,32 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Try to drop the foreign key constraint if it exists
-        // Some environments may not have it, so we wrap in try-catch
-        try {
+        // Check if column is already varchar (migration might have partially run)
+        $columnInfo = DB::select("
+            SELECT data_type FROM information_schema.columns
+            WHERE table_name = 'device_tokens' AND column_name = 'user_id'
+        ");
+
+        $isAlreadyString = !empty($columnInfo) &&
+            in_array($columnInfo[0]->data_type, ['character varying', 'varchar', 'text']);
+
+        if ($isAlreadyString) {
+            // Column already converted, nothing to do
+            return;
+        }
+
+        // Check if foreign key exists before trying to drop it
+        $foreignKeyExists = DB::select("
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE LOWER(constraint_name) = 'device_tokens_user_id_foreign'
+            AND LOWER(table_name) = 'device_tokens'
+            AND constraint_type = 'FOREIGN KEY'
+        ");
+
+        if (!empty($foreignKeyExists)) {
             Schema::table('device_tokens', function (Blueprint $table) {
                 $table->dropForeign(['user_id']);
             });
-        } catch (\Exception $e) {
-            // Foreign key doesn't exist, continue
         }
 
         // Change column type from bigint to string
