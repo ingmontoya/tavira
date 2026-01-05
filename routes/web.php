@@ -33,6 +33,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::get('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'create'])
             ->name('provider-register');
 
+        // Security personnel email verification (public route - no auth required)
+        Route::get('/security/verify-email', [App\Http\Controllers\SecurityEmailVerificationController::class, 'verify'])
+            ->name('security.verify-email');
+
         Route::post('/provider-register', [App\Http\Controllers\ProviderRegistrationController::class, 'store'])
             ->name('provider-register.store');
 
