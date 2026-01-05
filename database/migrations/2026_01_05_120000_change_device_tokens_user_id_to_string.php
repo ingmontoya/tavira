@@ -18,19 +18,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First, drop the foreign key constraint
-        Schema::table('device_tokens', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-        });
+        // Try to drop the foreign key constraint if it exists
+        // Some environments may not have it, so we wrap in try-catch
+        try {
+            Schema::table('device_tokens', function (Blueprint $table) {
+                $table->dropForeign(['user_id']);
+            });
+        } catch (\Exception $e) {
+            // Foreign key doesn't exist, continue
+        }
 
         // Change column type from bigint to string
         // Using raw SQL for PostgreSQL compatibility
         DB::statement('ALTER TABLE device_tokens ALTER COLUMN user_id TYPE VARCHAR(36)');
-
-        // Re-add index (no foreign key since we now have polymorphic relationship)
-        Schema::table('device_tokens', function (Blueprint $table) {
-            // Index already exists from original migration, just ensure it works with new type
-        });
     }
 
     /**
