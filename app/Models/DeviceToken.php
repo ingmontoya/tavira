@@ -25,6 +25,7 @@ class DeviceToken extends Model
 
     protected $fillable = [
         'user_id',
+        'user_type',
         'tenant_id',
         'token',
         'platform',
@@ -102,6 +103,14 @@ class DeviceToken extends Model
     }
 
     /**
+     * Scope to get tokens for SecurityPersonnel users.
+     */
+    public function scopeForSecurityPersonnel($query)
+    {
+        return $query->where('user_type', 'security_personnel');
+    }
+
+    /**
      * Scope to get tokens within a radius of given coordinates.
      *
      * Uses the Haversine formula to calculate distance.
@@ -167,6 +176,16 @@ class DeviceToken extends Model
 
     /**
      * Get all tokens for security users in a tenant and nearby tenants.
+     *
+     * This method returns tokens for:
+     * 1. All users with devices in the same tenant (porteria, admin, residents)
+     * 2. SecurityPersonnel users (police) - these have user_type='security_personnel' and tenant_id=NULL
+     * 3. Users from nearby tenants (within alert radius) if coordinates are available
+     *
+     * @param  string  $tenantId  The tenant where the alert originated
+     * @param  float|null  $alertLatitude  Alert latitude for proximity search
+     * @param  float|null  $alertLongitude  Alert longitude for proximity search
+     * @return \Illuminate\Support\Collection
      */
     public static function getSecurityTokensForAlert(
         string $tenantId,
@@ -179,23 +198,49 @@ class DeviceToken extends Model
             return collect();
         }
 
-        // Start with tokens from the same tenant
-        $query = static::active()->where('tenant_id', $tenantId);
+        $radius = $tenant->alert_radius_km ?? 5.0;
+        $allTokens = collect();
 
-        // If we have alert coordinates and tenant has a location, also get nearby tokens
-        if ($alertLatitude && $alertLongitude && $tenant->latitude && $tenant->longitude) {
-            $radius = $tenant->alert_radius_km ?? 5.0;
+        // 1. Get tokens from users in the same tenant (porteria, residents, admins)
+        $tenantTokens = static::active()->where('tenant_id', $tenantId)->get();
+        $allTokens = $allTokens->merge($tenantTokens);
 
-            // Get tokens from nearby locations (including other tenants)
-            $nearbyQuery = static::active()
+        // 2. Get tokens from SecurityPersonnel (police users with user_type='security_personnel')
+        // These users don't have tenant_id as they're global/central users
+        $securityPersonnelTokens = static::active()
+            ->forSecurityPersonnel()
+            ->get();
+
+        // If we have alert coordinates, filter SecurityPersonnel by proximity
+        if ($alertLatitude && $alertLongitude && $securityPersonnelTokens->isNotEmpty()) {
+            // Get only SecurityPersonnel tokens within radius
+            $nearbySecurityTokens = static::active()
+                ->forSecurityPersonnel()
                 ->withinRadius($alertLatitude, $alertLongitude, $radius)
-                ->where('tenant_id', '!=', $tenantId);
+                ->get();
 
-            // Combine both queries
-            return $query->get()->merge($nearbyQuery->get())->unique('id');
+            // Also include SecurityPersonnel tokens without location (they might be new)
+            $tokensWithoutLocation = $securityPersonnelTokens->filter(function ($token) {
+                return ! $token->hasLocation();
+            });
+
+            $allTokens = $allTokens->merge($nearbySecurityTokens)->merge($tokensWithoutLocation);
+        } else {
+            // No coordinates - include all SecurityPersonnel tokens
+            $allTokens = $allTokens->merge($securityPersonnelTokens);
         }
 
-        return $query->get();
+        // 3. Get tokens from nearby tenants if we have coordinates
+        if ($alertLatitude && $alertLongitude && $tenant->latitude && $tenant->longitude) {
+            $nearbyQuery = static::active()
+                ->withinRadius($alertLatitude, $alertLongitude, $radius)
+                ->where('tenant_id', '!=', $tenantId)
+                ->whereNotNull('tenant_id'); // Exclude SecurityPersonnel (already included above)
+
+            $allTokens = $allTokens->merge($nearbyQuery->get());
+        }
+
+        return $allTokens->unique('id');
     }
 
     /**

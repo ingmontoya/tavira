@@ -80,10 +80,18 @@ class FcmService
             ];
         }
 
+        // Log token breakdown for debugging
+        $tenantTokenCount = $tokens->where('tenant_id', $tenantId)->count();
+        $securityPersonnelTokenCount = $tokens->where('user_type', 'security_personnel')->count();
+        $otherTokenCount = $tokens->count() - $tenantTokenCount - $securityPersonnelTokenCount;
+
         Log::info('Sending panic alert to devices', [
             'alert_id' => $alert->id,
             'tenant_id' => $tenantId,
-            'device_count' => $tokens->count(),
+            'total_device_count' => $tokens->count(),
+            'tenant_tokens' => $tenantTokenCount,
+            'security_personnel_tokens' => $securityPersonnelTokenCount,
+            'nearby_tokens' => $otherTokenCount,
             'has_location' => $alertLat && $alertLng,
         ]);
 

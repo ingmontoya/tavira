@@ -29,11 +29,18 @@ class DeviceTokenController extends Controller
             'platform' => 'required|in:ios,android,web',
             'device_name' => 'nullable|string|max:255',
             'tenant_id' => 'nullable|string|max:255',
+            'user_type' => 'nullable|string|in:user,security_personnel',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $user = auth()->user();
+
+        // Determine user_type based on the authenticated user model
+        $userType = $validated['user_type'] ?? 'user';
+        if ($user instanceof \App\Models\SecurityPersonnel) {
+            $userType = 'security_personnel';
+        }
 
         // Check if token already exists
         $existingToken = DeviceToken::where('token', $validated['token'])->first();
@@ -43,6 +50,7 @@ class DeviceTokenController extends Controller
             if ($existingToken->user_id !== $user->id) {
                 $updateData = [
                     'user_id' => $user->id,
+                    'user_type' => $userType,
                     'platform' => $validated['platform'],
                     'device_name' => $validated['device_name'] ?? $existingToken->device_name,
                     'tenant_id' => $validated['tenant_id'] ?? $existingToken->tenant_id,
@@ -67,6 +75,7 @@ class DeviceTokenController extends Controller
             } else {
                 // Update existing token
                 $updateData = [
+                    'user_type' => $userType,
                     'platform' => $validated['platform'],
                     'device_name' => $validated['device_name'] ?? $existingToken->device_name,
                     'tenant_id' => $validated['tenant_id'] ?? $existingToken->tenant_id,
@@ -94,6 +103,7 @@ class DeviceTokenController extends Controller
         // Create new token
         $createData = [
             'user_id' => $user->id,
+            'user_type' => $userType,
             'tenant_id' => $validated['tenant_id'] ?? null,
             'token' => $validated['token'],
             'platform' => $validated['platform'],
