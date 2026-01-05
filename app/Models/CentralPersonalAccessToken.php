@@ -46,9 +46,12 @@ class CentralPersonalAccessToken extends SanctumPersonalAccessToken
         // First, check if we're in a tenant context
         if (tenancy()->initialized) {
             // Search in tenant database first (for User tokens)
-            $tenantToken = SanctumPersonalAccessToken::where('token', hash('sha256', $token))->first();
+            // Use TenantPersonalAccessToken which uses the tenant connection
+            $tenantToken = TenantPersonalAccessToken::where('token', hash('sha256', $token))->first();
 
             if ($tenantToken) {
+                // Return the tenant token - it will properly resolve tokenable
+                // because it uses the tenant database connection
                 return $tenantToken;
             }
         }
