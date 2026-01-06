@@ -43,13 +43,35 @@ class CentralPersonalAccessToken extends SanctumPersonalAccessToken
      */
     public static function findToken($token)
     {
+        $hash = hash('sha256', $token);
+
+        // 🔥 DEBUG LOGGING - REMOVE AFTER FIXING AUTH
+        \Log::info('CentralPersonalAccessToken::findToken called', [
+            'tenancy_initialized' => tenancy()->initialized,
+            'tenant_id' => tenancy()->initialized ? tenant('id') : null,
+            'token_hash_prefix' => substr($hash, 0, 16) . '...',
+        ]);
+
         // First, check if we're in a tenant context
         if (tenancy()->initialized) {
             // Search in tenant database first (for User tokens)
             // Use TenantPersonalAccessToken which uses the tenant connection
-            $tenantToken = TenantPersonalAccessToken::where('token', hash('sha256', $token))->first();
+            $tenantToken = TenantPersonalAccessToken::where('token', $hash)->first();
+
+            \Log::info('CentralPersonalAccessToken::findToken tenant search', [
+                'token_found' => $tenantToken !== null,
+                'token_id' => $tenantToken?->id,
+            ]);
 
             if ($tenantToken) {
+                $tokenable = $tenantToken->tokenable;
+                \Log::info('CentralPersonalAccessToken::findToken tokenable', [
+                    'tokenable_type' => $tenantToken->tokenable_type,
+                    'tokenable_id' => $tenantToken->tokenable_id,
+                    'tokenable_resolved' => $tokenable !== null,
+                    'tokenable_name' => $tokenable?->name ?? 'N/A',
+                ]);
+
                 // Return the tenant token - it will properly resolve tokenable
                 // because it uses the tenant database connection
                 return $tenantToken;
@@ -57,6 +79,12 @@ class CentralPersonalAccessToken extends SanctumPersonalAccessToken
         }
 
         // Fall back to central database (for SecurityPersonnel tokens)
-        return static::where('token', hash('sha256', $token))->first();
+        $centralToken = static::where('token', $hash)->first();
+
+        \Log::info('CentralPersonalAccessToken::findToken central fallback', [
+            'token_found' => $centralToken !== null,
+        ]);
+
+        return $centralToken;
     }
 }
