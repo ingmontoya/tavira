@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ConjuntoSearchController;
 use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\FeaturesController;
+use App\Http\Controllers\Api\PoliceAlertsController;
 use App\Http\Controllers\Api\ProviderRegistrationController;
 use App\Http\Controllers\Api\SecurityAuthController;
 use App\Http\Controllers\Api\SecurityRegistrationController;
@@ -115,6 +116,18 @@ foreach (config('tenancy.central_domains') as $domain) {
                     ->name('api.device-tokens.destroy');
                 Route::post('/deactivate-all', [DeviceTokenController::class, 'deactivateAll'])
                     ->name('api.device-tokens.deactivate-all');
+            });
+
+            // Police alerts - cross-tenant access for SecurityPersonnel
+            Route::prefix('police')->group(function () {
+                Route::get('/alerts', [PoliceAlertsController::class, 'index'])
+                    ->name('api.police.alerts');
+                Route::get('/stats', [PoliceAlertsController::class, 'stats'])
+                    ->name('api.police.stats');
+                Route::post('/alerts/respond', [PoliceAlertsController::class, 'respond'])
+                    ->name('api.police.alerts.respond');
+                Route::post('/alerts/resolve', [PoliceAlertsController::class, 'resolve'])
+                    ->name('api.police.alerts.resolve');
             });
         });
     });

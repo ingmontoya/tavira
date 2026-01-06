@@ -8,21 +8,20 @@ use Illuminate\Support\Facades\Log;
 class PerfexCrmService
 {
     private string $baseUrl;
+
     private string $apiUser;
-    private string $apiToken;
+
+    private ?string $apiToken;
 
     public function __construct()
     {
-        $this->baseUrl = config('services.perfex.base_url', 'https://perfexcrm.themesic.com');
-        $this->apiUser = config('services.perfex.api_user', 'precontactos');
+        $this->baseUrl = config('services.perfex.base_url') ?? 'https://perfexcrm.themesic.com';
+        $this->apiUser = config('services.perfex.api_user') ?? 'precontactos';
         $this->apiToken = config('services.perfex.api_token');
     }
 
     /**
      * Create a new lead in Perfex CRM
-     *
-     * @param array $leadData
-     * @return array
      */
     public function createLead(array $leadData): array
     {
@@ -35,54 +34,51 @@ class PerfexCrmService
 
             Log::info('Creating Perfex CRM lead', [
                 'endpoint' => $endpoint,
-                'payload' => $payload
+                'payload' => $payload,
             ]);
 
             $response = Http::withHeaders([
-                'authtoken' => $this->apiToken
+                'authtoken' => $this->apiToken,
             ])->asForm()->post($endpoint, $payload);
 
             if ($response->successful()) {
                 Log::info('Perfex CRM lead created successfully', [
-                    'response' => $response->json()
+                    'response' => $response->json(),
                 ]);
 
                 return [
                     'success' => true,
                     'data' => $response->json(),
-                    'message' => 'Lead created successfully'
+                    'message' => 'Lead created successfully',
                 ];
             }
 
             Log::error('Perfex CRM API error', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'body' => $response->body(),
             ]);
 
             return [
                 'success' => false,
                 'error' => $response->body(),
-                'message' => 'Failed to create lead'
+                'message' => 'Failed to create lead',
             ];
         } catch (\Exception $e) {
             Log::error('Exception creating Perfex CRM lead', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => 'Exception occurred while creating lead'
+                'message' => 'Exception occurred while creating lead',
             ];
         }
     }
 
     /**
      * Prepare lead data according to Perfex CRM API format
-     *
-     * @param array $data
-     * @return array
      */
     private function prepareLeadData(array $data): array
     {
@@ -97,60 +93,60 @@ class PerfexCrmService
         ];
 
         // Optional fields
-        if (!empty($data['company'])) {
+        if (! empty($data['company'])) {
             $payload['company'] = $data['company'];
         }
 
-        if (!empty($data['title'])) {
+        if (! empty($data['title'])) {
             $payload['title'] = $data['title'];
         }
 
-        if (!empty($data['website'])) {
+        if (! empty($data['website'])) {
             $payload['website'] = $data['website'];
         }
 
-        if (!empty($data['address'])) {
+        if (! empty($data['address'])) {
             $payload['address'] = $data['address'];
         }
 
-        if (!empty($data['city'])) {
+        if (! empty($data['city'])) {
             $payload['city'] = $data['city'];
         }
 
-        if (!empty($data['state'])) {
+        if (! empty($data['state'])) {
             $payload['state'] = $data['state'];
         }
 
-        if (!empty($data['country'])) {
+        if (! empty($data['country'])) {
             $payload['country'] = $data['country'];
         }
 
-        if (!empty($data['zip'])) {
+        if (! empty($data['zip'])) {
             $payload['zip'] = $data['zip'];
         }
 
-        if (!empty($data['description'])) {
+        if (! empty($data['description'])) {
             $payload['description'] = $data['description'];
         }
 
         // Tags
-        if (!empty($data['tags'])) {
+        if (! empty($data['tags'])) {
             $payload['tags'] = is_array($data['tags'])
                 ? implode(',', $data['tags'])
                 : $data['tags'];
         }
 
         // Custom fields for conjunto information
-        if (!empty($data['conjunto_name'])) {
+        if (! empty($data['conjunto_name'])) {
             $payload['custom_field_conjunto_name'] = $data['conjunto_name'];
         }
 
-        if (!empty($data['num_units'])) {
+        if (! empty($data['num_units'])) {
             $payload['custom_field_num_units'] = $data['num_units'];
         }
 
         // Send the selected role from the form (custom field ID 1)
-        if (!empty($data['role'])) {
+        if (! empty($data['role'])) {
             $payload['custom_fields[leads][1]'] = $data['role'];
         }
 
@@ -163,9 +159,6 @@ class PerfexCrmService
 
     /**
      * Get lead by email
-     *
-     * @param string $email
-     * @return array|null
      */
     public function getLeadByEmail(string $email): ?array
     {
@@ -176,11 +169,12 @@ class PerfexCrmService
                 'Accept' => 'application/json',
             ])->get($endpoint, [
                 'token' => $this->apiToken,
-                'email' => $email
+                'email' => $email,
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return $data['leads'][0] ?? null;
             }
 
@@ -188,7 +182,7 @@ class PerfexCrmService
         } catch (\Exception $e) {
             Log::error('Exception getting Perfex CRM lead', [
                 'email' => $email,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
 
             return null;
@@ -197,10 +191,6 @@ class PerfexCrmService
 
     /**
      * Update existing lead
-     *
-     * @param int $leadId
-     * @param array $leadData
-     * @return array
      */
     public function updateLead(int $leadId, array $leadData): array
     {
@@ -221,33 +211,31 @@ class PerfexCrmService
                 return [
                     'success' => true,
                     'data' => $response->json(),
-                    'message' => 'Lead updated successfully'
+                    'message' => 'Lead updated successfully',
                 ];
             }
 
             return [
                 'success' => false,
                 'error' => $response->body(),
-                'message' => 'Failed to update lead'
+                'message' => 'Failed to update lead',
             ];
         } catch (\Exception $e) {
             Log::error('Exception updating Perfex CRM lead', [
                 'lead_id' => $leadId,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
 
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => 'Exception occurred while updating lead'
+                'message' => 'Exception occurred while updating lead',
             ];
         }
     }
 
     /**
      * Get available lead sources
-     *
-     * @return array
      */
     public function getLeadSources(): array
     {
@@ -257,7 +245,7 @@ class PerfexCrmService
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
             ])->get($endpoint, [
-                'token' => $this->apiToken
+                'token' => $this->apiToken,
             ]);
 
             if ($response->successful()) {
@@ -267,7 +255,7 @@ class PerfexCrmService
             return [];
         } catch (\Exception $e) {
             Log::error('Exception getting Perfex CRM lead sources', [
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
 
             return [];
@@ -276,8 +264,6 @@ class PerfexCrmService
 
     /**
      * Get available lead statuses
-     *
-     * @return array
      */
     public function getLeadStatuses(): array
     {
@@ -287,7 +273,7 @@ class PerfexCrmService
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
             ])->get($endpoint, [
-                'token' => $this->apiToken
+                'token' => $this->apiToken,
             ]);
 
             if ($response->successful()) {
@@ -297,7 +283,7 @@ class PerfexCrmService
             return [];
         } catch (\Exception $e) {
             Log::error('Exception getting Perfex CRM lead statuses', [
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
 
             return [];
