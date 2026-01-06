@@ -43,48 +43,45 @@ class CentralPersonalAccessToken extends SanctumPersonalAccessToken
      */
     public static function findToken($token)
     {
-        $hash = hash('sha256', $token);
+        // Handle tokens with ID|token format (standard Sanctum format)
+        if (strpos($token, '|') !== false) {
+            [$id, $token] = explode('|', $token, 2);
+        } else {
+            $id = null;
+        }
 
-        // 🔥 DEBUG LOGGING - REMOVE AFTER FIXING AUTH
-        \Log::info('CentralPersonalAccessToken::findToken called', [
-            'tenancy_initialized' => tenancy()->initialized,
-            'tenant_id' => tenancy()->initialized ? tenant('id') : null,
-            'token_hash_prefix' => substr($hash, 0, 16) . '...',
-        ]);
+        $hash = hash('sha256', $token);
 
         // First, check if we're in a tenant context
         if (tenancy()->initialized) {
             // Search in tenant database first (for User tokens)
-            // Use TenantPersonalAccessToken which uses the tenant connection
-            $tenantToken = TenantPersonalAccessToken::where('token', $hash)->first();
-
-            \Log::info('CentralPersonalAccessToken::findToken tenant search', [
-                'token_found' => $tenantToken !== null,
-                'token_id' => $tenantToken?->id,
-            ]);
-
-            if ($tenantToken) {
-                $tokenable = $tenantToken->tokenable;
-                \Log::info('CentralPersonalAccessToken::findToken tokenable', [
-                    'tokenable_type' => $tenantToken->tokenable_type,
-                    'tokenable_id' => $tenantToken->tokenable_id,
-                    'tokenable_resolved' => $tokenable !== null,
-                    'tokenable_name' => $tokenable?->name ?? 'N/A',
-                ]);
-
-                // Return the tenant token - it will properly resolve tokenable
-                // because it uses the tenant database connection
-                return $tenantToken;
+            if ($id !== null) {
+                // Optimized lookup by ID first, then verify hash
+                $tenantToken = TenantPersonalAccessToken::find($id);
+                if ($tenantToken && hash_equals($tenantToken->token, $hash)) {
+                    return $tenantToken;
+                }
+            } else {
+                // Fallback to hash lookup if no ID provided
+                $tenantToken = TenantPersonalAccessToken::where('token', $hash)->first();
+                if ($tenantToken) {
+                    return $tenantToken;
+                }
             }
         }
 
         // Fall back to central database (for SecurityPersonnel tokens)
-        $centralToken = static::where('token', $hash)->first();
+        if ($id !== null) {
+            // Optimized lookup by ID first, then verify hash
+            $centralToken = static::find($id);
+            if ($centralToken && hash_equals($centralToken->token, $hash)) {
+                return $centralToken;
+            }
+        } else {
+            // Fallback to hash lookup if no ID provided
+            return static::where('token', $hash)->first();
+        }
 
-        \Log::info('CentralPersonalAccessToken::findToken central fallback', [
-            'token_found' => $centralToken !== null,
-        ]);
-
-        return $centralToken;
+        return null;
     }
 }
